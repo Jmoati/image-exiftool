@@ -40,12 +40,16 @@ $f_58a3af0791 = static function (mixed ...$args) { throw new NotPorted('ValueCon
 $f_8de50da696 = static function (mixed ...$args) { throw new NotPorted('ValueConv 8de50da696'); };
 $f_c17a1a455c = static function (mixed ...$args) { throw new NotPorted('ValueConv c17a1a455c'); };
 $f_1575f439f6 = static function (mixed ...$args) { throw new NotPorted('ValueConv 1575f439f6'); };
-$f_87a50e7f4b = static function (mixed ...$args) { throw new NotPorted('PrintConv 87a50e7f4b'); };
+$f_87a50e7f4b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('0x%.4x', $val);
+};
 $f_97379c267a = static function (mixed ...$args) { throw new NotPorted('PrintConv 97379c267a'); };
-$f_d179870def = static function (mixed ...$args) { throw new NotPorted('ValueConv d179870def'); };
+$f_d179870def = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return new ScalarRef($val);
+};
 $f_9f642c565e = static function (mixed ...$args) { throw new NotPorted('ValueConv 9f642c565e'); };
 
-$d_1 = null /* circular reference */;
+$d_1 = [2 => 'Time'];
 
 return [
     'load' => [

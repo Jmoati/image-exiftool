@@ -4,8 +4,12 @@
 
 namespace Image\ExifTool;
 
-$f_5ef670c028 = static function (mixed ...$args) { throw new NotPorted('ValueConv 5ef670c028'); };
-$f_f9051d83d5 = static function (mixed ...$args) { throw new NotPorted('ValueConv f9051d83d5'); };
+$f_5ef670c028 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return preg_match('/(\d+) (\d+)/', Perl::str($val), $m) ? $m[2].'.'.$m[1] : '0.'.Perl::str($val);
+};
+$f_f9051d83d5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ((Perl::int($val) & 0xff) << 8) + (Perl::int($val) >> 8);
+};
 $f_ddae2f7edc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 10;
 };

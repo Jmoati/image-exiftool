@@ -357,20 +357,23 @@ sub Data
     if ($r eq 'HASH' and $tableByAddr{$v} and not $$ind{isTableBody}) {
         return PhpString($tableByAddr{$v});
     }
-    if ($onStack{$v}) {
-        return 'null /* circular reference */';
-    }
-    local $onStack{$v} = 1;
     # shared structure (used more than once in this module): emit once
     if (not $static and $sharedCount{$v} and $sharedCount{$v} > 1 and not $$ind{inShared}) {
         unless ($shared{$v}) {
+            return 'null /* circular reference */' if $onStack{$v};
             my $name = '$d_' . ++$nShared;
             $shared{$v} = [ $name, undef ];
             $shared{$v}[1] = Data($v, { %$ind, depth => 0, inShared => 1 }, 0, $path);
             push @sharedOrder, $v;   # after its body: inner shared structures come first
         }
+        # a structure containing itself (recursive XMP structures): PHP arrays can't
+        return 'null /* circular reference */' unless defined $shared{$v}[1];
         return $shared{$v}[0];
     }
+    if ($onStack{$v}) {
+        return 'null /* circular reference */';
+    }
+    local $onStack{$v} = 1;
     my $depth = $$ind{depth} || 0;
     my $pad = '    ' x ($depth + 1);
     my $end = '    ' x $depth;

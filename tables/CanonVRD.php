@@ -98,7 +98,7 @@ $f_c0b780f70a = static function (ExifTool $self, &$format, &$varSize, $size, $da
     $varSize += Perl::num($self->DLODataLength) + 0x16;
 };
 
-$d_1 = null /* circular reference */;
+$d_1 = [0 => 'No', 1 => 'Yes'];
 
 return [
     'load' => [

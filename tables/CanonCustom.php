@@ -205,10 +205,10 @@ $f_c00e49c694 = static function ($val, ExifTool $self, array &$vals, array $prt,
     return exp(Perl::num(Canon::CanonEv(Perl::num($val) * 4 - 32)) * log(2) / 2);
 };
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
-$d_3 = null /* circular reference */;
-$d_4 = null /* circular reference */;
+$d_1 = [0 => 'On', 1 => 'Off'];
+$d_2 = [0 => 'Disable', 1 => 'Enable'];
+$d_3 = [0 => 'Enable', 1 => 'Disable'];
+$d_4 = [0 => 'Off', 1 => 'On'];
 
 return [
     'load' => [

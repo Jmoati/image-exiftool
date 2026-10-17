@@ -20,7 +20,7 @@ $f_d086f2c3d3 = static function ($val, ExifTool $self, array &$vals, array $prt,
 };
 $f_0eeb438c6f = static function (mixed ...$args) { throw new NotPorted('ValueConv 0eeb438c6f'); };
 
-$d_1 = null /* circular reference */;
+$d_1 = [0 => 'No', 1 => 'Yes'];
 
 return [
     'load' => [

@@ -20,7 +20,19 @@ $f_6b105e8189 = static function ($val, ExifTool $self, array &$vals, array $prt,
     return $val;
 };
 
-$d_1 = null /* circular reference */;
+$d_1 = [
+    'Applied' => [
+        'Writable' => 'boolean',
+    ],
+    'Children' => [
+        'List' => 'Bag',
+        'Struct' => null /* circular reference */,
+    ],
+    'Keyword' => [
+    ],
+    'NAMESPACE' => 'mwg-kw',
+    'STRUCT_NAME' => 'MWG KeywordStruct',
+];
 
 return [
     'load' => [

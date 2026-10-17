@@ -37,7 +37,9 @@ $f_3ab71eb818 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     return $val ?: null;
 };
 $f_db103e1dfc = static function (mixed ...$args) { throw new NotPorted('ValueConv db103e1dfc'); };
-$f_23e7bf3bd0 = static function (mixed ...$args) { throw new NotPorted('ValueConv 23e7bf3bd0'); };
+$f_23e7bf3bd0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 32768;
+};
 $f_5741fef021 = static function (mixed ...$args) { throw new NotPorted('ValueConv 5741fef021'); };
 $f_1f2667c7fa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->ValidateImage(new ScalarRef($val), $tag);
@@ -73,9 +75,67 @@ $f_5879ccff58 = static function ($valuePtr = null, $val = null, $dirStart = null
     return $val;
 };
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
-$d_3 = null /* circular reference */;
+$d_1 = [
+    0 => 'Auto',
+    1 => 'Daylight',
+    2 => 'Cloudy',
+    3 => 'Tungsten',
+    4 => 'n/a',
+    5 => 'Flash',
+    6 => 'n/a',
+    7 => 'n/a',
+    8 => 'Custom#1',
+    9 => 'Custom#2',
+    10 => 'Custom#3',
+    11 => 'Custom#4',
+    12 => 'Shade',
+    13 => 'Kelvin',
+    16 => 'AWBc',
+];
+$d_2 = [
+    1 => 'Horizontal (normal)',
+    2 => 'Mirror horizontal',
+    3 => 'Rotate 180',
+    4 => 'Mirror vertical',
+    5 => 'Mirror horizontal and rotate 270 CW',
+    6 => 'Rotate 90 CW',
+    7 => 'Mirror horizontal and rotate 90 CW',
+    8 => 'Rotate 270 CW',
+];
+$d_3 = [
+    0 => 'Unknown',
+    1 => 'Daylight',
+    2 => 'Fluorescent',
+    3 => 'Tungsten (Incandescent)',
+    4 => 'Flash',
+    9 => 'Fine Weather',
+    10 => 'Cloudy',
+    11 => 'Shade',
+    12 => 'Daylight Fluorescent',
+    13 => 'Day White Fluorescent',
+    14 => 'Cool White Fluorescent',
+    15 => 'White Fluorescent',
+    16 => 'Warm White Fluorescent',
+    17 => 'Standard Light A',
+    18 => 'Standard Light B',
+    19 => 'Standard Light C',
+    20 => 'D55',
+    21 => 'D65',
+    22 => 'D75',
+    23 => 'D50',
+    24 => 'ISO Studio Tungsten',
+    25 => 'Daylight',
+    26 => 'Day White',
+    27 => 'Cool White',
+    28 => 'White',
+    29 => 'Warm White',
+    30 => 'Daylight LED',
+    31 => 'Day White LED',
+    32 => 'Cool White LED',
+    33 => 'White LED',
+    34 => 'Warm White LED',
+    255 => 'Other',
+];
 
 return [
     'load' => [

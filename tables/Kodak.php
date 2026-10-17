@@ -97,7 +97,10 @@ $f_b9974209cd = static function ($val, ExifTool $self, array &$vals, array $prt,
 };
 $f_c29dd84616 = static function (mixed ...$args) { throw new NotPorted('ValueConv c29dd84616'); };
 $f_bd2d1595a0 = static function (mixed ...$args) { throw new NotPorted('ValueConv bd2d1595a0'); };
-$f_2ff2ee06ab = static function (mixed ...$args) { throw new NotPorted('ValueConv 2ff2ee06ab'); };
+$f_2ff2ee06ab = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = preg_replace('/\s+$/', '', Perl::str($val), 1);
+    return $val;
+};
 $f_c53b49cc2c = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::str($format) === 'undef';
 };
@@ -118,8 +121,30 @@ $f_b2e41c1595 = static function ($val, ExifTool $self, array &$vals, array $prt,
 };
 $f_2b8da890cf = static function (mixed ...$args) { throw new NotPorted('RawConv 2b8da890cf'); };
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
+$d_1 = [0 => 'Normal', 'OTHER' => 'Image\\ExifTool\\Exif::PrintParameter'];
+$d_2 = [
+    0 => 'Program',
+    2 => 'Aperture Priority',
+    3 => 'Shutter Priority',
+    4 => 'Manual',
+    5 => 'Portrait',
+    6 => 'Sport',
+    7 => 'Children',
+    8 => 'Museum',
+    10 => 'High ISO',
+    11 => 'Text',
+    12 => 'Macro',
+    13 => 'Back Light',
+    16 => 'Landscape',
+    17 => 'Night Landscape',
+    18 => 'Night Portrait',
+    19 => 'Snow',
+    20 => 'Beach',
+    21 => 'Fireworks',
+    22 => 'Sunset',
+    23 => 'Candlelight',
+    28 => 'Panorama',
+];
 
 return [
     'load' => [

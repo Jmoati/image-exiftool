@@ -37,8 +37,8 @@ $f_2f5b1cb45d = static function (mixed ...$args) { throw new NotPorted('Conditio
 $f_fdd3b3eda9 = static function (mixed ...$args) { throw new NotPorted('ValueConv fdd3b3eda9'); };
 $f_f3b0915712 = static function (mixed ...$args) { throw new NotPorted('ValueConv f3b0915712'); };
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
+$d_1 = [0 => 'No', 1 => 'Yes'];
+$d_2 = [2 => 'Time'];
 
 return [
     'load' => [

@@ -7,12 +7,32 @@ namespace Image\ExifTool;
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_17b484ef24 = static function (mixed ...$args) { throw new NotPorted('ValueConv 17b484ef24'); };
-$f_70f34f5a91 = static function (mixed ...$args) { throw new NotPorted('PrintConv 70f34f5a91'); };
-$f_29524b8547 = static function (mixed ...$args) { throw new NotPorted('RawConv 29524b8547'); };
-$f_7ae09fe783 = static function (mixed ...$args) { throw new NotPorted('PrintConv 7ae09fe783'); };
-$f_b882f96c4a = static function (mixed ...$args) { throw new NotPorted('RawConv b882f96c4a'); };
-$f_26f5e315f4 = static function (mixed ...$args) { throw new NotPorted('RawConv 26f5e315f4'); };
+$f_17b484ef24 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = preg_replace('/(\d{4}:\d{2}:\d{2}):/', '$1 ', Perl::str($val), 1);
+    return $val;
+};
+$f_70f34f5a91 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.8x', $val);
+};
+$f_29524b8547 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return preg_match('/[^\xff]/', Perl::str($val)) ? $val : null;
+};
+$f_7ae09fe783 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if (Perl::str($val) === '0 0') {
+        return 'undef';
+    }
+    if (preg_match('/ 0$/', Perl::str($val))) {
+        return 'inf';
+    }
+    $a = Perl::split(' ', $val);
+    return implode(':', array_map(Perl::str(...), ExifTool::Rationalize(Perl::num($a[0] ?? null) / Perl::num($a[1] ?? null))));
+};
+$f_b882f96c4a = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return preg_match('/4294967295/', Perl::str($val)) ? null : $val;
+};
+$f_26f5e315f4 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return (preg_match('/\d/', Perl::str($val)) && !preg_match('/nan/i', Perl::str($val))) ? $val : null;
+};
 
 return [
     'load' => [

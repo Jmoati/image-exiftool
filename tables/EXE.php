@@ -10,9 +10,18 @@ $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_59c79d4e80 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertUnixTime($val, 1);
 };
-$f_4335b20969 = static function (mixed ...$args) { throw new NotPorted('ValueConv 4335b20969'); };
-$f_be11737435 = static function (mixed ...$args) { throw new NotPorted('code:OTHER be11737435'); };
-$f_cad318fd07 = static function (mixed ...$args) { throw new NotPorted('code:OTHER cad318fd07'); };
+$f_4335b20969 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.4X', $val);
+};
+$f_be11737435 = static function ($val, $inv, $conv) {
+    $v = Perl::int($val) & 4278190079;
+    return ($conv[$v] ?? null) ? $conv[$v].' 64-bit' : 'Unknown ('.Perl::str($val).')';
+};
+$f_cad318fd07 = static function ($val, $inv, $conv) {
+    $va = Perl::split(' ', $val, 0);
+    $v = (Perl::int($va[0] ?? null) & 4278190079).' '.(Perl::int($va[1] ?? null) & 2147483647);
+    return ($conv[$v] ?? null) ? $conv[$v].' 64-bit' : 'Unknown ('.Perl::str($val).')';
+};
 $f_357da195ec = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', '.');
 };
@@ -22,11 +31,130 @@ $f_7ae83d5506 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_a3035551af = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertUnixTime(Perl::num($val) - ((66 * 365 + 17) * 24 * 3600));
 };
-$f_93ad551cfc = static function (mixed ...$args) { throw new NotPorted('ValueConv 93ad551cfc'); };
-$f_87a50e7f4b = static function (mixed ...$args) { throw new NotPorted('PrintConv 87a50e7f4b'); };
+$f_93ad551cfc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $a = Perl::split(' ', $val);
+    return ($a[1] ?? '').'.'.($a[0] ?? '').'.'.($a[3] ?? '').'.'.($a[2] ?? '');
+};
+$f_87a50e7f4b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('0x%.4x', $val);
+};
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
+$d_1 = [
+    '0000' => 'Neutral',
+    '0400' => 'Process default',
+    '0401' => 'Arabic',
+    '0402' => 'Bulgarian',
+    '0403' => 'Catalan',
+    '0404' => 'Chinese (Traditional)',
+    '0405' => 'Czech',
+    '0406' => 'Danish',
+    '0407' => 'German',
+    '0408' => 'Greek',
+    '0409' => 'English (U.S.)',
+    '0410' => 'Italian',
+    '0411' => 'Japanese',
+    '0412' => 'Korean',
+    '0413' => 'Dutch',
+    '0414' => 'Norwegian (Bokml)',
+    '0415' => 'Polish',
+    '0416' => 'Portuguese (Brazilian)',
+    '0417' => 'Rhaeto-Romanic',
+    '0418' => 'Romanian',
+    '0419' => 'Russian',
+    '0420' => 'Urdu',
+    '0421' => 'Indonesian',
+    '0422' => 'Ukrainian',
+    '0423' => 'Belarusian',
+    '0424' => 'Slovenian',
+    '0425' => 'Estonian',
+    '0426' => 'Latvian',
+    '0427' => 'Lithuanian',
+    '0428' => 'Maori',
+    '0429' => 'Farsi',
+    '0430' => 'Sutu',
+    '0431' => 'Tsonga',
+    '0432' => 'Tswana',
+    '0433' => 'Venda',
+    '0434' => 'Xhosa',
+    '0435' => 'Zulu',
+    '0436' => 'Afrikaans',
+    '0437' => 'Georgian',
+    '0438' => 'Faeroese',
+    '0439' => 'Hindi',
+    '0440' => 'Kyrgyz',
+    '0441' => 'Swahili',
+    '0443' => 'Uzbek',
+    '0444' => 'Tatar',
+    '0445' => 'Bengali',
+    '0446' => 'Punjabi',
+    '0447' => 'Gujarati',
+    '0448' => 'Oriya',
+    '0449' => 'Tamil',
+    '0450' => 'Mongolian',
+    '0456' => 'Galician',
+    '0457' => 'Konkani',
+    '0458' => 'Manipuri',
+    '0459' => 'Sindhi',
+    '0460' => 'Kashmiri',
+    '0461' => 'Nepali',
+    '0465' => 'Divehi',
+    '0490' => 'Walon',
+    '0491' => 'Cornish',
+    '0492' => 'Welsh',
+    '0493' => 'Breton',
+    '0800' => 'Neutral 2',
+    '0804' => 'Chinese (Simplified)',
+    '0807' => 'German (Swiss)',
+    '0809' => 'English (British)',
+    '0810' => 'Italian (Swiss)',
+    '0813' => 'Dutch (Belgian)',
+    '0814' => 'Norwegian (Nynorsk)',
+    '0816' => 'Portuguese',
+    1009 => 'English (Canadian)',
+    '007F' => 'Invariant',
+    '040A' => 'Spanish (Castilian)',
+    '040B' => 'Finnish',
+    '040C' => 'French',
+    '040D' => 'Hebrew',
+    '040E' => 'Hungarian',
+    '040F' => 'Icelandic',
+    '041A' => 'Croato-Serbian (Latin)',
+    '041B' => 'Slovak',
+    '041C' => 'Albanian',
+    '041D' => 'Swedish',
+    '041E' => 'Thai',
+    '041F' => 'Turkish',
+    '042a' => 'Vietnamese',
+    '042b' => 'Armenian',
+    '042c' => 'Azeri',
+    '042d' => 'Basque',
+    '042e' => 'Sorbian',
+    '042f' => 'Macedonian',
+    '043a' => 'Maltese',
+    '043b' => 'Saami',
+    '043c' => 'Gaelic',
+    '043e' => 'Malay',
+    '043f' => 'Kazak',
+    '044a' => 'Telugu',
+    '044b' => 'Kannada',
+    '044c' => 'Malayalam',
+    '044d' => 'Assamese',
+    '044e' => 'Marathi',
+    '044f' => 'Sanskrit',
+    '045a' => 'Syriac',
+    '047f' => 'Invariant',
+    '048f' => 'Esperanto',
+    '080A' => 'Spanish (Mexican)',
+    '080C' => 'French (Belgian)',
+    '081A' => 'Serbo-Croatian (Cyrillic)',
+    '0C07' => 'German (Austrian)',
+    '0C09' => 'English (Australian)',
+    '0C0A' => 'Spanish (Modern)',
+    '0C0C' => 'French (Canadian)',
+    '100C' => 'French (Swiss)',
+    'Notes' => "\x0a        See L<https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid>\x0a        for the full list of Microsoft language codes.\x0a    ",
+];
+$d_2 = [0 => 'EXE', 1 => 'EXE', 2 => 'Time'];
 
 return [
     'load' => [

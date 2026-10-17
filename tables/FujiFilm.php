@@ -169,7 +169,7 @@ $f_bcae32b0d7 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^\x00\x00\x00/', $valPt);
 };
 
-$d_1 = null /* circular reference */;
+$d_1 = ['BITMASK' => [1 => 'Partner', 2 => 'Family', 3 => 'Friend']];
 
 return [
     'load' => [

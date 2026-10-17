@@ -31,9 +31,9 @@ $f_8f0e71a82a = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_7c487dd968 = static function (mixed ...$args) { throw new NotPorted('ValueConv 7c487dd968'); };
 $f_54c280533b = static function (mixed ...$args) { throw new NotPorted('RawConv 54c280533b'); };
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
-$d_3 = null /* circular reference */;
+$d_1 = [2 => 'Location'];
+$d_2 = [2 => 'Location'];
+$d_3 = [2 => 'Time'];
 
 return [
     'load' => [

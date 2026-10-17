@@ -13,7 +13,17 @@ $f_746dd5d294 = static function ($val, ExifTool $self, array &$vals, array $prt,
     return Exif::ExifTime($val);
 };
 
-$d_1 = null /* circular reference */;
+$d_1 = [
+    0 => '0 (None)',
+    1 => '1 (Winner)',
+    2 => '2 (Winner alt)',
+    3 => '3 (Superior)',
+    4 => '4 (Superior alt)',
+    5 => '5 (Typical)',
+    6 => '6 (Typical alt)',
+    7 => '7 (Extras)',
+    8 => '8 (Trash)',
+];
 
 return [
     'load' => [

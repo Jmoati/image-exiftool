@@ -544,6 +544,12 @@ $f_811b111291 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_6913ff8c37 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_match('/^(inf|undef)$/', Perl::str($val)) ? $val : Perl::str($val) . ' m';
 };
+$f_335d13e049 = static function ($val, $inv, $conv) {
+    if (!($inv && preg_match('/^(off|on)$/i', Perl::str($val)))) {
+        return null;
+    }
+    return strtolower(Perl::str($val)) === 'off' ? 0 : 1;
+};
 $f_8f0e71a82a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f mm', $val);
 };
@@ -1138,10 +1144,95 @@ $f_b7cb64e8b8 = static function ($val, ExifTool $self, array &$vals, array $prt,
     return preg_replace('/^.*: /', '', Perl::str($val), 1);
 };
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
-$d_3 = null /* circular reference */;
-$d_4 = null /* circular reference */;
+$d_1 = [
+    1 => 'Unsigned',
+    2 => 'Signed',
+    3 => 'Float',
+    4 => 'Undefined',
+    5 => 'Complex int',
+    6 => 'Complex float',
+];
+$d_2 = [
+    0 => 'Unknown',
+    1 => 'Daylight',
+    2 => 'Fluorescent',
+    3 => 'Tungsten (Incandescent)',
+    4 => 'Flash',
+    9 => 'Fine Weather',
+    10 => 'Cloudy',
+    11 => 'Shade',
+    12 => 'Daylight Fluorescent',
+    13 => 'Day White Fluorescent',
+    14 => 'Cool White Fluorescent',
+    15 => 'White Fluorescent',
+    16 => 'Warm White Fluorescent',
+    17 => 'Standard Light A',
+    18 => 'Standard Light B',
+    19 => 'Standard Light C',
+    20 => 'D55',
+    21 => 'D65',
+    22 => 'D75',
+    23 => 'D50',
+    24 => 'ISO Studio Tungsten',
+    25 => 'Daylight',
+    26 => 'Day White',
+    27 => 'Cool White',
+    28 => 'White',
+    29 => 'Warm White',
+    30 => 'Daylight LED',
+    31 => 'Day White LED',
+    32 => 'Cool White LED',
+    33 => 'White LED',
+    34 => 'Warm White LED',
+    255 => 'Other',
+];
+$d_3 = [
+    0 => 'No Flash',
+    1 => 'Fired',
+    5 => 'Fired, Return not detected',
+    7 => 'Fired, Return detected',
+    8 => 'On, Did not fire',
+    9 => 'On, Fired',
+    13 => 'On, Return not detected',
+    15 => 'On, Return detected',
+    16 => 'Off, Did not fire',
+    20 => 'Off, Did not fire, Return not detected',
+    24 => 'Auto, Did not fire',
+    25 => 'Auto, Fired',
+    29 => 'Auto, Fired, Return not detected',
+    31 => 'Auto, Fired, Return detected',
+    32 => 'No flash function',
+    48 => 'Off, No flash function',
+    65 => 'Fired, Red-eye reduction',
+    69 => 'Fired, Red-eye reduction, Return not detected',
+    71 => 'Fired, Red-eye reduction, Return detected',
+    73 => 'On, Red-eye reduction',
+    77 => 'On, Red-eye reduction, Return not detected',
+    79 => 'On, Red-eye reduction, Return detected',
+    80 => 'Off, Red-eye reduction',
+    88 => 'Auto, Did not fire, Red-eye reduction',
+    89 => 'Auto, Fired, Red-eye reduction',
+    93 => 'Auto, Fired, Red-eye reduction, Return not detected',
+    95 => 'Auto, Fired, Red-eye reduction, Return detected',
+    'OTHER' => $f_335d13e049,
+];
+$d_4 = [
+    1 => 'WarpRectilinear',
+    2 => 'WarpFisheye',
+    3 => 'FixVignetteRadial',
+    4 => 'FixBadPixelsConstant',
+    5 => 'FixBadPixelsList',
+    6 => 'TrimBounds',
+    7 => 'MapTable',
+    8 => 'MapPolynomial',
+    9 => 'GainMap',
+    10 => 'DeltaPerRow',
+    11 => 'DeltaPerColumn',
+    12 => 'ScalePerRow',
+    13 => 'ScalePerColumn',
+    14 => 'WarpRectilinear2',
+    'OTHER' => 'Image\\ExifTool\\Exif::PrintOpcode',
+];
 
 return [
     'load' => [

@@ -125,7 +125,18 @@ $f_add8fda364 = static function (ExifTool $self, $valPt, $format, $count) {
     return !$self->IsJXL;
 };
 
-$d_1 = null /* circular reference */;
+$d_1 = [
+    -3 => 'km',
+    -2 => '100 m',
+    -1 => '10 m',
+    0 => 'm',
+    1 => '10 cm',
+    2 => 'cm',
+    3 => 'mm',
+    4 => '0.1 mm',
+    5 => '0.01 mm',
+    6 => 'um',
+];
 
 return [
     'load' => [

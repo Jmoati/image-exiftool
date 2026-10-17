@@ -4,7 +4,9 @@
 
 namespace Image\ExifTool;
 
-$f_d179870def = static function (mixed ...$args) { throw new NotPorted('ValueConv d179870def'); };
+$f_d179870def = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return new ScalarRef($val);
+};
 
 return [
     'load' => [

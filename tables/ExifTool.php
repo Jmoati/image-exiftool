@@ -67,8 +67,8 @@ $f_423d194042 = static function ($val, ExifTool $self, array &$vals, array $prt,
     return Perl::sprintf('%.3g s', $val);
 };
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
+$d_1 = [0 => 'ExifTool', 1 => 'ExifTool', 2 => 'ExifTool'];
+$d_2 = [0 => 'ExifTool', 1 => 'ExifTool', 2 => 'Location'];
 
 return [
     'load' => [

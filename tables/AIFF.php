@@ -20,7 +20,7 @@ $f_48a32c90ce = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     return (($vals[0] ?? null) && ($vals[1] ?? null)) ? Perl::num($vals[1]) / Perl::num($vals[0]) : null;
 };
 
-$d_1 = null /* circular reference */;
+$d_1 = [2 => 'Time'];
 
 return [
     'load' => [

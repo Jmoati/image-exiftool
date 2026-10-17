@@ -91,6 +91,7 @@ $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_02272264af = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintFNumber($val);
 };
+$f_bcbb367bde = static function (mixed ...$args) { throw new NotPorted('code:OTHER bcbb367bde'); };
 $f_8f0e71a82a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f mm', $val);
 };
@@ -138,26 +139,721 @@ $f_c4e9e35aad = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     return $self->Model ? $val : ($self->Model = $val);
 };
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
-$d_3 = null /* circular reference */;
-$d_4 = null /* circular reference */;
-$d_5 = null /* circular reference */;
-$d_6 = null /* circular reference */;
-$d_7 = null /* circular reference */;
-$d_8 = null /* circular reference */;
-$d_9 = null /* circular reference */;
-$d_10 = null /* circular reference */;
-$d_11 = null /* circular reference */;
-$d_12 = null /* circular reference */;
-$d_13 = null /* circular reference */;
-$d_14 = null /* circular reference */;
-$d_15 = null /* circular reference */;
-$d_16 = null /* circular reference */;
-$d_17 = null /* circular reference */;
-$d_18 = null /* circular reference */;
-$d_19 = null /* circular reference */;
-$d_20 = null /* circular reference */;
+$d_1 = [
+    'NAMESPACE' => ['acdsee-stArea' => 'http://ns.acdsee.com/sType/Area#'],
+    'STRUCT_NAME' => 'ACDSeeArea',
+    'h' => [
+        'Writable' => 'real',
+    ],
+    'w' => [
+        'Writable' => 'real',
+    ],
+    'x' => [
+        'Writable' => 'real',
+    ],
+    'y' => [
+        'Writable' => 'real',
+    ],
+];
+$d_4 = [
+    'AreaModels' => [
+        'List' => 'Seq',
+        'Struct' => [
+            'AreaComponents' => [
+                'FlatName' => 'Components',
+                'List' => 'Seq',
+            ],
+            'ColorRangeMaskAreaSampleInfo' => [
+                'FlatName' => 'ColorSampleInfo',
+            ],
+            'NAMESPACE' => 'crs',
+            'STRUCT_NAME' => 'AreaModels',
+        ],
+    ],
+    'ColorAmount' => [
+        'Writable' => 'real',
+    ],
+    'DepthFeather' => [
+        'Writable' => 'real',
+    ],
+    'DepthMax' => [
+        'Writable' => 'real',
+    ],
+    'DepthMin' => [
+        'Writable' => 'real',
+    ],
+    'Invert' => [
+        'Writable' => 'boolean',
+    ],
+    'LumFeather' => [
+        'Writable' => 'real',
+    ],
+    'LumMax' => [
+        'Writable' => 'real',
+    ],
+    'LumMin' => [
+        'Writable' => 'real',
+    ],
+    'LumRange' => [
+    ],
+    'LuminanceDepthSampleInfo' => [
+    ],
+    'NAMESPACE' => 'crs',
+    'NOTES' => 'Called CorrectionRangeMask by the spec.',
+    'STRUCT_NAME' => 'CorrRangeMask',
+    'SampleType' => [
+        'Writable' => 'integer',
+    ],
+    'Type' => [
+    ],
+    'Version' => [
+    ],
+];
+$d_3 = [
+    'Alpha' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'Angle' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'Bottom' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'CenterValue' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'CenterWeight' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'CorrectionRangeMask' => [
+        'FlatName' => 'Range',
+        'Name' => 'CorrRangeMask',
+        'Struct' => $d_4,
+    ],
+    'Dabs' => [
+        'List' => 'Seq',
+    ],
+    'Feather' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'Flipped' => [
+        'List' => 0,
+        'Writable' => 'boolean',
+    ],
+    'Flow' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'FullX' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'FullY' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'InputDigest' => [
+        'List' => 0,
+    ],
+    'Left' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'MaskActive' => [
+        'List' => 0,
+        'Writable' => 'boolean',
+    ],
+    'MaskBlendMode' => [
+        'List' => 0,
+        'Writable' => 'integer',
+    ],
+    'MaskDigest' => [
+        'List' => 0,
+    ],
+    'MaskInverted' => [
+        'List' => 0,
+        'Writable' => 'boolean',
+    ],
+    'MaskName' => [
+        'List' => 0,
+    ],
+    'MaskSubType' => [
+        'List' => 0,
+    ],
+    'MaskSyncID' => [
+        'List' => 0,
+    ],
+    'MaskValue' => [
+        'FlatName' => 'Value',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'MaskVersion' => [
+        'List' => 0,
+    ],
+    'Masks' => [
+        'NoSubStruct' => 1,
+        'Struct' => null /* circular reference */,
+    ],
+    'Midpoint' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'NAMESPACE' => 'crs',
+    'Origin' => [
+        'List' => 0,
+    ],
+    'PerimeterValue' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'Radius' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'ReferencePoint' => [
+        'List' => 0,
+    ],
+    'Right' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'Roundness' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'STRUCT_NAME' => 'CorrectionMask',
+    'SizeX' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'SizeY' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'Top' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'Version' => [
+        'List' => 0,
+        'Writable' => 'integer',
+    ],
+    'What' => [
+        'List' => 0,
+    ],
+    'WholeImageArea' => [
+        'List' => 0,
+    ],
+    'X' => ['List' => 0, 'Writable' => 'real'],
+    'Y' => ['List' => 0, 'Writable' => 'real'],
+    'ZeroX' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'ZeroY' => [
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+];
+$d_2 = [
+    'CorrectionActive' => [
+        'FlatName' => 'Active',
+        'List' => 0,
+        'Writable' => 'boolean',
+    ],
+    'CorrectionAmount' => [
+        'FlatName' => 'Amount',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'CorrectionMasks' => [
+        'FlatName' => 'Mask',
+        'List' => 'Seq',
+        'Struct' => $d_3,
+    ],
+    'CorrectionName' => [
+    ],
+    'CorrectionRangeMask' => [
+        'FlatName' => 'RangeMask',
+        'Name' => 'CorrRangeMask',
+        'Struct' => $d_4,
+    ],
+    'CorrectionSyncID' => [
+    ],
+    'LocalBlacks2012' => [
+        'FlatName' => 'Blacks2012',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalBrightness' => [
+        'FlatName' => 'Brightness',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalClarity' => [
+        'FlatName' => 'Clarity',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalClarity2012' => [
+        'FlatName' => 'Clarity2012',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalContrast' => [
+        'FlatName' => 'Contrast',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalContrast2012' => [
+        'FlatName' => 'Contrast2012',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalDefringe' => [
+        'FlatName' => 'Defringe',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalDehaze' => [
+        'FlatName' => 'Dehaze',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalExposure' => [
+        'FlatName' => 'Exposure',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalExposure2012' => [
+        'FlatName' => 'Exposure2012',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalHighlights2012' => [
+        'FlatName' => 'Highlights2012',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalHue' => [
+        'FlatName' => 'Hue',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalLuminanceNoise' => [
+        'FlatName' => 'LuminanceNoise',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalMoire' => [
+        'FlatName' => 'Moire',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalSaturation' => [
+        'FlatName' => 'Saturation',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalShadows2012' => [
+        'FlatName' => 'Shadows2012',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalSharpness' => [
+        'FlatName' => 'Sharpness',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalTemperature' => [
+        'FlatName' => 'Temperature',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalTexture' => [
+        'FlatName' => 'Texture',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalTint' => [
+        'FlatName' => 'Tint',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalToningHue' => [
+        'FlatName' => 'ToningHue',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalToningSaturation' => [
+        'FlatName' => 'ToningSaturation',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'LocalWhites2012' => [
+        'FlatName' => 'Whites2012',
+        'List' => 0,
+        'Writable' => 'real',
+    ],
+    'NAMESPACE' => 'crs',
+    'STRUCT_NAME' => 'Correction',
+    'What' => [
+        'List' => 0,
+    ],
+];
+$d_5 = ['False' => 'False', 'OTHER' => $f_bcbb367bde, 'True' => 'True'];
+$d_6 = [
+    'Columns' => [
+        'Writable' => 'integer',
+    ],
+    'NAMESPACE' => 'exif',
+    'Names' => [
+        'List' => 'Seq',
+    ],
+    'Rows' => [
+        'Writable' => 'integer',
+    ],
+    'STRUCT_NAME' => 'OECF',
+    'Values' => [
+        'List' => 'Seq',
+        'Writable' => 'rational',
+    ],
+];
+$d_7 = [
+    'LabelName' => [
+    ],
+    'NAMESPACE' => 'ics',
+    'ParentReference' => [
+    ],
+    'Reference' => [
+    ],
+    'STRUCT_NAME' => 'TagStructure',
+    'SubLabels' => [
+        'List' => 'Bag',
+        'Struct' => null /* circular reference */,
+    ],
+];
+$d_8 = [
+    'CvId' => [
+    ],
+    'CvTermId' => [
+    ],
+    'CvTermName' => [
+        'Writable' => 'lang-alt',
+    ],
+    'CvTermRefinedAbout' => [
+    ],
+    'NAMESPACE' => 'Iptc4xmpExt',
+    'STRUCT_NAME' => 'CVTermDetails',
+];
+$d_9 = [
+    'Identifier' => [
+        'List' => 'Bag',
+        'Namespace' => 'xmp',
+    ],
+    'NAMESPACE' => 'Iptc4xmpExt',
+    'Name' => [
+        'Writable' => 'lang-alt',
+    ],
+    'STRUCT_NAME' => 'Entity',
+];
+$d_10 = [
+    'Identifier' => [
+        'List' => 'Bag',
+        'Namespace' => 'xmp',
+    ],
+    'NAMESPACE' => 'Iptc4xmpExt',
+    'Name' => [
+        'Writable' => 'lang-alt',
+    ],
+    'Role' => [
+        'List' => 'Bag',
+    ],
+    'STRUCT_NAME' => 'EntityWithRole',
+];
+$d_11 = [
+    'Link' => [
+    ],
+    'LinkQualifier' => [
+    ],
+    'NAMESPACE' => 'Iptc4xmpExt',
+    'STRUCT_NAME' => 'QualifiedLink',
+];
+$d_12 = [
+    'Identifier' => [
+    ],
+    'NAMESPACE' => 'Iptc4xmpExt',
+    'Name' => [
+    ],
+    'Number' => [
+    ],
+    'STRUCT_NAME' => 'EpisodeOrSeason',
+];
+$d_13 = [
+    'City' => [
+    ],
+    'CountryCode' => [
+    ],
+    'CountryName' => [
+    ],
+    'GPSAltitude' => [
+        'Namespace' => 'exif',
+        'PrintConv' => $f_59af52397a,
+        'Writable' => 'rational',
+    ],
+    'GPSAltitudeRef' => [
+        'Namespace' => 'exif',
+        'PrintConv' => [0 => 'Above Sea Level', 1 => 'Below Sea Level', 'OTHER' => $f_eae5f4d018],
+        'Writable' => 'integer',
+    ],
+    'GPSLatitude' => [
+        'Namespace' => 'exif',
+        'PrintConv' => $f_5f55a3e4a5,
+        'ValueConv' => $f_473c5a1df4,
+    ],
+    'GPSLongitude' => [
+        'Namespace' => 'exif',
+        'PrintConv' => $f_5817105f7a,
+        'ValueConv' => $f_473c5a1df4,
+    ],
+    'GROUPS' => [2 => 'Location'],
+    'Identifier' => [
+        'List' => 'Bag',
+        'Namespace' => 'xmp',
+    ],
+    'LocationId' => [
+        'List' => 'Bag',
+    ],
+    'LocationName' => [
+        'Writable' => 'lang-alt',
+    ],
+    'NAMESPACE' => 'Iptc4xmpExt',
+    'NOTES' => 'Note that the GPS elements of this structure are in the "exif" namespace.',
+    'ProvinceState' => [
+    ],
+    'STRUCT_NAME' => 'LocationDetails',
+    'Sublocation' => [
+    ],
+    'WorldRegion' => [
+    ],
+];
+$d_14 = [
+    'NAMESPACE' => 'xmpDM',
+    'STRUCT_NAME' => 'Timecode',
+    'timeFormat' => [
+        'PrintConv' => [
+            '23976Timecode' => '23.976 fps',
+            '24Timecode' => '24 fps',
+            '25Timecode' => '25 fps',
+            '2997DropTimecode' => '29.97 fps (drop)',
+            '2997NonDropTimecode' => '29.97 fps (non-drop)',
+            '30Timecode' => '30 fps',
+            '50Timecode' => '50 fps',
+            '5994DropTimecode' => '59.94 fps (drop)',
+            '5994NonDropTimecode' => '59.94 fps (non-drop)',
+            '60Timecode' => '60 fps',
+        ],
+    ],
+    'timeValue' => [
+    ],
+    'value' => [
+        'Writable' => 'integer',
+    ],
+];
+$d_15 = [
+    'NAMESPACE' => 'prism',
+    'STRUCT_NAME' => 'prismPublicationDate',
+    'a-platform' => [
+    ],
+    'date' => [
+        'Groups' => [2 => 'Time'],
+        'PrintConv' => $f_ae2db35ce3,
+        'Validate' => 'ValidateXMPDate($val)',
+        'Writable' => 'date',
+    ],
+];
+$d_16 = [
+    'NAMESPACE' => 'xmpDM',
+    'STRUCT_NAME' => 'Marker',
+    'comment' => [
+    ],
+    'cuePointParams' => [
+        'List' => 'Seq',
+        'Struct' => [
+            'NAMESPACE' => 'xmpDM',
+            'STRUCT_NAME' => 'CuePointParam',
+            'key' => [
+            ],
+            'value' => [
+            ],
+        ],
+    ],
+    'cuePointType' => [
+    ],
+    'duration' => [
+    ],
+    'location' => [
+    ],
+    'name' => [
+    ],
+    'probability' => [
+        'Writable' => 'real',
+    ],
+    'speaker' => [
+    ],
+    'startTime' => [
+    ],
+    'target' => [
+    ],
+    'type' => [
+    ],
+];
+$d_17 = [
+    'NAMESPACE' => 'xmpDM',
+    'STRUCT_NAME' => 'Time',
+    'scale' => [
+        'Writable' => 'rational',
+    ],
+    'value' => [
+        'Writable' => 'integer',
+    ],
+];
+$d_18 = [
+    'A' => ['Writable' => 'integer'],
+    'B' => ['Writable' => 'integer'],
+    'L' => ['Writable' => 'real'],
+    'NAMESPACE' => 'xmpG',
+    'STRUCT_NAME' => 'Colorant',
+    'black' => [
+        'Writable' => 'real',
+    ],
+    'blue' => [
+        'Writable' => 'integer',
+    ],
+    'cyan' => [
+        'Writable' => 'real',
+    ],
+    'gray' => [
+        'Writable' => 'integer',
+    ],
+    'green' => [
+        'Writable' => 'integer',
+    ],
+    'magenta' => [
+        'Writable' => 'real',
+    ],
+    'mode' => [
+        'PrintConv' => ['CMYK' => 'CMYK', 'LAB' => 'Lab', 'RGB' => 'RGB'],
+    ],
+    'red' => [
+        'Writable' => 'integer',
+    ],
+    'swatchName' => [
+    ],
+    'tint' => [
+        'Writable' => 'integer',
+    ],
+    'type' => [
+    ],
+    'yellow' => [
+        'Writable' => 'real',
+    ],
+];
+$d_19 = [
+    'NAMESPACE' => 'stDim',
+    'STRUCT_NAME' => 'Dimensions',
+    'h' => [
+        'Writable' => 'real',
+    ],
+    'unit' => [
+    ],
+    'w' => [
+        'Writable' => 'real',
+    ],
+];
+$d_20 = [
+    'NAMESPACE' => 'stRef',
+    'STRUCT_NAME' => 'ResourceRef',
+    'alternatePaths' => [
+        'List' => 'Seq',
+    ],
+    'documentID' => [
+    ],
+    'filePath' => [
+    ],
+    'fromPart' => [
+    ],
+    'instanceID' => [
+    ],
+    'lastModifyDate' => [
+        'Groups' => [2 => 'Time'],
+        'PrintConv' => $f_ae2db35ce3,
+        'Validate' => 'ValidateXMPDate($val)',
+        'Writable' => 'date',
+    ],
+    'lastURL' => [
+    ],
+    'linkCategory' => [
+    ],
+    'linkForm' => [
+    ],
+    'manageTo' => [
+    ],
+    'manageUI' => [
+    ],
+    'manager' => [
+    ],
+    'managerVariant' => [
+    ],
+    'maskMarkers' => [
+        'PrintConv' => ['All' => 'All', 'None' => 'None'],
+    ],
+    'originalDocumentID' => [
+    ],
+    'partMapping' => [
+    ],
+    'placedResolutionUnit' => [
+    ],
+    'placedXResolution' => [
+    ],
+    'placedYResolution' => [
+    ],
+    'renditionClass' => [
+    ],
+    'renditionParams' => [
+    ],
+    'toPart' => [
+    ],
+    'versionID' => [
+    ],
+];
+$d_21 = [
+    'NAMESPACE' => 'stEvt',
+    'STRUCT_NAME' => 'ResourceEvent',
+    'action' => [
+    ],
+    'changed' => [
+    ],
+    'instanceID' => [
+    ],
+    'parameters' => [
+    ],
+    'softwareAgent' => [
+    ],
+    'when' => [
+        'Groups' => [2 => 'Time'],
+        'PrintConv' => $f_ae2db35ce3,
+        'Validate' => 'ValidateXMPDate($val)',
+        'Writable' => 'date',
+    ],
+];
 
 return [
     'load' => [
@@ -2781,11 +3477,11 @@ return [
                 'Groups' => [2 => 'Camera'],
                 'Struct' => [
                     'Fired' => [
-                        'PrintConv' => $d_4,
+                        'PrintConv' => $d_5,
                         'Writable' => 'boolean',
                     ],
                     'Function' => [
-                        'PrintConv' => $d_4,
+                        'PrintConv' => $d_5,
                         'Writable' => 'boolean',
                     ],
                     'Mode' => [
@@ -2794,7 +3490,7 @@ return [
                     ],
                     'NAMESPACE' => 'exif',
                     'RedEyeMode' => [
-                        'PrintConv' => $d_4,
+                        'PrintConv' => $d_5,
                         'Writable' => 'boolean',
                     ],
                     'Return' => [
@@ -3032,7 +3728,7 @@ return [
                 'FlatName' => 'OECF',
                 'Groups' => [2 => 'Camera'],
                 'Name' => 'Opto-ElectricConvFactor',
-                'Struct' => $d_5,
+                'Struct' => $d_6,
             ],
             'PRIORITY' => 0,
             'PixelXDimension' => [
@@ -3085,7 +3781,7 @@ return [
             ],
             'SpatialFrequencyResponse' => [
                 'Groups' => [2 => 'Camera'],
-                'Struct' => $d_5,
+                'Struct' => $d_6,
             ],
             'SpectralSensitivity' => [
                 'Groups' => [2 => 'Camera'],
@@ -3423,7 +4119,7 @@ return [
             ],
             'TagStructure' => [
                 'List' => 'Bag',
-                'Struct' => $d_6,
+                'Struct' => $d_7,
             ],
             'TagStructureLabelName' => [
                 'Flat' => 1,
@@ -3624,7 +4320,7 @@ return [
             ],
             'AboutCvTerm' => [
                 'List' => 'Bag',
-                'Struct' => $d_7,
+                'Struct' => $d_8,
             ],
             'AboutCvTermCvId' => [
                 'Flat' => 1,
@@ -3776,11 +4472,11 @@ return [
             ],
             'ContainerFormat' => [
                 'Groups' => [2 => 'Video'],
-                'Struct' => $d_8,
+                'Struct' => $d_9,
             ],
             'Contributor' => [
                 'List' => 'Bag',
-                'Struct' => $d_9,
+                'Struct' => $d_10,
             ],
             'CopyrightYear' => [
                 'Groups' => [2 => 'Time'],
@@ -3788,7 +4484,7 @@ return [
             ],
             'Creator' => [
                 'List' => 'Bag',
-                'Struct' => $d_9,
+                'Struct' => $d_10,
             ],
             'DataOnScreen' => [
                 'Groups' => [2 => 'Video'],
@@ -3842,7 +4538,7 @@ return [
             'DopesheetLink' => [
                 'Groups' => [2 => 'Video'],
                 'List' => 'Bag',
-                'Struct' => $d_10,
+                'Struct' => $d_11,
             ],
             'EmbdEncRightsExpr' => [
                 'List' => 'Bag',
@@ -3871,7 +4567,7 @@ return [
             ],
             'Episode' => [
                 'Groups' => [2 => 'Video'],
-                'Struct' => $d_11,
+                'Struct' => $d_12,
             ],
             'Event' => [
                 'Writable' => 'lang-alt',
@@ -3880,7 +4576,7 @@ return [
                 'Groups' => [2 => 'Video'],
                 'List' => 'Bag',
                 'Name' => 'ShownEvent',
-                'Struct' => $d_8,
+                'Struct' => $d_9,
             ],
             'EventId' => [
                 'List' => 'Bag',
@@ -3897,7 +4593,7 @@ return [
             'Genre' => [
                 'Groups' => [2 => 'Image'],
                 'List' => 'Bag',
-                'Struct' => $d_7,
+                'Struct' => $d_8,
             ],
             'Headline' => [
                 'Avoid' => 1,
@@ -3971,7 +4667,7 @@ return [
                         'FlatName' => 'Ctype',
                         'List' => 'Bag',
                         'Namespace' => 'Iptc4xmpExt',
-                        'Struct' => $d_8,
+                        'Struct' => $d_9,
                     ],
                     'rId' => [
                         'FlatName' => 'ID',
@@ -3981,7 +4677,7 @@ return [
                         'FlatName' => 'Role',
                         'List' => 'Bag',
                         'Namespace' => 'Iptc4xmpExt',
-                        'Struct' => $d_8,
+                        'Struct' => $d_9,
                     ],
                 ],
             ],
@@ -4021,12 +4717,12 @@ return [
             'LocationCreated' => [
                 'Groups' => [2 => 'Location'],
                 'List' => 'Bag',
-                'Struct' => $d_12,
+                'Struct' => $d_13,
             ],
             'LocationShown' => [
                 'Groups' => [2 => 'Location'],
                 'List' => 'Bag',
-                'Struct' => $d_12,
+                'Struct' => $d_13,
             ],
             'MaxAvailHeight' => [
                 'Groups' => [2 => 'Image'],
@@ -4050,7 +4746,7 @@ return [
             'PersonHeard' => [
                 'Groups' => [2 => 'Audio'],
                 'List' => 'Bag',
-                'Struct' => $d_8,
+                'Struct' => $d_9,
             ],
             'PersonInImage' => [
                 'List' => 'Bag',
@@ -4061,7 +4757,7 @@ return [
                     'NAMESPACE' => 'Iptc4xmpExt',
                     'PersonCharacteristic' => [
                         'List' => 'Bag',
-                        'Struct' => $d_7,
+                        'Struct' => $d_8,
                     ],
                     'PersonDescription' => [
                         'Writable' => 'lang-alt',
@@ -4109,7 +4805,7 @@ return [
             ],
             'PlanningRef' => [
                 'List' => 'Bag',
-                'Struct' => $d_9,
+                'Struct' => $d_10,
             ],
             'ProductInImage' => [
                 'List' => 'Bag',
@@ -4166,7 +4862,7 @@ return [
                     'RatingRegion' => [
                         'FlatName' => 'Region',
                         'List' => 'Bag',
-                        'Struct' => $d_12,
+                        'Struct' => $d_13,
                     ],
                     'RatingScaleMaxValue' => [
                         'FlatName' => 'ScaleMaxValue',
@@ -4235,7 +4931,7 @@ return [
             ],
             'Season' => [
                 'Groups' => [2 => 'Video'],
-                'Struct' => $d_11,
+                'Struct' => $d_12,
             ],
             'Series' => [
                 'Groups' => [2 => 'Video'],
@@ -4266,7 +4962,7 @@ return [
                     'NAMESPACE' => 'Iptc4xmpExt',
                     'STRUCT_NAME' => 'LinkedImage',
                     'UsedVideoFrame' => [
-                        'Struct' => $d_13,
+                        'Struct' => $d_14,
                     ],
                     'WidthPixels' => [
                         'Writable' => 'integer',
@@ -4290,7 +4986,7 @@ return [
             'SupplyChainSource' => [
                 'Groups' => [2 => 'Other'],
                 'List' => 'Bag',
-                'Struct' => $d_8,
+                'Struct' => $d_9,
             ],
             'TABLE_DESC' => 'XMP IPTC Extension',
             'TemporalCoverage' => [
@@ -4321,12 +5017,12 @@ return [
             'TranscriptLink' => [
                 'Groups' => [2 => 'Video'],
                 'List' => 'Bag',
-                'Struct' => $d_10,
+                'Struct' => $d_11,
             ],
             'VideoShotType' => [
                 'Groups' => [2 => 'Video'],
                 'List' => 'Bag',
-                'Struct' => $d_8,
+                'Struct' => $d_9,
             ],
             'VisualColour' => [
                 'Groups' => [2 => 'Video'],
@@ -4336,7 +5032,7 @@ return [
             'WRITABLE' => 'string',
             'WorkflowTag' => [
                 'Groups' => [2 => 'Video'],
-                'Struct' => $d_7,
+                'Struct' => $d_8,
             ],
             'audioBitRate' => [
                 'Groups' => [2 => 'Audio'],
@@ -4357,7 +5053,7 @@ return [
                 'Writable' => 'integer',
             ],
             'metadataAuthority' => [
-                'Struct' => $d_8,
+                'Struct' => $d_9,
             ],
             'metadataLastEdited' => [
                 'Groups' => [2 => 'Time'],
@@ -4366,7 +5062,7 @@ return [
                 'Writable' => 'date',
             ],
             'metadataLastEditor' => [
-                'Struct' => $d_8,
+                'Struct' => $d_9,
             ],
             'parentId' => [
                 'Name' => 'ParentID',
@@ -5035,11 +5731,11 @@ return [
             ],
             'publicationDate' => [
                 'List' => 'Bag',
-                'Struct' => $d_14,
+                'Struct' => $d_15,
             ],
             'publicationDisplayDate' => [
                 'List' => 'Bag',
-                'Struct' => $d_14,
+                'Struct' => $d_15,
             ],
             'publicationName' => [
             ],
@@ -5644,7 +6340,7 @@ return [
                     ],
                     'markers' => [
                         'List' => 'Seq',
-                        'Struct' => $d_15,
+                        'Struct' => $d_16,
                     ],
                     'trackName' => [
                     ],
@@ -5660,7 +6356,7 @@ return [
             'altTapeName' => [
             ],
             'altTimecode' => [
-                'Struct' => $d_13,
+                'Struct' => $d_14,
             ],
             'artist' => [
                 'Avoid' => 1,
@@ -5707,7 +6403,7 @@ return [
                         'Writable' => 'real',
                     ],
                     'riseInTimeDuration' => [
-                        'Struct' => $d_16,
+                        'Struct' => $d_17,
                     ],
                     'useFileBeatsMarker' => [
                         'Writable' => 'boolean',
@@ -5736,7 +6432,7 @@ return [
                     'NAMESPACE' => 'xmpDM',
                     'STRUCT_NAME' => 'Media',
                     'duration' => [
-                        'Struct' => $d_16,
+                        'Struct' => $d_17,
                     ],
                     'managed' => [
                         'Writable' => 'boolean',
@@ -5744,7 +6440,7 @@ return [
                     'path' => [
                     ],
                     'startTime' => [
-                        'Struct' => $d_16,
+                        'Struct' => $d_17,
                     ],
                     'track' => [
                     ],
@@ -5763,7 +6459,7 @@ return [
             'discNumber' => [
             ],
             'duration' => [
-                'Struct' => $d_16,
+                'Struct' => $d_17,
             ],
             'engineer' => [
             ],
@@ -5778,7 +6474,7 @@ return [
             'instrument' => [
             ],
             'introTime' => [
-                'Struct' => $d_16,
+                'Struct' => $d_17,
             ],
             'key' => [
                 'PrintConv' => [
@@ -5805,7 +6501,7 @@ return [
             ],
             'markers' => [
                 'List' => 'Seq',
-                'Struct' => $d_15,
+                'Struct' => $d_16,
             ],
             'metadataModDate' => [
                 'Groups' => [2 => 'Time'],
@@ -5817,7 +6513,7 @@ return [
                 'Writable' => 'real',
             ],
             'outCue' => [
-                'Struct' => $d_16,
+                'Struct' => $d_17,
             ],
             'partOfCompilation' => [
                 'Writable' => 'boolean',
@@ -5855,7 +6551,7 @@ return [
             'relativePeakAudioFilePath' => [
             ],
             'relativeTimestamp' => [
-                'Struct' => $d_16,
+                'Struct' => $d_17,
             ],
             'releaseDate' => [
                 'Groups' => [2 => 'Time'],
@@ -5902,7 +6598,7 @@ return [
             'startTimeScale' => [
             ],
             'startTimecode' => [
-                'Struct' => $d_13,
+                'Struct' => $d_14,
             ],
             'stretchMode' => [
                 'PrintConv' => [
@@ -5956,7 +6652,7 @@ return [
                 'PrintConv' => ['none' => 'None', 'pre-multiplied' => 'Pre-multiplied', 'straight' => 'Straight'],
             ],
             'videoAlphaPremultipleColor' => [
-                'Struct' => $d_17,
+                'Struct' => $d_18,
             ],
             'videoAlphaUnityIsTransparent' => [
                 'Writable' => 'boolean',
@@ -5973,7 +6669,7 @@ return [
                 'Writable' => 'real',
             ],
             'videoFrameSize' => [
-                'Struct' => $d_18,
+                'Struct' => $d_19,
             ],
             'videoModDate' => [
                 'Groups' => [2 => 'Time'],
@@ -5997,18 +6693,18 @@ return [
         ],
         'Image::ExifTool::XMP::xmpMM' => [
             'DerivedFrom' => [
-                'Struct' => $d_19,
+                'Struct' => $d_20,
             ],
             'DocumentID' => [
             ],
             'GROUPS' => [1 => 'XMP-xmpMM', 2 => 'Other'],
             'History' => [
                 'List' => 'Seq',
-                'Struct' => $d_20,
+                'Struct' => $d_21,
             ],
             'Ingredients' => [
                 'List' => 'Bag',
-                'Struct' => $d_19,
+                'Struct' => $d_20,
             ],
             'InstanceID' => [
             ],
@@ -6021,7 +6717,7 @@ return [
             'ManageUI' => [
             ],
             'ManagedFrom' => [
-                'Struct' => $d_19,
+                'Struct' => $d_20,
             ],
             'Manager' => [
                 'Groups' => [2 => 'Author'],
@@ -6047,7 +6743,7 @@ return [
                         'Writable' => 'real',
                     ],
                     'reference' => [
-                        'Struct' => $d_19,
+                        'Struct' => $d_20,
                     ],
                 ],
             ],
@@ -6071,7 +6767,7 @@ return [
             'RenditionClass' => [
             ],
             'RenditionOf' => [
-                'Struct' => $d_19,
+                'Struct' => $d_20,
             ],
             'RenditionParams' => [
             ],
@@ -6089,7 +6785,7 @@ return [
                     'comments' => [
                     ],
                     'event' => [
-                        'Struct' => $d_20,
+                        'Struct' => $d_21,
                     ],
                     'modifier' => [
                     ],
@@ -6154,7 +6850,7 @@ return [
             'Colorants' => [
                 'FlatName' => 'Colorant',
                 'List' => 'Seq',
-                'Struct' => $d_17,
+                'Struct' => $d_18,
             ],
             'Fonts' => [
                 'FlatName' => '',
@@ -6199,7 +6895,7 @@ return [
             ],
             'LANG_INFO' => 'Image\\ExifTool\\XMP::GetLangInfo',
             'MaxPageSize' => [
-                'Struct' => $d_18,
+                'Struct' => $d_19,
             ],
             'NAMESPACE' => 'xmpTPg',
             'NPages' => [
@@ -6214,7 +6910,7 @@ return [
                     'Colorants' => [
                         'FlatName' => 'SwatchColorant',
                         'List' => 'Seq',
-                        'Struct' => $d_17,
+                        'Struct' => $d_18,
                     ],
                     'NAMESPACE' => 'xmpG',
                     'STRUCT_NAME' => 'SwatchGroup',

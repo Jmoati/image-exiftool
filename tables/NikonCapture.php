@@ -5,7 +5,9 @@
 namespace Image\ExifTool;
 
 $f_40a730c975 = static function (mixed ...$args) { throw new NotPorted('ValueConv 40a730c975'); };
-$f_75416aa93f = static function (mixed ...$args) { throw new NotPorted('ValueConv 75416aa93f'); };
+$f_75416aa93f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 2;
+};
 $f_2beaacd6d4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 100;
 };
@@ -15,9 +17,9 @@ $f_05a61fd4e2 = static function ($val, ExifTool $self, array &$vals, array $prt,
 };
 $f_e1b21e5266 = static function (mixed ...$args) { throw new NotPorted('ValueConv e1b21e5266'); };
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
-$d_3 = null /* circular reference */;
+$d_1 = [0 => 'Off', 1 => 'On'];
+$d_2 = [0 => 'No', 1 => 'Yes'];
+$d_3 = [0 => 'RGB', 1 => 'Red', 2 => 'Green', 3 => 'Blue', 4 => 'Yellow', 5 => 'Magenta', 6 => 'Cyan'];
 
 return [
     'load' => [

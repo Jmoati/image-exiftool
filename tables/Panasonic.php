@@ -28,6 +28,7 @@ $f_d1af7138dd = static function ($val, $flag, $conv) {
 $f_937d045758 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($vals[0] ?? null) . ' ' . Perl::str($vals[1] ?? null) . ' ' . Perl::str($vals[2] ?? null);
 };
+$f_aa6671e067 = static function (mixed ...$args) { throw new NotPorted('code:OTHER aa6671e067'); };
 $f_d534348227 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ((Perl::int($val) >> 2) & 0xffff) . ' ' . (Perl::int($val) & 0x3);
 };
@@ -313,8 +314,69 @@ $f_fb22b883e3 = static function ($val, ExifTool $self, array &$vals, array $prt,
     return Perl::sprintf('%s:%s:%s %s:%s:%s.%s', ...Perl::unpack('H4H2H2H2H2H2H2', $val));
 };
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
+$d_1 = [
+    1 => 'Elmarit-M 21mm f/2.8',
+    3 => 'Elmarit-M 28mm f/2.8 (III)',
+    4 => 'Tele-Elmarit-M 90mm f/2.8 (II)',
+    5 => 'Summilux-M 50mm f/1.4 (II)',
+    6 => 'Summicron-M 35mm f/2 (IV)',
+    7 => 'Summicron-M 90mm f/2 (II)',
+    9 => 'Elmarit-M 135mm f/2.8 (I/II)',
+    11 => 'Summaron-M 28mm f/5.6',
+    12 => 'Thambar-M 90mm f/2.2',
+    16 => 'Tri-Elmar-M 16-18-21mm f/4 ASPH.',
+    23 => 'Summicron-M 50mm f/2 (III)',
+    24 => 'Elmarit-M 21mm f/2.8 ASPH.',
+    25 => 'Elmarit-M 24mm f/2.8 ASPH.',
+    26 => 'Summicron-M 28mm f/2 ASPH.',
+    27 => 'Elmarit-M 28mm f/2.8 (IV)',
+    28 => 'Elmarit-M 28mm f/2.8 ASPH.',
+    29 => 'Summilux-M 35mm f/1.4 ASPH.',
+    30 => 'Summicron-M 35mm f/2 ASPH.',
+    31 => 'Noctilux-M 50mm f/1',
+    32 => 'Summilux-M 50mm f/1.4 ASPH.',
+    33 => 'Summicron-M 50mm f/2 (IV, V)',
+    34 => 'Elmar-M 50mm f/2.8',
+    35 => 'Summilux-M 75mm f/1.4',
+    36 => 'Apo-Summicron-M 75mm f/2 ASPH.',
+    37 => 'Apo-Summicron-M 90mm f/2 ASPH.',
+    38 => 'Elmarit-M 90mm f/2.8',
+    39 => 'Macro-Elmar-M 90mm f/4',
+    40 => 'Macro-Adapter M',
+    41 => 'Apo-Summicron-M 50mm f/2 ASPH.',
+    42 => 'Tri-Elmar-M 28-35-50mm f/4 ASPH.',
+    43 => 'Summarit-M 35mm f/2.5',
+    44 => 'Summarit-M 50mm f/2.5',
+    45 => 'Summarit-M 75mm f/2.5',
+    46 => 'Summarit-M 90mm f/2.5',
+    47 => 'Summilux-M 21mm f/1.4 ASPH.',
+    48 => 'Summilux-M 24mm f/1.4 ASPH.',
+    49 => 'Noctilux-M 50mm f/0.95 ASPH.',
+    50 => 'Elmar-M 24mm f/3.8 ASPH.',
+    51 => 'Super-Elmar-M 21mm f/3.4 Asph',
+    52 => 'Apo-Telyt-M 18mm f/3.8 ASPH.',
+    53 => 'Apo-Telyt-M 135mm f/3.4',
+    58 => 'Noctilux-M 75mm f/1.25 ASPH.',
+    '0 0' => 'Uncoded lens',
+    '16 1' => 'Tri-Elmar-M 16-18-21mm f/4 ASPH. (at 16mm)',
+    '16 2' => 'Tri-Elmar-M 16-18-21mm f/4 ASPH. (at 18mm)',
+    '16 3' => 'Tri-Elmar-M 16-18-21mm f/4 ASPH. (at 21mm)',
+    '29 0' => 'Summilux-M 35mm f/1.4 ASPHERICAL',
+    '31 0' => 'Noctilux-M 50mm f/1.2',
+    '39 0' => 'Tele-Elmar-M 135mm f/4 (II)',
+    '41 3' => 'Apo-Summicron-M 50mm f/2 ASPH.',
+    '42 1' => 'Tri-Elmar-M 28-35-50mm f/4 ASPH. (at 28mm)',
+    '42 2' => 'Tri-Elmar-M 28-35-50mm f/4 ASPH. (at 35mm)',
+    '42 3' => 'Tri-Elmar-M 28-35-50mm f/4 ASPH. (at 50mm)',
+    '51 2' => 'Super-Elmar-M 14mm f/3.8 Asph',
+    '53 2' => 'Apo-Telyt-M 135mm f/3.4',
+    '53 3' => 'Apo-Summicron-M 50mm f/2 (VI)',
+    '6 0' => 'Summilux-M 35mm f/1.4',
+    '9 0' => 'Apo-Telyt-M 135mm f/3.4',
+    'Notes' => "\x0a        the LensType value is obtained by splitting the stored value into 2\x0a        integers:  The stored value divided by 4, and its lower 2 bits.  The second\x0a        number is used only if necessary to identify certain manually coded lenses\x0a        on the M9, or the focal length of some multi-focal lenses.\x0a    ",
+    'OTHER' => $f_aa6671e067,
+];
+$d_2 = [0 => 'Normal', 'OTHER' => 'Image\\ExifTool\\Exif::PrintParameter'];
 
 return [
     'load' => [

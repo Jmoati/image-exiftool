@@ -26,8 +26,30 @@ $f_cf49427e8a = static function ($val, ExifTool $self, array &$vals, array $prt,
     return XMP::ConvertXMPDate($val);
 };
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
+$d_1 = [
+    0 => 'Other',
+    1 => '32x32 PNG Icon',
+    2 => 'Other Icon',
+    3 => 'Front Cover',
+    4 => 'Back Cover',
+    5 => 'Leaflet',
+    6 => 'Media',
+    7 => 'Lead Artist',
+    8 => 'Artist',
+    9 => 'Conductor',
+    10 => 'Band',
+    11 => 'Composer',
+    12 => 'Lyricist',
+    13 => 'Recording Studio or Location',
+    14 => 'Recording Session',
+    15 => 'Performance',
+    16 => 'Capture from Movie or Video',
+    17 => 'Bright(ly) Colored Fish',
+    18 => 'Illustration',
+    19 => 'Band Logo',
+    20 => 'Publisher Logo',
+];
+$d_2 = [0 => 'No', 1 => 'Yes'];
 
 return [
     'load' => [

@@ -40,7 +40,7 @@ $f_1f2667c7fa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 };
 $f_03c93132e2 = static function (mixed ...$args) { throw new NotPorted('Condition 03c93132e2'); };
 
-$d_1 = null /* circular reference */;
+$d_1 = [0 => 'Off', 1 => 'On'];
 
 return [
     'load' => [

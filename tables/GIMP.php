@@ -4,8 +4,13 @@
 
 namespace Image\ExifTool;
 
-$f_88dc0fe412 = static function (mixed ...$args) { throw new NotPorted('code:OTHER 88dc0fe412'); };
-$f_c5997c35a7 = static function (mixed ...$args) { throw new NotPorted('RawConv c5997c35a7'); };
+$f_88dc0fe412 = static function ($val, $inv, $conv) {
+    $val = preg_replace('/^v0*/', '', Perl::str($val), 1);
+    return $val;
+};
+$f_c5997c35a7 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->XCFVersion = $val;
+};
 
 return [
     'load' => [

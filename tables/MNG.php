@@ -17,7 +17,14 @@ $f_6ec7688590 = static function ($val, ExifTool $self, array &$vals, array $prt,
     return $val;
 };
 
-$d_1 = null /* circular reference */;
+$d_1 = [
+    0 => 'No Magnification',
+    1 => 'Pixel Replication',
+    2 => 'Linear Interpolation',
+    3 => 'Closest Pixel',
+    4 => 'Color Linear Interpolation and Alpha Closest Pixel',
+    5 => 'Color Closest Pixel and Alpha Linear Interpolation',
+];
 
 return [
     'load' => [

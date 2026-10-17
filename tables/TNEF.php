@@ -16,7 +16,7 @@ $f_b932af580b = static function (mixed ...$args) { throw new NotPorted('RawConv 
 $f_699f763a19 = static function (mixed ...$args) { throw new NotPorted('RawConv 699f763a19'); };
 $f_98b900dca0 = static function (mixed ...$args) { throw new NotPorted('ValueConv 98b900dca0'); };
 
-$d_1 = null /* circular reference */;
+$d_1 = [2 => 'Time'];
 
 return [
     'load' => [

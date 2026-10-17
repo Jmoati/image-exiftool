@@ -15,7 +15,7 @@ $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_8b69d6a61b = static function (mixed ...$args) { throw new NotPorted('ValueConv 8b69d6a61b'); };
 $f_20da16fccd = static function (mixed ...$args) { throw new NotPorted('ValueConv 20da16fccd'); };
 
-$d_1 = null /* circular reference */;
+$d_1 = [2 => 'Time'];
 
 return [
     'load' => [

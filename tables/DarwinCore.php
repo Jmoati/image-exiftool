@@ -7,9 +7,88 @@ namespace Image\ExifTool;
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
+$f_67d4f92774 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return XMP::ConvertXMPDate($val);
+};
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
+$d_1 = [
+    'NAMESPACE' => 'dwc',
+    'STRUCT_NAME' => 'DarwinCore Event',
+    'day' => [
+        'Groups' => [2 => 'Time'],
+        'Writable' => 'integer',
+    ],
+    'earliestDate' => [
+        'Groups' => [2 => 'Time'],
+        'PrintConv' => $f_ae2db35ce3,
+        'Writable' => 'date',
+    ],
+    'endDayOfYear' => [
+        'Groups' => [2 => 'Time'],
+        'Writable' => 'integer',
+    ],
+    'eventDate' => [
+        'Groups' => [2 => 'Time'],
+        'PrintConv' => $f_ae2db35ce3,
+        'Writable' => 'date',
+    ],
+    'eventID' => [
+        'Avoid' => 1,
+    ],
+    'eventRemarks' => [
+        'Writable' => 'lang-alt',
+    ],
+    'eventTime' => [
+        'Groups' => [2 => 'Time'],
+        'PrintConv' => $f_ae2db35ce3,
+        'ValueConv' => $f_67d4f92774,
+        'Writable' => 'string',
+    ],
+    'eventType' => [
+    ],
+    'fieldNotes' => [
+    ],
+    'fieldNumber' => [
+    ],
+    'habitat' => [
+    ],
+    'latestDate' => [
+        'Groups' => [2 => 'Time'],
+        'PrintConv' => $f_ae2db35ce3,
+        'Writable' => 'date',
+    ],
+    'month' => [
+        'Groups' => [2 => 'Time'],
+        'Writable' => 'integer',
+    ],
+    'parentEventID' => [
+    ],
+    'sampleSizeUnit' => [
+    ],
+    'sampleSizeValue' => [
+    ],
+    'samplingEffort' => [
+    ],
+    'samplingProtocol' => [
+    ],
+    'startDayOfYear' => [
+        'Groups' => [2 => 'Time'],
+        'Writable' => 'integer',
+    ],
+    'verbatimEventDate' => [
+        'Groups' => [2 => 'Time'],
+    ],
+    'year' => [
+        'Groups' => [2 => 'Time'],
+        'Writable' => 'integer',
+    ],
+];
+$d_2 = [
+    'NAMESPACE' => 'dwc',
+    'STRUCT_NAME' => 'DarwinCore MaterialSample',
+    'materialSampleID' => [
+    ],
+];
 
 return [
     'load' => [

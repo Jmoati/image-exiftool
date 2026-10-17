@@ -40,9 +40,34 @@ $f_f2b9022b60 = static function (mixed ...$args) { throw new NotPorted('PrintCon
 $f_5feb0860b4 = static function (mixed ...$args) { throw new NotPorted('ValueConv 5feb0860b4'); };
 $f_f8ccc22656 = static function (mixed ...$args) { throw new NotPorted('ValueConv f8ccc22656'); };
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
-$d_3 = null /* circular reference */;
+$d_1 = [
+    0 => 'New',
+    1 => 'New Crescent',
+    2 => 'First Quarter',
+    3 => 'Waxing Gibbous',
+    4 => 'Full',
+    5 => 'Waning Gibbous',
+    6 => 'Last Quarter',
+    7 => 'Old Crescent',
+];
+$d_2 = [
+    0 => 'Sunday',
+    1 => 'Monday',
+    2 => 'Tuesday',
+    3 => 'Wednesday',
+    4 => 'Thursday',
+    5 => 'Friday',
+    6 => 'Saturday',
+];
+$d_3 = [
+    1 => 'Sunday',
+    2 => 'Monday',
+    3 => 'Tuesday',
+    4 => 'Wednesday',
+    5 => 'Thursday',
+    6 => 'Friday',
+    7 => 'Saturday',
+];
 
 return [
     'load' => [

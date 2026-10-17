@@ -4,6 +4,12 @@
 
 namespace Image\ExifTool;
 
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $self->ConvertDateTime($val);
+};
+$f_64552f9356 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::ConvertUnixTime(Perl::num($val) / 1000, 1, 3);
+};
 $f_5df0cbcf9c = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->ProcessGoogleTrailer = $val;
 };
@@ -18,12 +24,6 @@ $f_473c5a1df4 = static function ($val, ExifTool $self, array &$vals, array $prt,
 };
 $f_5817105f7a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1, 'E');
-};
-$f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
-    return $self->ConvertDateTime($val);
-};
-$f_64552f9356 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
-    return ExifTool::ConvertUnixTime(Perl::num($val) / 1000, 1, 3);
 };
 $f_9c417307ae = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return XMP::DecodeBase64($val);
@@ -43,9 +43,65 @@ $f_cab15f4655 = static function ($a, $b) {
     return strcmp($a, $b) <=> 0;
 };
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
-$d_3 = null /* circular reference */;
+$d_1 = [
+    'Application' => [
+    ],
+    'ItemURI' => [
+    ],
+    'NAMESPACE' => ['AppInfo' => 'http://ns.google.com/photos/dd/1.0/appinfo/'],
+    'STRUCT_NAME' => 'Google AppInfo',
+    'Version' => [
+    ],
+];
+$d_2 = [
+    'NAMESPACE' => ['Pose' => 'http://ns.google.com/photos/dd/1.0/pose/'],
+    'PositionX' => [
+        'Groups' => [2 => 'Location'],
+        'Writable' => 'real',
+    ],
+    'PositionY' => [
+        'Groups' => [2 => 'Location'],
+        'Writable' => 'real',
+    ],
+    'PositionZ' => [
+        'Groups' => [2 => 'Location'],
+        'Writable' => 'real',
+    ],
+    'RotationW' => [
+        'Groups' => [2 => 'Location'],
+        'Writable' => 'real',
+    ],
+    'RotationX' => [
+        'Groups' => [2 => 'Location'],
+        'Writable' => 'real',
+    ],
+    'RotationY' => [
+        'Groups' => [2 => 'Location'],
+        'Writable' => 'real',
+    ],
+    'RotationZ' => [
+        'Groups' => [2 => 'Location'],
+        'Writable' => 'real',
+    ],
+    'STRUCT_NAME' => 'Google Pose',
+    'Timestamp' => [
+        'Groups' => [2 => 'Time'],
+        'Name' => 'TimeStamp',
+        'PrintConv' => $f_ae2db35ce3,
+        'ValueConv' => $f_64552f9356,
+        'Writable' => 'integer',
+    ],
+];
+$d_3 = [
+    'Manufacturer' => [
+    ],
+    'Model' => [
+    ],
+    'NAMESPACE' => ['VendorInfo' => 'http://ns.google.com/photos/dd/1.0/vendorinfo/'],
+    'Notes' => [
+    ],
+    'STRUCT_NAME' => 'Google VendorInfo',
+];
 
 return [
     'load' => [

@@ -51,12 +51,14 @@ $f_732e29c6b9 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_870d813f22 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', '.');
 };
+$f_6fef8e6758 = static function (mixed ...$args) { throw new NotPorted('code:OTHER 6fef8e6758'); };
 $f_017f96b76a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1);
 };
 $f_d721e23504 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDegrees($val);
 };
+$f_50c8d94b43 = static function (mixed ...$args) { throw new NotPorted('code:OTHER 50c8d94b43'); };
 $f_eae5f4d018 = static function ($val, $inv, $conv) {
     if (!($inv && preg_match('/^([-+0-9])/', Perl::str($val), $m))) {
         return null;
@@ -85,8 +87,8 @@ $f_d9fec15555 = static function ($val, ExifTool $self, array &$vals, array $prt,
     return Perl::str($val).' m';
 };
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
+$d_1 = ['N' => 'North', 'OTHER' => $f_6fef8e6758, 'S' => 'South'];
+$d_2 = ['E' => 'East', 'OTHER' => $f_50c8d94b43, 'W' => 'West'];
 
 return [
     'load' => [

@@ -108,7 +108,7 @@ $f_35e7d89ac6 = static function ($val, ExifTool $self, array &$vals, array $prt,
     return Perl::str($val).' %';
 };
 
-$d_1 = null /* circular reference */;
+$d_1 = ['N' => 'No', 'Y' => 'Yes'];
 
 return [
     'load' => [

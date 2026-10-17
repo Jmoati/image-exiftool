@@ -62,7 +62,7 @@ $f_13a1c2324c = static function (mixed ...$args) { throw new NotPorted('Conditio
 $f_d5a271bc6c = static function (mixed ...$args) { throw new NotPorted('Condition d5a271bc6c'); };
 $f_7038c3de18 = static function (mixed ...$args) { throw new NotPorted('Condition 7038c3de18'); };
 
-$d_1 = null /* circular reference */;
+$d_1 = [0 => 'No', 1 => 'Yes'];
 
 return [
     'load' => [

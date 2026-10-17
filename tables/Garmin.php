@@ -7,7 +7,9 @@ namespace Image\ExifTool;
 $f_22d6c61b16 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' s';
 };
-$f_dae0ac6a80 = static function (mixed ...$args) { throw new NotPorted('ValueConv dae0ac6a80'); };
+$f_dae0ac6a80 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 25;
+};
 $f_7927f757cc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).' ms';
 };
@@ -17,45 +19,75 @@ $f_7b446e214d = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_d75c87b3cd = static function (mixed ...$args) { throw new NotPorted('ValueConv d75c87b3cd'); };
+$f_d75c87b3cd = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::ConvertUnixTime(Perl::num($val) + 631065600);
+};
 $f_ddae2f7edc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 10;
 };
-$f_bddf7d7a80 = static function (mixed ...$args) { throw new NotPorted('PrintConv bddf7d7a80'); };
-$f_c910033811 = static function (mixed ...$args) { throw new NotPorted('ValueConv c910033811'); };
-$f_02db35c41e = static function (mixed ...$args) { throw new NotPorted('PrintConv 02db35c41e'); };
-$f_247c6ab0fc = static function (mixed ...$args) { throw new NotPorted('PrintConv 247c6ab0fc'); };
-$f_dde6d8f17e = static function (mixed ...$args) { throw new NotPorted('PrintConv dde6d8f17e'); };
-$f_b7ce05d51e = static function (mixed ...$args) { throw new NotPorted('PrintConv b7ce05d51e'); };
+$f_bddf7d7a80 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' ml/kg/min';
+};
+$f_c910033811 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 18724.57143;
+};
+$f_02db35c41e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' min';
+};
+$f_247c6ab0fc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' bpm';
+};
+$f_dde6d8f17e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' watts';
+};
+$f_b7ce05d51e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' km/h';
+};
 $f_d9fec15555 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).' m';
 };
-$f_8cca488af0 = static function (mixed ...$args) { throw new NotPorted('ValueConv 8cca488af0'); };
-$f_23e7bf3bd0 = static function (mixed ...$args) { throw new NotPorted('ValueConv 23e7bf3bd0'); };
+$f_8cca488af0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::ConvertUnixTime(Perl::num($val) + 631065600, 1);
+};
+$f_23e7bf3bd0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 32768;
+};
 $f_2beaacd6d4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 100;
 };
-$f_fc23989e1e = static function (mixed ...$args) { throw new NotPorted('PrintConv fc23989e1e'); };
+$f_fc23989e1e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' kg';
+};
 $f_35e7d89ac6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).' %';
 };
 $f_be71053a96 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' mm';
 };
-$f_34bf0181c6 = static function (mixed ...$args) { throw new NotPorted('ValueConv 34bf0181c6'); };
-$f_03ff220c86 = static function (mixed ...$args) { throw new NotPorted('PrintConv 03ff220c86'); };
-$f_69c1f7207b = static function (mixed ...$args) { throw new NotPorted('PrintConv 69c1f7207b'); };
+$f_34bf0181c6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 2 - -110;
+};
+$f_03ff220c86 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' mmHg';
+};
+$f_69c1f7207b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' rpm';
+};
 $f_98f3ef4426 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).' m/s';
 };
-$f_ad15440332 = static function (mixed ...$args) { throw new NotPorted('PrintConv ad15440332'); };
+$f_ad15440332 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' gr';
+};
 $f_5f55a3e4a5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1, 'N');
 };
 $f_3f9f3a8abd = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Perl::num($val) == 0x7fffffff ? null : $val;
 };
-$f_af4468d393 = static function (mixed ...$args) { throw new NotPorted('ValueConv af4468d393'); };
+$f_af4468d393 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) * 180 / 0x80000000;
+};
 $f_5817105f7a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1, 'E');
 };
@@ -65,111 +97,1137 @@ $f_3fbe14a0d1 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_797e422167 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 256;
 };
-$f_37ed05e740 = static function (mixed ...$args) { throw new NotPorted('PrintConv 37ed05e740'); };
-$f_845b585b62 = static function (mixed ...$args) { throw new NotPorted('PrintConv 845b585b62'); };
+$f_37ed05e740 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' steps';
+};
+$f_845b585b62 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' minutes';
+};
 $f_98770fe8c4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' C';
 };
-$f_51abba4170 = static function (mixed ...$args) { throw new NotPorted('ValueConv 51abba4170'); };
-$f_f88f02c843 = static function (mixed ...$args) { throw new NotPorted('PrintConv f88f02c843'); };
-$f_c61dcf84c7 = static function (mixed ...$args) { throw new NotPorted('PrintConv c61dcf84c7'); };
-$f_169a668c1f = static function (mixed ...$args) { throw new NotPorted('PrintConv 169a668c1f'); };
-$f_04c10f1ad7 = static function (mixed ...$args) { throw new NotPorted('PrintConv 04c10f1ad7'); };
-$f_5b27eaad2c = static function (mixed ...$args) { throw new NotPorted('PrintConv 5b27eaad2c'); };
-$f_6b908992c2 = static function (mixed ...$args) { throw new NotPorted('PrintConv 6b908992c2'); };
-$f_31f4111f0e = static function (mixed ...$args) { throw new NotPorted('ValueConv 31f4111f0e'); };
-$f_e9353e1974 = static function (mixed ...$args) { throw new NotPorted('ValueConv e9353e1974'); };
-$f_273245a52b = static function (mixed ...$args) { throw new NotPorted('ValueConv 273245a52b'); };
+$f_51abba4170 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 1;
+};
+$f_f88f02c843 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' mps';
+};
+$f_c61dcf84c7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' kg/m^3';
+};
+$f_169a668c1f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' OTUs';
+};
+$f_04c10f1ad7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' bar/min';
+};
+$f_5b27eaad2c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' L/min';
+};
+$f_6b908992c2 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' bytes';
+};
+$f_31f4111f0e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 5 - 500;
+};
+$f_e9353e1974 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) * 3.6 / 1000;
+};
+$f_273245a52b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return 1;
+};
 $f_a1aaa6b70c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 128;
 };
-$f_ab319c62a7 = static function (mixed ...$args) { throw new NotPorted('PrintConv ab319c62a7'); };
-$f_f05c36da53 = static function (mixed ...$args) { throw new NotPorted('PrintConv f05c36da53'); };
-$f_602b0103a3 = static function (mixed ...$args) { throw new NotPorted('PrintConv 602b0103a3'); };
-$f_d9b65f3da5 = static function (mixed ...$args) { throw new NotPorted('PrintConv d9b65f3da5'); };
+$f_ab319c62a7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' 1/32768 s';
+};
+$f_f05c36da53 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' cycles';
+};
+$f_602b0103a3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' kcal';
+};
+$f_d9b65f3da5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' lengths';
+};
 $f_6cb1df5974 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).' J';
 };
-$f_75416aa93f = static function (mixed ...$args) { throw new NotPorted('ValueConv 75416aa93f'); };
-$f_e7cd192ff3 = static function (mixed ...$args) { throw new NotPorted('PrintConv e7cd192ff3'); };
-$f_ae99a92e75 = static function (mixed ...$args) { throw new NotPorted('PrintConv ae99a92e75'); };
-$f_865a581a27 = static function (mixed ...$args) { throw new NotPorted('PrintConv 865a581a27'); };
-$f_a1bcc8b03d = static function (mixed ...$args) { throw new NotPorted('PrintConv a1bcc8b03d'); };
-$f_ec432c5038 = static function (mixed ...$args) { throw new NotPorted('PrintConv ec432c5038'); };
-$f_693fa6f086 = static function (mixed ...$args) { throw new NotPorted('PrintConv 693fa6f086'); };
-$f_4f4425d25d = static function (mixed ...$args) { throw new NotPorted('PrintConv 4f4425d25d'); };
-$f_aa1caa5748 = static function (mixed ...$args) { throw new NotPorted('PrintConv aa1caa5748'); };
-$f_d7515779a3 = static function (mixed ...$args) { throw new NotPorted('PrintConv d7515779a3'); };
-$f_aa3da9f244 = static function (mixed ...$args) { throw new NotPorted('PrintConv aa3da9f244'); };
-$f_40d82f8aa5 = static function (mixed ...$args) { throw new NotPorted('PrintConv 40d82f8aa5'); };
-$f_165be7f8d0 = static function (mixed ...$args) { throw new NotPorted('PrintConv 165be7f8d0'); };
-$f_661e601246 = static function (mixed ...$args) { throw new NotPorted('PrintConv 661e601246'); };
-$f_a233567def = static function (mixed ...$args) { throw new NotPorted('PrintConv a233567def'); };
-$f_146b9813fc = static function (mixed ...$args) { throw new NotPorted('PrintConv 146b9813fc'); };
+$f_75416aa93f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 2;
+};
+$f_e7cd192ff3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' Breaths/min';
+};
+$f_ae99a92e75 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' kGrit';
+};
+$f_865a581a27 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' Flow';
+};
+$f_a1bcc8b03d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' cm/s';
+};
+$f_ec432c5038 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' N';
+};
+$f_693fa6f086 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' strokes';
+};
+$f_4f4425d25d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' strokes/min';
+};
+$f_aa1caa5748 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' mL/kg/min';
+};
+$f_d7515779a3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' kcal / min';
+};
+$f_aa3da9f244 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' 100 * m';
+};
+$f_40d82f8aa5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' 2 * cycles (steps)';
+};
+$f_165be7f8d0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' kcal / day';
+};
+$f_661e601246 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' counts';
+};
+$f_a233567def = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' g/dL';
+};
+$f_146b9813fc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' Pa';
+};
 $f_17b0d82278 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' km';
 };
-$f_c3e621b5c8 = static function (mixed ...$args) { throw new NotPorted('PrintConv c3e621b5c8'); };
-$f_9c39ec55b4 = static function (mixed ...$args) { throw new NotPorted('PrintConv 9c39ec55b4'); };
-$f_89834460d7 = static function (mixed ...$args) { throw new NotPorted('PrintConv 89834460d7'); };
-$f_db82c564ff = static function (mixed ...$args) { throw new NotPorted('PrintConv db82c564ff'); };
-$f_b4dd427993 = static function (mixed ...$args) { throw new NotPorted('PrintConv b4dd427993'); };
-$f_eaf195fed1 = static function (mixed ...$args) { throw new NotPorted('PrintConv eaf195fed1'); };
-$f_273c8a9ece = static function (mixed ...$args) { throw new NotPorted('ValueConv 273c8a9ece'); };
-$f_d18d77bbe3 = static function (mixed ...$args) { throw new NotPorted('PrintConv d18d77bbe3'); };
-$f_219d94f5a5 = static function (mixed ...$args) { throw new NotPorted('PrintConv 219d94f5a5'); };
-$f_de4e3ca33e = static function (mixed ...$args) { throw new NotPorted('ValueConv de4e3ca33e'); };
-$f_e31920c33d = static function (mixed ...$args) { throw new NotPorted('PrintConv e31920c33d'); };
-$f_eae517982e = static function (mixed ...$args) { throw new NotPorted('PrintConv eae517982e'); };
-$f_2642205c64 = static function (mixed ...$args) { throw new NotPorted('PrintConv 2642205c64'); };
-$f_c43dc31b67 = static function (mixed ...$args) { throw new NotPorted('ValueConv c43dc31b67'); };
-$f_b22b3181bf = static function (mixed ...$args) { throw new NotPorted('ValueConv b22b3181bf'); };
-$f_988be9a73f = static function (mixed ...$args) { throw new NotPorted('ValueConv 988be9a73f'); };
-$f_87fc1b58fb = static function (mixed ...$args) { throw new NotPorted('PrintConv 87fc1b58fb'); };
-$f_7a6398931a = static function (mixed ...$args) { throw new NotPorted('PrintConv 7a6398931a'); };
-$f_61fa93fc3c = static function (mixed ...$args) { throw new NotPorted('ValueConv 61fa93fc3c'); };
-$f_10bdb52dc2 = static function (mixed ...$args) { throw new NotPorted('PrintConv 10bdb52dc2'); };
-$f_bd7ab35ef5 = static function (mixed ...$args) { throw new NotPorted('PrintConv bd7ab35ef5'); };
-$f_7f07c57585 = static function (mixed ...$args) { throw new NotPorted('ValueConv 7f07c57585'); };
-$f_23301f11c1 = static function (mixed ...$args) { throw new NotPorted('PrintConv 23301f11c1'); };
+$f_c3e621b5c8 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' depends on sensor';
+};
+$f_9c39ec55b4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' breaths/min';
+};
+$f_89834460d7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' tss';
+};
+$f_db82c564ff = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' if';
+};
+$f_b4dd427993 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' strokes/lap';
+};
+$f_eaf195fed1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' strokes/length';
+};
+$f_273c8a9ece = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 65536;
+};
+$f_d18d77bbe3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' ml';
+};
+$f_219d94f5a5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' mS';
+};
+$f_de4e3ca33e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 16;
+};
+$f_e31920c33d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' bar';
+};
+$f_eae517982e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' L';
+};
+$f_2642205c64 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' m/h';
+};
+$f_c43dc31b67 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 27.778;
+};
+$f_b22b3181bf = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 1000000;
+};
+$f_988be9a73f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 292.5714286;
+};
+$f_87fc1b58fb = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' yrs';
+};
+$f_7a6398931a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' years';
+};
+$f_61fa93fc3c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) - -1900;
+};
+$f_10bdb52dc2 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' degrees';
+};
+$f_bd7ab35ef5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' kcal/day';
+};
+$f_7f07c57585 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 4;
+};
+$f_23301f11c1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' kg/m^2';
+};
 
-$d_1 = null /* circular reference */;
-$d_2 = null /* circular reference */;
-$d_3 = null /* circular reference */;
-$d_4 = null /* circular reference */;
-$d_5 = null /* circular reference */;
-$d_6 = null /* circular reference */;
-$d_7 = null /* circular reference */;
-$d_8 = null /* circular reference */;
-$d_9 = null /* circular reference */;
-$d_10 = null /* circular reference */;
-$d_11 = null /* circular reference */;
-$d_12 = null /* circular reference */;
-$d_13 = null /* circular reference */;
-$d_14 = null /* circular reference */;
-$d_15 = null /* circular reference */;
-$d_16 = null /* circular reference */;
-$d_17 = null /* circular reference */;
-$d_18 = null /* circular reference */;
-$d_19 = null /* circular reference */;
-$d_20 = null /* circular reference */;
-$d_21 = null /* circular reference */;
-$d_22 = null /* circular reference */;
-$d_23 = null /* circular reference */;
-$d_24 = null /* circular reference */;
-$d_25 = null /* circular reference */;
-$d_26 = null /* circular reference */;
-$d_27 = null /* circular reference */;
-$d_28 = null /* circular reference */;
-$d_29 = null /* circular reference */;
-$d_30 = null /* circular reference */;
-$d_31 = null /* circular reference */;
-$d_32 = null /* circular reference */;
-$d_33 = null /* circular reference */;
-$d_34 = null /* circular reference */;
-$d_35 = null /* circular reference */;
-$d_36 = null /* circular reference */;
-$d_37 = null /* circular reference */;
+$d_1 = [
+    0 => 'Timer',
+    3 => 'Workout',
+    4 => 'Workout Step',
+    5 => 'Power Down',
+    6 => 'Power Up',
+    7 => 'Off Course',
+    8 => 'Session',
+    9 => 'Lap',
+    10 => 'Course Point',
+    11 => 'Battery',
+    12 => 'Virtual Partner Pace',
+    13 => 'HR High Alert',
+    14 => 'HR Low Alert',
+    15 => 'Speed High Alert',
+    16 => 'Speed Low Alert',
+    17 => 'Cad High Alert',
+    18 => 'Cad Low Alert',
+    19 => 'Power High Alert',
+    20 => 'Power Low Alert',
+    21 => 'Recovery HR',
+    22 => 'Battery Low',
+    23 => 'Time Duration Alert',
+    24 => 'Distance Duration Alert',
+    25 => 'Calorie Duration Alert',
+    26 => 'Activity',
+    27 => 'Fitness Equipment',
+    28 => 'Length',
+    32 => 'User Marker',
+    33 => 'Sport Point',
+    36 => 'Calibration',
+    39 => 'Performance Condition Alert',
+    42 => 'Front Gear Change',
+    43 => 'Rear Gear Change',
+    44 => 'Rider Position Change',
+    45 => 'Elev High Alert',
+    46 => 'Elev Low Alert',
+    47 => 'Comm Timeout',
+    54 => 'Auto Activity Detect',
+    56 => 'Dive Alert',
+    57 => 'Dive Gas Switched',
+    71 => 'Tank Pressure Reserve',
+    72 => 'Tank Pressure Critical',
+    73 => 'Tank Lost',
+    74 => 'Sleep Event',
+    75 => 'Radar Threat Alert',
+    76 => 'Tank Battery Low',
+    81 => 'Tank Pod Connected',
+    82 => 'Tank Pod Disconnected',
+];
+$d_2 = [
+    0 => 'Start',
+    1 => 'Stop',
+    2 => 'Consecutive Depreciated',
+    3 => 'Marker',
+    4 => 'Stop All',
+    5 => 'Begin Depreciated',
+    6 => 'End Depreciated',
+    7 => 'End All Depreciated',
+    8 => 'Stop Disable',
+    9 => 'Stop Disable All',
+];
+$d_3 = [
+    0 => 'Generic',
+    1 => 'Running',
+    2 => 'Cycling',
+    3 => 'Transition',
+    4 => 'Fitness Equipment',
+    5 => 'Swimming',
+    6 => 'Basketball',
+    7 => 'Soccer',
+    8 => 'Tennis',
+    9 => 'American Football',
+    10 => 'Training',
+    11 => 'Walking',
+    12 => 'Cross Country Skiing',
+    13 => 'Alpine Skiing',
+    14 => 'Snowboarding',
+    15 => 'Rowing',
+    16 => 'Mountaineering',
+    17 => 'Hiking',
+    18 => 'Multisport',
+    19 => 'Paddling',
+    20 => 'Flying',
+    21 => 'E Biking',
+    22 => 'Motorcycling',
+    23 => 'Boating',
+    24 => 'Driving',
+    25 => 'Golf',
+    26 => 'Hang Gliding',
+    27 => 'Horseback Riding',
+    28 => 'Hunting',
+    29 => 'Fishing',
+    30 => 'Inline Skating',
+    31 => 'Rock Climbing',
+    32 => 'Sailing',
+    33 => 'Ice Skating',
+    34 => 'Sky Diving',
+    35 => 'Snowshoeing',
+    36 => 'Snowmobiling',
+    37 => 'Stand Up Paddleboarding',
+    38 => 'Surfing',
+    39 => 'Wakeboarding',
+    40 => 'Water Skiing',
+    41 => 'Kayaking',
+    42 => 'Rafting',
+    43 => 'Windsurfing',
+    44 => 'Kitesurfing',
+    45 => 'Tactical',
+    46 => 'Jumpmaster',
+    47 => 'Boxing',
+    48 => 'Floor Climbing',
+    49 => 'Baseball',
+    53 => 'Diving',
+    56 => 'Shooting',
+    58 => 'Winter Sport',
+    59 => 'Grinding',
+    62 => 'Hiit',
+    63 => 'Video Gaming',
+    64 => 'Racket',
+    65 => 'Wheelchair Push Walk',
+    66 => 'Wheelchair Push Run',
+    67 => 'Meditation',
+    68 => 'Para Sport',
+    69 => 'Disc Golf',
+    70 => 'Team Sport',
+    71 => 'Cricket',
+    72 => 'Rugby',
+    73 => 'Hockey',
+    74 => 'Lacrosse',
+    75 => 'Volleyball',
+    76 => 'Water Tubing',
+    77 => 'Wakesurfing',
+    78 => 'Water Sport',
+    79 => 'Archery',
+    80 => 'Mixed Martial Arts',
+    81 => 'Motor Sports',
+    82 => 'Snorkeling',
+    83 => 'Dance',
+    84 => 'Jump Rope',
+    85 => 'Pool Apnea',
+    86 => 'Mobility',
+    87 => 'Geocaching',
+    88 => 'Canoeing',
+    254 => 'All',
+];
+$d_4 = [
+    0 => 'No Benefit',
+    1 => 'Recovery',
+    2 => 'Base',
+    3 => 'Tempo',
+    4 => 'Threshold',
+    5 => 'VO2 Max',
+    6 => 'Anaerobic',
+    7 => 'Sprint',
+];
+$d_5 = [0 => 'Off', 1 => 'On', 2 => 'Auto'];
+$d_6 = [0 => 'Off', 1 => 'Tone', 2 => 'Vibration', 3 => 'Tone And Vibe'];
+$d_7 = [0 => 'No', 1 => 'Yes'];
+$d_8 = [
+    0 => 'Generic',
+    1 => 'Treadmill',
+    2 => 'Street',
+    3 => 'Trail',
+    4 => 'Track',
+    5 => 'Spin',
+    6 => 'Indoor Cycling',
+    7 => 'Road',
+    8 => 'Mountain',
+    9 => 'Downhill',
+    10 => 'Recumbent',
+    11 => 'Cyclocross',
+    12 => 'Hand Cycling',
+    13 => 'Track Cycling',
+    14 => 'Indoor Rowing',
+    15 => 'Elliptical',
+    16 => 'Stair Climbing',
+    17 => 'Lap Swimming',
+    18 => 'Open Water',
+    19 => 'Flexibility Training',
+    20 => 'Strength Training',
+    21 => 'Warm Up',
+    22 => 'Match',
+    23 => 'Exercise',
+    24 => 'Challenge',
+    25 => 'Indoor Skiing',
+    26 => 'Cardio Training',
+    27 => 'Indoor Walking',
+    28 => 'E-Bike Fitness',
+    29 => 'Bmx',
+    30 => 'Casual Walking',
+    31 => 'Speed Walking',
+    32 => 'Bike To Run Transition',
+    33 => 'Run To Bike Transition',
+    34 => 'Swim To Bike Transition',
+    35 => 'Atv',
+    36 => 'Motocross',
+    37 => 'Backcountry',
+    38 => 'Resort',
+    39 => 'Rc Drone',
+    40 => 'Wingsuit',
+    41 => 'Whitewater',
+    42 => 'Skate Skiing',
+    43 => 'Yoga',
+    44 => 'Pilates',
+    45 => 'Indoor Running',
+    46 => 'Gravel Cycling',
+    47 => 'E-Bike Mountain',
+    48 => 'Commuting',
+    49 => 'Mixed Surface',
+    50 => 'Navigate',
+    51 => 'Track Me',
+    52 => 'Map',
+    53 => 'Single Gas Diving',
+    54 => 'Multi Gas Diving',
+    55 => 'Gauge Diving',
+    56 => 'Apnea Diving',
+    57 => 'Apnea Hunting',
+    58 => 'Virtual Activity',
+    59 => 'Obstacle',
+    62 => 'Breathing',
+    63 => 'CCR Diving',
+    65 => 'Sail Race',
+    66 => 'Expedition',
+    67 => 'Ultra',
+    68 => 'Indoor Climbing',
+    69 => 'Bouldering',
+    70 => 'Hiit',
+    71 => 'Indoor Grinding',
+    72 => 'Hunting With Dogs',
+    73 => 'Amrap',
+    74 => 'Emom',
+    75 => 'Tabata',
+    77 => 'Esport',
+    78 => 'Triathlon',
+    79 => 'Duathlon',
+    80 => 'Brick',
+    81 => 'Swim Run',
+    82 => 'Adventure Race',
+    83 => 'Trucker Workout',
+    84 => 'Pickleball',
+    85 => 'Padel',
+    86 => 'Indoor Wheelchair Walk',
+    87 => 'Indoor Wheelchair Run',
+    88 => 'Indoor Hand Cycling',
+    90 => 'Field',
+    91 => 'Ice',
+    92 => 'Ultimate',
+    93 => 'Platform',
+    94 => 'Squash',
+    95 => 'Badminton',
+    96 => 'Racquetball',
+    97 => 'Table Tennis',
+    98 => 'Overland',
+    99 => 'Trolling Motor',
+    110 => 'Fly Canopy',
+    111 => 'Fly Paraglide',
+    112 => 'Fly Paramotor',
+    113 => 'Fly Pressurized',
+    114 => 'Fly Navigate',
+    115 => 'Fly Timer',
+    116 => 'Fly Altimeter',
+    117 => 'Fly Wx',
+    118 => 'Fly Vfr',
+    119 => 'Fly Ifr',
+    121 => 'Dynamic Apnea',
+    123 => 'Enduro',
+    124 => 'Rucking',
+    125 => 'Rally',
+    126 => 'Pool Triathlon',
+    127 => 'E-Bike Enduro',
+    254 => 'All',
+];
+$d_9 = [0 => 'Expired', 1 => 'Current'];
+$d_10 = [
+    'BITMASK' => [
+        0 => 'Interval',
+        1 => 'Custom',
+        2 => 'Fitness Equipment',
+        3 => 'Firstbeat',
+        4 => 'New Leaf',
+        5 => 'Tcx',
+        7 => 'Speed',
+        8 => 'Heart Rate',
+        9 => 'Distance',
+        10 => 'Cadence',
+        11 => 'Power',
+        12 => 'Grade',
+        13 => 'Resistance',
+        14 => 'Protected',
+    ],
+];
+$d_11 = [
+    1 => 'Garmin',
+    2 => 'Garmin FR405 ANTFS',
+    3 => 'Zephyr',
+    4 => 'Dayton',
+    5 => 'IDT',
+    6 => 'SRM',
+    7 => 'Quarq',
+    8 => 'Ibike',
+    9 => 'Saris',
+    10 => 'Spark Hk',
+    11 => 'Tanita',
+    12 => 'Echowell',
+    13 => 'Dynastream Oem',
+    14 => 'Nautilus',
+    15 => 'Dynastream',
+    16 => 'Timex',
+    17 => 'Metrigear',
+    18 => 'Xelic',
+    19 => 'Beurer',
+    20 => 'Cardiosport',
+    21 => 'A And D',
+    22 => 'Hmm',
+    23 => 'Suunto',
+    24 => 'Thita Elektronik',
+    25 => 'Gpulse',
+    26 => 'Clean Mobile',
+    27 => 'Pedal Brain',
+    28 => 'Peaksware',
+    29 => 'Saxonar',
+    30 => 'Lemond Fitness',
+    31 => 'Dexcom',
+    32 => 'Wahoo Fitness',
+    33 => 'Octane Fitness',
+    34 => 'Archinoetics',
+    35 => 'The Hurt Box',
+    36 => 'Citizen Systems',
+    37 => 'Magellan',
+    38 => 'Osynce',
+    39 => 'Holux',
+    40 => 'Concept2',
+    41 => 'Shimano',
+    42 => 'One Giant Leap',
+    43 => 'Ace Sensor',
+    44 => 'Brim Brothers',
+    45 => 'Xplova',
+    46 => 'Perception Digital',
+    47 => 'Bf1systems',
+    48 => 'Pioneer',
+    49 => 'Spantec',
+    50 => 'Metalogics',
+    51 => '4iiiis',
+    52 => 'Seiko Epson',
+    53 => 'Seiko Epson Oem',
+    54 => 'Ifor Powell',
+    55 => 'Maxwell Guider',
+    56 => 'Star Trac',
+    57 => 'Breakaway',
+    58 => 'Alatech Technology Ltd',
+    59 => 'Mio Technology Europe',
+    60 => 'Rotor',
+    61 => 'Geonaute',
+    62 => 'ID Bike',
+    63 => 'Specialized',
+    64 => 'Wtek',
+    65 => 'Physical Enterprises',
+    66 => 'North Pole Engineering',
+    67 => 'Bkool',
+    68 => 'Cateye',
+    69 => 'Stages Cycling',
+    70 => 'Sigmasport',
+    71 => 'Tomtom',
+    72 => 'Peripedal',
+    73 => 'Wattbike',
+    76 => 'Moxy',
+    77 => 'Ciclosport',
+    78 => 'Powerbahn',
+    79 => 'Acorn Projects Aps',
+    80 => 'Lifebeam',
+    81 => 'Bontrager',
+    82 => 'Wellgo',
+    83 => 'Scosche',
+    84 => 'Magura',
+    85 => 'Woodway',
+    86 => 'Elite',
+    87 => 'Nielsen Kellerman',
+    88 => 'Dk City',
+    89 => 'Tacx',
+    90 => 'Direction Technology',
+    91 => 'Magtonic',
+    92 => '1partcarbon',
+    93 => 'Inside Ride Technologies',
+    94 => 'Sound Of Motion',
+    95 => 'Stryd',
+    96 => 'ICG',
+    97 => 'MiPulse',
+    98 => 'BSX Athletics',
+    99 => 'Look',
+    100 => 'Campagnolo Srl',
+    101 => 'Body Bike Smart',
+    102 => 'Praxisworks',
+    103 => 'Limits Technology',
+    104 => 'Topaction Technology',
+    105 => 'Cosinuss',
+    106 => 'Fitcare',
+    107 => 'Magene',
+    108 => 'Giant Manufacturing Co',
+    109 => 'Tigrasport',
+    110 => 'Salutron',
+    111 => 'Technogym',
+    112 => 'Bryton Sensors',
+    113 => 'Latitude Limited',
+    114 => 'Soaring Technology',
+    115 => 'iGPSPORT',
+    116 => 'Thinkrider',
+    117 => 'Gopher Sport',
+    118 => 'Waterrower',
+    119 => 'Orangetheory',
+    120 => 'Inpeak',
+    121 => 'Kinetic',
+    122 => 'Johnson Health Tech',
+    123 => 'Polar Electro',
+    124 => 'Seesense',
+    125 => 'Nci Technology',
+    126 => 'IQsquare',
+    127 => 'Leomo',
+    128 => 'Ifit Com',
+    129 => 'Coros Byte',
+    130 => 'Versa Design',
+    131 => 'Chileaf',
+    132 => 'Cycplus',
+    133 => 'Gravaa Byte',
+    134 => 'Sigeyi',
+    135 => 'Coospo',
+    136 => 'Geoid',
+    137 => 'Bosch',
+    138 => 'Kyto',
+    139 => 'Kinetic Sports',
+    140 => 'Decathlon Byte',
+    141 => 'Tq Systems',
+    142 => 'Tag Heuer',
+    143 => 'Keiser Fitness',
+    144 => 'Zwift Byte',
+    145 => 'Porsche EP',
+    146 => 'Blackbird',
+    147 => 'Meilan Byte',
+    148 => 'Ezon',
+    149 => 'Laisi',
+    150 => 'Myzone',
+    151 => 'Abawo',
+    152 => 'Bafang',
+    153 => 'Luhong Technology',
+    255 => 'Development',
+    257 => 'Healthandlife',
+    258 => 'Lezyne',
+    259 => 'Scribe Labs',
+    260 => 'Zwift',
+    261 => 'Watteam',
+    262 => 'Recon',
+    263 => 'Favero Electronics',
+    264 => 'Dynovelo',
+    265 => 'Strava',
+    266 => 'Precor',
+    267 => 'Bryton',
+    268 => 'Sram',
+    269 => 'Navman',
+    270 => 'Cobi',
+    271 => 'Spivi',
+    272 => 'Mio Magellan',
+    273 => 'Evesports',
+    274 => 'Sensitivus Gauge',
+    275 => 'Podoon',
+    276 => 'Life Time Fitness',
+    277 => 'Falco E Motors',
+    278 => 'Minoura',
+    279 => 'Cycliq',
+    280 => 'Luxottica',
+    281 => 'Trainer Road',
+    282 => 'The Sufferfest',
+    283 => 'Fullspeedahead',
+    284 => 'Virtualtraining',
+    285 => 'Feedbacksports',
+    286 => 'Omata',
+    287 => 'VDO',
+    288 => 'Magneticdays',
+    289 => 'Hammerhead',
+    290 => 'Kinetic By Kurt',
+    291 => 'Shapelog',
+    292 => 'Dabuziduo',
+    293 => 'Jetblack',
+    294 => 'Coros',
+    295 => 'Virtugo',
+    296 => 'Velosense',
+    297 => 'Cycligentinc',
+    298 => 'Trailforks',
+    299 => 'Mahle Ebikemotion',
+    300 => 'Nurvv',
+    301 => 'Microprogram',
+    302 => 'Zone5cloud',
+    303 => 'Greenteg',
+    304 => 'Yamaha Motors',
+    305 => 'Whoop',
+    306 => 'Gravaa',
+    307 => 'Onelap',
+    308 => 'Monark Exercise',
+    309 => 'Form',
+    310 => 'Decathlon',
+    311 => 'Syncros',
+    312 => 'Heatup',
+    313 => 'Cannondale',
+    314 => 'True Fitness',
+    315 => 'RGT Cycling',
+    316 => 'Vasa',
+    317 => 'Race Republic',
+    318 => 'Fazua',
+    319 => 'Oreka Training',
+    320 => 'LSEC',
+    321 => 'Lululemon Studio',
+    322 => 'Shanyue',
+    323 => 'Spinning MDA',
+    324 => 'Hilldating',
+    325 => 'Aero Sensor',
+    326 => 'Nike',
+    327 => 'Magicshine',
+    328 => 'Ictrainer',
+    329 => 'Absolute Cycling',
+    330 => 'Eo Swimbetter',
+    331 => 'Mywhoosh',
+    332 => 'Ravemen',
+    333 => 'Tektro Racing Products',
+    334 => 'Darad Innovation Corporation',
+    335 => 'Cycloptim',
+    337 => 'Runna',
+    339 => 'Zepp',
+    340 => 'Peloton',
+    341 => 'Carv',
+    342 => 'Tissot',
+    345 => 'Real Velo',
+    346 => 'Wetech',
+    347 => 'Jespr',
+    348 => 'Huawei',
+    349 => 'Gotoes',
+    5759 => 'ActiGraph Corp',
+];
+$d_12 = [1 => 'New', 2 => 'Good', 3 => 'Ok', 4 => 'Low', 5 => 'Critical', 6 => 'Charging', 7 => 'Unknown'];
+$d_13 = [
+    0 => 'Ant',
+    1 => 'Antplus',
+    2 => 'Bluetooth',
+    3 => 'Bluetooth Low Energy',
+    4 => 'Wifi',
+    5 => 'Local',
+];
+$d_14 = [0 => 'Auto', 1 => 'Portrait', 2 => 'Landscape', 3 => 'Portrait Flipped', 4 => 'Landscape Flipped'];
+$d_15 = [0 => 'Depth', 1 => 'time', 2 => 'Speed'];
+$d_16 = [0 => 'Off', 1 => 'Tone', 2 => 'Vibrate', 3 => 'Tone And Vibrate'];
+$d_17 = [0 => 'Manual', 1 => 'Automatic'];
+$d_18 = [
+    0 => 'FileID',
+    1 => 'Capabilities',
+    2 => 'DeviceSettings',
+    3 => 'UserProfile',
+    4 => 'HRMProfile',
+    5 => 'SDMProfile',
+    6 => 'BikeProfile',
+    7 => 'ZonesTarget',
+    8 => 'HRZone',
+    9 => 'PowerZone',
+    10 => 'MetZone',
+    12 => 'Sport',
+    13 => 'TrainingSettings',
+    14 => 'DataScreen',
+    15 => 'Goal',
+    16 => 'Alert',
+    17 => 'RangeAlert',
+    18 => 'Session',
+    19 => 'Lap',
+    20 => 'Record',
+    21 => 'Event',
+    22 => 'DeviceUsed',
+    23 => 'DeviceInfo',
+    26 => 'Workout',
+    27 => 'WorkoutStep',
+    28 => 'Schedule',
+    29 => 'Location',
+    30 => 'WeightScale',
+    31 => 'Course',
+    32 => 'CoursePoint',
+    33 => 'Totals',
+    34 => 'Activity',
+    35 => 'Software',
+    37 => 'FileCapabilities',
+    38 => 'MesgCapabilities',
+    39 => 'FieldCapabilities',
+    49 => 'FileCreator',
+    51 => 'BloodPressure',
+    53 => 'SpeedZone',
+    55 => 'Monitoring',
+    70 => 'MapLayer',
+    71 => 'Routing',
+    72 => 'TrainingFile',
+    78 => 'HRV',
+    79 => 'UserMetrics',
+    80 => 'AntRx',
+    81 => 'AntTx',
+    82 => 'AntChannelID',
+    89 => 'OpenWaterEvent',
+    101 => 'Length',
+    103 => 'MonitoringInfo',
+    104 => 'DeviceStatus',
+    105 => 'Pad',
+    106 => 'SlaveDevice',
+    113 => 'BestEffort',
+    114 => 'PersonalRecord',
+    127 => 'Connectivity',
+    128 => 'WeatherConditions',
+    129 => 'WeatherAlert',
+    131 => 'CadenceZone',
+    132 => 'HR',
+    140 => 'ActivityMetrics',
+    141 => 'EPOStatus',
+    142 => 'SegmentLap',
+    143 => 'MultisportSettings',
+    144 => 'MultisportActivity',
+    145 => 'MemoGlob',
+    147 => 'SensorSettings',
+    148 => 'SegmentID',
+    149 => 'SegmentLeaderboardEntry',
+    150 => 'SegmentPoint',
+    151 => 'SegmentFile',
+    152 => 'Metronome',
+    158 => 'WorkoutSession',
+    159 => 'WatchfaceSettings',
+    160 => 'GPSMetadata',
+    161 => 'CameraEvent',
+    162 => 'TimeStampCorrelation',
+    164 => 'GyroscopeData',
+    165 => 'AccelerometerData',
+    167 => 'ThreeDSensorCalibration',
+    169 => 'VideoFrame',
+    170 => 'ConnectIQField',
+    173 => 'Clubs',
+    174 => 'OBDIIData',
+    177 => 'NMEASentence',
+    178 => 'AviationAttitude',
+    184 => 'Video',
+    185 => 'VideoTitle',
+    186 => 'VideoDescription',
+    187 => 'VideoClip',
+    188 => 'OHRSettings',
+    189 => 'WaypointHandling',
+    190 => 'GolfCourse',
+    191 => 'GolfStats',
+    192 => 'Score',
+    193 => 'Hole',
+    194 => 'Shot',
+    200 => 'ExdScreenConfiguration',
+    201 => 'ExdDataFieldConfiguration',
+    202 => 'ExdDataConceptConfiguration',
+    206 => 'FieldDescription',
+    207 => 'DeveloperDataID',
+    208 => 'MagnetometerData',
+    209 => 'BarometerData',
+    210 => 'OneDSensorCalibration',
+    211 => 'MonitoringHRData',
+    216 => 'TimeInZone',
+    222 => 'AlarmSettings',
+    225 => 'Set',
+    227 => 'StressLevel',
+    229 => 'MaxMetData',
+    243 => 'MusicInfo',
+    258 => 'DiveSettings',
+    259 => 'DiveGas',
+    262 => 'DiveAlarm',
+    264 => 'ExerciseTitle',
+    268 => 'DiveSummary',
+    269 => 'SPO2Data',
+    273 => 'SleepDataInfo',
+    275 => 'SleepLevel',
+    285 => 'Jump',
+    289 => 'AADAccelFeatures',
+    290 => 'BeatIntervals',
+    297 => 'RespirationRate',
+    302 => 'HSAAccelerometerData',
+    304 => 'HSAStepData',
+    305 => 'HSA_SPO2Data',
+    306 => 'HSAStressData',
+    307 => 'HSARespirationData',
+    308 => 'HSAHeartRateData',
+    309 => 'MtbCx',
+    310 => 'Race',
+    311 => 'SplitTime',
+    312 => 'Split',
+    313 => 'SplitSummary',
+    314 => 'HSABodyBatteryData',
+    315 => 'HSAEvent',
+    317 => 'ClimbPro',
+    319 => 'TankUpdate',
+    321 => 'PowerMode',
+    323 => 'TankSummary',
+    326 => 'GPSEvent',
+    336 => 'ECGSummary',
+    337 => 'ECGRawSample',
+    338 => 'ECGSmoothSample',
+    346 => 'SleepAssessment',
+    356 => 'FunctionalMetrics',
+    358 => 'RaceEvent',
+    369 => 'TrainingReadiness',
+    370 => 'HRVStatusSummary',
+    371 => 'HRVValue',
+    372 => 'RawBBI',
+    375 => 'DeviceAuxBatteryInfo',
+    376 => 'HSAGyroscopeData',
+    378 => 'TrainingLoad',
+    379 => 'SleepSchedule',
+    382 => 'SleepRestlessMoments',
+    387 => 'ChronoShotSession',
+    388 => 'ChronoShotData',
+    389 => 'HSAConfigurationData',
+    393 => 'DiveApneaAlarm',
+    394 => 'CPEStatus',
+    398 => 'SkinTempOvernight',
+    402 => 'HillScore',
+    403 => 'EnduranceScore',
+    409 => 'HSAWristTemperatureData',
+    412 => 'NapEvent',
+    428 => 'WorkoutSchedule',
+    470 => 'SleepDisruptionSeverityPeriod',
+    471 => 'SleepDisruptionOvernightSeverity',
+];
+$d_19 = [
+    0 => 'Generic',
+    1 => 'Running',
+    2 => 'Cycling',
+    3 => 'Transition',
+    4 => 'Fitness Equipment',
+    5 => 'Swimming',
+    6 => 'Walking',
+    8 => 'Sedentary',
+    254 => 'All',
+];
+$d_20 = [
+    0 => 'Bench Press',
+    1 => 'Calf Raise',
+    2 => 'Cardio',
+    3 => 'Carry',
+    4 => 'Chop',
+    5 => 'Core',
+    6 => 'Crunch',
+    7 => 'Curl',
+    8 => 'Deadlift',
+    9 => 'Flye',
+    10 => 'Hip Raise',
+    11 => 'Hip Stability',
+    12 => 'Hip Swing',
+    13 => 'Hyperextension',
+    14 => 'Lateral Raise',
+    15 => 'Leg Curl',
+    16 => 'Leg Raise',
+    17 => 'Lunge',
+    18 => 'Olympic Lift',
+    19 => 'Plank',
+    20 => 'Plyo',
+    21 => 'Pull Up',
+    22 => 'Push Up',
+    23 => 'Row',
+    24 => 'Shoulder Press',
+    25 => 'Shoulder Stability',
+    26 => 'Shrug',
+    27 => 'Sit Up',
+    28 => 'Squat',
+    29 => 'Total Body',
+    30 => 'Triceps Extension',
+    31 => 'Warm Up',
+    32 => 'Run',
+    33 => 'Bike',
+    34 => 'Cardio Sensors',
+    35 => 'Move',
+    36 => 'Pose',
+    37 => 'Banded Exercises',
+    38 => 'Battle Rope',
+    39 => 'Elliptical',
+    40 => 'Floor Climb',
+    41 => 'Indoor Bike',
+    42 => 'Indoor Row',
+    43 => 'Ladder',
+    44 => 'Sandbag',
+    45 => 'Sled',
+    46 => 'Sledge Hammer',
+    47 => 'Stair Stepper',
+    49 => 'Suspension',
+    50 => 'Tire',
+    52 => 'Run Indoor',
+    53 => 'Bike Outdoor',
+    65534 => 'Unknown',
+];
+$d_21 = [
+    1 => 'Device',
+    2 => 'Settings',
+    3 => 'Sport',
+    4 => 'Activity',
+    5 => 'Workout',
+    6 => 'Course',
+    7 => 'Schedules',
+    8 => 'Locations',
+    9 => 'Weight',
+    10 => 'Totals',
+    11 => 'Goals',
+    14 => 'Blood Pressure',
+    15 => 'Monitoring A',
+    20 => 'Activity Summary',
+    28 => 'Monitoring Daily',
+    29 => 'Records',
+    32 => 'Monitoring B',
+    33 => 'Multi Sport',
+    34 => 'Segment',
+    35 => 'Segment List',
+    37 => 'Clubs',
+    38 => 'Score Card',
+    40 => 'Exd Configuration',
+    44 => 'Metrics',
+    49 => 'Sleep',
+    54 => 'Chrono Shot Session',
+    56 => 'Pace Band',
+    61 => 'ECG',
+    65 => 'Calendar',
+    68 => 'HRV Status',
+    72 => 'LHA Backup',
+    74 => 'PTD Backup',
+    77 => 'Schedule',
+];
+$d_22 = [0 => 'Other', 1 => 'Kilogram', 2 => 'Pound'];
+$d_23 = [
+    0 => 'Active',
+    1 => 'Rest',
+    2 => 'Warmup',
+    3 => 'Cooldown',
+    4 => 'Recovery',
+    5 => 'Interval',
+    6 => 'Other',
+];
+$d_24 = [
+    0 => 'Freestyle',
+    1 => 'Backstroke',
+    2 => 'Breaststroke',
+    3 => 'Butterfly',
+    4 => 'Drill',
+    5 => 'Mixed',
+    6 => 'Im',
+    7 => 'Im By Round',
+    8 => 'Rimo',
+];
+$d_25 = [0 => 'Hide', 1 => 'Show'];
+$d_26 = [0 => 'Do Not Allow', 1 => 'Allow'];
+$d_27 = [
+    0 => 'Accelerometer',
+    1 => 'Gyroscope',
+    2 => 'Compass',
+    3 => 'Barometer',
+    4 => 'Speed',
+    5 => 'Speed Cadence',
+    6 => 'Tempe',
+    8 => 'Shimano Di2',
+    10 => 'Edge Remote',
+    12 => 'Smart Trainer',
+    13 => 'Lights',
+    14 => 'Radar',
+    15 => 'Extended Display',
+    16 => 'Shifting',
+    17 => 'Muscle O2',
+    18 => 'Rd Pod',
+    22 => 'Headphones',
+    28 => 'Tank Pressure',
+];
+$d_28 = [
+    0 => 'Off',
+    1 => 'Custom',
+    101 => 'Zone 1',
+    102 => 'Zone 2',
+    103 => 'Zone 3',
+    104 => 'Zone 4',
+    105 => 'Zone 5',
+];
+$d_29 = [0 => 'Off', 1 => 'Indoor', 2 => 'Always'];
+$d_30 = [0 => 'Metric', 1 => 'Statute', 2 => 'Nautical'];
+$d_31 = [0 => 'None', 1 => 'Low', 2 => 'Medium', 3 => 'High'];
+$d_32 = [
+    1 => 'Ascent Split',
+    2 => 'Descent Split',
+    3 => 'Interval Active',
+    4 => 'Interval Rest',
+    5 => 'Interval Warmup',
+    6 => 'Interval Cooldown',
+    7 => 'Interval Recovery',
+    8 => 'Interval Other',
+    9 => 'Climb Active',
+    10 => 'Climb Rest',
+    11 => 'Surf Active',
+    12 => 'Run Active',
+    13 => 'Run Rest',
+    14 => 'Workout Round',
+    17 => 'Rwd Run',
+    18 => 'Rwd Walk',
+    21 => 'Windsurf Active',
+    22 => 'Rwd Stand',
+    23 => 'Transition',
+    28 => 'Ski Lift Split',
+    29 => 'Ski Run Split',
+];
+$d_33 = [0 => 'Custom', 1 => 'Percent Max HR', 2 => 'Percent HRr', 3 => 'Percent Lthr'];
+$d_34 = [0 => 'Custom', 1 => 'Percent Ftp'];
+$d_35 = [0 => 'Female', 1 => 'Male'];
+$d_36 = [
+    0 => 'time',
+    1 => 'Distance',
+    2 => 'HR Less Than',
+    3 => 'HR Greater Than',
+    4 => 'Calories',
+    5 => 'Open',
+    6 => 'Repeat Until Steps Cmplt',
+    7 => 'Repeat Until Time',
+    8 => 'Repeat Until Distance',
+    9 => 'Repeat Until Calories',
+    10 => 'Repeat Until HR Less Than',
+    11 => 'Repeat Until HR Greater Than',
+    12 => 'Repeat Until Power Less Than',
+    13 => 'Repeat Until Power Greater Than',
+    14 => 'Power Less Than',
+    15 => 'Power Greater Than',
+    16 => 'Training Peaks Tss',
+    17 => 'Repeat Until Power Last Lap Less Than',
+    18 => 'Repeat Until Max Power Last Lap Less Than',
+    19 => 'Power 3s Less Than',
+    20 => 'Power 10s Less Than',
+    21 => 'Power 30s Less Than',
+    22 => 'Power 3s Greater Than',
+    23 => 'Power 10s Greater Than',
+    24 => 'Power 30s Greater Than',
+    25 => 'Power Lap Less Than',
+    26 => 'Power Lap Greater Than',
+    27 => 'Repeat Until Training Peaks Tss',
+    28 => 'Repetition Time',
+    29 => 'Reps',
+    31 => 'Time Only',
+];
+$d_37 = [
+    0 => 'Speed',
+    1 => 'Heart Rate',
+    2 => 'Open',
+    3 => 'Cadence',
+    4 => 'Power',
+    5 => 'Grade',
+    6 => 'Resistance',
+    7 => 'Power 3s',
+    8 => 'Power 10s',
+    9 => 'Power 30s',
+    10 => 'Power Lap',
+    11 => 'Swim Stroke',
+    12 => 'Speed Lap',
+    13 => 'Heart Rate Lap',
+];
 
 return [
     'load' => [
