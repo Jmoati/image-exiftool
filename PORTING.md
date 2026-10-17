@@ -22,6 +22,13 @@ can be diffed and re-applied. Scope for now: **reading** metadata. Writing
 
 Table names stay the Perl strings: `ExifTool::GetTagTable('Image::ExifTool::Canon::Main')`.
 
+## Typing
+
+No `declare(strict_types=1)` in ported code and no scalar type hints on values that come from the
+data (Perl scalars are loosely typed: an `int $pos` receiving `"12"` or `4.0` from a computation
+must not blow up). Type objects and arrays (`ExifTool $et`, `TagTable $tagTablePtr`,
+`array &$dirInfo`), leave scalars untyped or `mixed`.
+
 ## Functions
 
 - Perl sub `Foo` in package `Image::ExifTool::X` → `public static function Foo(...)` on class `X`,
@@ -118,20 +125,24 @@ Each context has a fixed closure signature. Perl variable names are kept:
 
 | Context (where Perl evals it) | PHP closure |
 |---|---|
-| `Condition` (GetTagInfo) | `static function (ExifTool $self, ?string $valPt, ?string $format, ?int $count)` — `$$valPt` → `$valPt` |
-| `RawConv` string (FoundTag/HandleTag) | `static function (mixed $val, ExifTool $self, ?string $tag, ?TagInfo $tagInfo, mixed &$priority, array &$grps, array $vals)` — Perl `@val` (Composite) → `$vals` |
-| `ValueConv`, `PrintConv` strings, items of conversion arrays (GetValue) | `static function (mixed $val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, ?string $tag)` — Perl `$val[0]` → `$vals[0]` |
+| `Condition` (GetTagInfo) | `static function (ExifTool $self, $valPt, $format, $count)` — `$$valPt` → `$valPt` |
+| `RawConv` string (FoundTag/HandleTag) | `static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals)` — Perl `@val` (Composite) → `$vals` |
+| `ValueConv`, `PrintConv` strings, items of conversion arrays (GetValue) | `static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag)` — Perl `$val[0]` → `$vals[0]` |
 | anonymous `sub` used as `ValueConv`/`PrintConv`/`RawConv` | called as `$conv($val, $self)`: write `static function ($val, $et) { ... }` with the parameter names of the Perl `my (...) = @_` |
 | anonymous `sub` in a PrintConv hash `OTHER` | called as `$other($val, $inv, $conv)` |
-| `Hook` (ProcessBinaryData) | `static function (ExifTool $self, ?string &$format, int\|float &$varSize, int $size, string $dataPt, int $pos): void` |
-| bracketed count of a `Format` (`int16u[$val{0}*2]`) | `static function (array $val, int $size, int\|float $varSize, ExifTool $self)` — `$val{0}` → `$val[0]` |
-| `SubDirectory` `Start` | `static function (?int $valuePtr = null, mixed $val = null, ?int $dirStart = null, ?string $dataPt = null)` |
-| `SubDirectory` `Base` | `static function (int $start, int $base = 0)` |
-| `SubDirectory` `OffsetPt` | `static function (int $valuePtr)` |
-| `SubDirectory` `Validate` | `static function (mixed $val = null, ?string $dirData = null, ?int $subdirStart = null, ?int $size = null, mixed $type = null)` |
-| `IsOffset` (string) | `static function (mixed $val, ExifTool $et)` |
-| `ChangeBase` | `static function (int $dirStart, int $dataPos)` |
+| `Hook` (ProcessBinaryData) | `static function (ExifTool $self, &$format, &$varSize, $size, $dataPt, $pos): void` |
+| bracketed count of a `Format` (`int16u[$val{0}*2]`) | `static function (array $val, $size, $varSize, ExifTool $self)` — `$val{0}` → `$val[0]` |
+| `SubDirectory` `Start` | `static function ($valuePtr = null, $val = null, $dirStart = null, $dataPt = null)` |
+| `SubDirectory` `Base` | `static function ($start, $base = 0)` |
+| `SubDirectory` `OffsetPt` | `static function ($valuePtr)` |
+| `SubDirectory` `Validate` | `static function ($val = null, $dirData = null, $subdirStart = null, $size = null, $type = null)` |
+| `IsOffset` (string) | `static function ($val, ExifTool $et)` |
+| `ChangeBase` | `static function ($dirStart, $dataPos)` |
 | `WrongBase` | `static function (ExifTool $self)` |
+| `FixOffsets` | `static function (&$valuePtr, $valEnd, $size, $tagID, $wFlag)` |
+
+Callers always pass every positional argument of the signature (empty arrays / null when Perl had
+nothing), e.g. `$conv($val, $self, [], [], [], $tagInfo, $tag)`.
 
 The closure returns what the Perl expression evaluates to (make the implicit Perl result an explicit
 `return`). Closures must be self-contained: refer to module code as `\Image\ExifTool\Canon::Foo()`,

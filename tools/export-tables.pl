@@ -164,20 +164,20 @@ my %subdirExprKey = map { $_ => 1 } qw(Start Base OffsetPt Validate ChangeBase W
 
 my $deparse = B::Deparse->new('-sC', '-q');
 my $sigs = {
-    Condition  => 'static function (ExifTool $self, ?string $valPt, ?string $format, ?int $count)',
-    RawConv    => 'static function (mixed $val, ExifTool $self, ?string $tag, ?TagInfo $tagInfo, mixed &$priority, array &$grps, array $vals)',
-    ValueConv  => 'static function (mixed $val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, ?string $tag)',
-    PrintConv  => 'static function (mixed $val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, ?string $tag)',
-    Hook       => 'static function (ExifTool $self, ?string &$format, int|float &$varSize, int $size, string $dataPt, int $pos): void',
-    FormatCount=> 'static function (array $val, int $size, int|float $varSize, ExifTool $self)',
-    Start      => 'static function (?int $valuePtr = null, mixed $val = null, ?int $dirStart = null, ?string $dataPt = null)',
-    Base       => 'static function (int $start, int $base = 0)',
-    OffsetPt   => 'static function (int $valuePtr)',
-    Validate   => 'static function (mixed $val = null, ?string $dirData = null, ?int $subdirStart = null, ?int $size = null, mixed $type = null)',
-    IsOffset   => 'static function (mixed $val, ExifTool $et)',
-    ChangeBase => 'static function (int $dirStart, int $dataPos)',
+    Condition  => 'static function (ExifTool $self, $valPt, $format, $count)',
+    RawConv    => 'static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals)',
+    ValueConv  => 'static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag)',
+    PrintConv  => 'static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag)',
+    Hook       => 'static function (ExifTool $self, &$format, &$varSize, $size, $dataPt, $pos): void',
+    FormatCount=> 'static function (array $val, $size, $varSize, ExifTool $self)',
+    Start      => 'static function ($valuePtr = null, $val = null, $dirStart = null, $dataPt = null)',
+    Base       => 'static function ($start, $base = 0)',
+    OffsetPt   => 'static function ($valuePtr)',
+    Validate   => 'static function ($val = null, $dirData = null, $subdirStart = null, $size = null, $type = null)',
+    IsOffset   => 'static function ($val, ExifTool $et)',
+    ChangeBase => 'static function ($dirStart, $dataPos)',
     WrongBase  => 'static function (ExifTool $self)',
-    FixOffsets => 'static function (int &$valuePtr, int $valEnd, int $size, mixed $tagID, mixed $wFlag)',
+    FixOffsets => 'static function (&$valuePtr, $valEnd, $size, $tagID, $wFlag)',
     'code:conv'  => 'static function ($val, $et)  // called as $conv($val, $self); use the parameter names of the Perl sub',
     'code:OTHER' => 'static function ($val, $inv, $conv)  // called as $other($val, $inv, $conv)',
     'code'       => 'static function (...)  // same arguments as the Perl sub (see its @_ use)',
@@ -535,7 +535,7 @@ foreach $mod (sort keys %modules) {
 
     if (@names or $loadActions{$mod}) {
         open my $fh, '>', "$out/$mod.php" or die;
-        print $fh "<?php\n\n$header\ndeclare(strict_types=1);\n\nnamespace Image\\ExifTool;\n\n";
+        print $fh "<?php\n\n$header\nnamespace Image\\ExifTool;\n\n";
         foreach my $id (@closureOrder) {
             print $fh "\$f_$id = $closures{$id};\n";
         }
@@ -603,7 +603,7 @@ foreach my $m (sort keys %varsByMod) {
     (%shared, @sharedOrder, %sharedCount) = ();
     my $class = ClassName($m);
     open my $fh, '>', "$out/vars/$class.php" or die;
-    print $fh "<?php\n\n$header\ndeclare(strict_types=1);\n\nnamespace Image\\ExifTool\\Vars;\n\n";
+    print $fh "<?php\n\n$header\nnamespace Image\\ExifTool\\Vars;\n\n";
     print $fh "/** Package variables and file lexicals of " . ($m eq 'ExifTool' ? 'Image::ExifTool' : "Image::ExifTool::$m") . " */\n";
     print $fh "final class $class\n{\n";
     foreach my $name (sort keys %{$varsByMod{$m}}) {
@@ -623,7 +623,7 @@ make_path("$out/vars/Charset");
 foreach my $cs (sort keys %charsets) {
     (%shared, @sharedOrder, %sharedCount) = ();
     open my $fh, '>', "$out/vars/Charset/$cs.php" or die;
-    print $fh "<?php\n\n$header\ndeclare(strict_types=1);\n\nnamespace Image\\ExifTool\\Vars\\Charset;\n\n";
+    print $fh "<?php\n\n$header\nnamespace Image\\ExifTool\\Vars\\Charset;\n\n";
     print $fh "/** %Image::ExifTool::Charset::$cs */\nfinal class $cs\n{\n    public static \$map = " . Data($charsets{$cs}, { depth => 1 }, 1, "Charset $cs") . ";\n}\n";
     close $fh;
 }
