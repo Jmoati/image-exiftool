@@ -2267,7 +2267,9 @@ COMPOSITE_TAG:
     // Returns: List of ordered/sorted keys
     public static function OrderedKeys(array $hash): array
     {
-        if (!empty($hash['_ordered_keys_'])) return $hash['_ordered_keys_'];
+        // (an empty Perl array ref is still true)
+        $ordered = $hash['_ordered_keys_'] ?? null;
+        if (null !== $ordered) return $ordered instanceof \ArrayObject ? $ordered->getArrayCopy() : (array) $ordered;
         $keys = array_map('strval', array_keys($hash));
         sort($keys, SORT_STRING);
         return $keys;
@@ -3942,7 +3944,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
             for ($i = 0; $i < $bits; ++$i) {
                 if (!($val & (1 << $i))) continue;
                 $n = $i + $num;
-                if (!$lookup) {
+                if (null === $lookup) {   // (an empty Perl hash ref is still true)
                     $bitList[] = $n;
                 } elseif (!empty($lookup[$n])) {
                     $bitList[] = $lookup[$n];
@@ -3953,7 +3955,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
             $num += $bits;
         }
         if (!$bitList) return '(none)';
-        return implode($lookup ? ', ' : ',', $bitList);
+        return implode(null !== $lookup ? ', ' : ',', $bitList);
     }
 
     //------------------------------------------------------------------------------

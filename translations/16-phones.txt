@@ -1,0 +1,26 @@
+==== 0c90ebb73d RawConv
+# PLIST::Main XMLFileType
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (Perl::str($val) === 'ModdXML' && Perl::str($self->FILE_TYPE) === 'XMP') {
+        $self->OverrideFileType('MODD');
+    }
+    return $val;
+}
+
+==== 868d729654 ValueConv
+# PLIST::Main MetaDataList//DateTimeOriginal
+static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::IsFloat($val) ? ExifTool::ConvertUnixTime((Perl::num($val) - 25569) * 24 * 3600) : $val;
+}
+
+==== 3777fcd898 ValueConv
+# Trailer::OnePlus private.emptyspace (OnePlusTrailerLen)
+static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return \strlen(Perl::str($val)) == 4 ? Perl::unpack('N', $val)[0] : $val;
+}
+
+==== 6133301656 ValueConv
+# Trailer::OnePlus watermark.device (Device)
+static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return '0x' . implode(' ', Perl::unpack('H10Z*', Perl::str($val)));
+}
