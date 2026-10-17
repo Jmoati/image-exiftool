@@ -38,6 +38,7 @@ use Image\ExifTool\File\RandomAccess;
 class ExifTool
 {
     use \Image\ExifTool\ExifTool\Formats;
+    use \Image\ExifTool\ExifTool\Shift;
 
     public static $VERSION = '13.59';
     public static $RELEASE = '';
