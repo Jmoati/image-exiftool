@@ -232,6 +232,9 @@ final class XMP
         'w' => ['Writable' => 'real'],
     ];
 
+    /** package %specialStruct */
+    public static $specialStruct = ['GROUPS' => 1, 'NAMESPACE' => 1, 'NOTES' => 1, 'SORT_ORDER' => 1, 'STRUCT_NAME' => 1, 'TYPE' => 1];
+
     /** lexical %stdPath */
     public static $stdPath = ['JPEG' => 'JPEG-APP1-XMP', 'PSD' => 'PSD-XMP', 'TIFF' => 'TIFF-IFD0-XMP'];
 

@@ -4,11 +4,43 @@
 
 namespace Image\ExifTool;
 
-$f_38d6cb803f = static function (mixed ...$args) { throw new NotPorted('ValueConv 38d6cb803f'); };
+$f_38d6cb803f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return preg_replace('{http://ns.useplus.org/ldf/vocab/}', '', Perl::str($val), 1);
+};
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_49a0ca9e42 = static function (mixed ...$args) { throw new NotPorted('code:OTHER 49a0ca9e42'); };
+$f_49a0ca9e42 = static function ($val, $inv, $conv) {
+    $val = strtoupper(Perl::str($val));
+    if ($inv) {
+        $val = preg_replace('/\(.*?\)/s', '', $val);
+        $val = preg_replace('/^\s*?PLUS\s+(V[0-9]+)\s+(U[0-9]+)\s*;/s', '|PLUS|$1|$2|', $val, 1);
+        $val = strtr($val, ';', '|');
+        $val = preg_replace('/[^0-9A-Z|]/', '', $val);
+        if (!preg_match('/\|$/', $val)) $val .= '|';
+        if (!PLUS::ValidateMediaSummary($val)) return null;
+    } elseif (preg_match('/^\|PLUS\|(.*?)\|(.*?)\|(.*)/s', $val, $m)) {
+        [$ver, $num, $code] = [$m[1], $m[2], $m[3]];
+        if (preg_match('/V0*(\d+)(\d{2})$/', $ver, $mm)) $ver .= ' (LDF Version ' . $mm[1] . '.' . $mm[2] . ')';
+        if (preg_match('/U0*(\d+)/', $num, $mm)) $num .= ' (' . $mm[1] . ' Media Usages:)';
+        $code = preg_replace('/[^0-9A-Z|]/', '', $code);
+        $val = 'PLUS ' . $ver . ' ' . $num;
+        preg_match_all('/(\d[A-Z]{3})/', $code, $all);
+        foreach ($all[1] as $mmid) {
+            if (isset($conv[$mmid])) {
+                $val .= ' ' . $mmid . ' (' . $conv[$mmid] . ')';
+            } elseif (preg_match('/^1I([A-Z])([A-Z])/', $mmid, $mm)) {
+                $n = (ord($mm[1]) - 65) * 26 + ord($mm[2]) - 65 + 1;
+                $val .= '; ' . $mmid . ' (' . $n . ' Usage Items:)';
+            } elseif (preg_match('/^1UN([A-Z])/', $mmid, $mm)) {
+                $val .= ' (Usage Number ' . $mm[1] . ')';
+            } else {
+                $val .= ' ' . $mmid;
+            }
+        }
+    }
+    return $val;
+};
 
 return [
     'load' => [

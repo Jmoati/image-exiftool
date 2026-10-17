@@ -4,18 +4,63 @@
 
 namespace Image\ExifTool;
 
-$f_25780f1581 = static function (mixed ...$args) { throw new NotPorted('RawConv 25780f1581'); };
-$f_e4706d5423 = static function (mixed ...$args) { throw new NotPorted('RawConv e4706d5423'); };
-$f_9d2458d245 = static function (mixed ...$args) { throw new NotPorted('RawConv 9d2458d245'); };
+$f_25780f1581 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $xmpVal = ($vals[2] ?? null) ?: ($vals[1] ?? null);
+    if (!isset($vals[3]) or ($xmpVal !== null and
+        (!isset($vals[4]) or Perl::str($vals[3]) === Perl::str($vals[4])))) return $xmpVal;
+    return MWG::RecoverTruncatedIPTC($vals[0] ?? null, $xmpVal, 32);
+};
+$f_e4706d5423 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (isset($vals[0]) and !preg_match('/^ *$/', Perl::str($vals[0]))) return $vals[0];
+    if (!isset($vals[3]) or (isset($vals[2]) and
+        (!isset($vals[4]) or Perl::str($vals[3]) === Perl::str($vals[4])))) return $vals[2] ?? null;
+    return MWG::RecoverTruncatedIPTC($vals[1] ?? null, $vals[2] ?? null, 128);
+};
+$f_9d2458d245 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $xmpVal = ($vals[2] ?? null) ?: ($vals[1] ?? null);
+    if (!isset($vals[3]) or ($xmpVal !== null and
+        (!isset($vals[4]) or Perl::str($vals[3]) === Perl::str($vals[4])))) return $xmpVal;
+    return MWG::RecoverTruncatedIPTC($vals[0] ?? null, $xmpVal, 64);
+};
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_000e9a42a6 = static function (mixed ...$args) { throw new NotPorted('RawConv 000e9a42a6'); };
-$f_a87cf5bb3f = static function (mixed ...$args) { throw new NotPorted('ValueConv a87cf5bb3f'); };
-$f_45f3c6f0c4 = static function (mixed ...$args) { throw new NotPorted('RawConv 45f3c6f0c4'); };
-$f_c86dfdb9c1 = static function (mixed ...$args) { throw new NotPorted('RawConv c86dfdb9c1'); };
-$f_2e720198bc = static function (mixed ...$args) { throw new NotPorted('RawConv 2e720198bc'); };
-$f_fd33864163 = static function (mixed ...$args) { throw new NotPorted('RawConv fd33864163'); };
+$f_000e9a42a6 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return (isset($vals[0]) or isset($vals[1]) or !empty($vals[2]) or
+        (isset($vals[4]) and (!isset($vals[5]) or !isset($vals[6]) or
+        Perl::str($vals[5]) === Perl::str($vals[6])))) ? $val : null;
+};
+$f_a87cf5bb3f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if (isset($vals[0]) and !preg_match('/^[: ]*$/', Perl::str($vals[0]))) return $vals[0];
+    if (isset($vals[1]) and !preg_match('/^[: ]*$/', Perl::str($vals[1]))) return $vals[1];
+    if (!isset($vals[5]) or (isset($vals[4]) and
+        (!isset($vals[6]) or Perl::str($vals[5]) === Perl::str($vals[6])))) return $vals[4] ?? null;
+    if (!empty($vals[2])) return !empty($vals[3]) ? Perl::str($vals[2]) . ' ' . Perl::str($vals[3]) : $vals[2];
+    return null;
+};
+$f_45f3c6f0c4 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (isset($vals[0]) and !preg_match('/^ *$/', Perl::str($vals[0]))) return $vals[0];
+    if (!isset($vals[3]) or (isset($vals[2]) and
+        (!isset($vals[4]) or Perl::str($vals[3]) === Perl::str($vals[4])))) return $vals[2] ?? null;
+    return MWG::RecoverTruncatedIPTC($vals[1] ?? null, $vals[2] ?? null, 32);
+};
+$f_c86dfdb9c1 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (isset($vals[0]) and !preg_match('/^ *$/', Perl::str($vals[0]))) return $vals[0];
+    if (!isset($vals[3]) or (isset($vals[2]) and
+        (!isset($vals[4]) or Perl::str($vals[3]) === Perl::str($vals[4])))) return $vals[2] ?? null;
+    return MWG::RecoverTruncatedIPTC($vals[1] ?? null, $vals[2] ?? null, 2000);
+};
+$f_2e720198bc = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (!isset($vals[2]) or (isset($vals[1]) and
+        (!isset($vals[3]) or Perl::str($vals[2]) === Perl::str($vals[3])))) return $vals[1] ?? null;
+    return MWG::RecoverTruncatedIPTC($vals[0] ?? null, $vals[1] ?? null, 64);
+};
+$f_fd33864163 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (isset($vals[0]) and !preg_match('/^[: ]*$/', Perl::str($vals[0]))) return $vals[0];
+    if (isset($vals[1]) and !preg_match('/^[: ]*$/', Perl::str($vals[1]))) return $vals[1];
+    if (!isset($vals[3]) or !isset($vals[4]) or Perl::str($vals[3]) === Perl::str($vals[4])) return $vals[2] ?? null;
+    return null;
+};
 $f_6b105e8189 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val;
 };

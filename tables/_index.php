@@ -1531,7 +1531,6 @@ return [
     'Image::ExifTool::XMP::pur' => 'XMP',
     'Image::ExifTool::XMP::rdf' => 'XMP',
     'Image::ExifTool::XMP::seal' => 'XMP',
-    'Image::ExifTool::XMP::specialStruct' => 'XMP',
     'Image::ExifTool::XMP::swf' => 'XMP',
     'Image::ExifTool::XMP::tiff' => 'XMP',
     'Image::ExifTool::XMP::x' => 'XMP',

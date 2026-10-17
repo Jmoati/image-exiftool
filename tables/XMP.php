@@ -91,7 +91,11 @@ $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_02272264af = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintFNumber($val);
 };
-$f_bcbb367bde = static function (mixed ...$args) { throw new NotPorted('code:OTHER bcbb367bde'); };
+$f_bcbb367bde = static function ($val, $inv, $conv) {
+    if (strtolower(Perl::str($val)) === 'false') return 'False';
+    if (strtolower(Perl::str($val)) === 'true') return 'True';
+    return $val;
+};
 $f_8f0e71a82a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f mm', $val);
 };
@@ -5948,13 +5952,6 @@ return [
                     'TagTable' => 'Image::ExifTool::XMP::SEAL',
                 ],
             ],
-        ],
-        'Image::ExifTool::XMP::specialStruct' => [
-            'GROUPS' => 1,
-            'NAMESPACE' => 1,
-            'SORT_ORDER' => 1,
-            'STRUCT_NAME' => 1,
-            'TYPE' => 1,
         ],
         'Image::ExifTool::XMP::swf' => [
             'GROUPS' => [1 => 'XMP-swf', 2 => 'Image'],

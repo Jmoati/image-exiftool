@@ -928,7 +928,7 @@ final class Exif
         if (($tagTablePtr['GROUPS'][0] ?? null) === 'EXIF') $strEnc = $et->Options('CharsetEXIF');
 
         // ignore non-standard EXIF while in strict MWG compatibility mode
-        if (($validate or (Vars\MWG::$strict ?? null)) and $dirName === 'IFD0' and
+        if (($validate or (MWG::$strict ?? null)) and $dirName === 'IFD0' and
             $isExif and preg_match('/^(JPEG|TIFF|PSD)$/', Perl::str($et->FILE_TYPE)))
         {
             $path = $et->MetadataPath();
@@ -938,7 +938,7 @@ final class Exif
                     $et->HasExif = 1;
                 }
             } else {
-                if (Vars\MWG::$strict ?? null) {
+                if (MWG::$strict ?? null) {
                     $et->Warn("Ignored non-standard EXIF at $path");
                     return 0;
                 } else {

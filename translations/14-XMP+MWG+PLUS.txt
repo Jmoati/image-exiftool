@@ -1,0 +1,128 @@
+==== bcbb367bde code:OTHER
+# XMP %boolConv (Image::ExifTool::XMP::exif Flash /Struct/Fired, and other boolean tags)
+static function ($val, $inv, $conv) {
+    if (strtolower(Perl::str($val)) === 'false') return 'False';
+    if (strtolower(Perl::str($val)) === 'true') return 'True';
+    return $val;
+}
+
+==== 000e9a42a6 RawConv
+# MWG Composite CreateDate and DateTimeOriginal
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return (isset($vals[0]) or isset($vals[1]) or !empty($vals[2]) or
+        (isset($vals[4]) and (!isset($vals[5]) or !isset($vals[6]) or
+        Perl::str($vals[5]) === Perl::str($vals[6])))) ? $val : null;
+}
+
+==== a87cf5bb3f ValueConv
+# MWG Composite CreateDate and DateTimeOriginal
+static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if (isset($vals[0]) and !preg_match('/^[: ]*$/', Perl::str($vals[0]))) return $vals[0];
+    if (isset($vals[1]) and !preg_match('/^[: ]*$/', Perl::str($vals[1]))) return $vals[1];
+    if (!isset($vals[5]) or (isset($vals[4]) and
+        (!isset($vals[6]) or Perl::str($vals[5]) === Perl::str($vals[6])))) return $vals[4] ?? null;
+    if (!empty($vals[2])) return !empty($vals[3]) ? Perl::str($vals[2]) . ' ' . Perl::str($vals[3]) : $vals[2];
+    return null;
+}
+
+==== fd33864163 RawConv
+# MWG Composite ModifyDate
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (isset($vals[0]) and !preg_match('/^[: ]*$/', Perl::str($vals[0]))) return $vals[0];
+    if (isset($vals[1]) and !preg_match('/^[: ]*$/', Perl::str($vals[1]))) return $vals[1];
+    if (!isset($vals[3]) or !isset($vals[4]) or Perl::str($vals[3]) === Perl::str($vals[4])) return $vals[2] ?? null;
+    return null;
+}
+
+==== 2e720198bc RawConv
+# MWG Composite Keywords
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (!isset($vals[2]) or (isset($vals[1]) and
+        (!isset($vals[3]) or Perl::str($vals[2]) === Perl::str($vals[3])))) return $vals[1] ?? null;
+    return MWG::RecoverTruncatedIPTC($vals[0] ?? null, $vals[1] ?? null, 64);
+}
+
+==== 45f3c6f0c4 RawConv
+# MWG Composite Creator
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (isset($vals[0]) and !preg_match('/^ *$/', Perl::str($vals[0]))) return $vals[0];
+    if (!isset($vals[3]) or (isset($vals[2]) and
+        (!isset($vals[4]) or Perl::str($vals[3]) === Perl::str($vals[4])))) return $vals[2] ?? null;
+    return MWG::RecoverTruncatedIPTC($vals[1] ?? null, $vals[2] ?? null, 32);
+}
+
+==== c86dfdb9c1 RawConv
+# MWG Composite Description
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (isset($vals[0]) and !preg_match('/^ *$/', Perl::str($vals[0]))) return $vals[0];
+    if (!isset($vals[3]) or (isset($vals[2]) and
+        (!isset($vals[4]) or Perl::str($vals[3]) === Perl::str($vals[4])))) return $vals[2] ?? null;
+    return MWG::RecoverTruncatedIPTC($vals[1] ?? null, $vals[2] ?? null, 2000);
+}
+
+==== e4706d5423 RawConv
+# MWG Composite Copyright
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (isset($vals[0]) and !preg_match('/^ *$/', Perl::str($vals[0]))) return $vals[0];
+    if (!isset($vals[3]) or (isset($vals[2]) and
+        (!isset($vals[4]) or Perl::str($vals[3]) === Perl::str($vals[4])))) return $vals[2] ?? null;
+    return MWG::RecoverTruncatedIPTC($vals[1] ?? null, $vals[2] ?? null, 128);
+}
+
+==== 25780f1581 RawConv
+# MWG Composite City, State and Location
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $xmpVal = ($vals[2] ?? null) ?: ($vals[1] ?? null);
+    if (!isset($vals[3]) or ($xmpVal !== null and
+        (!isset($vals[4]) or Perl::str($vals[3]) === Perl::str($vals[4])))) return $xmpVal;
+    return MWG::RecoverTruncatedIPTC($vals[0] ?? null, $xmpVal, 32);
+}
+
+==== 9d2458d245 RawConv
+# MWG Composite Country
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $xmpVal = ($vals[2] ?? null) ?: ($vals[1] ?? null);
+    if (!isset($vals[3]) or ($xmpVal !== null and
+        (!isset($vals[4]) or Perl::str($vals[3]) === Perl::str($vals[4])))) return $xmpVal;
+    return MWG::RecoverTruncatedIPTC($vals[0] ?? null, $xmpVal, 64);
+}
+
+==== 38d6cb803f ValueConv
+# PLUS vocabulary tags (AdultContentWarning, CopyrightStatus...)
+static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return preg_replace('{http://ns.useplus.org/ldf/vocab/}', '', Perl::str($val), 1);
+}
+
+==== 49a0ca9e42 code:OTHER
+# PLUS MediaSummaryCode
+static function ($val, $inv, $conv) {
+    $val = strtoupper(Perl::str($val));
+    if ($inv) {
+        $val = preg_replace('/\(.*?\)/s', '', $val);
+        $val = preg_replace('/^\s*?PLUS\s+(V[0-9]+)\s+(U[0-9]+)\s*;/s', '|PLUS|$1|$2|', $val, 1);
+        $val = strtr($val, ';', '|');
+        $val = preg_replace('/[^0-9A-Z|]/', '', $val);
+        if (!preg_match('/\|$/', $val)) $val .= '|';
+        if (!PLUS::ValidateMediaSummary($val)) return null;
+    } elseif (preg_match('/^\|PLUS\|(.*?)\|(.*?)\|(.*)/s', $val, $m)) {
+        [$ver, $num, $code] = [$m[1], $m[2], $m[3]];
+        if (preg_match('/V0*(\d+)(\d{2})$/', $ver, $mm)) $ver .= ' (LDF Version ' . $mm[1] . '.' . $mm[2] . ')';
+        if (preg_match('/U0*(\d+)/', $num, $mm)) $num .= ' (' . $mm[1] . ' Media Usages:)';
+        $code = preg_replace('/[^0-9A-Z|]/', '', $code);
+        $val = 'PLUS ' . $ver . ' ' . $num;
+        preg_match_all('/(\d[A-Z]{3})/', $code, $all);
+        foreach ($all[1] as $mmid) {
+            if (isset($conv[$mmid])) {
+                $val .= ' ' . $mmid . ' (' . $conv[$mmid] . ')';
+            } elseif (preg_match('/^1I([A-Z])([A-Z])/', $mmid, $mm)) {
+                $n = (ord($mm[1]) - 65) * 26 + ord($mm[2]) - 65 + 1;
+                $val .= '; ' . $mmid . ' (' . $n . ' Usage Items:)';
+            } elseif (preg_match('/^1UN([A-Z])/', $mmid, $mm)) {
+                $val .= ' (Usage Number ' . $mm[1] . ')';
+            } else {
+                $val .= ' ' . $mmid;
+            }
+        }
+    }
+    return $val;
+}

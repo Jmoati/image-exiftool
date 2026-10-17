@@ -105,7 +105,7 @@ sub WalkPackage
 sub IsTagTable
 {
     my ($h, $name) = @_;
-    return 0 if $name =~ /::(specialTags|tableDefaults)$/;
+    return 0 if $name =~ /::(specialTags|tableDefaults|specialStruct)$/;
     return 1 if exists $$h{GROUPS} or exists $$h{PROCESS_PROC} or exists $$h{TABLE_NAME};
     foreach my $v (values %$h) {
         return 1 if ref $v eq 'HASH' and defined $$v{Name} and not ref $$v{Name};
@@ -225,6 +225,8 @@ sub PhpString
 sub PhpKey
 {
     my $k = shift;
+    # a hash keyed by tag table references (%otherTable in ID3.pm): use the table name
+    $k = $tableByAddr{$k} if $k =~ /^HASH\(0x[0-9a-f]+\)$/ and $tableByAddr{$k};
     return $k if $k =~ /^(0|-?[1-9]\d{0,17})$/;
     return PhpString($k);
 }
@@ -616,23 +618,25 @@ foreach $mod (sort keys %modules) {
 foreach my $pkg (sort keys %pkgSubs) {
     foreach my $name (sort keys %{$pkgSubs{$pkg}}) {
         my $closed = PadWalker::closed_over($pkgSubs{$pkg}{$name});
-        foreach my $v (keys %$closed) {
+        foreach my $v (sort keys %$closed) {
             next unless $v =~ /^[%\@]/ or ($v =~ /^\$/ and not ref ${$$closed{$v}});
             LexicalName($pkg, $v, $$closed{$v});
         }
     }
 }
 my %varsByMod;
-foreach my $pkg (keys %varsOf) {
+# (deterministic names on collisions: $x, then @x, then %x_h; lexicals in name order)
+my %sigilOrder = ('$' => 0, '@' => 1, '%' => 2);
+foreach my $pkg (sort keys %varsOf) {
     my $m = ModuleKey("${pkg}::x");
-    foreach my $v (keys %{$varsOf{$pkg}}) {
+    foreach my $v (sort { substr($a, 1) cmp substr($b, 1) or $sigilOrder{substr($a, 0, 1)} <=> $sigilOrder{substr($b, 0, 1)} } keys %{$varsOf{$pkg}}) {
         (my $name = $v) =~ s/^[\$\@%]//;
         $name .= '_' . ($v =~ /^%/ ? 'h' : $v =~ /^\@/ ? 'a' : 's') if $varsByMod{$m}{$name};
         $varsByMod{$m}{$name} = [ $v, $varsOf{$pkg}{$v}, 'package' ];
     }
 }
-foreach my $m (keys %lexicals) {
-    foreach my $name (keys %{$lexicals{$m}}) {
+foreach my $m (sort keys %lexicals) {
+    foreach my $name (sort keys %{$lexicals{$m}}) {
         my ($perlName, $ref) = @{$lexicals{$m}{$name}};
         my $n = $name;
         $n .= '_lex' while $varsByMod{$m}{$n} and $varsByMod{$m}{$n}[1] != $ref;
