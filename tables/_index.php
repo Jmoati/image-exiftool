@@ -966,6 +966,7 @@ return [
     'Image::ExifTool::Nintendo::CameraInfo' => 'Nintendo',
     'Image::ExifTool::Nintendo::Main' => 'Nintendo',
     'Image::ExifTool::OOXML::Main' => 'OOXML',
+    'Image::ExifTool::Ogg::Main' => 'Ogg',
     'Image::ExifTool::Olympus::AFInfo' => 'Olympus',
     'Image::ExifTool::Olympus::AFTargetInfo' => 'Olympus',
     'Image::ExifTool::Olympus::AVI' => 'Olympus',

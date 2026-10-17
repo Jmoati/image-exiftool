@@ -13,9 +13,10 @@ use Image\ExifTool\XMP;
  *
  * File-scope variables of the script are properties, its subs are methods with the same names,
  * and the main script is run(). Not ported (the command stops with an error): writing
- * (TAG=VALUE, -tagsFromFile, -o, -csv=/-j= import, -geotag...), -X, -h, -htmlDump, -list*,
- * -if and -p (they evaluate Perl expressions), -diff, -plot, -w/-W, -efile, -fileNUM,
- * -fileOrder, -srcfile, -use, -z and -config files.
+ * (TAG=VALUE, -tagsFromFile, -o, -csv=/-j= import, -geotag...), -X, -h, -htmlDump, -listx,
+ * -listgeo, -diff, -plot, -w/-W, -efile, -fileNUM, -fileOrder, -srcfile, -use, -z and -config
+ * files. -if and -p evaluate Perl code: -if supports a subset of Perl expressions (see
+ * CompileCondition()), and -p advanced formatting expressions (${TAG;EXPR}) are not supported.
  *
  * From PHP: Application::json(['-g', $file]) returns what `exiftool -j -g FILE` prints, as an
  * array; Application::capture($args) returns [exit status, stdout, stderr] of any command.
@@ -100,6 +101,10 @@ final class Application
     private array $database = [];       // CSV information for each file (keyed by file name)
     private array $filterExt = [];      // lookup for filtered extensions
     private array $ignore = [];         // directory names to ignore
+    private array $condition = [];      // conditional processing of files
+    private array $printFmt = [];       // the contents of the print format file
+    private array $requestTags = [];    // tags to request (for -p or -if option arguments)
+    private array $compiledCond = [];   // (PHP) compiled -if conditions, keyed by Perl code
     private $allGroup;                  // show group name for all tags
     private $altEnc;                    // alternate character encoding if not UTF-8
     private $argFormat;                 // use exiftool argument-format output
@@ -111,12 +116,15 @@ final class Application
     private $count = 0;                 // count of files scanned
     private $countBad = 0;              // count of files with errors
     private $countDir = 0;              // count of directories scanned
+    private $countFailed = 0;           // count files that failed condition
     private $csv;                       // flag for CSV option (set to "CSV")
     private $csvDelim = ',';            // delimiter for CSV files
     private $disableOutput;             // flag to disable normal output
     private $escapeC;                   // C-style escape
     private $escapeHTML;                // flag to escape printed values for html
     private $executeID;                 // -execute ID number
+    private $failCondition;             // flag to fail -if condition
+    private $fastCondition;             // flag for fast -if condition
     private $fileHeader;                // header to print to output file (or console, once)
     private $fileTrailer = '';          // trailer for output file
     private $filtered;                  // flag indicating file was filtered by name
@@ -148,6 +156,9 @@ final class Application
     private $recurse;                   // recurse into subdirectories (2=also hidden directories)
     private $rtnVal;                    // command return value (0=success)
     private $rtnValPrev;                // previous command return value (0=success)
+    private $sectHeader;                // current section header for -p option
+    private $sectTrailer = '';          // section trailer for -p option
+    private $stdinData;                 // (PHP) STDIN buffered for -if (Perl $rafStdin)
     private $setCharset;                // character set setting ('default' if not set and -csv -b used)
     private $showGroup;                 // number of group to show (may be zero or '')
     private $showTagID;                 // non-zero to show tag ID's
@@ -310,6 +321,10 @@ final class Application
             //  $rtnValApp, $rtnValPrev, $stayOpen, $stayOpenBuff, $stayOpenFile)
             $this->csvFiles = $this->csvTagList = $this->echo3 = $this->echo4 = $this->exclude = [];
             $this->files = $this->tags = $this->csvTags = $this->database = $this->filterExt = $this->ignore = [];
+            $this->condition = $this->printFmt = $this->requestTags = $this->compiledCond = [];
+            $this->failCondition = $this->fastCondition = $this->sectHeader = $this->stdinData = null;
+            $this->countFailed = 0;
+            $this->sectTrailer = '';
             $this->allGroup = $this->altEnc = $this->argFormat = $this->binaryOutput = $this->binSep = null;
             $this->binTerm = $this->comma = $this->csv = $this->disableOutput = $this->escapeC = null;
             $this->escapeHTML = $this->executeID = $this->fileHeader = $this->filtered = $this->fixLen = null;
@@ -445,8 +460,70 @@ final class Application
                         continue;
                     }
                     $a = strtolower($arg);
-                    if (preg_match('/^list([wfrdx]|wf|g(\d*)|geo)?$/i', $arg)) {
-                        $badCmd = $this->NotPorted($arg);
+                    if (preg_match('/^list([wfrdx]|wf|g(\d*)|geo)?$/i', $arg, $m)) {
+                        if (!$pass) {
+                            $nextPass[] = "-$arg";
+                        }
+                        $type = strtolower($m[1] ?? '');
+                        if (!$type || 'w' === $type || 'x' === $type) {
+                            $group = null;
+                            if ($this->ARGV && preg_match('/^(-|\xe2\x88\x92)(.+):(all|\*)$/i', (string) $this->ARGV[0], $mm)) {
+                                if (0 == $pass) {
+                                    // (MWG module not loaded)
+                                    $nextPass[] = array_shift($this->ARGV);
+                                    continue;
+                                }
+                                $group = $mm[2];
+                                array_shift($this->ARGV);
+                                if (preg_match('/IFD/i', $group)) {
+                                    $this->Warn("Can't list tags for specific IFD\n");
+                                    $this->helped = 1;
+                                    continue;
+                                }
+                                if (preg_match('/^(all|\*)$/', $group)) {
+                                    $group = null;
+                                }
+                            } elseif (!$pass) {
+                                continue;
+                            }
+                            $this->helped = 1;
+                            if ('x' === $type) {
+                                $badCmd = $this->NotPorted($arg);   // (TagInfoXML module not ported)
+                                continue;
+                            }
+                            $wr = ('w' === $type);
+                            $msg = ($wr ? 'Writable' : 'Available') . ($group ? " $group" : '') . ' tags';
+                            $this->PrintTagList($msg, ...($wr ? ExifTool::GetWritableTags($group) : ExifTool::GetAllTags($group)));
+                            // also print shortcuts if listing all tags
+                            if ($group || $wr) {
+                                continue;
+                            }
+                            $tagList = ExifTool::GetShortcuts();
+                            if ($tagList) {
+                                $this->PrintTagList('Command-line shortcuts', ...$tagList);
+                            }
+                            continue;
+                        }
+                        if (!$pass) {
+                            continue;
+                        }
+                        $this->helped = 1;
+                        if ('wf' === $type) {
+                            $wf = array_values(array_filter(ExifTool::GetFileTypeList(), static fn ($t) => ExifTool::CanWrite($t)));
+                            $this->PrintTagList('Writable file extensions', ...$wf);
+                        } elseif ('f' === $type) {
+                            $this->PrintTagList('Supported file extensions', ...ExifTool::GetFileTypeList());
+                        } elseif ('r' === $type) {
+                            $this->PrintTagList('Recognized file extensions', ...ExifTool::GetFileTypeList(null, 0));
+                        } elseif ('d' === $type) {
+                            $this->PrintTagList('Deletable groups', ...ExifTool::GetDeleteGroups());
+                        } elseif ('geo' === $type) {
+                            $badCmd = $this->NotPorted($arg);   // (Geolocation module not ported)
+                        } else { // 'g(\d*)'
+                            // list all groups in specified family
+                            $family = ($m[2] ?? '') ?: 0;
+                            $this->PrintTagList("Groups in family $family", ...ExifTool::GetAllGroups($mt, $family));
+                        }
                         continue;
                     }
                     if ('ver' === $a) {
@@ -802,8 +879,36 @@ final class Application
                         }
                         continue;
                     }
-                    if (preg_match('/^if(\d*)$/i', $arg)) {
-                        $badCmd = $this->NotPorted($arg);
+                    if (preg_match('/^if(\d*)$/i', $arg, $m)) {
+                        $cond = array_shift($this->ARGV);
+                        $fast = \strlen($m[1]) ? $m[1] : null;
+                        if (null === $cond) {
+                            $this->Error("Expecting expression for -if option\n");
+                            $badCmd = true;
+                            continue;
+                        }
+                        // use lowest -fast setting if multiple conditions
+                        if (!$this->condition || null === $fast || (null !== $this->fastCondition && $this->fastCondition > $fast)) {
+                            $this->fastCondition = $fast;
+                        }
+                        // prevent processing file unnecessarily for simple case of failed '$ok' or 'not $ok'
+                        if (preg_match('/^\s*(not\s*)\$ok\s*$/i', $cond) && !$this->rtnValPrev) {
+                            $this->failCondition = 1;
+                        }
+                        // add to list of requested tags
+                        preg_match_all('/\$\{?((?:[-_0-9A-Z]+:)*[-_0-9A-Z?*]+)/i', $cond, $mm);
+                        array_push($this->requestTags, ...$mm[1]);
+                        // (PHP: refuse now the Perl code which can't be translated)
+                        try {
+                            $this->CompileCondition($mt->InsertTagValues($cond, [], new \ArrayObject()));
+                        } catch (\DomainException $e) {
+                            $this->Error("Sorry, this -if expression is not supported by the PHP port of exiftool ({$e->getMessage()}): $cond\n");
+                            $badCmd = true;
+                            continue;
+                        } catch (\RuntimeException) {
+                            // (Perl syntax errors fail the condition for each file, like Perl)
+                        }
+                        $this->condition[] = $cond;
                         continue;
                     }
                     if (preg_match('/^(k|pause)$/i', $arg)) {
@@ -876,8 +981,20 @@ final class Application
                         continue;
                     }
                     if (preg_match('/^o(ut)?$/i', $arg) || 'overwrite_original' === $a || 'overwrite_original_in_place' === $a
-                        || 'plot' === $a || preg_match('/^p(-?)$/', $arg) || preg_match('/^printformat(-?)$/i', $arg)) {
+                        || 'plot' === $a) {
                         $badCmd = $this->NotPorted($arg);
+                        continue;
+                    }
+                    if (preg_match('/^p(-?)$/', $arg, $m) || preg_match('/^printformat(-?)$/i', $arg, $m)) {
+                        $fmt = array_shift($this->ARGV);
+                        if ($pass) {
+                            $this->LoadPrintFormat($fmt, $m[1] ?: $this->binaryOutput);
+                            // (MWG module not loaded: "mwg:" tags are not supported)
+                        } else {
+                            // defer to next pass so the filename charset is available
+                            $nextPass[] = "-$arg";
+                            $nextPass[] = $fmt;
+                        }
                         continue;
                     }
                     if ('P' === $arg || 'preserve' === $a) {
@@ -1125,6 +1242,10 @@ final class Application
                         $this->setCharset = 'default';
                     }
                 }
+                if ($this->printFmt) {
+                    $this->Warn("The -csv option has no effect when -p is used\n");
+                    $this->csv = null;
+                }
             }
 
             if ($this->escapeHTML || $this->json) {
@@ -1264,6 +1385,9 @@ final class Application
             }
 
             // print file trailer if necessary
+            if ($this->sectTrailer) {
+                fwrite($this->stdout, $this->sectTrailer);
+            }
             if ($this->fileTrailer && !$this->fileHeader) {
                 fwrite($this->stdout, $this->fileTrailer);
             }
@@ -1275,12 +1399,15 @@ final class Application
             if ((!$this->binaryStdout || $this->verbose) && !$this->quiet) {
                 // print summary
                 $tot = $this->count + $this->countBad;
-                if ($this->countDir || $tot > 1) {
-                    $o = ($this->json || $this->csv) ? $this->stderr : $this->vout;
+                if ($this->countDir || $this->countFailed || $tot > 1) {
+                    $o = ($this->json || $this->printFmt || $this->csv) ? $this->stderr : $this->vout;
                     if ($this->countDir) {
                         fwrite($o, Perl::sprintf("%5d directories scanned\n", $this->countDir));
                     }
-                    if ($tot > 1 || $this->countDir) {
+                    if ($this->countFailed) {
+                        fwrite($o, Perl::sprintf("%5d files failed condition\n", $this->countFailed));
+                    }
+                    if ($tot + $this->countFailed > 1 || $this->countDir) {
                         fwrite($o, Perl::sprintf("%5d image files read\n", $this->count));
                     }
                     if ($this->countBad) {
@@ -1289,9 +1416,11 @@ final class Application
                 }
             }
 
-            // set error status if we had any errors
+            // set error status if we had any errors or if all files failed the "-if" condition
             if ($this->countBad) {
                 $this->rtnVal = 1;
+            } elseif ($this->countFailed && !$this->count && !$this->rtnVal) {
+                $this->rtnVal = 2;
             }
 
             if ($this->purge) {
@@ -1319,9 +1448,72 @@ final class Application
 
             return;
         }
-        // (-srcfile, -fileNUM, -z and -if are not ported)
+        // (-srcfile, -fileNUM and -z are not ported)
         $file = $orig;
         $pipe = $file;
+        $foundTags = [];
+
+        // evaluate -if expression for conditional processing
+        if ($this->condition) {
+            $result = $evalWarning = null;
+            if (!$this->failCondition) {
+                $condInfo = new \ArrayObject();    // (Perl %info)
+                // extract information and build expression for evaluation
+                $opts = ['Duplicates' => 1, 'RequestTags' => $this->requestTags, 'Verbose' => 0, 'HtmlDump' => 0];
+                if (null !== $this->fastCondition) {
+                    $opts['FastScan'] = $this->fastCondition;
+                }
+                // return all tags but explicitly mention tags on command line so
+                // requested images will generate the appropriate warnings
+                if ($this->tags) {
+                    $foundTags = ['*', ...$this->tags];
+                }
+                // (STDIN is not buffered: like Perl's Infile() when reading)
+                $info = $et->ImageInfo($pipe, $foundTags, $opts);
+                $foundTags = $et->IO_TAG_LIST;
+                foreach ($this->condition as $condition) {
+                    $cond = $et->InsertTagValues($condition, $foundTags, $condInfo);
+                    //### eval "-if" condition (%info, $self)
+                    try {
+                        $result = $this->CompileCondition($cond)($condInfo);
+                    } catch (\RuntimeException|\DomainException $e) {
+                        $evalWarning = $e->getMessage();
+                    }
+                    if ($evalWarning) {
+                        // fail condition if warning is issued
+                        $result = null;
+                        if ($this->verbose) {
+                            $this->Warn("Condition: $evalWarning - $file\n");
+                        }
+                    }
+                    if (!$result) {
+                        break;
+                    }
+                }
+                if (null !== $this->fastCondition) {
+                    $foundTags = [];    // ignore if we didn't get all tags
+                }
+            }
+            if ($result) {
+                // discard $info for non-existent file
+                if (!('-' === $file || $et->Exists($file))) {
+                    $info = null;
+                }
+            } else {
+                if ($this->verbose) {
+                    $this->Progress($this->vout, "-------- $file (failed condition)");
+                }
+                ++$this->countFailed;
+
+                return;
+            }
+            // can't make use of $info if verbose because we must reprocess
+            // the file anyway to generate the verbose output
+            if ($this->verbose || null !== $this->fastCondition) {
+                $info = null;
+                --$et->FILE_SEQUENCE;
+            }
+        }
 
         // extract information from this file
         if (!('-' === $file || $et->Exists($file) || $info)) {
@@ -1333,7 +1525,7 @@ final class Application
         }
         // print file/progress message
         $o = null;
-        if (!($this->binaryOutput || $this->csv)) {
+        if (!($this->binaryOutput || $this->printFmt || $this->csv)) {
             if (!$this->json) {
                 if (($this->multiFile && !$this->quiet) || $this->progress) {
                     $o = $this->stdout;
@@ -1346,14 +1538,29 @@ final class Application
         if ($o) {
             $this->Progress($o, "======== $file");
         }
-        // request specified tags
-        $oldDups = $et->Options('Duplicates');
-        $foundTags = $this->tags;
-        // extract the information
-        // (STDIN is only buffered by Perl's Infile() for -if and -tagsFromFile, not ported)
-        $info = $et->ImageInfo($pipe, $foundTags);
-        $foundTags = $et->IO_TAG_LIST;  // (Perl updates \@foundTags in place)
-        $et->Options('Duplicates', $oldDups);
+        if ($info) {
+            // get the information we wanted
+            if ($this->tags && !$this->printFmt) {
+                $foundTags = $this->tags;
+                $info = $et->GetInfo($foundTags);
+                $foundTags = $et->IO_TAG_LIST;
+            }
+        } else {
+            // request specified tags unless using print format option
+            $oldDups = $et->Options('Duplicates');
+            if ($this->printFmt) {
+                $et->Options('Duplicates', 1);
+                $et->Options('RequestTags', $this->requestTags);
+                // (SetTags is only available from advanced formatting expressions: not supported)
+            } else {
+                $foundTags = $this->tags;
+            }
+            // extract the information
+            // (STDIN is only buffered by Perl's Infile() for -tagsFromFile, not ported)
+            $info = $et->ImageInfo($pipe, $foundTags);
+            $foundTags = $et->IO_TAG_LIST;  // (Perl updates \@foundTags in place)
+            $et->Options('Duplicates', $oldDups);
+        }
 
         // print warnings to stderr if using binary output
         // (because we are likely ignoring them and piping stdout to file)
@@ -1371,7 +1578,95 @@ final class Application
         $fp = $this->stdout;
 
         // print the results for this file
-        if (!$this->disableOutput) {
+        if ($this->printFmt) {
+            // output using print format file (-p) option
+            $doc = [];
+            $grp = $cache = null;
+            $this->fileTrailer = '';
+            // repeat for each embedded document if necessary (only if -ee used)
+            if ($et->Options('ExtractEmbedded')) {
+                // (cache tag keys if there are sub-documents)
+                if ($lastDoc = $et->DOC_COUNT) {
+                    $cache = [];
+                }
+            } else {
+                $lastDoc = 0;
+            }
+            for ($doc[0] = 0; $doc[0] <= $lastDoc;) {
+                $docStr = implode('-', $doc);
+                $skipBody = $opt = null;
+                foreach (['HEAD', 'SECT', 'IF', 'BODY', 'ENDS', 'TAIL'] as $type) {
+                    $prf = $this->printFmt[$type] ?? null;
+                    if (!$prf) {
+                        continue;
+                    }
+                    if ('BODY' === $type && $skipBody) {
+                        continue;
+                    }
+                    // silence "IF" warnings and warnings for subdocuments > 1
+                    if ('IF' === $type || (($doc[0] > 1 || \count($doc) > 1) && !$et->OPTIONS['IgnoreMinorErrors'])) {
+                        $opt = 'Silent';
+                    } else {
+                        $opt = 'Warn';
+                    }
+                    if ($lastDoc) {
+                        if ($docStr) {
+                            if ('HEAD' === $type || 'TAIL' === $type) {
+                                continue;   // only repeat SECT/IF/BODY/ENDS
+                            }
+                            $grp = "Doc$docStr";
+                        } else {
+                            $grp = 'Main';
+                        }
+                    }
+                    $lines = [];
+                    foreach ($prf as $fmt) {
+                        $line = $et->InsertTagValues($fmt, $foundTags, $opt, $grp, $cache);
+                        if ('IF' === $type) {
+                            if (null === $line) {
+                                $skipBody = 1;
+                            }
+                        } elseif (null !== $line) {
+                            $lines[] = $line;
+                        }
+                    }
+                    if ('SECT' === $type) {
+                        $thisHeader = implode('', $lines);
+                        if ($this->sectHeader && $this->sectHeader !== $thisHeader) {
+                            if ($this->sectTrailer) {
+                                fwrite($fp, $this->sectTrailer);
+                            }
+                            $this->sectHeader = null;
+                        }
+                        $this->sectTrailer = '';
+                        if (!$this->sectHeader) {
+                            fwrite($fp, $this->sectHeader = $thisHeader);
+                        }
+                    } elseif ('ENDS' === $type) {
+                        if (null !== $this->sectHeader) {
+                            $this->sectTrailer .= implode('', $lines);
+                        }
+                    } elseif ('TAIL' === $type) {
+                        $this->fileTrailer .= implode('', $lines);
+                    } elseif ($lines) {
+                        fwrite($fp, implode('', $lines));
+                    }
+                }
+                // find next available doc-subdoc
+                $doc[] = 1;
+                while (\count($doc) > 1) {
+                    $nextDoc = implode('-', $doc);
+                    if (!empty($et->HAS_DOC[$nextDoc])) {
+                        break;
+                    }
+                    array_pop($doc);
+                    ++$doc[\count($doc) - 1];
+                }
+            }
+            unset($this->printFmt['HEAD']);  // print header only once per output file
+            $errs = $et->GetInfo('Warning', 'Error');
+            $this->PrintErrors($et, $errs, $file);
+        } elseif (!$this->disableOutput) {
             $line = null;
             $noDups = [];
             $csvInfo = [];
@@ -2281,12 +2576,351 @@ final class Application
     }
 
     //------------------------------------------------------------------------------
+    // Add print format entry
+    // Inputs: 0) expression string
+    private function AddPrintFormat($expr): void
+    {
+        if (str_starts_with($expr, '#')) {
+            if (!preg_match('/^#\[(HEAD|SECT|IF|BODY|ENDS|TAIL)\]/', $expr, $m)) {
+                return;     // ignore comments
+            }
+            $expr = substr($expr, \strlen($m[0]));
+            $type = $m[1];
+        } else {
+            $type = 'BODY';
+        }
+        $this->printFmt[$type][] = $expr;
+        // add to list of requested tags
+        preg_match_all('/\$\{?((?:[-_0-9A-Z]+:)*[-_0-9A-Z?*]+)/i', $expr, $mm);
+        array_push($this->requestTags, ...$mm[1]);
+        // (SetTags is only available from advanced formatting expressions, which are not supported)
+    }
+
+    //------------------------------------------------------------------------------
+    // Load print format file
+    // Inputs: 0) file name, 1) flag to avoid adding newline to input argument
+    // - saves lines of file to %printFmt list
+    // - adds tag names to @tags list
+    private function LoadPrintFormat($arg, $noNL = null): void
+    {
+        if (null === $arg) {
+            $this->Error("Must specify file or expression for -p option\n");
+        } elseif (!str_contains($arg, "\n") && is_file($arg) && false !== ($fp = @fopen($arg, 'r'))) {
+            while (false !== ($line = fgets($fp))) {
+                $this->AddPrintFormat($line);
+            }
+            fclose($fp);
+        } else {
+            if (!$noNL) {
+                $arg .= "\n";
+            }
+            $this->AddPrintFormat($arg);
+        }
+    }
+
+    //------------------------------------------------------------------------------
+    // (PHP) Translate the Perl code of an -if condition (after InsertTagValues) to a PHP closure
+    // Inputs: 0) Perl code
+    // Returns: closure taking the \ArrayObject of tag values (Perl %info) and returning the result
+    // Notes: Supported: $info{'TAG'} (from $TAG or ${GROUP:TAG}), numbers, quoted strings,
+    //        eq ne lt gt le ge == != < > <= >=, =~ and !~ with a m// pattern, ! not && and || or,
+    //        defined and parentheses.  Throws \DomainException for any other Perl code, and
+    //        \RuntimeException for a Perl syntax error.  The closure throws \RuntimeException
+    //        where Perl issues a warning (which fails the condition)
+    private function CompileCondition($code): \Closure
+    {
+        if (isset($this->compiledCond[$code])) {
+            return $this->compiledCond[$code];
+        }
+        $toks = self::TokenizeCondition($code);
+        $pos = 0;
+        [$fn] = self::ParseCondition($toks, $pos, 0);
+        if ($pos < \count($toks)) {
+            throw new \DomainException('unexpected ' . (\is_string($toks[$pos][1]) ? "'{$toks[$pos][1]}'" : $toks[$pos][0]));
+        }
+
+        return $this->compiledCond[$code] = $fn;
+    }
+
+    // split condition code into tokens: ['var', NAME], ['val', VALUE], ['str', PARTS],
+    // ['re', PARTS, FLAGS] or ['op', OPERATOR] (PARTS: strings and ['var', NAME] to interpolate)
+    private static function TokenizeCondition($code): array
+    {
+        $toks = [];
+        $len = \strlen($code);
+        for ($p = 0; ;) {
+            if (preg_match('/\G\s+/', $code, $m, 0, $p)) {
+                $p += \strlen($m[0]);
+            }
+            if ($p >= $len) {
+                break;
+            }
+            $prev = $toks ? $toks[\count($toks) - 1] : null;
+            if ($prev && 'op' === $prev[0] && ('=~' === $prev[1] || '!~' === $prev[1])) {
+                if (!preg_match('/\G(?:m\s*([^\w\s])|\/)/', $code, $m, 0, $p)) {
+                    throw new \DomainException("only m// patterns may follow $prev[1]");
+                }
+                $open = $m[1] ?? '/';
+                $p += \strlen($m[0]);
+                [$parts, $p] = self::ScanQuoted($code, $p, $open, 're');
+                preg_match('/\G[a-zA-Z]*/', $code, $m, 0, $p);
+                $p += \strlen($m[0]);
+                if (preg_match('/[^imsxgo]/', $m[0])) {
+                    throw new \DomainException("pattern modifiers '$m[0]'");
+                }
+                $toks[] = ['re', $parts, str_replace(['g', 'o'], '', $m[0])];
+            } elseif (preg_match('/\G\$info\{\'([^\']*)\'\}/', $code, $m, 0, $p)) {
+                $toks[] = ['var', $m[1]];
+                $p += \strlen($m[0]);
+            } elseif (preg_match('/\G' . (!$prev || ('op' === $prev[0] && ')' !== $prev[1]) ? '-?' : '') .
+                '(?:(?:0|[1-9]\d*)(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?(?![\w.])/', $code, $m, 0, $p)) {
+                $toks[] = ['val', 0 + $m[0]];   // (a leading "-" is the negation of the number)
+                $p += \strlen($m[0]);
+            } elseif ("'" === $code[$p] || '"' === $code[$p]) {
+                $q = $code[$p];
+                [$parts, $p] = self::ScanQuoted($code, $p + 1, $q, $q);
+                $toks[] = "'" === $q ? ['val', $parts[0]] : ['str', $parts];
+            } elseif (preg_match('/\G(?:=~|!~|==|!=|<=|>=|&&|\|\||[<>!()]|(?:eq|ne|lt|gt|le|ge|and|or|not|defined)\b)/', $code, $m, 0, $p)) {
+                $toks[] = ['op', $m[0]];
+                $p += \strlen($m[0]);
+            } else {
+                throw new \DomainException("'" . substr($code, $p, 12) . "'");
+            }
+        }
+
+        return $toks;
+    }
+
+    // scan a quoted string or a pattern up to its closing delimiter
+    // Inputs: 0) code, 1) position after the opening delimiter, 2) opening delimiter,
+    //         3) 're' for a pattern (escapes are kept), or the opening quote of a string
+    // Returns: [list of parts, position after the closing delimiter]
+    private static function ScanQuoted($code, $p, $open, $kind = 're'): array
+    {
+        $close = strtr($open, '([{<', ')]}>');
+        $parts = [];
+        $str = '';
+        $depth = 0;
+        $len = \strlen($code);
+        for (; ;) {
+            if ($p >= $len) {
+                throw new \RuntimeException('re' === $kind ? 'Search pattern not terminated' : "Can't find string terminator $open$open anywhere before EOF");
+            }
+            $c = $code[$p];
+            if ('\\' === $c && $p + 1 < $len) {
+                $n = $code[$p + 1];
+                $p += 2;
+                if ('re' === $kind) {
+                    $str .= $c . $n;    // (escapes are interpreted by the regex engine)
+                } elseif ("'" === $kind) {
+                    $str .= ('\\' === $n || "'" === $n) ? $n : $c . $n;
+                } elseif (isset(self::DQ_ESC[$n])) {
+                    $str .= self::DQ_ESC[$n];
+                } else {
+                    throw new \DomainException("escape \\$n in string");
+                }
+                continue;
+            }
+            if ($c === $close && !$depth) {
+                break;
+            }
+            if ($open !== $close) {
+                if ($c === $open) {
+                    ++$depth;
+                } elseif ($c === $close) {
+                    --$depth;
+                }
+            }
+            if ("'" !== $kind && ('$' === $c || '@' === $c)) {
+                if (preg_match('/\G\$info\{\'([^\']*)\'\}/', $code, $m, 0, $p)) {
+                    if ('' !== $str) {
+                        $parts[] = $str;
+                    }
+                    $parts[] = ['var', $m[1]];
+                    $str = '';
+                    $p += \strlen($m[0]);
+                    continue;
+                }
+                // ($ before a non-identifier is an end-of-line anchor in a pattern)
+                if ('@' === $c ? preg_match('/\G@[\w:{$]/', $code, $m, 0, $p) : ('re' !== $kind || preg_match('/\G\$[\w{:]/', $code, $m, 0, $p))) {
+                    throw new \DomainException("interpolation of '" . substr($code, $p, 12) . "'");
+                }
+            }
+            $str .= $c;
+            ++$p;
+        }
+        if ('' !== $str || !$parts) {
+            $parts[] = $str;
+        }
+
+        return [$parts, $p + 1];
+    }
+
+    // escapes supported in double-quoted strings
+    private const array DQ_ESC = ['\\' => '\\', '"' => '"', '$' => '$', '@' => '@', 'n' => "\n", 't' => "\t", 'r' => "\r"];
+
+    // binary operators by precedence level (lowest first), and the Perl names of the operators
+    private const array COND_LEVELS = [['or'], ['and'], ['not'], ['||'], ['&&'], ['==', '!=', 'eq', 'ne'],
+        ['<', '>', '<=', '>=', 'lt', 'gt', 'le', 'ge'], ['defined'], ['=~', '!~'], ['!']];
+    private const array COND_OPNAME = ['eq' => 'string eq', 'ne' => 'string ne', 'lt' => 'string lt',
+        'gt' => 'string gt', 'le' => 'string le', 'ge' => 'string ge', '==' => 'numeric eq (==)',
+        '!=' => 'numeric ne (!=)', '<' => 'numeric lt (<)', '>' => 'numeric gt (>)',
+        '<=' => 'numeric le (<=)', '>=' => 'numeric ge (>=)'];
+
+    // parse tokens from $pos at the given precedence level
+    // Returns: [closure, name of variable if the expression is a plain variable]
+    private static function ParseCondition(array $toks, int &$pos, int $level): array
+    {
+        $isOp = static function ($ops) use ($toks, &$pos) {
+            return isset($toks[$pos]) && 'op' === $toks[$pos][0] && \in_array($toks[$pos][1], $ops, true);
+        };
+        if ($level >= \count(self::COND_LEVELS)) {
+            // term
+            $tok = $toks[$pos++] ?? throw new \RuntimeException('syntax error');
+            switch ($tok[0]) {
+                case 'var':
+                    $name = $tok[1];
+
+                    return [static fn (\ArrayObject $info) => $info[$name] ?? null, $name];
+                case 'val':
+                    $v = $tok[1];
+
+                    return [static fn () => $v, null];
+                case 'str':
+                    $parts = $tok[1];
+
+                    return [static fn (\ArrayObject $info) => self::Interpolate($parts, $info, 'concatenation (.) or string'), null];
+                case 'op':
+                    if ('(' === $tok[1]) {
+                        [$fn] = self::ParseCondition($toks, $pos, 0);
+                        if (!$isOp([')'])) {
+                            throw new \RuntimeException('syntax error');
+                        }
+                        ++$pos;
+
+                        return [$fn, null];
+                    }
+            }
+            throw new \DomainException('re' === $tok[0] ? 'pattern without =~' : "unexpected '$tok[1]'");
+        }
+        $ops = self::COND_LEVELS[$level];
+        if (\in_array($ops[0], ['not', 'defined', '!'], true)) {
+            // unary operators
+            if (!$isOp($ops)) {
+                return self::ParseCondition($toks, $pos, $level + 1);
+            }
+            $op = $toks[$pos++][1];
+            [$fn, $name] = self::ParseCondition($toks, $pos, $level);
+            if ('defined' === $op) {
+                return [static fn (\ArrayObject $info) => null !== $fn($info), null];
+            }
+
+            return [static fn (\ArrayObject $info) => !self::Truth($fn($info)), null];
+        }
+        [$fn, $name] = self::ParseCondition($toks, $pos, $level + 1);
+        while ($isOp($ops)) {
+            $op = $toks[$pos++][1];
+            if ('=~' === $op || '!~' === $op) {
+                $tok = $toks[$pos++] ?? null;
+                if ('re' !== ($tok[0] ?? null)) {
+                    throw new \DomainException("$op without a pattern");
+                }
+                [, $parts, $flags] = $tok;
+                $not = '!~' === $op;
+                $lhs = $fn;
+                $lname = $name;
+                $fn = static function (\ArrayObject $info) use ($lhs, $lname, $parts, $flags, $not) {
+                    $re = self::Interpolate($parts, $info, 'regexp compilation');
+                    $re = '/' . preg_replace_callback('/\\\\.|\//s', static fn ($m) => '/' === $m[0] ? '\\/' : $m[0], $re) . "/$flags";
+                    $val = self::CondArg($lhs($info), $lname, 'pattern match (m//)');
+                    $ok = @preg_match($re, Perl::str($val));
+                    if (false === $ok) {
+                        throw new \RuntimeException('Invalid regular expression ' . $re);
+                    }
+
+                    return $not xor $ok;
+                };
+            } else {
+                [$rhs, $rname] = self::ParseCondition($toks, $pos, $level + 1);
+                $lhs = $fn;
+                $lname = $name;
+                $fn = match ($op) {
+                    'and', '&&' => static fn (\ArrayObject $info) => self::Truth($l = $lhs($info)) ? $rhs($info) : $l,
+                    'or', '||' => static fn (\ArrayObject $info) => self::Truth($l = $lhs($info)) ? $l : $rhs($info),
+                    default => static function (\ArrayObject $info) use ($lhs, $lname, $rhs, $rname, $op) {
+                        $what = self::COND_OPNAME[$op];
+                        $a = self::CondArg($lhs($info), $lname, $what);
+                        $b = self::CondArg($rhs($info), $rname, $what);
+                        if (str_starts_with($what, 'string')) {
+                            $cmp = strcmp(Perl::str($a), Perl::str($b));
+                        } else {
+                            $cmp = Perl::num($a) <=> Perl::num($b);
+                            if (is_nan((float) Perl::num($a)) || is_nan((float) Perl::num($b))) {
+                                return '!=' === $op;
+                            }
+                        }
+
+                        return match ($op) {
+                            'eq', '==' => 0 === $cmp, 'ne', '!=' => 0 !== $cmp,
+                            'lt', '<' => $cmp < 0, 'gt', '>' => $cmp > 0,
+                            'le', '<=' => $cmp <= 0, 'ge', '>=' => $cmp >= 0,
+                        };
+                    },
+                };
+            }
+            $name = null;
+            if ($level >= 5 && $level <= 6) {
+                break;  // (comparison operators are non-associative)
+            }
+        }
+
+        return [$fn, $name];
+    }
+
+    // check an operand like Perl: warn for an undefined value, or a non-numeric string in a numeric operation
+    private static function CondArg($v, $name, $what)
+    {
+        if (null === $v) {
+            throw new \RuntimeException('Use of uninitialized value' . (null !== $name ? " \$info{\"$name\"}" : '') . " in $what");
+        }
+        if (\is_string($v) && str_starts_with($what, 'numeric') && !is_numeric($v) && !preg_match('/^\s*[-+]?(inf(inity)?|nan)\s*$/i', $v)) {
+            throw new \RuntimeException("Argument \"$v\" isn't numeric in $what");
+        }
+
+        return $v;
+    }
+
+    // interpolate variables into a string or pattern
+    private static function Interpolate(array $parts, \ArrayObject $info, $what): string
+    {
+        $str = '';
+        foreach ($parts as $part) {
+            $str .= \is_array($part) ? Perl::str(self::CondArg($info[$part[1]] ?? null, $part[1], $what)) : $part;
+        }
+
+        return $str;
+    }
+
+    // Perl truth value (a reference is always true)
+    private static function Truth($v): bool
+    {
+        return \is_array($v) || \is_object($v) || (bool) $v;
+    }
+
+    //------------------------------------------------------------------------------
     // Print list of tags
     // Inputs: 0) message, 1-N) list of tag names
     private function PrintTagList($msg, ...$list): void
     {
         if (!$this->quiet) {
             fwrite($this->stdout, "$msg:\n");
+        }
+        if (($this->outFormat < 0 || $this->verbose) && preg_match('/file extensions$/', $msg) && $list) {
+            foreach ($list as $tag) {
+                fwrite($this->stdout, Perl::sprintf("  %-11s %s\n", $tag, ExifTool::GetFileType($tag, 1)));
+            }
+
+            return;
         }
         $len = 0;
         $pad = $this->quiet ? '' : '  ';

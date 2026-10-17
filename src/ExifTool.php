@@ -47,6 +47,8 @@ class ExifTool
     public static array $allTables = [];
     /** @tableOrder: order the tables were loaded */
     public static array $tableOrder = [];
+    /** $loadedAllTables: flag indicating we loaded all tables (Writer.pl) */
+    public static $loadedAllTables = null;
     /** my %compositeID: lookup for new ID's of Composite tags based on original ID */
     public static array $compositeID = [];
     /** %UserDefined: user-defined tags (table name => tag definitions) */
@@ -2444,8 +2446,12 @@ COMPOSITE_TAG:
             $fileName = $altExifTool->ALT_FILE;
             // allow tags from the main file to be used in the alternate file names
             // (eg. -file1 '$originalfilename')
-            // (ponytail: InsertTagValues (Writer.pl) not ported, such file names are skipped)
-            if (str_contains((string) $fileName, '$')) continue;
+            if (str_contains((string) $fileName, '$')) {
+                $tags = array_map('strval', array_keys($this->VALUE));
+                rsort($tags, SORT_STRING);
+                $fileName = $this->InsertTagValues($fileName, $tags, 'Warn');
+                if ($fileName === null) continue;
+            }
             $altExifTool->ExtractInfo($fileName);
             $err = $altExifTool->VALUE['Error'] ?? null;
             if ($err) $this->Warn("$err \"$fileName\"");
@@ -5464,9 +5470,17 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     //------------------------------------------------------------------------------
     // Verbose dump
     // Inputs: 0) ExifTool ref, 1) data ref, 2-N) HexDump options
-    // (ponytail: hex dumps not ported)
     public function VerboseDump($dataPt, mixed ...$opts): void
     {
+        $verbose = $this->OPTIONS['Verbose'];
+        if ($verbose and $verbose > 2) {
+            $parms = [
+                'Prefix' => $this->INDENT,
+                'Out'    => $this->OPTIONS['TextOut'],
+                'MaxLen' => $verbose < 4 ? 96 : ($verbose < 5 ? 2048 : null),
+            ];
+            self::HexDump($dataPt, null, ...array_merge($parms, $opts));
+        }
     }
 
     //------------------------------------------------------------------------------
@@ -5930,27 +5944,855 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     }
 
     //------------------------------------------------------------------------------
+    // Get list of all available tags for specified group
+    // Inputs: 0) optional group name (or string of names separated by colons)
+    // Returns: tag list (sorted alphabetically)
+    // Notes: Can't get tags for specific IFD
+    public static function GetAllTags($group = null): array
+    {
+        $allTags = $groups = [];
+        if ($group) $groups = Perl::split('/:/', $group);
+
+        $et = new self();
+        self::LoadAllTables();  // first load all our tables
+        $tableNames = array_map('strval', array_keys(self::$allTables));
+
+        // loop through all tables and save tag names to %allTags hash
+        while ($tableNames) {
+            $table = self::GetTagTable(array_pop($tableNames));
+            if (!$table) continue;
+            // generate flattened tag names for structure fields if this is an XMP table
+            if ($table['GROUPS'] and Perl::str($table['GROUPS'][0] ?? null) === 'XMP') {
+                XMP::AddFlattenedTags($table);
+            }
+            foreach (self::TagTableKeys($table) as $tagID) {
+                foreach (self::GetTagInfoList($table, $tagID) as $tagInfo) {
+                    $tag = $tagInfo->Name;
+                    if (!$tag) {
+                        self::PerlWarn("no name for tag!\n");
+                        continue;
+                    }
+                    // don't list subdirectories unless they are writable
+                    if ($tagInfo->SubDirectory !== null and !$tagInfo->Writable) continue;
+                    if ($tagInfo->Hidden) continue;    // ignore hidden tags
+                    if ($groups) {
+                        $tg = $et->GetGroup($tagInfo);
+                        foreach ($groups as $g) {
+                            if (!@preg_grep('/^' . str_replace('/', '\/', $g) . '$/i', $tg)) continue 2;
+                        }
+                    }
+                    $allTags[$tag] = 1;
+                }
+            }
+        }
+        $tags = array_map('strval', array_keys($allTags));
+        sort($tags, SORT_STRING);
+        return $tags;
+    }
+
+    //------------------------------------------------------------------------------
+    // Get list of all writable tags
+    // Inputs: 0) optional group name (or names separated by colons)
+    // Returns: tag list (sorted alphabetically)
+    public static function GetWritableTags($group = null): array
+    {
+        $writableTags = $groups = [];
+        if ($group) $groups = Perl::split('/:/', $group);
+
+        $et = new self();
+        self::LoadAllTables();
+        $tableNames = array_map('strval', array_keys(self::$allTables));
+
+        while ($tableNames) {
+            $tableName = array_pop($tableNames);
+            $table = self::GetTagTable($tableName);
+            if (!$table) continue;
+            // generate flattened tag names for structure fields if this is an XMP table
+            if ($table['GROUPS'] and Perl::str($table['GROUPS'][0] ?? null) === 'XMP') {
+                XMP::AddFlattenedTags($table);
+            }
+            // attempt to load Write tables if autoloaded
+            // (PHP: the Write modules are not ported)
+            foreach (self::TagTableKeys($table) as $tagID) {
+                foreach (self::GetTagInfoList($table, $tagID) as $tagInfo) {
+                    $tag = $tagInfo->Name;
+                    if (!$tag) {
+                        self::PerlWarn("no name for tag!\n");
+                        continue;
+                    }
+                    $writable = $tagInfo->Writable;
+                    if (!($writable or ($table['WRITABLE'] and
+                        $writable === null and $tagInfo->SubDirectory === null))) continue;
+                    if ($tagInfo->Hidden) continue;    // ignore hidden tags
+                    if ($groups) {
+                        $tg = $et->GetGroup($tagInfo);
+                        foreach ($groups as $g) {
+                            if (!@preg_grep('/^' . str_replace('/', '\/', $g) . '$/i', $tg)) continue 2;
+                        }
+                    }
+                    $writableTags[$tag] = 1;
+                }
+            }
+        }
+        $tags = array_map('strval', array_keys($writableTags));
+        sort($tags, SORT_STRING);
+        return $tags;
+    }
+
+    //------------------------------------------------------------------------------
+    // Get list of all group names
+    // Inputs: 0) [optional] ExifTool ref, 1) Group family number
+    // Returns: List of group names (sorted alphabetically)
+    public static function GetAllGroups($family = null, $family2 = null): array
+    {
+        $self = null;
+        if ($family instanceof self) {
+            $self = $family;
+            $family = $family2;
+        }
+        $family = $family ?: 0;
+
+        if ($family == 3) return ['Doc#', 'Main'];
+        if ($family == 4) return ['Copy#'];
+        if ($family == 5) return ['[too many possibilities to list]'];
+        if ($family == 6) {
+            $fn = Vars\Exif::$formatNumber;
+            $list = array_map('strval', array_keys($fn));
+            usort($list, static fn ($a, $b) => $fn[$a] <=> $fn[$b]);
+            return $list;
+        }
+        if ($family == 8) return ['File#'];
+
+        self::LoadAllTables();  // first load all our tables
+
+        $tableNames = array_map('strval', array_keys(self::$allTables));
+
+        $allGroups = [];
+        // add family 1 groups not in tables
+        // start with family 1 groups that are missing from the tables
+        if ($family == 1) {
+            foreach (['Garmin', 'AudioItemList', 'AudioUserData', 'VideoItemList', 'VideoUserData',
+                'Track#Keys', 'Track#ItemList', 'Track#UserData', 'KFIX'] as $grp) $allGroups[$grp] = 1;
+        }
+        // loop through all tag tables and get all group names
+        while ($tableNames) {
+            $table = self::GetTagTable(array_pop($tableNames));
+            if (!$table) continue;
+            $grps = $table['GROUPS'];
+            if ($grps and ($grp = $grps[$family] ?? null)) $allGroups[$grp] = 1;
+            foreach (self::TagTableKeys($table) as $tag) {
+                $infoArray = self::GetTagInfoList($table, $tag);
+                if ($family == 7) {
+                    foreach ($infoArray as $tagInfo) {
+                        $id = $tagInfo->TagID;
+                        if ($id === null) {
+                            $id = '';   // (just to be safe)
+                        } elseif (preg_match('/^\d+$/', Perl::str($id))) {
+                            if ($self and $self->OPTIONS['HexTagIDs']) $id = Perl::sprintf('0x%x', $id);
+                        } else {
+                            $id = preg_replace_callback('/([^-_A-Za-z0-9])/', static fn ($m) => Perl::sprintf('%.2x', ord($m[1])), Perl::str($id));
+                        }
+                        $allGroups['ID-' . $id] = 1;
+                    }
+                } else {
+                    foreach ($infoArray as $tagInfo) {
+                        $grps = $tagInfo->Groups;
+                        if (!($grps and ($grp = $grps[$family] ?? null))) continue;
+                        $allGroups[$grp] = 1;
+                    }
+                }
+            }
+        }
+        unset($allGroups['*']);     // (not a real group)
+        $list = array_map('strval', array_keys($allGroups));
+        usort($list, static fn ($a, $b) => strcmp(strtolower($a), strtolower($b)));
+        return $list;
+    }
+
+    //------------------------------------------------------------------------------
+    // Get list of all deletable group names
+    // Returns: List of group names (sorted alphabetically)
+    public static function GetDeleteGroups(): array
+    {
+        // (@delGroups and @delGroup2 of Writer.pl)
+        $list = [
+            'Adobe', 'AFCP', 'APP0', 'APP1', 'APP2', 'APP3', 'APP4', 'APP5', 'APP6', 'APP7', 'APP8', 'APP9',
+            'APP10', 'APP11', 'APP12', 'APP13', 'APP14', 'APP15', 'AROT', 'AudioKeys', 'CanonVRD', 'CIFF',
+            'Ducky', 'EXIF', 'ExifIFD', 'File', 'FlashPix', 'FotoStation', 'GlobParamIFD', 'GPS',
+            'ICC_Profile', 'IFD0', 'IFD1', 'Insta360', 'InteropIFD', 'IPTC', 'ItemList', 'iTunes', 'JFIF',
+            'Jpeg2000', 'JUMBF', 'Keys', 'MakerNotes', 'Meta', 'MetaIFD', 'Microsoft', 'MIE', 'MPF',
+            'Nextbase', 'NikonApp', 'NikonCapture', 'PDF', 'PDF-update', 'PhotoMechanic', 'Photoshop',
+            'PNG', 'PNG-pHYs', 'PrintIM', 'QuickTime', 'RMETA', 'RSRC', 'SEAL', 'SubIFD', 'Trailer',
+            'UserData', 'VideoKeys', 'Vivo', 'XML', 'XML-*', 'XMP', 'XMP-*',
+            'Audio', 'Author', 'Camera', 'Document', 'ExifTool', 'Image', 'Location', 'Other', 'Preview',
+            'Printing', 'Time', 'Video',
+        ];
+        usort($list, static fn ($a, $b) => strcmp(strtolower($a), strtolower($b)));
+        return $list;
+    }
+
+    //------------------------------------------------------------------------------
+    // Load all tag tables
+    public static function LoadAllTables(): void
+    {
+        if (self::$loadedAllTables) return;
+
+        // load all of our non-referenced tables (first our modules)
+        foreach (Vars\ExifTool::$loadAllTables as $table) {
+            $tableName = "Image::ExifTool::$table";
+            if (!str_contains($table, ':')) $tableName .= '::Main';
+            self::GetTagTable($tableName);
+        }
+        // (then our special tables)
+        self::GetTagTable('Image::ExifTool::Extra');
+        self::GetTagTable('Image::ExifTool::Composite');
+        // recursively load all tables referenced by the current tables
+        $tableNames = array_map('strval', array_keys(self::$allTables));
+        $pushedTables = [];
+        while ($tableNames) {
+            $table = self::GetTagTable(array_shift($tableNames));
+            if (!$table) continue;
+            // (PHP: the write procs which may add tags to the table are not ported)
+            // recursively scan through tables in subdirectories
+            foreach (self::TagTableKeys($table) as $key) {
+                foreach (self::GetTagInfoList($table, $key) as $tagInfo) {
+                    $subdir = $tagInfo->SubDirectory;
+                    if (!$subdir) continue;
+                    $tableName = $subdir['TagTable'] ?? null;
+                    if (!$tableName) continue;
+                    // next if table already loaded or queued for loading
+                    if (isset(self::$allTables[$tableName]) or isset($pushedTables[$tableName])) continue;
+                    $tableNames[] = $tableName; // must scan this one too
+                    $pushedTables[$tableName] = 1;
+                }
+            }
+        }
+        self::$loadedAllTables = 1;
+    }
+
+    //------------------------------------------------------------------------------
+    // Dereference value and push onto list
+    // Inputs: 0) ExifTool ref, 1) value, 2) list ref, 3) flag to push MissingTagValue for undef value
+    public function PushValue($val, array &$list, $missing = null): void
+    {
+        if (is_array($val) and array_is_list($val) and !(isset($val[0]) and is_array($val[0]) and !array_is_list($val[0]))) {
+            foreach ($val as $v) $this->PushValue($v, $list, $missing);
+        } elseif ($val instanceof ScalarRef) {
+            if ($this->OPTIONS['Binary'] or preg_match('/^Binary data/', Perl::str($val->value))) {
+                $list[] = $val->value;
+            } else {
+                $list[] = 'Binary data ' . strlen(Perl::str($val->value)) . ' bytes';
+            }
+        } elseif (is_array($val)) {
+            $list[] = XMP::SerializeStruct($this, $val);
+        } elseif ($val === null) {
+            $mval = $this->OPTIONS['MissingTagValue'];
+            if ($missing and $mval !== null) $list[] = $mval;
+        } else {
+            $list[] = $val;
+        }
+    }
+
+    //------------------------------------------------------------------------------
+    // Convert tag names to values or variables in a string
+    // (eg. '${EXIF:ISO}x $$' --> '100x $' without hash ref, or "$info{'EXIF:ISO'}x $" with)
+    // Inputs: 0) ExifTool object ref, 1) string with embedded tag names,
+    //         2) reference to list of found tags or undef to use FOUND_TAGS, 3) Options:
+    //               undef    - set missing tags to ''
+    //              'Error'   - issue minor error on missing tag (and return undef if error sent)
+    //              'Warn'    - issue minor warning on missing tag (and return undef if warning sent)
+    //              'Silent'  - just return undef on missing tag (no errors/warnings)
+    //               Hash ref - defined to interpolate as variables in string instead of values
+    //                          --> receives tag/value pairs for interpolation of the variables
+    //                          (PHP: an \ArrayObject)
+    //         4) document group name if extracting from a specific document
+    //         5) hash ref to cache tag keys for subsequent calls in document loop
+    //            (PHP: an array passed by reference)
+    // Returns: string with embedded tag values (or '$info{TAGNAME}' entries with Hash ref option)
+    // Notes:
+    // - tag names are not case sensitive and may end with '#' for ValueConv value
+    // - uses MissingTagValue option if set
+    // - '$GROUP:all' evaluates to 1 if any tag from GROUP exists, or 0 otherwise
+    // - advanced feature allows Perl expressions inside braces (eg. '${model;tr/ //d}')
+    //   (PHP: Perl code can't be evaluated, see EvalAdvancedFormat())
+    // - an error/warning in an advanced expression ("${TAG;EXPR}") generates an error
+    //   if option set to 'Error', or a warning otherwise
+    public function InsertTagValues($line, $foundTags = null, $opt = null, $docGrp = null, &$cache = null)
+    {
+        $line = Perl::str($line);
+        $rtnStr = '';
+        $docNum = $tag = null;
+
+        if ($docGrp) {
+            $docNum = preg_match('/(\d+(-\d+)*)$/', $docGrp, $m) ? $m[1] : 0;
+            $useCache = $cache !== null;    // (a Perl hash ref is true even if empty)
+        } else {
+            $useCache = false;  // no cache if no document groups
+        }
+        if ($foundTags === null) $foundTags = $this->FOUND_TAGS ?: [];
+        $isHash = $opt instanceof \ArrayObject;
+        $listSep = Perl::str($this->OPTIONS['ListSep']);
+        while (preg_match('/^(.*?)\$(\{\s*)?([-\w]*\w|\$|\/)/s', $line, $m)) {
+            $line = substr($line, strlen($m[0]));
+            [$pre, $bra, $var] = [$m[1], ($m[2] ?? '') !== '', $m[3]];
+            $tags = $vals = [];
+            $val = $type = $expr = $didExpr = $asList = null;
+            // "$$" represents a "$" symbol, and "$/" is a newline
+            if ($var === '$' or $var === '/') {
+                if ($bra) $line = preg_replace('/^\s*\}/', '', $line, 1);
+                if ($var === '/') {
+                    $var = "\n";
+                } elseif (preg_match('/^self\b/', $line) and !preg_match('/\$$/', $rtnStr)) {
+                    $var = '$$';    // ("$$self{var}" in string)
+                }
+                $rtnStr .= "$pre$var";
+                continue;
+            }
+            // allow multiple group names
+            while (preg_match('/^:([-\w]*\w)(.*)/s', $line, $m)) {
+                $group = $var;
+                [$var, $line] = [$m[1], $m[2]];
+                $var = "$group:$var";
+            }
+            // allow trailing '#' to indicate ValueConv value
+            if (str_starts_with($line, '#')) {
+                $line = substr($line, 1);
+                $type = 'ValueConv';
+            }
+            // special advanced formatting '@' feature to evaluate list values separately
+            if ($bra and preg_match('/^\@(#)?/', $line, $m)) {
+                $line = substr($line, strlen($m[0]));
+                $asList = 1;
+                if (!empty($m[1])) $type = 'ValueConv';
+            }
+            // remove trailing bracket if there was a leading one
+            // and extract Perl expression from inside brackets if it exists
+            if ($bra) {
+                $line = preg_replace('/^\s*\}/', '', $line, 1, $n);
+                if (!$n and preg_match('/^\s*;\s*(.*?)\s*\}/s', $line, $m)) {
+                    $line = substr($line, strlen($m[0]));
+                    $part = $m[1];
+                    $expr = '';
+                    for ($level = 0; ; --$level) {
+                        // increase nesting level for each opening brace
+                        $level += substr_count($part, '{');
+                        $expr .= $part;
+                        if (!($level and preg_match('/^(.*?)\s*\}/s', $line, $m))) break;  // get next part
+                        $line = substr($line, strlen($m[0]));
+                        $part = $m[1];
+                        $expr .= '}';  // this brace was part of the expression
+                    }
+                    // use default Windows filename filter if expression is empty
+                    if (!strlen($expr)) $expr = 'tr(/\\\\?*:|"<>\\0)()d';
+                }
+            }
+            $tags[] = $var;
+            self::ExpandShortcuts($tags);
+            if (!$tags) {
+                $rtnStr .= $pre;
+                continue;
+            }
+            // save advanced formatting expression to allow access by user-defined ValueConv
+            $this->FMT_EXPR = $expr;
+
+            for (;;) {
+                // temporarily reset ListJoin option if evaluating list values separately
+                $oldListJoin = null;
+                if ($asList) $oldListJoin = $this->Options('ListJoin', null);
+                $tag = array_shift($tags);
+                $lcTag = strtolower($tag);
+                if ($useCache and !preg_match('/(^|:)all$/', $lcTag)) {
+                    // remove group from tag name (but not lower-case version)
+                    $group = null;
+                    if (preg_match('/^(.*):/s', $tag, $m)) {
+                        $tag = substr($tag, strlen($m[0]));
+                        $group = $m[1];
+                    }
+                    // cache tag keys to speed processing for a large number of sub-documents
+                    // (similar to code in BuildCompositeTags(), but this is case-insensitive)
+                    if (!isset($cache[$lcTag])) {
+                        $cacheTag = [];
+                        // find all matching keys, organize into groups, and store in cache
+                        $ex = $this->TAG_EXTRA;
+                        $matches = array_values(preg_grep('/^' . preg_quote($tag, '/') . '(\s|$)/i', $foundTags));
+                        if ($group !== null) $matches = $this->GroupMatchesList($group, $matches);
+                        foreach ($matches as $k) {
+                            $doc = ($ex[$k]['G3'] ?? null) ?: 0;
+                            if (isset($cacheTag[$doc])) {
+                                if (!preg_match('/ \((\d+)\)$/', $cacheTag[$doc], $mm)) continue;
+                                $cur = $mm[1];
+                                // keep the most recently extracted tag
+                                if (preg_match('/ \((\d+)\)$/', $k, $mm) and $mm[1] < $cur) continue;
+                            }
+                            $cacheTag[$doc] = $k;
+                        }
+                        $cache[$lcTag] = $cacheTag;
+                    }
+                    $cacheTag = $cache[$lcTag];
+                    $doc = preg_match('/\b(main|doc(\d+(-\d+)*)):/', $lcTag, $m) ? (($m[2] ?? '') ?: 0) : $docNum;
+                    if (!empty($cacheTag[$doc])) {
+                        $tag = $cacheTag[$doc];
+                        $val = $this->GetValue($tag, $type);
+                    }
+                } else {
+                    // add document number to tag if specified and it doesn't already exist
+                    if ($docGrp and !preg_match('/\b(main|doc\d+):/', $lcTag)) {
+                        $tag = $docGrp . ':' . $tag;
+                        $lcTag = strtolower($tag);
+                    }
+                    [$et, $fileTags] = [$this, $foundTags];
+                    if (preg_match('/(\bfile\d+):/i', $tag, $m)) {
+                        $tag = preg_replace('/(\bfile\d+):/i', '', $tag, 1);
+                        $et = $this->ALT_EXIFTOOL[ucfirst(strtolower($m[1]))] ?? null;
+                        if ($et) {
+                            $fileTags = $et->FoundTags ?: [];
+                        } else {
+                            $et = $this;
+                            $tag = 'no_alt_file';
+                        }
+                    }
+                    if ($lcTag === 'all') {
+                        $val = 1;   // always some tag available
+                    } elseif (isset($et->OPTIONS['UserParam'][$lcTag])) {
+                        $val = $et->OPTIONS['UserParam'][$lcTag];
+                    } elseif (preg_match('/(.*):(.+)/s', $tag, $m)) {
+                        [$group, $tag] = [$m[1], $m[2]];
+                        // join values of all matching tags if "All" group is used
+                        // (and remove "All" from group prefix)
+                        $group = preg_replace_callback('/(^|:)(all|\*)(:|$)/i',
+                            static fn ($g) => $g[1] !== '' ? $g[3] : $g[1], $group, 1, $n);
+                        if ($n) {
+                            if (strtolower($tag) === 'all') {
+                                $matches = $group ? $et->GroupMatchesList($group, $fileTags) : $fileTags;
+                            } else {
+                                $matches = array_values(preg_grep('/^' . preg_quote($tag, '/') . '(\s|$)/i', $fileTags));
+                                if ($group) $matches = $et->GroupMatchesList($group, $matches);
+                            }
+                            foreach ($matches as $k) $this->PushValue($et->GetValue($k, $type), $vals);
+                        } elseif (strtolower($tag) === 'all') {
+                            // return "1" if any tag from the specified group exists
+                            $val = $et->GroupMatches($group, $fileTags) !== null ? 1 : 0;
+                        } else {
+                            // find the specified tag
+                            $matches = array_values(preg_grep('/^' . preg_quote($tag, '/') . '(\s|$)/i', $fileTags));
+                            $matches = $et->GroupMatchesList($group, $matches);
+                            foreach ($matches as $tg) {
+                                if ($val !== null and preg_match('/ \((\d+)\)$/', $tg, $mm)) {
+                                    // take the most recently extracted tag
+                                    $tagNum = $mm[1];
+                                    if (!preg_match('/ \((\d+)\)$/', $tag, $mm) or $mm[1] > $tagNum) continue;
+                                }
+                                $val = $et->GetValue($tg, $type);
+                                $tag = $tg;
+                                if (!str_contains($tag, ' ')) break;    // all done if we got our best match
+                            }
+                        }
+                    } elseif ($tag === 'self') {
+                        $val = $et; // ("$self{var}" or "$file1:self{var}" in string)
+                    } else {
+                        // get the tag value (note: this direct access allows excluded tags
+                        // to be accessed if the case is correct and a group name is not used)
+                        $val = $et->GetValue($tag, $type);
+                        if ($val === null) {
+                            // check for tag name with different case
+                            $tg = array_values(preg_grep('/^' . preg_quote($tag, '/') . '$/i', $fileTags))[0] ?? null;
+                            if ($tg !== null) {
+                                $val = $et->GetValue($tg, $type);
+                                $tag = $tg;
+                            }
+                        }
+                    }
+                }
+                if ($asList) $this->Options('ListJoin', $oldListJoin);
+                $this->PushValue($val, $vals, $asList);
+                $val = null;
+                if (!$tags) break;
+            }
+            if ($vals) {
+                if ($val !== null) $this->PushValue($val, $vals);
+                $val = implode($listSep, array_map(Perl::str(...), $vals));
+            } elseif ($val !== null) {
+                $this->PushValue($val, $vals);  // (so the eval has access to @val if required)
+            }
+            // evaluate advanced formatting expression if given (eg. "${TAG;EXPR}")
+            if ($expr !== null and $val !== null) {
+                self::$evalWarning = null;
+                if ($asList) {
+                    foreach ($vals as &$v) {
+                        $err = self::EvalAdvancedFormat($expr, $v);
+                        if ($err !== null) self::$evalWarning = $err;
+                    }
+                    unset($v);
+                    // join back together if any values are still defined
+                    $vals = array_values(array_filter($vals, static fn ($v) => $v !== null));
+                    $val = $vals ? implode($listSep, array_map(Perl::str(...), $vals)) : null;
+                } else {
+                    $err = self::EvalAdvancedFormat($expr, $val);
+                    if ($err !== null) self::$evalWarning = $err;
+                }
+                if (self::$evalWarning) {
+                    $g3 = ($docGrp and !preg_match('/\b(main|doc\d+):/i', $var)) ? $docGrp . ':' : '';
+                    $str = self::CleanWarning() . " for '" . $g3 . $var . "'";
+                    if ($opt) {
+                        if ($opt === 'Error') {
+                            $this->Error($str);
+                        } elseif ($opt !== 'Silent') {
+                            $this->Warn($str);
+                        }
+                    }
+                }
+                $didExpr = 1;   // set flag indicating an expression was evaluated
+            }
+            if (!($val !== null or ($isHash and $this->OPTIONS['UndefTags']))) {
+                $val = $this->OPTIONS['MissingTagValue'];
+                if ($val === null) {
+                    $g3 = ($docGrp and !preg_match('/\b(main|doc\d+):/i', $var)) ? $docGrp . ':' : '';
+                    $msg = $didExpr ? "Advanced formatting expression returned undef for '" . $g3 . $var . "'" :
+                                      "Tag '" . $g3 . $var . "' not defined";
+                    if ($isHash) {
+                        if ($this->OPTIONS['IgnoreMinorErrors']) $val = '';
+                    } elseif ($opt) {
+                        if ($opt === 'Silent' or $this->$opt($msg, 2)) return $this->FMT_EXPR = null;
+                        $val = '';
+                    }
+                }
+            }
+            if ($isHash) {
+                if ($type) $var .= '#';
+                if ($expr !== null) {
+                    // generate unique variable name for this modified tag value
+                    $i = 1;
+                    while ($opt->offsetExists("$var.expr$i")) ++$i;
+                    $var .= '.expr' . $i;
+                }
+                $rtnStr .= "$pre\$info{'" . $var . "'}";
+                $opt[$var] = $val;
+            } else {
+                $rtnStr .= $pre . Perl::str($val);
+            }
+        }
+        $this->FMT_EXPR = null;
+        return $rtnStr . $line;
+    }
+
+    //------------------------------------------------------------------------------
+    // Evaluate an advanced formatting expression on a value (Perl: eval $expr with $_ = $val)
+    // Inputs: 0) expression, 1) value (modified in place)
+    // Returns: error message, or undef on success
+    // (PHP: the expression is Perl code: only the default Windows filename filter (empty
+    //  expression) is supported, any other expression is refused and the value is dropped)
+    private static function EvalAdvancedFormat($expr, &$val)
+    {
+        if ($expr === 'tr(/\\\\?*:|"<>\\0)()d') {
+            if ($val !== null) $val = str_replace(['/', '\\', '?', '*', ':', '|', '"', '<', '>', "\0"], '', Perl::str($val));
+            return null;
+        }
+        $val = null;
+        return "Advanced formatting expressions are not supported by the PHP port ($expr)\n";
+    }
+
+    //------------------------------------------------------------------------------
     // Dump data in hex and ASCII to console
-    // (ponytail: hex dumps (verbose output) not ported)
+    // Inputs: 0) data reference, 1) length or undef, 2-N) Options:
+    // Options: Start => offset to start of data (default=0)
+    //          Addr => address to print for data start (default=DataPos+Base+Start)
+    //          DataPos => position of data within block (relative to Base)
+    //          Base => base offset for pointers from start of file
+    //          Width => width of printout (bytes, default=16)
+    //          Prefix => prefix to print at start of line (default='')
+    //          MaxLen => maximum length to dump
+    //          Out => output file reference
+    //          Len => data length
     public static function HexDump($dataPt, $len = null, mixed ...$opts): void
     {
+        if ($dataPt instanceof ScalarRef) $dataPt = $dataPt->value;
+        $dataPt = Perl::str($dataPt);
+        $start  = ($opts['Start'] ?? 0) ?: 0;
+        $addr   = $opts['Addr'] ?? null;
+        $wid    = ($opts['Width'] ?? 0) ?: 16;
+        $prefix = ($opts['Prefix'] ?? '') ?: '';
+        $out    = ($opts['Out'] ?? null) ?: \STDOUT;
+        $maxLen = $opts['MaxLen'] ?? null;
+        $datLen = strlen($dataPt) - $start;
+        $more = null;
+        if (isset($opts['Len'])) $len = $opts['Len'];
+
+        if ($addr === null) $addr = $start + (($opts['DataPos'] ?? 0) ?: 0) + (($opts['Base'] ?? 0) ?: 0);
+        if ($len === null) $len = $datLen;
+        if ($maxLen and $len > $maxLen) {
+            // print one line less to allow for $more line below
+            $maxLen = Perl::int(($maxLen - 1) / $wid) * $wid;
+            $more = $len - $maxLen;
+            $len = $maxLen;
+        }
+        if ($len > $datLen) {
+            fwrite($out, "$prefix    Warning: Attempted dump outside data\n");
+            fwrite($out, "$prefix    ($len bytes specified, but only $datLen available)\n");
+            $len = $datLen;
+        }
+        $format = Perl::sprintf('%%-%ds', $wid * 3);
+        for ($i = 0; $i < $len; $i += $wid) {
+            if ($wid > $len - $i) $wid = $len - $i;
+            fwrite($out, Perl::sprintf("$prefix%8.4x: ", $addr + $i));
+            $dat = substr($dataPt, (int) ($i + $start), (int) $wid);
+            $s = implode(' ', str_split(bin2hex($dat), 2));
+            fwrite($out, Perl::sprintf($format, $s));
+            $dat = preg_replace('/[\x00-\x1f\x7f-\xff]/', '.', $dat);
+            fwrite($out, "[$dat]\n");
+        }
+        if ($more) fwrite($out, "$prefix    [snip $more bytes]\n");
     }
 
     //------------------------------------------------------------------------------
     // Print verbose tag information
-    // (ponytail: verbose tag output not ported)
+    // Inputs: 0) ExifTool object reference, 1) tag ID
+    //         2) tag info reference (or undef)
+    //         3-N) extra parms:
+    // Parms: Index => Index of tag in menu (starting at 0)
+    //        Value => Tag value
+    //        DataPt => reference to value data block
+    //        DataPos => location of data block in file
+    //        Base => base added to all offsets
+    //        Size => length of value data within block
+    //        Format => value format string
+    //        Count => number of values
+    //        Extra => Extra Verbose=2 information to put after tag number
+    //        Table => Reference to tag table
+    //        Name => Name to use for unknown tag
+    //        --> plus any of these HexDump() options: Start, Addr, Width
     public function VerboseInfo($tagID, $tagInfo, mixed ...$parms): void
     {
+        $verbose = $this->OPTIONS['Verbose'];
+        $out = $this->OPTIONS['TextOut'];
+        $tag = $line = $hexID = null;
+        $table = $parms['Table'] ?? null;
+
+        // generate hex number if tagID is numerical
+        if ($tagID !== null) {
+            if (preg_match('/^\d+$/', Perl::str($tagID))) {
+                if ($table and $table['VARS'] and
+                    $table['ID_FMT'] and Perl::str($table['VARS']['ID_FMT'] ?? null) === 'dec')
+                {
+                    $hexID = $tagID;
+                } else {
+                    $hexID = Perl::sprintf('0x%.4x', $tagID);
+                }
+            }
+        } else {
+            $tagID = 'Unknown';
+        }
+        // get tag name
+        if ($tagInfo and $tagInfo->Name) {
+            $tag = $tagInfo->Name;
+        } elseif ($parms['Name'] ?? null) { // (used for PNG Plus FPX tags)
+            $tag = $parms['Name'];
+            $hexID = null;
+        } else {
+            $prefix = null;
+            if ($table) $prefix = $table['TAG_PREFIX'];
+            if ($prefix or $hexID !== null) {
+                if (!$prefix) $prefix = 'Unknown';
+                $tag = $prefix . '_' . ($hexID ?? $tagID);
+            } else {
+                $tag = $tagID;
+            }
+        }
+        // (PHP: DataPt is the data itself, so test definedness where Perl tests the reference)
+        $dataPt = $parms['DataPt'] ?? null;
+        if ($dataPt instanceof ScalarRef) $dataPt = $dataPt->value;
+        $size = $parms['Size'] ?? null;
+        if (!($size !== null or $dataPt === null)) $size = strlen(Perl::str($dataPt));
+        $indent = $this->INDENT;
+
+        // Level 1: print tag/value information
+        $line = $indent;
+        $index = $parms['Index'] ?? null;
+        if ($index !== null) {
+            $line .= $index . ') ';
+            if (strlen(Perl::str($index)) < 2) $line .= ' ';
+            $indent .= '    '; // indent everything else to align with tag name
+        }
+        $line .= $tag;
+        if ($tagInfo and $tagInfo->SubDirectory !== null) {   // (an empty hash is true in Perl)
+            $line .= ' (SubDirectory) -->';
+        } else {
+            $maxLen = 90 - strlen($line);
+            $val = $parms['Value'] ?? null;
+            if ($val !== null) {
+                if (is_array($val) and array_is_list($val)) $val = '[' . implode(',', array_map(Perl::str(...), $val)) . ']';
+                $line .= ' = ' . $this->Printable($val, $maxLen);
+            } elseif ($dataPt !== null) {
+                $start = ($parms['Start'] ?? 0) ?: 0;
+                $line .= ' = ' . $this->Printable(substr(Perl::str($dataPt), (int) $start, (int) $size), $maxLen);
+            }
+        }
+        fwrite($out, "$line\n");
+
+        // Level 2: print detailed information about the tag
+        if ($verbose > 1 and (($parms['Extra'] ?? null) or ($parms['Format'] ?? null) or
+            $dataPt !== null or $size !== null or str_contains(Perl::str($tagID), '/')))
+        {
+            $line = $indent . '- Tag ';
+            if ($hexID !== null) {
+                $line .= $hexID;
+            } else {
+                $tagID = preg_replace_callback('/[\0-\x1f\x7f-\xff]/', static fn ($m) => Perl::sprintf('\\x%.2x', ord($m[0])), Perl::str($tagID));
+                $line .= "'{$tagID}'";
+            }
+            if (isset($parms['Extra'])) $line .= $parms['Extra'];
+            $format = $parms['Format'] ?? null;
+            if ($format or $size !== null) {
+                $line .= ' (';
+                if ($size !== null) {
+                    $line .= Perl::str($size) . ' bytes';
+                    if ($format) $line .= ', ';
+                }
+                if ($format) {
+                    $line .= $format;
+                    if ($parms['Count'] ?? null) $line .= '[' . Perl::str($parms['Count']) . ']';
+                }
+                $line .= ')';
+            }
+            if ($verbose > 2 and $dataPt !== null) $line .= ':';
+            fwrite($out, "$line\n");
+        }
+
+        // Level 3: do hex dump of value
+        if ($verbose > 2 and $dataPt !== null and (!$tagInfo or !$tagInfo->ReadFromRAF)) {
+            $parms['Out'] = $out;
+            $parms['Prefix'] = $indent;
+            // limit dump length if Verbose < 5
+            if ($verbose < 5) $parms['MaxLen'] = $verbose == 3 ? 96 : 2048;
+            unset($parms['DataPt']);
+            self::HexDump($dataPt, $size, ...$parms);
+        }
     }
 
     //------------------------------------------------------------------------------
-    // Dump trailer information (verbose/HtmlDump output, not ported)
+    // Dump trailer information
+    // Inputs: 0) ExifTool object ref, 1) dirInfo hash (RAF, DirName, DataPos, DirLen)
+    // Notes: Restores current file position before returning
     public function DumpTrailer($dirInfo): void
     {
+        $raf = $dirInfo['RAF'];
+        $curPos = $raf->Tell();
+        $trailer = ($dirInfo['DirName'] ?? null) ?: 'Unknown';
+        $pos = $dirInfo['DataPos'] ?? null;
+        $verbose = $this->OPTIONS['Verbose'];
+        $htmlDump = $this->HTML_DUMP;
+        $buff = $buf2 = null;
+        $size = $dirInfo['DirLen'] ?? null;
+        if ($pos === null) $pos = $curPos;
+
+        // get full trailer size if not specified
+        for (;;) {
+            if (!$size) {
+                if (!$raf->Seek(0, 2)) break;
+                $size = $raf->Tell() - $pos;
+                if (!$size) break;
+            }
+            if (!$raf->Seek($pos, 0)) break;
+            if ($htmlDump) {
+                $num = $raf->Read($buff, $size);
+                if (!$num) return;
+                $desc = "$trailer trailer";
+                if ($trailer === 'Unknown') $desc = "[$desc]";
+                $this->HDump($pos, $num, $desc, null, 0x08);
+                break;
+            }
+            $out = $this->OPTIONS['TextOut'];
+            fwrite($out, Perl::sprintf("$trailer trailer (%d bytes at offset 0x%.4x):\n", $size, $pos));
+            if (!($verbose > 2)) break;
+            $num = $size;   // number of bytes to read
+            // limit size if not very verbose
+            if ($verbose < 5) {
+                $limit = $verbose < 4 ? 96 : 512;
+                if ($num > $limit) $num = $limit;
+            }
+            if ($raf->Read($buff, $num) != $num) return;
+            // read the end of the trailer too if not done already
+            if ($size > 2 * $num) {
+                $raf->Seek($pos + $size - $num, 0);
+                $raf->Read($buf2, $num);
+            } elseif ($size > $num) {
+                $raf->Seek($pos + $num, 0);
+                $raf->Read($buf2, $size - $num);
+                $buff .= $buf2;
+                $buf2 = null;
+            }
+            self::HexDump($buff, null, Addr: $pos, Out: $out);
+            if ($buf2 !== null) {
+                fwrite($out, '    [snip ' . Perl::str($size - $num * 2) . " bytes]\n");
+                self::HexDump($buf2, null, Addr: $pos + $size - $num, Out: $out);
+            }
+            break;
+        }
+        $raf->Seek($curPos, 0);
     }
 
-    public function DumpUnknownTrailer($dirInfo): void
+    //------------------------------------------------------------------------------
+    // Dump unknown trailer information
+    // Inputs: 0) ExifTool ref, 1) dirInfo ref (with RAF, DataPos and DirLen defined)
+    // Notes: changes dirInfo elements
+    public function DumpUnknownTrailer(array &$dirInfo): void
     {
+        $pos = $dirInfo['DataPos'];
+        $endPos = $pos + $dirInfo['DirLen'];
+        // account for preview/MPF image trailer
+        $value = $this->VALUE;
+        $prePos = ($value['PreviewImageStart'] ?? null) ?: $this->PreviewImageStart;
+        $preLen = ($value['PreviewImageLength'] ?? null) ?: $this->PreviewImageLength;
+        $hidPos = $value['HiddenDataOffset'] ?? null;
+        $hidLen = $value['HiddenDataLength'] ?? null;
+        $tag = 'PreviewImage';
+        $mpImageNum = 0;
+        $image = [];
+        $lastOne = null;
+        // add HiddenData to list of known trailer blocks
+        if ($hidPos and $hidLen) {
+            // call ReadHiddenData to validate hidden data and fix offset if necessary
+            $datPt = Sony::ReadHiddenData($this, $hidPos, $hidLen);
+            if ($datPt) $image[$hidPos] = ['HiddenData', $hidLen];
+        }
+        for (;;) {
+            // add to Preview block list if valid and in the trailer
+            if ($prePos and $preLen and $prePos + $preLen > $pos) $image[$prePos] = [$tag, $preLen];
+            if ($lastOne) break;    // checked all images
+            // look for MPF images (in the proper order)
+            ++$mpImageNum;
+            $prePos = $value["MPImageStart ($mpImageNum)"] ?? null;
+            if ($prePos !== null) {
+                $preLen = $value["MPImageLength ($mpImageNum)"] ?? null;
+            } else {
+                $prePos = $value['MPImageStart'] ?? null;
+                $preLen = $value['MPImageLength'] ?? null;
+                $lastOne = 1;
+            }
+            $tag = "MPImage$mpImageNum";
+        }
+        // dump trailer sections in order
+        $image[$endPos] = ['', 0];  // add terminator "image"
+        $keys = array_keys($image);
+        sort($keys, SORT_NUMERIC);
+        foreach ($keys as $prePos) {
+            if ($pos < $prePos) {
+                // dump unknown trailer data
+                $dirInfo['DirName'] = 'Unknown';
+                $dirInfo['DataPos'] = $pos;
+                $dirInfo['DirLen'] = $prePos - $pos;
+                $this->DumpTrailer($dirInfo);
+            }
+            [$tag, $preLen] = $image[$prePos];
+            if (!$preLen) break;
+            // dump image if verbose (it is htmlDump'd by ExtractImage)
+            if ($this->OPTIONS['Verbose']) {
+                $dirInfo['DirName'] = $tag;
+                $dirInfo['DataPos'] = $prePos;
+                $dirInfo['DirLen']  = $preLen;
+                $this->DumpTrailer($dirInfo);
+            }
+            $pos = $prePos + $preLen;
+        }
     }
 
     //------------------------------------------------------------------------------

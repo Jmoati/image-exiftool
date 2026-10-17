@@ -10,14 +10,4 @@ final class Ogg
     /** lexical $MAX_PACKETS */
     public static $MAX_PACKETS = 2;
 
-    /** package %Main */
-    public static $Main = [
-        'FLAC' => ['SubDirectory' => ['TagTable' => 'Image::ExifTool::FLAC::Main']],
-        'ID3' => ['SubDirectory' => ['TagTable' => 'Image::ExifTool::ID3::Main']],
-        'NOTES' => "\x0a        ExifTool extracts the following types of information from Ogg files.  See\x0a        L<http://www.xiph.org/vorbis/doc/> for the Ogg specification.\x0a    ",
-        'Opus' => ['SubDirectory' => ['TagTable' => 'Image::ExifTool::Opus::Main']],
-        'theora' => ['SubDirectory' => ['TagTable' => 'Image::ExifTool::Theora::Main']],
-        'vorbis' => ['SubDirectory' => ['TagTable' => 'Image::ExifTool::Vorbis::Main']],
-    ];
-
 }

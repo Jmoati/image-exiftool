@@ -109,6 +109,8 @@ sub IsTagTable
     return 1 if exists $$h{GROUPS} or exists $$h{PROCESS_PROC} or exists $$h{TABLE_NAME};
     foreach my $v (values %$h) {
         return 1 if ref $v eq 'HASH' and defined $$v{Name} and not ref $$v{Name};
+        # (entries may have only a SubDirectory, like %Image::ExifTool::Ogg::Main)
+        return 1 if ref $v eq 'HASH' and ref $$v{SubDirectory} eq 'HASH' and $$v{SubDirectory}{TagTable};
         return 1 if ref $v eq 'ARRAY' and @$v and ref $$v[0] eq 'HASH' and defined $$v[0]{Name};
     }
     return 0;
