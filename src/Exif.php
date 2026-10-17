@@ -1114,7 +1114,8 @@ final class Exif
                     if ($oldCount != $count) $origFormStr = Vars\Exif::$formatName[$format] . '[' . $oldCount . ']';
                 }
             }
-            if ($validate and !$inMakerNotes) Validate::ValidateExif(
+            // ponytail: Validate.pm isn't ported, -validate skips the EXIF checks until it is
+            if ($validate and !$inMakerNotes and class_exists(Validate::class)) Validate::ValidateExif(
                 $et, $tagTablePtr, $tagID, $tagInfo, $lastID, $dir, $count, $formatStr);
             $size = $count * (Vars\Exif::$formatSize[$format] ?? 0);
             $readSize = $size;
