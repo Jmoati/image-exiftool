@@ -52,6 +52,14 @@ foreach my $f (@files) {
     next unless $f =~ /^(\w+)\.pm$/ and not $skipModule{$1};
     eval { require "Image/ExifTool/$f"; 1 } or warn "load $f: $@";
 }
+# character set maps (Image::ExifTool::Charset::Latin...)
+my %charsets;
+foreach my $f (glob("$lib/Image/ExifTool/Charset/*.pm")) {
+    my ($cs) = $f =~ m{/(\w+)\.pm$};
+    require "Image/ExifTool/Charset/$cs.pm";
+    no strict 'refs';
+    $charsets{$cs} = \%{"Image::ExifTool::Charset::$cs"};
+}
 require 'Image/ExifTool/XMP2.pl';
 require 'Image/ExifTool/XMPStruct.pl';
 require 'Image/ExifTool/QuickTimeStream.pl';
@@ -607,6 +615,16 @@ foreach my $m (sort keys %varsByMod) {
         print $fh "    /** $kind $perlName */\n    public static \$$name = $php;\n\n";
     }
     print $fh "}\n";
+    close $fh;
+}
+
+# character set maps: one class each, loaded on demand
+make_path("$out/vars/Charset");
+foreach my $cs (sort keys %charsets) {
+    (%shared, @sharedOrder, %sharedCount) = ();
+    open my $fh, '>', "$out/vars/Charset/$cs.php" or die;
+    print $fh "<?php\n\n$header\ndeclare(strict_types=1);\n\nnamespace Image\\ExifTool\\Vars\\Charset;\n\n";
+    print $fh "/** %Image::ExifTool::Charset::$cs */\nfinal class $cs\n{\n    public static \$map = " . Data($charsets{$cs}, { depth => 1 }, 1, "Charset $cs") . ";\n}\n";
     close $fh;
 }
 
