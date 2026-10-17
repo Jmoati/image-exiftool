@@ -1,0 +1,33 @@
+{
+    "name": "jmoati/image-exiftool",
+    "description": "Pure PHP port of Phil Harvey's ExifTool (Image::ExifTool) — read metadata without Perl",
+    "type": "library",
+    "license": [
+        "Artistic-1.0-Perl",
+        "GPL-1.0-or-later"
+    ],
+    "authors": [
+        {
+            "name": "Phil Harvey",
+            "role": "Author of ExifTool"
+        },
+        {
+            "name": "Jacques Moati",
+            "email": "jacques@moati.net",
+            "role": "PHP port"
+        }
+    ],
+    "require": {
+        "php": ">=8.5",
+        "ext-mbstring": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Image\\ExifTool\\Vars\\": "tables/vars/",
+            "Image\\ExifTool\\": "src/"
+        }
+    },
+    "bin": [
+        "bin/exiftool"
+    ]
+}
