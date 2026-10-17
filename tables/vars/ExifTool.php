@@ -1548,11 +1548,11 @@ final class ExifTool
     /** lexical %onlyWriteFile */
     public static $onlyWriteFile = ['RIFF' => ['WEBP']];
 
-    /** package %pluginTags */
+    /** package @pluginTags */
     public static $pluginTags = [];
 
-    /** package @pluginTags */
-    public static $pluginTags_a = [];
+    /** package %pluginTags */
+    public static $pluginTags_h = [];
 
     /** package %previewImageTagInfo */
     public static $previewImageTagInfo = [

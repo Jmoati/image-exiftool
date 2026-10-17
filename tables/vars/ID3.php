@@ -214,8 +214,8 @@ final class ID3
 
     /** lexical %otherTable */
     public static $otherTable = [
-        'HASH(0x77ee575990)' => 'Image::ExifTool::ID3::v2_4',
-        'HASH(0x77ee575d38)' => 'Image::ExifTool::ID3::v2_3',
+        'HASH(0x7a961f5b70)' => 'Image::ExifTool::ID3::v2_4',
+        'HASH(0x7a961f5f18)' => 'Image::ExifTool::ID3::v2_3',
     ];
 
     /** lexical %userTagName */

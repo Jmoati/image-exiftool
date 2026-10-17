@@ -1330,7 +1330,7 @@ return [
             'SPHERICAL-VIDEO' => [
                 'Name' => 'SphericalVideoXML',
                 'SubDirectory' => [
-                    'ProcessProc' => 'Image::ExifTool::XMP::ProcessGSpherical',
+                    'ProcessProc' => 'Image\\ExifTool\\XMP::ProcessGSpherical',
                     'TagTable' => 'Image::ExifTool::XMP::Main',
                 ],
             ],
@@ -1359,7 +1359,7 @@ return [
             'spherical-video' => [
                 'Name' => 'SphericalVideoXML',
                 'SubDirectory' => [
-                    'ProcessProc' => 'Image::ExifTool::XMP::ProcessGSpherical',
+                    'ProcessProc' => 'Image\\ExifTool\\XMP::ProcessGSpherical',
                     'TagTable' => 'Image::ExifTool::XMP::Main',
                 ],
             ],

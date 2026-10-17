@@ -255,6 +255,15 @@ sub IsNumber { my $v = shift; return (defined $v and not ref $v and $v =~ /^\s*[
 
 sub NumOf { my $v = shift; $v =~ s/^\s+|\s+$//g; return $v =~ /^[-+]?0x/i ? hex($v) : $v + 0 }
 
+# a Perl sub given by name in a string ('Image::ExifTool::PLIST::ProcessBinaryPLIST') => PHP callable
+sub SubName
+{
+    my $name = shift;
+    return undef unless defined $name and not ref $name and $name =~ /^Image::ExifTool::(?:(\w+)::)?(\w+)$/;
+    my $class = defined $1 ? ClassName($1) : 'ExifTool';
+    return PhpString("Image\\ExifTool\\${class}::$2");
+}
+
 # register a piece of Perl code; returns the PHP variable holding its closure
 sub Code
 {
@@ -461,6 +470,8 @@ sub TagInfo
                     push @s, PhpKey($sk) . ' => ' . (IsNumber($sv) ? NumOf($sv) : Code($sk, $sv, $loc));
                 } elsif (ref $sv eq 'CODE') {
                     push @s, PhpKey($sk) . ' => ' . CodeRef($sv, $sk eq 'ProcessProc' ? 'code' : "code", $loc);
+                } elsif ($sk eq 'ProcessProc' and SubName($sv)) {
+                    push @s, PhpKey($sk) . ' => ' . SubName($sv);
                 } else {
                     push @s, PhpKey($sk) . ' => ' . Data($sv, { %sub, depth => $depth + 2 }, 0, $loc);
                 }
@@ -490,6 +501,8 @@ sub Table
                 $php = Conv('PrintConv', $v, \%ind, "$tname PRINT_CONV");
             } elsif (ref $v eq 'CODE') {
                 $php = CodeRef($v, 'code', "$tname $k");
+            } elsif ($k =~ /_PROC$/ and SubName($v)) {
+                $php = SubName($v);
             } else {
                 $php = Data($v, \%ind, 0, "$tname $k");
             }

@@ -480,7 +480,7 @@ return [
                 'List' => 'Seq',
                 'Writable' => 'real',
             ],
-            'PROCESS_PROC' => 'Image::ExifTool::XMP::ProcessXMP',
+            'PROCESS_PROC' => 'Image\\ExifTool\\XMP::ProcessXMP',
             'PitchAngle' => [
                 'Writable' => 'real',
             ],

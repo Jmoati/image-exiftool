@@ -6145,7 +6145,7 @@ return [
             'smartstyle-info' => [
                 'Name' => 'SmartStyleInfo',
                 'SubDirectory' => [
-                    'ProcessProc' => 'Image::ExifTool::PLIST::ProcessBinaryPLIST',
+                    'ProcessProc' => 'Image\\ExifTool\\PLIST::ProcessBinaryPLIST',
                     'TagTable' => 'Image::ExifTool::PLIST::Main',
                 ],
             ],
@@ -6456,7 +6456,7 @@ return [
                     'Condition' => $f_b5fef834ae,
                     'Name' => 'LigoGPSInfo',
                     'SubDirectory' => [
-                        'ProcessProc' => 'Image::ExifTool::LigoGPS::ProcessLigoGPS',
+                        'ProcessProc' => 'Image\\ExifTool\\LigoGPS::ProcessLigoGPS',
                         'TagTable' => 'Image::ExifTool::QuickTime::Stream',
                     ],
                 ],
@@ -6495,7 +6495,7 @@ return [
                     'Condition' => $f_663113a0f2,
                     'Name' => 'LigoJSON',
                     'SubDirectory' => [
-                        'ProcessProc' => 'Image::ExifTool::LigoGPS::ProcessLigoJSON',
+                        'ProcessProc' => 'Image\\ExifTool\\LigoGPS::ProcessLigoJSON',
                         'TagTable' => 'Image::ExifTool::QuickTime::Stream',
                     ],
                 ],
@@ -6503,7 +6503,7 @@ return [
                     'Condition' => $f_7b18e00396,
                     'Name' => 'GKUData',
                     'SubDirectory' => [
-                        'ProcessProc' => 'Image::ExifTool::LigoGPS::ProcessGKU',
+                        'ProcessProc' => 'Image\\ExifTool\\LigoGPS::ProcessGKU',
                         'TagTable' => 'Image::ExifTool::QuickTime::Stream',
                     ],
                 ],
@@ -8326,7 +8326,7 @@ return [
                     'MediaType' => 'vide',
                     'Name' => 'SphericalVideoXML',
                     'SubDirectory' => [
-                        'ProcessProc' => 'Image::ExifTool::XMP::ProcessGSpherical',
+                        'ProcessProc' => 'Image\\ExifTool\\XMP::ProcessGSpherical',
                         'Start' => 16,
                         'TagTable' => 'Image::ExifTool::XMP::Main',
                     ],
@@ -9979,7 +9979,7 @@ return [
             'cfgv' => [
                 'Name' => 'CFGV',
                 'SubDirectory' => [
-                    'ProcessProc' => 'Image::ExifTool::PLIST::ProcessBinaryPLIST',
+                    'ProcessProc' => 'Image\\ExifTool\\PLIST::ProcessBinaryPLIST',
                     'TagTable' => 'Image::ExifTool::PLIST::Main',
                 ],
             ],

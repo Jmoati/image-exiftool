@@ -4784,6 +4784,29 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     }
 
     //------------------------------------------------------------------------------
+    // Get tagInfo for an alternate-language tag (from Writer.pl)
+    // Inputs: 0) tagInfo hash ref, 1) locale code (eg. "en-CA")
+    // Returns: new tagInfo hash ref
+    public static function GetLangInfo(TagInfo $tagInfo, $langCode): TagInfo
+    {
+        // make a new tagInfo hash for this locale
+        $table = $tagInfo->Table;
+        $tagID = Perl::str($tagInfo->TagID) . '-' . $langCode;
+        $langInfo = $table[$tagID];
+        if (!$langInfo instanceof TagInfo) {
+            // make a new tagInfo entry for this locale
+            $langInfo = self::AddTagToTable($table, $tagID, [
+                ...$tagInfo->toArray(),
+                'Name' => $tagInfo->Name . '-' . $langCode,
+                'Description' => self::MakeDescription($tagInfo->Name) . " ($langCode)",
+                'LangCode' => $langCode,
+                'SrcTagInfo' => $tagInfo, // save reference to original tagInfo
+            ]);
+        }
+        return $langInfo;
+    }
+
+    //------------------------------------------------------------------------------
     // Add new tag to table (must use this routine to add new tags to a table)
     // Inputs: 0) reference to tag table, 1) tag ID
     //         2) [optional] tag name or reference to tag information hash

@@ -224,7 +224,7 @@ return [
                 'Condition' => $f_7f57cde05c,
                 'Name' => 'OLEInfo',
                 'SubDirectory' => [
-                    'ProcessProc' => 'Image::ExifTool::FlashPix::ProcessFPX',
+                    'ProcessProc' => 'Image\\ExifTool\\FlashPix::ProcessFPX',
                     'TagTable' => 'Image::ExifTool::FlashPix::Main',
                 ],
             ],

@@ -1261,7 +1261,7 @@ return [
                 'Name' => 'GPSTrack',
                 'SetGroups' => 'RIFF',
                 'SubDirectory' => [
-                    'ProcessProc' => 'Image::ExifTool::QuickTime::Process_gps0',
+                    'ProcessProc' => 'Image\\ExifTool\\QuickTime::Process_gps0',
                     'TagTable' => 'Image::ExifTool::QuickTime::Stream',
                 ],
             ],
@@ -1269,7 +1269,7 @@ return [
                 'Name' => 'GSensor',
                 'SetGroups' => 'RIFF',
                 'SubDirectory' => [
-                    'ProcessProc' => 'Image::ExifTool::QuickTime::Process_gsen',
+                    'ProcessProc' => 'Image\\ExifTool\\QuickTime::Process_gsen',
                     'TagTable' => 'Image::ExifTool::QuickTime::Stream',
                 ],
             ],
