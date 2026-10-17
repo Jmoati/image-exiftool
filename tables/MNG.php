@@ -4,11 +4,16 @@
 
 namespace Image\ExifTool;
 
-$f_8cb58be616 = static function (mixed ...$args) { throw new NotPorted('RawConv 8cb58be616'); };
+$f_8cb58be616 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Vars\PNG::$colorType = $val;
+};
 $f_9b0a3c2419 = static function (mixed ...$args) { throw new NotPorted('PrintConv 9b0a3c2419'); };
 $f_d9f7eadef3 = static function (mixed ...$args) { throw new NotPorted('ValueConv d9f7eadef3'); };
 $f_786692d581 = static function (mixed ...$args) { throw new NotPorted('ValueConv 786692d581'); };
-$f_6ec7688590 = static function (mixed ...$args) { throw new NotPorted('ValueConv 6ec7688590'); };
+$f_6ec7688590 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = preg_replace('/\0.*/s', '', Perl::str($val), 1);
+    return $val;
+};
 
 $d_1 = null /* circular reference */;
 

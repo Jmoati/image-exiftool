@@ -1,0 +1,2086 @@
+==== 0077134b1a Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0204/', $valPt);
+}
+
+==== 00923e14be Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^02(\d{2})/', $valPt, $m) && Perl::num($m[1]) < 11;
+}
+
+==== 009fafaa72 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON (Z 8|Z 9)\b/i', Perl::str($self->Model)) && $self->AFAreaXPosition && Perl::num($self->AFAreaXPosition) != 0;
+}
+
+==== 0d8b43634d Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->HDR) !== '0';
+}
+
+==== 0e6c9f71ac Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FlashControlMode) >= 0x06;
+}
+
+==== 0e818c73af Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->ShutterMode && Perl::str($self->ShutterMode) !== '96' && Perl::num($self->IntervalShooting) > 0;
+}
+
+==== 111468932d Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^080[012]/', $valPt);
+}
+
+==== 157889423c Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0101/', $valPt);
+}
+
+==== 1590511422 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return strcmp(Perl::str($self->ColorBalanceVersion), '0104') >= 0;
+}
+
+==== 19a4104959 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->ShotInfoVersion) === '0211';
+}
+
+==== 1a93c47fbc Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON (Z 7|Z 7_2)\b/i', Perl::str($self->Model)) && $self->AFAreaYPosition;
+}
+
+==== 1fbd95dc3e Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->BracketSet) < 3;
+}
+
+==== 2450a68af0 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/P6000\b/', Perl::str($self->Model));
+}
+
+==== 264fd7422b Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FlashGroupOptionsMasterMode) == 1;
+}
+
+==== 2723171d0a Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->FILE_TYPE) === 'JPEG';
+}
+
+==== 272ba5b30a Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/\bD5\b/', Perl::str($self->Model));
+}
+
+==== 29e4e510de Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/\bD500\b/', Perl::str($self->Model));
+}
+
+==== 2d6434aaa8 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON (Z 5|Z 6|Z 6_2|D780)\b/i', Perl::str($self->Model)) && $self->AFAreaYPosition;
+}
+
+==== 2d7fba9a32 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($format) === 'undef' && Perl::num($count) == 2560;
+}
+
+==== 2db3d77dea Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->AFDetectionMethod) == 1;
+}
+
+==== 2e5e1d7d49 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return !preg_match('/^1\.00/', Perl::str($self->FirmwareVersion));
+}
+
+==== 33ab1f26e6 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FocusPointSchema) == 0;
+}
+
+==== 34bca94b4b Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0102/', $valPt);
+}
+
+==== 3718f6fa56 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->ShotInfoVersion) === '0205';
+}
+
+==== 3d4ea2c7d4 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return strcmp(Perl::str($self->FirmwareVersion), '01.30') >= 0;
+}
+
+==== 3dbee1f5e6 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^\d{4}/', $valPt);
+}
+
+==== 405d013a9e Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0218/', $valPt) && (Perl::num($count) == 5356 || Perl::num($count) == 5388);
+}
+
+==== 426d6b2022 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0245/', $valPt);
+}
+
+==== 427cd051df Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^080[0123478]/', $valPt);
+}
+
+==== 43616ae24e Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->AFCoordinatesAvailable) == 1;
+}
+
+==== 4455a58319 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0209/', $valPt);
+}
+
+==== 458324dc21 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^021[567]/', $valPt);
+}
+
+==== 46eb88f318 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FocusPointSchema) == 1
+        && (Perl::num($self->AFAreaMode) == 8 || Perl::num($self->AFAreaMode) == 9 || Perl::num($self->AFAreaMode) == 13);
+}
+
+==== 4821b4bd3d Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->FirmwareVersion && strcmp(Perl::str($self->FirmwareVersion), '02.00') < 0;
+}
+
+==== 49beab237d Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FocusPointSchema) == 9 && Perl::num($self->AFCoordinatesAvailable) == 0;
+}
+
+==== 4aac123ce7 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FocusPointSchema) == 7;
+}
+
+==== 4bccf86634 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON (Z 30|Z 50|Z fc)\b/i', Perl::str($self->Model)) && $self->AFAreaYPosition;
+}
+
+==== 4c3eec68ac Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->Model) === 'NIKON D5' && strcmp(Perl::str($self->FirmwareVersion), '1.40') >= 0;
+}
+
+==== 4d1b08ec1c Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0212/', $valPt) && Perl::num($count) == 5312;
+}
+
+==== 4d8a0811a7 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0232/', $valPt);
+}
+
+==== 4ebe49e5e6 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0100/', $valPt);
+}
+
+==== 52d0887417 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0226/', $valPt) && Perl::num($count) == 11587;
+}
+
+==== 5381462271 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->Model) !== 'E8700';
+}
+
+==== 54017804f7 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->LensID && Perl::num($self->LensID) != 0;
+}
+
+==== 5469a20eca Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON (Z 5|Z 6|Z 6_2|D780)\b/i', Perl::str($self->Model)) && $self->AFAreaXPosition;
+}
+
+==== 55f0bfa87e Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^030[01]/', $valPt);
+}
+
+==== 55f775b478 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON Z (30|5|50|6|6_2|7|7_2|8|fc)\b/i', Perl::str($self->Model));
+}
+
+==== 5748f93d45 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0806/', $valPt);
+}
+
+==== 57dfdf1384 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0223/', $valPt);
+}
+
+==== 5ae9a37275 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->ShotInfoVersion) === '0204';
+}
+
+==== 5db4d9f9c4 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($count) != 6;
+}
+
+==== 5e66b5d089 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0216/', $valPt) && Perl::num($count) == 5311;
+}
+
+==== 6090d2caca Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0242/', $valPt);
+}
+
+==== 6376e9dc3b Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^010[01]/', $valPt);
+}
+
+==== 64c7a61f77 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0210/', $valPt) && Perl::num($count) == 5303;
+}
+
+==== 65017ac59d Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON (Z 30|Z 50|Z fc)\b/i', Perl::str($self->Model)) && $self->AFAreaXPosition;
+}
+
+==== 68000d2317 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->NewLensData;
+}
+
+==== 6b3b5f781f Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^02(09|12|14)/', $valPt);
+}
+
+==== 6baf2b5e35 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0213/', $valPt);
+}
+
+==== 6cdf0499f4 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->MultipleExposureMode) != 0;
+}
+
+==== 6e2be35e24 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FlashGroupCControlMode) >= 0x06;
+}
+
+==== 6e5a1688b5 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON Z50_2\b/i', Perl::str($self->Model))
+        && (Perl::num($self->AFAreaModeUsed) == 197 || Perl::num($self->AFAreaModeUsed) == 207);
+}
+
+==== 6fde003e3a Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^040[01]/', $valPt);
+}
+
+==== 700d99208a Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->FirmwareVersion) === '1.10B';
+}
+
+==== 7219b41a5d Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0106/', $valPt);
+}
+
+==== 73638bf14e Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->AutoCapturedFrame && Perl::str($self->AutoCapturedFrame) !== '0';
+}
+
+==== 756655f601 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->FILE_TYPE) !== 'TIFF';
+}
+
+==== 7570303aaa Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0214/', $valPt) && Perl::num($count) == 5409;
+}
+
+==== 76d34ea6a0 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->ShutterMode && Perl::str($self->ShutterMode) !== '96';
+}
+
+==== 7927c89367 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^01/', $valPt);
+}
+
+==== 7e340ab8eb Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON (Z6_3|Z f|Z5_2)\b/i', Perl::str($self->Model)) && $self->AFAreaXPosition && Perl::num($self->AFAreaXPosition) != 0;
+}
+
+==== 7f4a4c5649 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FocusPointSchema) == 2;
+}
+
+==== 7f90dde36b Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^02(19|2[1234])/', $valPt);
+}
+
+==== 802d94e507 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->IntervalShooting) > 0;
+}
+
+==== 8348c53ef6 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0222/', $valPt);
+}
+
+==== 85b07ea769 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FlashGroupBControlMode) >= 0x60;
+}
+
+==== 865f66db3b Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON D/i', Perl::str($self->Model));
+}
+
+==== 89090635ea Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON Z50_2\b/i', Perl::str($self->Model)) && $self->AFAreaYPosition && Perl::num($self->AFAreaYPosition) != 0;
+}
+
+==== 8916a4ff18 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^08(09|10|11)/', $valPt);
+}
+
+==== 8a4b8872cb Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0210/', $valPt) && Perl::num($count) == 5291;
+}
+
+==== 8cf0aaffa8 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON (Z 8|Z 9)\b/i', Perl::str($self->Model))
+        && (Perl::num($self->AFAreaModeUsed) == 197 || Perl::num($self->AFAreaModeUsed) == 207);
+}
+
+==== 9185b43f88 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FocusPointSchema) == 1;
+}
+
+==== 9199bbb4ca Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0403/', $valPt);
+}
+
+==== 91f487e6a4 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->BurstFlag;
+}
+
+==== 9406d5cd42 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FocusPointSchema) == 1 && Perl::num($self->AFCoordinatesAvailable) == 0;
+}
+
+==== 963e52e33d Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON Z f\b/i', Perl::str($self->Model));
+}
+
+==== 96d4316724 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->FirmwareVersion && strcmp(Perl::str($self->FirmwareVersion), '03.00') < 0;
+}
+
+==== 9711a74938 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0(18|[248])/', $valPt);
+}
+
+==== 97d40be193 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0211/', $valPt);
+}
+
+==== 986101391e Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->Options('ExtractEmbedded');
+}
+
+==== 9953e3c4e9 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FlashControlMode) >= 3;
+}
+
+==== 99bf712b82 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^010[78]/', $valPt);
+}
+
+==== 9b4649fe3e Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON (Z6_3|Z f|Z5_2)\b/i', Perl::str($self->Model)) && $self->AFAreaYPosition && Perl::num($self->AFAreaYPosition) != 0;
+}
+
+==== 9bcef6d86d Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^010[23]/', $valPt);
+}
+
+==== a2263c969d Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^02/', $valPt);
+}
+
+==== a340c36cf2 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0[28]/', $valPt);
+}
+
+==== a471920b1b Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^040[012]/', $valPt);
+}
+
+==== a670fbb513 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0805/', $valPt);
+}
+
+==== a67d46981b Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    if (strlen($valPt) >= 0) {
+        // (Perl unpack dies when the 'x6' skip runs past the end of the data)
+        if (strlen($valPt) < 6) {
+            throw new \RuntimeException("'x' outside of string in unpack");
+        }
+        [$dir, $file] = Perl::unpack('x6vv', $valPt) + [null, null];
+        $littleEndian = (Perl::num($dir) >= 100 && Perl::num($dir) <= 999 && Perl::num($file) <= 9999);
+        [$dir, $file] = Perl::unpack('x6nn', $valPt) + [null, null];
+        $bigEndian = (Perl::num($dir) >= 100 && Perl::num($dir) <= 999 && Perl::num($file) <= 9999);
+        if ($littleEndian xor $bigEndian) {
+            return $littleEndian;
+        }
+    }
+    return preg_match('/^NIKON (D4S|D750|D810|D3300|D5200|D5300|D5500|D7100)$/', Perl::str($self->Model));
+}
+
+==== a8132d9024 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^2\.0/', Perl::str($self->FirmwareVersion));
+}
+
+==== a8af684077 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FlashControlMode) == 2;
+}
+
+==== a8cb5eb75d Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0205/', $valPt);
+}
+
+==== a8f578ecae Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->AFDetectionMethod) == 0;
+}
+
+==== a9108b0bfd Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->HDMIBitDepth && Perl::num($self->HDMIBitDepth) == 2;
+}
+
+==== ad0a54708d Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NRW 0100/', $valPt);
+}
+
+==== ad0ca74689 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON (Z 7|Z 7_2)\b/i', Perl::str($self->Model)) && $self->AFAreaXPosition;
+}
+
+==== ad38000a89 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FlashGroupAControlMode) >= 0x06;
+}
+
+==== ad6aed51a9 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0220/', $valPt);
+}
+
+==== aeba621be9 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->PhaseDetectAF) == 4;
+}
+
+==== b2e579b09e Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->FirmwareVersion && strcmp(Perl::str($self->FirmwareVersion), '02.00') >= 0;
+}
+
+==== b3d9bd970b Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0103/', $valPt);
+}
+
+==== b9467f8086 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0246/', $valPt);
+}
+
+==== be7a4a19f1 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FocusPointSchema) == 3;
+}
+
+==== bf600bc1ac Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0208/', $valPt);
+}
+
+==== c3e1047939 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON Z (30|5|50|6|6_2|7|7_2|8|f|fc|9)\b/i', Perl::str($self->Model))
+        || preg_match('/^NIKON Z(5_2|50_2|6_3)\b/i', Perl::str($self->Model));
+}
+
+==== c526e69367 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^020[1-3]/', $valPt);
+}
+
+==== c59706cace Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FocusPointSchema) == 8 && Perl::num($self->AFCoordinatesAvailable) == 0;
+}
+
+==== c66385a064 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^1\.00/', Perl::str($self->FirmwareVersion));
+}
+
+==== c6df61fbbb Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^010[345]/', $valPt);
+}
+
+==== c8db1b9e26 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->ShutterMode && Perl::str($self->ShutterMode) !== '96' && Perl::num($self->FocusShiftShooting) > 0;
+}
+
+==== ca4c64443f Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0210/', $valPt) && Perl::num($count) == 5399;
+}
+
+==== cbb4e82568 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->FirmwareVersion && strcmp(Perl::str($self->FirmwareVersion), '04.00') >= 0;
+}
+
+==== cd986d65f3 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0231/', $valPt);
+}
+
+==== ce82d81b4e Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->FirmwareVersion && strcmp(Perl::str($self->FirmwareVersion), '05.00') >= 0;
+}
+
+==== cf5d5b8b54 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return strcmp(Perl::str($self->RetouchInfoVersion), '0200') >= 0;
+}
+
+==== d10d112cf3 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON (Z 8|Z 9)\b/i', Perl::str($self->Model)) && $self->AFAreaYPosition && Perl::num($self->AFAreaYPosition) != 0;
+}
+
+==== d28b751d02 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0243/', $valPt);
+}
+
+==== d450a30e84 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->ShotInfoVersion) === '0207';
+}
+
+==== d46df87492 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0215/', $valPt) && Perl::num($count) == 6745;
+}
+
+==== d4ea2e102b Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FlashControlMode) == 0x01 || Perl::num($self->FlashControlMode) == 0x02;
+}
+
+==== d822da285e Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0233/', $valPt);
+}
+
+==== d85fcac4d8 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^03/', $valPt);
+}
+
+==== d8d3b394c0 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NRW /', $valPt);
+}
+
+==== d9362e0c4b Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->PhaseDetectAF) == 6;
+}
+
+==== d954e9ef4e Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^1\.01/', Perl::str($self->FirmwareVersion));
+}
+
+==== dc727a0251 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->FirmwareVersion && strcmp(Perl::str($self->FirmwareVersion), '03.01') >= 0;
+}
+
+==== dc7c4919fe Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FlashGroupBControlMode) >= 0x06;
+}
+
+==== de0dc756bc Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->AFAreaMode) == 2;
+}
+
+==== dfd8bed614 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->PixelShiftShooting) > 0;
+}
+
+==== e0b15155f3 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0210/', $valPt) && (Perl::num($count) == 5408 || Perl::num($count) == 5412);
+}
+
+==== e1414f070f Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON Z6_3\b/i', Perl::str($self->Model)) && $self->FirmwareVersion && strcmp(Perl::str($self->FirmwareVersion), '02.00') < 0;
+}
+
+==== e1a443df47 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->FirmwareVersion && strcmp(Perl::str($self->FirmwareVersion), '04.00') < 0;
+}
+
+==== e36a19c04c Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON (Z6_3|Z f|Z5_2)\b/i', Perl::str($self->Model))
+        && (Perl::num($self->AFAreaModeUsed) == 197 || Perl::num($self->AFAreaModeUsed) == 207);
+}
+
+==== e8ee476bba Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->MovieType) != 1;
+}
+
+==== e9a2dd4bb8 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FlashGroupOptionsMasterMode) != 3;
+}
+
+==== e9c3c50a27 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON 7/', Perl::str($self->Model));
+}
+
+==== ef0d515c12 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->OldLensData;
+}
+
+==== f00e900b9a Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->PhaseDetectAF) == 5;
+}
+
+==== f4653edb61 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0221/', $valPt) && Perl::num($count) == 8902;
+}
+
+==== f7a9c41e94 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^NIKON Z50_2\b/i', Perl::str($self->Model)) && $self->AFAreaXPosition && Perl::num($self->AFAreaXPosition) != 0;
+}
+
+==== f99f120f69 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->FocusPointSchema) == 7
+        && (Perl::num($self->AFAreaMode) == 8 || Perl::num($self->AFAreaMode) == 9 || Perl::num($self->AFAreaMode) == 13);
+}
+
+==== fc1fe978ae Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^023[89]/', $valPt);
+}
+
+==== fdc23266cd Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^020[01]/', $valPt);
+}
+
+==== fe00aa8de2 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0402/', $valPt);
+}
+
+==== feb6407c05 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->LensID && Perl::num($self->LensID) != 0 && Perl::str($self->FocusMode) !== 'Manual';
+}
+
+==== ff64c071e4 Condition
+static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^0(220|6)/', $valPt);
+}
+
+==== 39802d6b38 Hook
+static function (ExifTool $self, &$format, &$varSize, $size, $dataPt, $pos): void {
+    if (preg_match('/^NIKON Z 8/', Perl::str($self->Model)) && $self->FirmwareVersion && strcmp(Perl::str($self->FirmwareVersion), '03.00') >= 0) {
+        $varSize += 2;
+    }
+}
+
+==== 694c3d50c3 Hook
+static function (ExifTool $self, &$format, &$varSize, $size, $dataPt, $pos): void {
+    if ($self->FirmwareVersion) {
+        if (preg_match('/^02\.10/', Perl::str($self->FirmwareVersion))) {
+            $varSize += 4;
+        } elseif (strcmp(Perl::str($self->FirmwareVersion), '03.0') >= 0) {
+            $varSize += 8;
+        }
+    }
+}
+
+==== b3dbc41c73 Hook
+static function (ExifTool $self, &$format, &$varSize, $size, $dataPt, $pos): void {
+    if ($self->FirmwareVersion && strcmp(Perl::str($self->FirmwareVersion), '02.10') >= 0) {
+        $varSize += 4;
+    }
+}
+
+==== cd828f1f6b Hook
+static function (ExifTool $self, &$format, &$varSize, $size, $dataPt, $pos): void {
+    if ($self->FirmwareVersion && strcmp(Perl::str($self->FirmwareVersion), '05.10') >= 0) {
+        $varSize += 4;
+    }
+}
+
+==== d4279aebad Hook
+static function (ExifTool $self, &$format, &$varSize, $size, $dataPt, $pos): void {
+    if ($self->FirmwareVersion && strcmp(Perl::str($self->FirmwareVersion), '03.00') >= 0) {
+        $varSize += 4;
+    }
+}
+
+==== 05f833354d PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if (Perl::str($val) === '0 0' || Perl::str($val) === '255 255') {
+        return 'Off';
+    }
+    $v = Perl::split(' ', $val);
+    $brightness = Perl::num($v[1] ?? null) == 128 ? 'Brightness: Neutral' : Perl::sprintf('Brightness: %+.1f', (Perl::num($v[1] ?? null) - 128) / 4);
+    $color = Perl::num($v[0] ?? null) == 128 ? 'Color: Neutral' : Perl::sprintf('%s: %.1f', Perl::num($v[0] ?? null) > 128 ? 'Yellow' : 'Magenta', abs(Perl::num($v[0] ?? null) - 128) / 4);
+    // will return something like: 'Magenta: 1.0  Brightness: Neutral'
+    return "$color $brightness";
+}
+
+==== 096671e537 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('f/%.1f', Perl::num($val) / 100);
+}
+
+==== 0eeec848c0 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.1fmm', Perl::num($val) / 100);
+}
+
+==== 0f81987b77 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if (Perl::num($val) == 0) {
+        return 'Off';
+    }
+    $i = Perl::sprintf('Interval %.0f of %.0f', $val, $self->IntervalShootingIntervals ?: 0); // something like "Interval 1 of 3"
+    $f = Perl::num($self->IntervalShootingShotsPerInterval ?: 0) > 1 ? Perl::sprintf(' Frame %.0f of %.0f', $self->IntervalFrame ?: 0, $self->IntervalShootingShotsPerInterval ?: 0) : ''; // something like "Frame 1 of 3" or blank
+    return "On: $i$f";
+}
+
+==== 1364e10eab PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $_ = $val ? ExifTool::DecodeBits($val, [
+        0 => 'MF',
+        1 => 'D',
+        2 => 'G',
+        3 => 'VR',
+        4 => '1', // PH
+        5 => 'FT-1', // PH/IB
+        6 => 'E', // PH (electromagnetic aperture mechanism)
+        7 => 'AF-P', // PH/IB
+    ]) : 'AF';
+    // remove commas and change "D G" to just "G"
+    $_ = str_replace(',', '', Perl::str($_));
+    $_ = preg_replace('/\bD G\b/', 'G', $_, 1);
+    $_ = preg_replace('/ E\b/', '', $_, 1, $n);
+    if ($n) {
+        $_ = preg_replace('/^(G )?/', 'E ', $_, 1); // put "E" at the start instead of "G"
+    }
+    $_ = preg_replace('/ 1/', '', $_, 1, $n);
+    if ($n) {
+        $_ = "1 $_"; // put "1" at start
+    }
+    $_ = preg_replace('/FT-1 /', '', $_, 1, $n);
+    if ($n) {
+        $_ .= ' FT-1'; // put "FT-1" at end
+    }
+    return $_;
+}
+
+==== 1ac28b0ad4 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ($self->FocusStepsFromInfinity !== null && Perl::str($self->FocusStepsFromInfinity) === '0') ? 'Inf'
+        : (Perl::num($val) < 100
+            ? (Perl::num($val) < 10
+                ? (Perl::num($val) < 1
+                    ? (Perl::num($val) < 0.35 ? Perl::sprintf('%.4f m', $val) : Perl::sprintf('%.3f m', $val))
+                    : Perl::sprintf('%.2f m', $val))
+                : Perl::sprintf('%.1f m', $val))
+            : Perl::sprintf('%.0f m', $val));
+}
+
+==== 22d6c61b16 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val) . ' s';
+}
+
+==== 280cdb21b3 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) > 0 ? Perl::sprintf('%.0f', $val) : '';
+}
+
+==== 3429f4025b PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) == 255 ? 'n/a' : $val;
+}
+
+==== 3517b56753 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ? Perl::sprintf('%+.1f', $val) : 0;
+}
+
+==== 355a38d5f8 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = preg_replace('/ /', ' x ', Perl::str($val), 1);
+    return "$val um";
+}
+
+==== 3f6d4e676f PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if (Perl::str($val) === '255') {
+        return 'All';
+    }
+    $_ = '';
+    return $_ . ExifTool::DecodeBits($val, [
+        0 => 'Top Left',
+        1 => 'Top Right',
+        2 => 'Bottom Left',
+        3 => 'Bottom Right',
+        4 => 'Left',
+        5 => 'Right',
+        6 => 'Top Center',
+        7 => 'Bottom Center',
+    ]);
+}
+
+==== 469fb74567 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if (Perl::num($val) == 0) {
+        return 'Off';
+    }
+    $i = Perl::sprintf('Interval %.0f of %.0f', $val, $self->IntervalShootingIntervals ?: 0); // something like "Interval 1 of 3"
+    $f = Perl::num($self->IntervalShootingShotsPerInterval ?: 0) > 1 ? Perl::sprintf(' Frame %.0f of %.0f', $self->IntervalFrame ?: 0, $self->IntervalShootingShotsPerInterval ?: 0) : ''; // something like "Frame 1 of 3" or blank
+    return "On: $i$f";
+}
+
+==== 492716c305 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) > 0.99 ? 'Full' : Perl::sprintf('%.0f%%', Perl::num($val) * 100);
+}
+
+==== 4ddc0b6aaf PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $imageArea = $self->ImageArea;
+    $afAreaMode = $self->VALUE['AFAreaMode'] ?? null;
+
+    $FX = 0;            // image size 8256 x 5504
+    $DX = 1;            // image size 5392 x 3592
+    $WideScreen = 4;    // 16:9 image area, image size 8256x4640
+    $OneToOne = 8;      // 1:1 image area, image size 5504x5504
+
+    $Single = 1;
+    $Dynamic = 2;
+    $WideS = 3;
+    $WideL = 4;
+    $ThreeD = 5;
+    $Auto = 6;
+    $WideC1 = 12;
+
+    $DynamicS = 0;
+    $DynamicM = 1;
+    $DynamicL = 2;
+
+    $start = 424;           // FX, 16:9 & 1:1 formats
+    $increment = 291;       // FX, & 16:9 formats
+    if (Perl::num($imageArea) == $WideScreen && Perl::num($val) > 0) {
+        $start = $start + $increment;
+    }
+
+    if (Perl::num($imageArea) == $DX) {    // DX results are in FX coordinate system to match reporting of ($AFAreaXPosition , $AFAreaYPosition)
+        $start = 572;
+        $increment = 436;
+        if (Perl::num($afAreaMode) == $WideS) {  // Wide S focus box is a strange size
+            $start = 542;
+            $increment = 442;
+        }
+    }
+
+    $divisor = 6.67;
+    if (Perl::num($imageArea) == $DX) {
+        $divisor = 10.01;   // extra .01 to ensure $val of 10*n+5 rounds down
+    }
+    if (Perl::num($imageArea) == $WideScreen) {
+        $divisor = 8.01;
+    }
+
+    $roundedValOverDivisor = Perl::sprintf('%.0f', Perl::num($val) / $divisor);   // round to nearest int
+
+    $focusBoxHeight = $self->AFAreaInitialHeight;    // wider focus boxes (e.g., DynM, DynL and some Wide C1/C2) will start and end closer to the center of the frame
+    if (Perl::num($imageArea) == $DX) {
+        $focusBoxHeight = Perl::int(Perl::num($focusBoxHeight) * 2 / 3);
+    }
+
+    $skipPositions = Perl::int(Perl::num($focusBoxHeight) / 2);   // jump over half the height of the focus box
+
+    $result = $start + $increment * (Perl::num($roundedValOverDivisor) + $skipPositions - 1);
+    return $result;
+}
+
+==== 5b33033762 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.1f m', Perl::num($val) / 10);
+}
+
+==== 5cefab635e PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $_ = $val ? ExifTool::DecodeBits($val, [
+        0 => 'MF',
+        1 => 'D',
+        2 => 'G',
+        3 => 'VR',
+        4 => '1', // PH
+        // bit 5 set for FT-1 adapter? - PH
+        6 => 'E', // PH (electromagnetic aperture mechanism)
+        // bit 7 set for AF-P lenses? - PH
+    ]) : 'AF';
+    // remove commas and change "D G" to just "G"
+    $_ = str_replace(',', '', Perl::str($_));
+    $_ = preg_replace('/\bD G\b/', 'G', $_, 1);
+    $_ = preg_replace('/ E\b/', '', $_, 1, $n);
+    if ($n) {
+        $_ = preg_replace('/^(G )?/', 'E ', $_, 1); // put "E" at the start instead of "G"
+    }
+    $_ = preg_replace('/ 1/', '', $_, 1, $n);
+    if ($n) {
+        $_ = "1 $_"; // put "1" at start
+    }
+    return $_;
+}
+
+==== 6284b8f4d4 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('0x%02x', $val);
+}
+
+==== 68d18b9b63 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.5f', $val);
+}
+
+==== 6bdd1fd7d8 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ? Perl::sprintf('%.2f m', $val) : 'inf';
+}
+
+==== 72c5a70a5f PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.3d', $val);
+}
+
+==== 77955c58c7 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $_ = '';
+    if (!(Perl::int($val) & 0x87)) {
+        if (!$val) {
+            return 'Single-Frame';
+        }
+        $_ = 'Single-Frame, ';
+    }
+    return $_ . ExifTool::DecodeBits($val, [
+        0 => 'Continuous',
+        1 => 'Delay',
+        2 => 'PC Control',
+        3 => 'Self-timer', // forum6281 (NC)
+        4 => 'Exposure Bracketing',
+        5 => preg_match('/D70\b/', Perl::str($self->Model)) ? 'Unused LE-NR Slowdown' : 'Auto ISO',
+        6 => 'White-Balance Bracketing',
+        7 => 'IR Control',
+        8 => 'D-Lighting Bracketing', // forum6281 (NC)
+        11 => 'Pre-capture', // 28  Z9 pre-release burst
+    ]);
+}
+
+==== 77eaa1ec47 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) == 1 ? '1 Second' : Perl::sprintf('%.0f Seconds', $val);
+}
+
+==== 7a5119ac1e PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $version = Perl::int(Perl::num($val) / 256);
+    $release = Perl::int((Perl::num($val) - 256 * $version) / 16);
+    $modification = Perl::num($val) - (256 * $version + 16 * $release);
+    return Perl::sprintf('%.0f.%.0f.%.0f', $version, $release, $modification);
+}
+
+==== 7daee69205 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val) . ' Hz';
+}
+
+==== 81a8a228c6 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Nikon::PrintPC($val, 'None', '%.2f', 4);
+}
+
+==== 8cbcd3119c PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Nikon::PrintPC($val, 'No Sharpening', '%d');
+}
+
+==== 900dffce3b PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $sign = Perl::num($val) < 0 ? '-' : '+';
+    $h = Perl::int(abs(Perl::num($val)) / 60);
+    return Perl::sprintf('%s%.2d:%.2d', $sign, $h, abs(Perl::num($val)) - 60 * $h);
+}
+
+==== 9613e7b9d4 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return !preg_match('/undef/', Perl::str($val)) ? Exif::PrintFraction($val) : 'n/a';
+}
+
+==== ad18b2aaa5 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $_ = $val;
+    $_ = preg_replace('/^0 /', '', Perl::str($_), 1);
+    return $_;
+}
+
+==== ad96e9d7ea PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.1fmm', Perl::num($val) / 10);
+}
+
+==== b5c1f0fe07 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $_ = $val;
+    $_ = preg_replace('/^(\d{2})/', '${1}.', Perl::str($_), 1);
+    $_ = preg_replace('/^0/', '', $_, 1);
+    return $_;
+}
+
+==== b7c22d6b90 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.2f', $val);
+}
+
+==== b9974209cd PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::int(Perl::num($val) + 0.5);
+}
+
+==== c04e53275f PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.2f %.2f %.2f', ...Perl::split(' ', $val));
+}
+
+==== c38b056680 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) == 0x7f ? 'n/a' : $val;
+}
+
+==== c961c7f7c2 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ? Perl::sprintf('%.1f sec', Perl::num($val) / 1000) : 'Off';
+}
+
+==== cfbfe45d4a PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($prt[0] ?? null) . ' ' . Perl::str($prt[1] ?? null);
+}
+
+==== d17b56fda1 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $imageArea = $self->ImageArea;
+    $afAreaMode = $self->VALUE['AFAreaMode'] ?? null;
+    $dynamicAFAreaSize = ($self->DynamicAFAreaSize !== null ? $self->DynamicAFAreaSize : 0);
+
+    $FX = 0;            // image size 8256 x 5504
+    $DX = 1;            // image size 5392 x 3592
+    $WideScreen = 4;    // 16:9 image area, image size 8256x4640
+    $OneToOne = 8;      // 1:1 image area, image size 5504x5504
+
+    $Single = 1;
+    $Dynamic = 2;
+    $WideS = 3;
+    $WideL = 4;
+    $ThreeD = 5;
+    $Auto = 6;
+    $WideC1 = 12;
+
+    $DynamicS = 0;
+    $DynamicM = 1;
+    $DynamicL = 2;
+
+    $start = 502;           // FX, 16:9 & 1:1 formats
+    $increment = 259;       // FX & 16:9 formats
+
+    if (Perl::num($imageArea) == $OneToOne) {
+        $start = $start + 5 * $increment;   // need to provide additional offset for the cropped horizontal pixels in 1:1 (19 vs 29 horizontal focus positions)
+    }
+    if (Perl::num($val) < 49 && (Perl::num($imageArea) == $FX || Perl::num($imageArea) == $WideScreen)) {
+        $start = $start - $increment;   // calculations for the left side of the frames are offset by 1 position from the right side
+    }
+    if (Perl::num($imageArea) == $OneToOne && Perl::num($afAreaMode) == $Auto) {
+        $start = $start - $increment;
+    }
+
+    if (Perl::num($imageArea) == $DX) {    // DX results are in FX coordinate system to match reporting of ($AFAreaXPosition , $AFAreaYPosition)
+        $start = 636;
+        $increment = 388;
+        if (Perl::num($afAreaMode) == $WideS) {  // Wide S focus box width is an unusual size
+            $start = 591;
+            $increment = 393;
+        }
+        if (Perl::num($afAreaMode) == $Auto) {
+            $start = $start - $increment;
+        }
+    }
+
+    $divisor = 3.99;     // subtract .01 to ensure $val of 2n+2 rounds up
+    if (Perl::num($val) >= 50) {
+        $divisor = 4.01;    // ...but round up on the right side of the frame
+    }
+    if (Perl::num($imageArea) == $DX || Perl::num($imageArea) == $OneToOne) {
+        $divisor = 6;
+    }
+
+    $roundedValOverDivisor = Perl::sprintf('%.0f', Perl::num($val) / $divisor);   // round to nearest int
+
+    $focusBoxWidth = $self->AFAreaInitialWidth;     // wider focus boxes (e.g., DynM, DynL and some Wide C1/C2) will start and end closer to the center of the frame
+    if (Perl::num($imageArea) == $DX || Perl::num($imageArea) == $OneToOne) {
+        $focusBoxWidth = Perl::int(Perl::num($focusBoxWidth) * 2 / 3);
+    }
+
+    $skipPositions = Perl::int(Perl::num($focusBoxWidth) / 2);   // jump over half the width of the focus box
+
+    $result = $start + $increment * (Perl::num($roundedValOverDivisor) + $skipPositions - 1);
+
+    return $result;
+}
+
+==== d7441668b3 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) == 0 ? 'No Delay' : Perl::sprintf('%.0f sec', $val);
+}
+
+==== dd2537fdc4 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Nikon::PrintPC($val, null, '%.2f', 4);
+}
+
+==== e8e916f5e3 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) == 4294965247 ? 'n/a' : $val;
+}
+
+==== ed1b9eb8be PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Nikon::PrintPC($val);
+}
+
+==== f27c0b183e PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) > 0.99 ? 'Full' : Perl::sprintf('%.1f%%', Perl::num($val) * 100);
+}
+
+==== f5c9ba14cb PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $_ = $val;
+    $_ = preg_replace('/^0 /', '', Perl::str($_), 1);
+    $_ = preg_replace('/^1 (\d+)/', 'Hi $1', $_, 1);
+    return $_;
+}
+
+==== fad908ede0 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $_ = '';
+    return $_ . ExifTool::DecodeBits($val, [
+        0 => 'Distance',
+        1 => 'Motion',
+        2 => 'Subject Detection',
+    ]);
+}
+
+==== fe31bb0fc5 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Nikon::PrintPC($val, 'None');
+}
+
+==== fec60285e0 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.4d', $val);
+}
+
+==== fff0029843 PrintConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if (Perl::num($val) == 0) {
+        return 'Off';
+    }
+    $i = Perl::sprintf('Frame %.0f of %.0f', $val, $self->FocusShiftNumberShots); // something like Frame 1 of 100"
+    if ($self->PixelShiftActive && Perl::str($self->PixelShiftActive) === '1') {
+        $i = Perl::sprintf('Frame %.0f', $val); // for the Z8 fw3 with PixelShift Enabled, the frame count is correct, but the frame total needs to be multiplied by the number of PixelShift frames (which I cannot find)
+    }
+    return "On: $i";
+}
+
+==== 09e02287cb RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->SingleFrame = $val;
+}
+
+==== 148c65b2b4 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->AFAreaXPosition = $val;
+}
+
+==== 159a8b9904 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return preg_match('/^\d\.\d+.$/', Perl::str($val)) ? $val : null;
+}
+
+==== 1916b969e4 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->FirmwareVersion = $val;
+}
+
+==== 192c84f258 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->FocusShiftShooting = $val;
+}
+
+==== 1ccdb58c31 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->DynamicAFAreaSize = $val;
+}
+
+==== 1cd762b86c RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Perl::num($val) < 50 ? null : $val;
+}
+
+==== 2505d4827f RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Perl::num($self->FacesDetected) < 10 ? null : $val;
+}
+
+==== 261026a831 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->TextEncoding ? $self->Decode($val, $self->TextEncoding, 'MM') : $val;
+}
+
+==== 267acbc367 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->AFInfo2Version = $val;
+}
+
+==== 2d9969069b RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->FlashControlMode = $val;
+}
+
+==== 358dbf8156 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->FocusMode = $val;
+}
+
+==== 3630077e65 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (!preg_match('/^.\0+$/s', Perl::str($val))) {
+        $self->OldLensData = 1;
+    }
+    return null;
+}
+
+==== 3d64085564 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->AFAreaMode = $val;
+}
+
+==== 416d98c708 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->AFAreaYPosition = $val;
+}
+
+==== 4599de9a64 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Perl::num($self->FacesDetected) < 1 ? null : $val;
+}
+
+==== 4b1ebf2812 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return ($val && Perl::num($val) != 255) ? $val : null;
+}
+
+==== 53fc4f0530 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->IntervalShootingIntervals = $val;
+}
+
+==== 564da4ea05 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->AutoCapturedFrame = $val;
+}
+
+==== 56d36f491c RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (!($self->FocusDistanceRangeWidth !== null && !$self->FocusDistanceRangeWidth)) {
+        if (Perl::num($val) == 0) {
+            return $self->LensDriveEnd = 'No';
+        } else {
+            return $self->LensDriveEnd = 'CFD';
+        }
+    } else {
+        return $self->LensDriveEnd = 'Inf';
+    }
+}
+
+==== 5accb51082 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->HDR = $val;
+}
+
+==== 622753f64f RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (!preg_match('/^.\0+$/s', Perl::str($val))) {
+        $self->NewLensData = 1;
+    }
+    return null;
+}
+
+==== 6d0bb0af5b RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Perl::num($self->FacesDetected) < 11 ? null : $val;
+}
+
+==== 6d837bac9b RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->AFAreaInitialWidth = 1 + Perl::int(Perl::num($val) / 4);
+}
+
+==== 6f2a1f73b0 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $self->BurstFlag = $val;
+    return null;
+}
+
+==== 7a96f6da53 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->LensID = $val;
+}
+
+==== 7b11d181ad RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->AFCoordinatesAvailable = $val;
+}
+
+==== 7ba2a2cf8a RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->AFAreaModeUsed = $val;
+}
+
+==== 80762345ed RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->ShutterMode = $val;
+}
+
+==== 8293b75871 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->PixelShiftActive = $val;
+}
+
+==== 85d80f8a16 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Perl::num($self->FacesDetected) < 12 ? null : $val;
+}
+
+==== 863062eb9f RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->ImageArea = $val;
+}
+
+==== 87d8533027 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if ($val) {
+        $self->TextEncoding = Vars\Nikon::$nikonTextEncoding[Perl::str($val)] ?? null;
+    }
+    return $val;
+}
+
+==== 8bc74b27b9 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->IntervalFrame = $val;
+}
+
+==== 8e990899dd RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->RetouchInfoVersion = $val;
+}
+
+==== 903a1224b8 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->AFAreaInitialHeight = 1 + Perl::int(Perl::num($val) / 7);
+}
+
+==== 9717b89f9c RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->FlashGroupOptionsMasterMode = $val;
+}
+
+==== 9eadc74c8f RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->HDMIOutputNLog = $val;
+}
+
+==== a0c95414c5 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $val = Perl::num($val) / 256;
+}
+
+==== b5c6959490 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return ($val) ? $val : null;
+}
+
+==== b88d13f127 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->FlashGroupBControlMode = $val;
+}
+
+==== ba0fa0f04b RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->FocusPointSchema = $val;
+}
+
+==== c0631f1d40 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->BracketSet = $val;
+}
+
+==== cab73d3204 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->MultipleExposureMode = $val;
+}
+
+==== cea160b02f RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->AFDetectionMethod = $val;
+}
+
+==== d284e404aa RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->PixelShiftShooting = $val;
+}
+
+==== d29fc12d2b RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->ColorBalanceVersion = $val;
+}
+
+==== d38530241c RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->IntervalShooting = $val;
+}
+
+==== d47cfb7087 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $self->ShotInfoVersion = $val;
+    return preg_match('/^\d+$/', Perl::str($val)) ? $val : null;
+}
+
+==== d6152420f4 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->FocusStepsFromInfinity = $val;
+}
+
+==== d619a07075 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->FocusDistanceRangeWidth = $val;
+}
+
+==== d6fdc18331 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->IntervalShootingShotsPerInterval = $val;
+}
+
+==== e05a19d611 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->FocusShiftNumberShots = $val;
+}
+
+==== e0c1ae9a58 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->FlashGroupAControlMode = $val;
+}
+
+==== e751f815cc RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->FlashGroupCControlMode = $val;
+}
+
+==== f34abce799 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->PhaseDetectAF = $val;
+}
+
+==== f71fa5ba00 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->MovieType = $val;
+}
+
+==== f7770ba940 RawConv
+static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->SubfileType = $val;
+}
+
+==== ded33034cc Start
+static function ($valuePtr = null, $val = null, $dirStart = null, $dataPt = null) {
+    return Perl::num($dirStart) + Perl::num($val);
+}
+
+==== e0a63c3dc6 Start
+static function ($valuePtr = null, $val = null, $dirStart = null, $dataPt = null) {
+    return Perl::num($valuePtr) + 72;
+}
+
+==== c54a895507 Validate
+static function ($val = null, $dirData = null, $subdirStart = null, $size = null, $type = null) {
+    return preg_match('/^0100/', Perl::str($val));
+}
+
+==== 0aa50bd7ae ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return 100 * exp((Perl::num($val) / 12 - 5) * log(2));
+}
+
+==== 13353cff6e ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(' ', Perl::unpack(str_repeat('H2', 11), $val));
+}
+
+==== 1354dd6f90 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return -Perl::num($val) / 6;
+}
+
+==== 157d8d02a1 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = XMP::DecodeBase64($val);
+    return Perl::unpack('V', $val->value)[0] ?? null;
+}
+
+==== 179930c383 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $_ = $val;
+    if (preg_match('/^[\x00-\x09]/', Perl::str($_))) {
+        $_ = implode('', Perl::unpack('CCCC', $_));
+    }
+    return $_;
+}
+
+==== 1fe98bb31d ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(' ', Perl::unpack(str_repeat('H2', 29), $val));
+}
+
+==== 20c246e9b6 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(' ', Perl::unpack(str_repeat('H2', 21), $val));
+}
+
+==== 2bd6926fd7 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::int(Perl::num($self->AFAreaYPosition) / 292);
+}
+
+==== 2d14ca4044 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    ExifTool::RequireModule('Image::ExifTool::GPS');
+    return GPS::ConvertTimeStamp($val);
+}
+
+==== 37b6b04e13 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = str_replace("\0", '', Perl::str($val));
+    return $val;
+}
+
+==== 3b922d5a8e ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) - 5;
+}
+
+==== 463a7fb9e9 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return (Perl::num($val) - 104) / 8;
+}
+
+==== 484f855afc ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = XMP::DecodeBase64($val);
+    $saveOrder = ExifTool::GetByteOrder();
+    ExifTool::SetByteOrder('II');
+    $val = ExifTool::GetDouble($val->value, 0);
+    ExifTool::SetByteOrder($saveOrder);
+    return $val;
+}
+
+==== 4b82d7ad40 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ? 10 / Perl::num($val) : 0;
+}
+
+==== 4bb973d0f9 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::int(Perl::num($self->AFAreaXPosition) / 260);
+}
+
+==== 4ec336df09 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ? 2048 / Perl::num($val) : $val;
+}
+
+==== 552d205339 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return preg_match('/^Manual/i', Perl::str($vals[0] ?? null)) ? 0 : 1;
+}
+
+==== 58e0aaf53c ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return 2 ** (-Perl::num($val) / 6);
+}
+
+==== 5a5ad21fe5 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return 2 ** ((Perl::num($val) - 80) / 12);
+}
+
+==== 602cf5095f ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return (Perl::num($vals[1] ?? null) == 0) ? ($vals[0] ?? null) : 0;
+}
+
+==== 689c34c24f ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return (!preg_match('/^Manual/i', Perl::str($vals[0] ?? null)) && Perl::num($vals[1] ?? null) == 1) ? 1 : 0;
+}
+
+==== 6a0a9d4264 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::int(Perl::num($self->AFAreaYPosition) / 286);
+}
+
+==== 6c22ed67c8 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(' ', Perl::unpack(str_repeat('H2', 38), $val));
+}
+
+==== 6d26ee9d26 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 12;
+}
+
+==== 6e773a01ab ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = preg_replace('/(\d{2})/', '${1}.', Perl::str($val), 1);
+    return $val;
+}
+
+==== 6ec7688590 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = preg_replace('/\0.*/s', '', Perl::str($val), 1);
+    return $val;
+}
+
+==== 72921134cb ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::unpack('n', $val)[0] ?? null;
+}
+
+==== 75dbc9db0c ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) + 3;
+}
+
+==== 7b700ad4d2 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(' ', Perl::unpack(str_repeat('H2', 20), $val));
+}
+
+==== 7ea055bd8d ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::unpack('v', $val)[0] ?? null;
+}
+
+==== 854a53c15e ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 8;
+}
+
+==== 8adb0d5b1d ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($self->SingleFrame) == 0 ? 5 : $val;
+}
+
+==== 8fb7cd08e1 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return 2 ** (Perl::num($val) / 384 - 1);
+}
+
+==== 98e91510af ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) < 95 ? Perl::num($val) / 20 - 1 : 4;
+}
+
+==== 999689425c ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(' ', Perl::unpack(str_repeat('H2', 7), $val));
+}
+
+==== 9adf2c071f ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) <= 180 ? $val : Perl::num($val) - 360;
+}
+
+==== 9b5ccec1a6 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = preg_replace('/ 0$/', '', Perl::str($val), 1);
+    return $val;
+}
+
+==== a3d5da4d2b ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(' ', Perl::unpack(str_repeat('H2', 14), $val));
+}
+
+==== a6e43477ec ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 6;
+}
+
+==== b9055535d3 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = preg_replace('/( 0)+$/', '', Perl::str($val), 1);
+    return $val;
+}
+
+==== c0247a919d ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    [$a, $b, $c] = Perl::unpack('C3', $val) + [null, null, null];
+    return $c ? $a * ($b / $c) : 0;
+}
+
+==== c5333e4efb ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(' ', Perl::unpack(str_repeat('H2', 51), $val));
+}
+
+==== d13df6a25d ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return 2 ** (Perl::num($val) / 24);
+}
+
+==== da7c48a1b3 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return -(Perl::num($val) - 2) / 6;
+}
+
+==== da827f9d3c ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(' ', Perl::unpack(str_repeat('H2', 17), $val));
+}
+
+==== dc5d089389 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return 2 ** (-Perl::num($val) / 3);
+}
+
+==== dd0c94a0d2 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = XMP::DecodeBase64($val);
+    $saveOrder = ExifTool::GetByteOrder();
+    ExifTool::SetByteOrder('II');
+    $val = ExifTool::GetDouble($val->value, 0) + ExifTool::GetDouble($val->value, 8) / 60 + ExifTool::GetDouble($val->value, 16) / 3600;
+    ExifTool::SetByteOrder($saveOrder);
+    return $val;
+}
+
+==== dec1da3b45 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = preg_replace('/\0$/', '', Perl::str($val), 1);    // remove trailing null
+    $val = preg_replace_callback('/([\0-\x1f])/', static fn ($m) => '.' . ord($m[1]), $val);
+    $val = preg_replace('/\./', ' ', $val, 1);
+    return $val;
+}
+
+==== dff6bf86e8 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    preg_match_all('/../', Perl::str($val), $m);
+    return implode('.', $m[0]);
+}
+
+==== e1731e28ce ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    [$a, $b, $c] = Perl::unpack('c3', $val) + [null, null, null];
+    return $c ? $a * ($b / $c) : 0;
+}
+
+==== e2788570eb ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.2X' . str_repeat(' %.2X', 7), ...$raw);
+}
+
+==== e62bcdf361 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $a = array_reverse(Perl::split(' ', $val));
+    return implode('.', $a);
+}
+
+==== e6da02377d ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    ExifTool::RequireModule('Image::ExifTool::GPS');
+    return GPS::ToDegrees($val);
+}
+
+==== ecf2206e9c ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = XMP::DecodeBase64($val);
+    return implode('.', Perl::unpack('C*', $val->value));
+}
+
+==== f0414d7c39 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return 5 * 2 ** (Perl::num($val) / 24);
+}
+
+==== f371daabfa ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return 0.01 * 10 ** (Perl::num($val) / 40);
+}
+
+==== f4f9b949b5 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) - 0x80;
+}
+
+==== f8799e6f54 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(' ', Perl::unpack(str_repeat('H2', 5), $val));
+}
+
+==== fa5246c412 ValueConv
+static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    // (padding: Perl extends @a with undef up to $a[3])
+    $a = Perl::split(' ', $val) + [null, null, null, null];
+    $a[0] = Perl::num($a[0]) * 2;
+    $a[3] = Perl::num($a[3]) * 2;
+    return implode(' ', array_map(Perl::str(...), $a));
+}
+
+==== 5cb900f16d code:OTHER
+static function ($val, $inv, $conv) {
+    return Nikon::GetAFPointGrid($val, 21, $inv);
+}
+
+==== 8da8775ff3 code:OTHER
+static function ($val, $inv, $conv) {
+    return Nikon::GetAFPointGrid($val, 15, $inv);
+}
+
+==== 03f90edc8b code:conv
+static function ($val) {
+    return Nikon::PrintAFPointsLeftRight($val, 19);
+}
+
+==== 0506c9395f code:conv
+static function ($val) {
+    return Nikon::PrintAFPoints($val, Vars\Nikon::$afPoints231);
+}
+
+==== 25166e0b77 code:conv
+static function ($val) {
+    return Nikon::PrintAFPointsUpDown($val, 11);
+}
+
+==== 4014725976 code:conv
+static function ($val) {
+    return Nikon::PrintAFPointsGrid($val, 15);
+}
+
+==== 4ecad499a1 code:conv
+static function ($val) {
+    return Nikon::PrintAFPointsUpDown($val, 17);
+}
+
+==== 58510ef0ab code:conv
+static function ($val) {
+    return Nikon::PrintAFPoints($val, Vars\Nikon::$afPoints405);
+}
+
+==== 632169027b code:conv
+static function ($val) {
+    return Nikon::PrintAFPoints($val, Vars\Nikon::$afPoints39);
+}
+
+==== 6be84bf156 code:conv
+static function ($val) {
+    if (strlen(Perl::str($val)) < 7) {
+        return $val;
+    }
+    $shrt = ExifTool::GetByteOrder() === 'II' ? 'v' : 'n';
+    $date = Perl::unpack($shrt . 'C5', $val);
+    return Perl::sprintf('%.4d:%.2d:%.2d %.2d:%.2d:%.2d', ...$date);
+}
+
+==== 6c8169b395 code:conv
+static function ($val) {
+    return Nikon::PrintAFPoints($val, Vars\Nikon::$afPoints135);
+}
+
+==== 825bbf54c3 code:conv
+static function ($val) {
+    return Nikon::PrintAFPoints($val, Vars\Nikon::$afPoints81);
+}
+
+==== 890398e0f5 code:conv
+static function ($val) {
+    return Nikon::PrintAFPointsLeftRight($val, 29);
+}
+
+==== 89e5df762a code:conv
+static function ($val) {
+    return Nikon::PrintAFPoints($val, Vars\Nikon::$afPoints105);
+}
+
+==== 94bc4448b6 code:conv
+static function ($val) {
+    return Nikon::PrintAFPoints($val, Vars\Nikon::$afPoints153);
+}
+
+==== ad5454c25b code:conv
+static function ($val) {
+    return Nikon::PrintAFPointsUpDown($val, 13);
+}
+
+==== af251f29cb code:conv
+static function ($val) {
+    return Nikon::PrintAFPoints($val, Vars\Nikon::$afPoints299);
+}
+
+==== ca65765ee7 code:conv
+static function ($val) {
+    return Nikon::PrintAFPoints($val, Vars\Nikon::$afPoints51);
+}
+
+==== f1fd7bc47f code:conv
+static function ($val) {
+    return Nikon::PrintAFPointsLeftRight($val, 21);
+}
+
+==== f596af6234 code:conv
+static function ($val) {
+    return Nikon::PrintAFPointsGrid($val, 21);
+}
+

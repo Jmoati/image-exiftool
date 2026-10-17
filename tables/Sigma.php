@@ -19,15 +19,23 @@ $f_50e54f3cb2 = static function (mixed ...$args) { throw new NotPorted('Conditio
 $f_54241c3f11 = static function (mixed ...$args) { throw new NotPorted('ValueConv 54241c3f11'); };
 $f_35a9a0c90a = static function (mixed ...$args) { throw new NotPorted('ValueConv 35a9a0c90a'); };
 $f_18cba2cf9b = static function (mixed ...$args) { throw new NotPorted('Condition 18cba2cf9b'); };
-$f_32fa794234 = static function (mixed ...$args) { throw new NotPorted('PrintConv 32fa794234'); };
+$f_32fa794234 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return strtr(Perl::str($val), ' ', 'x');
+};
 $f_7e84797f0c = static function (mixed ...$args) { throw new NotPorted('Condition 7e84797f0c'); };
 $f_e1ea1f5360 = static function (mixed ...$args) { throw new NotPorted('Condition e1ea1f5360'); };
 $f_76cbd6b2d3 = static function (mixed ...$args) { throw new NotPorted('ValueConv 76cbd6b2d3'); };
 $f_511918c1b6 = static function (mixed ...$args) { throw new NotPorted('PrintConv 511918c1b6'); };
-$f_9c98df8b6c = static function (mixed ...$args) { throw new NotPorted('PrintConv 9c98df8b6c'); };
-$f_a941801118 = static function (mixed ...$args) { throw new NotPorted('PrintConv a941801118'); };
+$f_9c98df8b6c = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.1f', $val);
+};
+$f_a941801118 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Exif::PrintExposureTime($val);
+};
 $f_b5b73947a5 = static function (mixed ...$args) { throw new NotPorted('Condition b5b73947a5'); };
-$f_438f87995e = static function (mixed ...$args) { throw new NotPorted('ValueConv 438f87995e'); };
+$f_438f87995e = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) * 1e-6;
+};
 $f_5ca05a9012 = static function (mixed ...$args) { throw new NotPorted('PrintConv 5ca05a9012'); };
 $f_da08e73859 = static function (mixed ...$args) { throw new NotPorted('PrintConv da08e73859'); };
 $f_e7c8cf2ae1 = static function (mixed ...$args) { throw new NotPorted('Condition e7c8cf2ae1'); };

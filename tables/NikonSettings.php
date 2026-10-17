@@ -22,7 +22,9 @@ $f_120c253c04 = static function (mixed ...$args) { throw new NotPorted('ValueCon
 $f_bc56f64990 = static function (mixed ...$args) { throw new NotPorted('RawConv bc56f64990'); };
 $f_a1d3bb26e4 = static function (mixed ...$args) { throw new NotPorted('Condition a1d3bb26e4'); };
 $f_713de2b755 = static function (mixed ...$args) { throw new NotPorted('RawConv 713de2b755'); };
-$f_c0631f1d40 = static function (mixed ...$args) { throw new NotPorted('RawConv c0631f1d40'); };
+$f_c0631f1d40 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->BracketSet = $val;
+};
 $f_505b8077ea = static function (mixed ...$args) { throw new NotPorted('Condition 505b8077ea'); };
 $f_9db1e3baf6 = static function (mixed ...$args) { throw new NotPorted('RawConv 9db1e3baf6'); };
 $f_2963ae85be = static function (mixed ...$args) { throw new NotPorted('Condition 2963ae85be'); };
@@ -37,7 +39,9 @@ $f_aa0ed4e357 = static function (mixed ...$args) { throw new NotPorted('RawConv 
 $f_ff253fa7df = static function (mixed ...$args) { throw new NotPorted('Condition ff253fa7df'); };
 $f_f6de4b6151 = static function (mixed ...$args) { throw new NotPorted('RawConv f6de4b6151'); };
 $f_b76ae60efe = static function (mixed ...$args) { throw new NotPorted('Condition b76ae60efe'); };
-$f_3d64085564 = static function (mixed ...$args) { throw new NotPorted('RawConv 3d64085564'); };
+$f_3d64085564 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->AFAreaMode = $val;
+};
 
 $d_1 = null /* circular reference */;
 $d_2 = null /* circular reference */;

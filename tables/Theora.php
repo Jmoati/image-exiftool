@@ -4,9 +4,13 @@
 
 namespace Image\ExifTool;
 
-$f_870d813f22 = static function (mixed ...$args) { throw new NotPorted('PrintConv 870d813f22'); };
+$f_870d813f22 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return strtr(Perl::str($val), ' ', '.');
+};
 $f_2ed5b3c8eb = static function (mixed ...$args) { throw new NotPorted('ValueConv 2ed5b3c8eb'); };
-$f_090fcb29a6 = static function (mixed ...$args) { throw new NotPorted('PrintConv 090fcb29a6'); };
+$f_090fcb29a6 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::int(Perl::num($val) * 1000 + 0.5) / 1000;
+};
 $f_938d2018a6 = static function (mixed ...$args) { throw new NotPorted('ValueConv 938d2018a6'); };
 $f_f31b033e5b = static function (mixed ...$args) { throw new NotPorted('ValueConv f31b033e5b'); };
 $f_23530d03db = static function (mixed ...$args) { throw new NotPorted('ValueConv 23530d03db'); };

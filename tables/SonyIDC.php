@@ -9,9 +9,15 @@ $f_b6c0baa5a0 = static function (mixed ...$args) { throw new NotPorted('PrintCon
 $f_8f4757174a = static function (mixed ...$args) { throw new NotPorted('ValueConv 8f4757174a'); };
 $f_28f4f642f1 = static function (mixed ...$args) { throw new NotPorted('PrintConv 28f4f642f1'); };
 $f_a2edd7d09b = static function (mixed ...$args) { throw new NotPorted('PrintConv a2edd7d09b'); };
-$f_776710f713 = static function (mixed ...$args) { throw new NotPorted('Base 776710f713'); };
-$f_5879ccff58 = static function (mixed ...$args) { throw new NotPorted('Start 5879ccff58'); };
-$f_ae2db35ce3 = static function (mixed ...$args) { throw new NotPorted('PrintConv ae2db35ce3'); };
+$f_776710f713 = static function ($start, $base = 0) {
+    return $start;
+};
+$f_5879ccff58 = static function ($valuePtr = null, $val = null, $dirStart = null, $dataPt = null) {
+    return $val;
+};
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $self->ConvertDateTime($val);
+};
 
 return [
     'load' => [

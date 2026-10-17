@@ -6,9 +6,13 @@ namespace Image\ExifTool;
 
 $f_d5ded72b61 = static function (mixed ...$args) { throw new NotPorted('RawConv d5ded72b61'); };
 $f_2d163fdb11 = static function (mixed ...$args) { throw new NotPorted('ValueConv 2d163fdb11'); };
-$f_ae2db35ce3 = static function (mixed ...$args) { throw new NotPorted('PrintConv ae2db35ce3'); };
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $self->ConvertDateTime($val);
+};
 $f_c76bfc4849 = static function (mixed ...$args) { throw new NotPorted('RawConv c76bfc4849'); };
-$f_59c79d4e80 = static function (mixed ...$args) { throw new NotPorted('ValueConv 59c79d4e80'); };
+$f_59c79d4e80 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::ConvertUnixTime($val, 1);
+};
 $f_57eea325fe = static function (mixed ...$args) { throw new NotPorted('ValueConv 57eea325fe'); };
 $f_cc343a207d = static function (mixed ...$args) { throw new NotPorted('PrintConv cc343a207d'); };
 $f_74a9cbae22 = static function (mixed ...$args) { throw new NotPorted('ValueConv 74a9cbae22'); };

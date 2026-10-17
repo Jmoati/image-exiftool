@@ -505,8 +505,17 @@ sub CountRefs
 #------------------------------------------------------------------------------
 # write the files
 my $out = "$project/tables";
-remove_tree("$out/_todo");
+# (other processes may read these files while we run: write to temporary files, then rename)
+my @written;
+sub Out
+{
+    my $path = shift;
+    open my $fh, '>', "$path.tmp$$" or die "$path: $!";
+    push @written, $path;
+    return $fh;
+}
 make_path("$out/vars", "$out/_todo");
+unlink glob("$out/_todo/*.txt");
 my %modules;
 $modules{ModuleKey($_)}{$_} = 1 foreach keys %tables;
 $modules{ModuleKey("${_}::x")} ||= {} foreach keys %varsOf;
@@ -534,7 +543,7 @@ foreach $mod (sort keys %modules) {
     my $class = ClassName($mod);
 
     if (@names or $loadActions{$mod}) {
-        open my $fh, '>', "$out/$mod.php" or die;
+        my $fh = Out("$out/$mod.php");
         print $fh "<?php\n\n$header\nnamespace Image\\ExifTool;\n\n";
         foreach my $id (@closureOrder) {
             print $fh "\$f_$id = $closures{$id};\n";
@@ -549,7 +558,7 @@ foreach $mod (sort keys %modules) {
         close $fh;
     }
     if (%todo) {
-        open my $fh, '>', "$out/_todo/$mod.txt" or die;
+        my $fh = Out("$out/_todo/$mod.txt");
         foreach my $id (sort { $todo{$a}[0] cmp $todo{$b}[0] or $a cmp $b } keys %todo) {
             my ($context, $src, $where, $extra) = @{$todo{$id}};
             my $sigKey = $context =~ /^code/ ? $context : $context;
@@ -602,7 +611,7 @@ foreach my $m (sort keys %varsByMod) {
     next if $skipModule{$m};
     (%shared, @sharedOrder, %sharedCount) = ();
     my $class = ClassName($m);
-    open my $fh, '>', "$out/vars/$class.php" or die;
+    my $fh = Out("$out/vars/$class.php");
     print $fh "<?php\n\n$header\nnamespace Image\\ExifTool\\Vars;\n\n";
     print $fh "/** Package variables and file lexicals of " . ($m eq 'ExifTool' ? 'Image::ExifTool' : "Image::ExifTool::$m") . " */\n";
     print $fh "final class $class\n{\n";
@@ -622,17 +631,22 @@ foreach my $m (sort keys %varsByMod) {
 make_path("$out/vars/Charset");
 foreach my $cs (sort keys %charsets) {
     (%shared, @sharedOrder, %sharedCount) = ();
-    open my $fh, '>', "$out/vars/Charset/$cs.php" or die;
+    my $fh = Out("$out/vars/Charset/$cs.php");
     print $fh "<?php\n\n$header\nnamespace Image\\ExifTool\\Vars\\Charset;\n\n";
     print $fh "/** %Image::ExifTool::Charset::$cs */\nfinal class $cs\n{\n    public static \$map = " . Data($charsets{$cs}, { depth => 1 }, 1, "Charset $cs") . ";\n}\n";
     close $fh;
 }
 
-open my $fh, '>', "$out/_index.php" or die;
+my $fh = Out("$out/_index.php");
 print $fh "<?php\n\n$header\ndeclare(strict_types=1);\n\nreturn [\n";
 print $fh "    " . PhpString($_) . " => " . PhpString($index{$_}) . ",\n" foreach sort keys %index;
 print $fh "];\n";
 close $fh;
+
+close $fh;
+foreach my $path (@written) {
+    rename("$path.tmp$$", $path) or die "rename $path: $!";
+}
 
 printf STDERR "ExifTool %s: %d tables in %d modules, %d code pieces, %d translated, %d to do\n",
     $version, scalar(keys %index), scalar(keys %modules), $nCode, $nCode - ($nTodo || 0), $nTodo || 0;

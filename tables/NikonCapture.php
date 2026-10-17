@@ -6,9 +6,13 @@ namespace Image\ExifTool;
 
 $f_40a730c975 = static function (mixed ...$args) { throw new NotPorted('ValueConv 40a730c975'); };
 $f_75416aa93f = static function (mixed ...$args) { throw new NotPorted('ValueConv 75416aa93f'); };
-$f_2beaacd6d4 = static function (mixed ...$args) { throw new NotPorted('ValueConv 2beaacd6d4'); };
+$f_2beaacd6d4 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 100;
+};
 $f_e2582d25e8 = static function (mixed ...$args) { throw new NotPorted('PrintConv e2582d25e8'); };
-$f_05a61fd4e2 = static function (mixed ...$args) { throw new NotPorted('ValueConv 05a61fd4e2'); };
+$f_05a61fd4e2 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) - 128;
+};
 $f_e1b21e5266 = static function (mixed ...$args) { throw new NotPorted('ValueConv e1b21e5266'); };
 
 $d_1 = null /* circular reference */;

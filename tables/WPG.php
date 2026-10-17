@@ -4,7 +4,9 @@
 
 namespace Image\ExifTool;
 
-$f_5dbc52ad61 = static function (mixed ...$args) { throw new NotPorted('PrintConv 5dbc52ad61'); };
+$f_5dbc52ad61 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.2f', $val);
+};
 
 return [
     'load' => [

@@ -513,7 +513,7 @@ final class Perl
             case 'g':
             case 'G':
                 $f = (float) self::num($arg);
-                $negative = $f < 0 || (0.0 === $f && 1 / $f < 0);
+                $negative = $f < 0 || (0.0 === $f && fdiv(1, $f) < 0);
                 $sign = $negative ? '-' : $plus;
                 if (is_nan($f) || is_infinite($f)) {
                     return self::pad(is_nan($f) ? 'NaN' : 'Inf', str_replace('0', '', $flags), $width, false, is_nan($f) ? $plus : $sign);

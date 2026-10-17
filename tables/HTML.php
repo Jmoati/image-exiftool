@@ -4,8 +4,12 @@
 
 namespace Image\ExifTool;
 
-$f_ae2db35ce3 = static function (mixed ...$args) { throw new NotPorted('PrintConv ae2db35ce3'); };
-$f_67d4f92774 = static function (mixed ...$args) { throw new NotPorted('ValueConv 67d4f92774'); };
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $self->ConvertDateTime($val);
+};
+$f_67d4f92774 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return XMP::ConvertXMPDate($val);
+};
 $f_66ef26fca1 = static function (mixed ...$args) { throw new NotPorted('PrintConv 66ef26fca1'); };
 
 return [

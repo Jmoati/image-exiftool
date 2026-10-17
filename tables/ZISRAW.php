@@ -4,8 +4,12 @@
 
 namespace Image\ExifTool;
 
-$f_870d813f22 = static function (mixed ...$args) { throw new NotPorted('PrintConv 870d813f22'); };
-$f_06c813ca7a = static function (mixed ...$args) { throw new NotPorted('ValueConv 06c813ca7a'); };
+$f_870d813f22 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return strtr(Perl::str($val), ' ', '.');
+};
+$f_06c813ca7a = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::unpack('H*', $val)[0];
+};
 
 return [
     'load' => [

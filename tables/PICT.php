@@ -4,7 +4,9 @@
 
 namespace Image\ExifTool;
 
-$f_9fa4498190 = static function (mixed ...$args) { throw new NotPorted('Start 9fa4498190'); };
+$f_9fa4498190 = static function ($valuePtr = null, $val = null, $dirStart = null, $dataPt = null) {
+    return $valuePtr + 4;
+};
 
 return [
     'load' => [

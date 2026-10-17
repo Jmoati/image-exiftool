@@ -4,14 +4,30 @@
 
 namespace Image\ExifTool;
 
-$f_5d58a4e0c1 = static function (mixed ...$args) { throw new NotPorted('PrintConv 5d58a4e0c1'); };
-$f_7ae83d5506 = static function (mixed ...$args) { throw new NotPorted('PrintConv 7ae83d5506'); };
-$f_d43bfac49c = static function (mixed ...$args) { throw new NotPorted('PrintConv d43bfac49c'); };
-$f_2beaacd6d4 = static function (mixed ...$args) { throw new NotPorted('ValueConv 2beaacd6d4'); };
-$f_d844071399 = static function (mixed ...$args) { throw new NotPorted('PrintConv d844071399'); };
-$f_4828c7c932 = static function (mixed ...$args) { throw new NotPorted('ValueConv 4828c7c932'); };
-$f_273894f86a = static function (mixed ...$args) { throw new NotPorted('RawConv 273894f86a'); };
-$f_eb3cb64da8 = static function (mixed ...$args) { throw new NotPorted('ValueConv eb3cb64da8'); };
+$f_5d58a4e0c1 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ? $val : 'Infinite';
+};
+$f_7ae83d5506 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('0x%.4x', $val);
+};
+$f_d43bfac49c = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' s';
+};
+$f_2beaacd6d4 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 100;
+};
+$f_d844071399 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.2f s', $val);
+};
+$f_4828c7c932 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) + 1;
+};
+$f_273894f86a = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $val ? $val : null;
+};
+$f_eb3cb64da8 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return (Perl::num($val) + 15) / 64;
+};
 
 return [
     'load' => [

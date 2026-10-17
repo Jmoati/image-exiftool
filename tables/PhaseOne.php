@@ -6,15 +6,27 @@ namespace Image\ExifTool;
 
 $f_b0135ee1a6 = static function (mixed ...$args) { throw new NotPorted('ValueConv b0135ee1a6'); };
 $f_7e2cb6f147 = static function (mixed ...$args) { throw new NotPorted('PrintConv 7e2cb6f147'); };
-$f_ae2db35ce3 = static function (mixed ...$args) { throw new NotPorted('PrintConv ae2db35ce3'); };
-$f_2a20e62bf5 = static function (mixed ...$args) { throw new NotPorted('ValueConv 2a20e62bf5'); };
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $self->ConvertDateTime($val);
+};
+$f_2a20e62bf5 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::ConvertUnixTime($val);
+};
 $f_b83b0ea072 = static function (mixed ...$args) { throw new NotPorted('PrintConv b83b0ea072'); };
-$f_a941801118 = static function (mixed ...$args) { throw new NotPorted('PrintConv a941801118'); };
+$f_a941801118 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Exif::PrintExposureTime($val);
+};
 $f_d2cf720ed7 = static function (mixed ...$args) { throw new NotPorted('ValueConv d2cf720ed7'); };
-$f_9c98df8b6c = static function (mixed ...$args) { throw new NotPorted('PrintConv 9c98df8b6c'); };
-$f_eb246ca11c = static function (mixed ...$args) { throw new NotPorted('ValueConv eb246ca11c'); };
+$f_9c98df8b6c = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.1f', $val);
+};
+$f_eb246ca11c = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return 2 ** (Perl::num($val) / 2);
+};
 $f_425cb343e9 = static function (mixed ...$args) { throw new NotPorted('PrintConv 425cb343e9'); };
-$f_8f0e71a82a = static function (mixed ...$args) { throw new NotPorted('PrintConv 8f0e71a82a'); };
+$f_8f0e71a82a = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.1f mm', $val);
+};
 $f_040a06a4fe = static function (mixed ...$args) { throw new NotPorted('ValueConv 040a06a4fe'); };
 $f_9a68258d44 = static function (mixed ...$args) { throw new NotPorted('PrintConv 9a68258d44'); };
 

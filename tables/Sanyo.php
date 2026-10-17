@@ -4,20 +4,36 @@
 
 namespace Image\ExifTool;
 
-$f_a941801118 = static function (mixed ...$args) { throw new NotPorted('PrintConv a941801118'); };
-$f_4b82d7ad40 = static function (mixed ...$args) { throw new NotPorted('ValueConv 4b82d7ad40'); };
-$f_9c98df8b6c = static function (mixed ...$args) { throw new NotPorted('PrintConv 9c98df8b6c'); };
-$f_ddae2f7edc = static function (mixed ...$args) { throw new NotPorted('ValueConv ddae2f7edc'); };
-$f_811b111291 = static function (mixed ...$args) { throw new NotPorted('PrintConv 811b111291'); };
-$f_8f0e71a82a = static function (mixed ...$args) { throw new NotPorted('PrintConv 8f0e71a82a'); };
+$f_a941801118 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Exif::PrintExposureTime($val);
+};
+$f_4b82d7ad40 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ? 10 / Perl::num($val) : 0;
+};
+$f_9c98df8b6c = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.1f', $val);
+};
+$f_ddae2f7edc = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 10;
+};
+$f_811b111291 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Exif::PrintFraction($val);
+};
+$f_8f0e71a82a = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.1f mm', $val);
+};
 $f_1ebbf70bf0 = static function (mixed ...$args) { throw new NotPorted('PrintConv 1ebbf70bf0'); };
 $f_b0002f8635 = static function (mixed ...$args) { throw new NotPorted('PrintConv b0002f8635'); };
 $f_debf48792d = static function (mixed ...$args) { throw new NotPorted('RawConv debf48792d'); };
 $f_62fc89f6ac = static function (mixed ...$args) { throw new NotPorted('RawConv 62fc89f6ac'); };
 $f_1c8a7f5ea5 = static function (mixed ...$args) { throw new NotPorted('Condition 1c8a7f5ea5'); };
-$f_776710f713 = static function (mixed ...$args) { throw new NotPorted('Base 776710f713'); };
+$f_776710f713 = static function ($start, $base = 0) {
+    return $start;
+};
 $f_42870d06cd = static function (mixed ...$args) { throw new NotPorted('Condition 42870d06cd'); };
-$f_1f2667c7fa = static function (mixed ...$args) { throw new NotPorted('RawConv 1f2667c7fa'); };
+$f_1f2667c7fa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->ValidateImage(new ScalarRef($val), $tag);
+};
 $f_03c93132e2 = static function (mixed ...$args) { throw new NotPorted('Condition 03c93132e2'); };
 
 $d_1 = null /* circular reference */;

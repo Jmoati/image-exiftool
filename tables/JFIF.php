@@ -4,20 +4,65 @@
 
 namespace Image\ExifTool;
 
-$f_1f2667c7fa = static function (mixed ...$args) { throw new NotPorted('RawConv 1f2667c7fa'); };
-$f_c50941f6a7 = static function (mixed ...$args) { throw new NotPorted('RawConv c50941f6a7'); };
-$f_68b00a271c = static function (mixed ...$args) { throw new NotPorted('code:conv 68b00a271c'); };
-$f_6ecdd8fbd9 = static function (mixed ...$args) { throw new NotPorted('RawConv 6ecdd8fbd9'); };
-$f_90700a895d = static function (mixed ...$args) { throw new NotPorted('code:conv 90700a895d'); };
-$f_e9b7a7461b = static function (mixed ...$args) { throw new NotPorted('PrintConv e9b7a7461b'); };
-$f_7ccbacc898 = static function (mixed ...$args) { throw new NotPorted('RawConv 7ccbacc898'); };
-$f_94892be360 = static function (mixed ...$args) { throw new NotPorted('RawConv 94892be360'); };
-$f_b536dec314 = static function (mixed ...$args) { throw new NotPorted('RawConv b536dec314'); };
-$f_7eb5ed341f = static function (mixed ...$args) { throw new NotPorted('RawConv 7eb5ed341f'); };
-$f_a2234a7293 = static function (mixed ...$args) { throw new NotPorted('RawConv a2234a7293'); };
-$f_f8587c87ab = static function (mixed ...$args) { throw new NotPorted('FormatCount f8587c87ab'); };
-$f_75db46a4dc = static function (mixed ...$args) { throw new NotPorted('RawConv 75db46a4dc'); };
-$f_a05ca7de2b = static function (mixed ...$args) { throw new NotPorted('code:conv a05ca7de2b'); };
+$f_1f2667c7fa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->ValidateImage(new ScalarRef($val), $tag);
+};
+$f_c50941f6a7 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return (\strlen($val) > 770 && !preg_match('/^\0\0/', $val)) ? $val : null;
+};
+$f_68b00a271c = static function ($val, $et) {
+    $len = \strlen($val);
+    if (!$et->Options('Binary')) {
+        return new ScalarRef('Binary data '.$len.' bytes');
+    }
+    [$w, $h] = Perl::unpack('CC', $val) + [null, null];
+    $img = ExifTool::MakeTiffHeader($w, $h, 1, 8, null, substr($val, 2, 768)).substr($val, 770);
+    return new ScalarRef($img);
+};
+$f_6ecdd8fbd9 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return (\strlen($val) > 2 && !preg_match('/^\0\0/', $val)) ? $val : null;
+};
+$f_90700a895d = static function ($val, $et) {
+    $len = \strlen($val);
+    if (!$et->Options('Binary')) {
+        return new ScalarRef('Binary data '.$len.' bytes');
+    }
+    [$w, $h] = Perl::unpack('CC', $val) + [null, null];
+    $img = ExifTool::MakeTiffHeader($w, $h, 3, 8).substr($val, 2);
+    return new ScalarRef($img);
+};
+$f_e9b7a7461b = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%d.%.2d', ...Perl::split(' ', $val));
+};
+$f_7ccbacc898 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->JFIFResolutionUnit = $val;
+};
+$f_94892be360 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->JFIFXResolution = $val;
+};
+$f_b536dec314 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->JFIFYResolution = $val;
+};
+$f_7eb5ed341f = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $val ? ($self->JFIFThumbnailWidth = $val) : null;
+};
+$f_a2234a7293 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $val ? ($self->JFIFThumbnailHeight = $val) : null;
+};
+$f_f8587c87ab = static function (array $val, $size, $varSize, ExifTool $self) {
+    return 3 * Perl::num(($val[7] ?? null) ?: 0) * Perl::num(($val[8] ?? null) ?: 0);
+};
+$f_75db46a4dc = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return strlen(Perl::str($val)) ? $val : null;
+};
+$f_a05ca7de2b = static function ($val, $et) {
+    $len = \strlen($val);
+    if (!$et->Options('Binary')) {
+        return new ScalarRef('Binary data '.$len.' bytes');
+    }
+    $img = ExifTool::MakeTiffHeader($et->JFIFThumbnailWidth, $et->JFIFThumbnailHeight, 3, 8).$val;
+    return new ScalarRef($img);
+};
 
 return [
     'load' => [

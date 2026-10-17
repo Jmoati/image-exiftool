@@ -4,11 +4,23 @@
 
 namespace Image\ExifTool;
 
-$f_c48f253bad = static function (mixed ...$args) { throw new NotPorted('RawConv c48f253bad'); };
-$f_ee13473008 = static function (mixed ...$args) { throw new NotPorted('IsOffset ee13473008'); };
-$f_f908ad358d = static function (mixed ...$args) { throw new NotPorted('PrintConv f908ad358d'); };
-$f_14a0434719 = static function (mixed ...$args) { throw new NotPorted('PrintConv 14a0434719'); };
-$f_6fa8308e1b = static function (mixed ...$args) { throw new NotPorted('ValueConv 6fa8308e1b'); };
+$f_c48f253bad = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    ExifTool::RequireModule('Image::ExifTool::MPF');
+    $grps = $self->GetGroup($val[0]); // set groups from input tag
+    return MPF::ExtractMPImages($self);
+};
+$f_ee13473008 = static function ($val, ExifTool $et) {
+    return $val;
+};
+$f_f908ad358d = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' rows';
+};
+$f_14a0434719 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).' columns';
+};
+$f_6fa8308e1b = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(' ', Perl::unpack('C*', Perl::pack('N', $val)));
+};
 
 return [
     'load' => [

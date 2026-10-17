@@ -5,7 +5,9 @@
 namespace Image\ExifTool;
 
 $f_13aa3b925b = static function (mixed ...$args) { throw new NotPorted('PrintConv 13aa3b925b'); };
-$f_0ba968218d = static function (mixed ...$args) { throw new NotPorted('RawConv 0ba968218d'); };
+$f_0ba968218d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->ValidateImage((is_object($val) || is_array($val)) ? $val : new ScalarRef($val), $tag);
+};
 
 return [
     'load' => [

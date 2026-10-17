@@ -4,10 +4,16 @@
 
 namespace Image\ExifTool;
 
-$f_1f2667c7fa = static function (mixed ...$args) { throw new NotPorted('RawConv 1f2667c7fa'); };
-$f_7b446e214d = static function (mixed ...$args) { throw new NotPorted('ValueConv 7b446e214d'); };
+$f_1f2667c7fa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->ValidateImage(new ScalarRef($val), $tag);
+};
+$f_7b446e214d = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 1000;
+};
 $f_e5431626d1 = static function (mixed ...$args) { throw new NotPorted('ValueConv e5431626d1'); };
-$f_0a6503c132 = static function (mixed ...$args) { throw new NotPorted('PrintConv 0a6503c132'); };
+$f_0a6503c132 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val).'%';
+};
 $f_fbf4f69f75 = static function (mixed ...$args) { throw new NotPorted('ValueConv fbf4f69f75'); };
 
 return [

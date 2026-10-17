@@ -8,7 +8,9 @@ $f_541bc94911 = static function (mixed ...$args) { throw new NotPorted('RawConv 
 $f_9b0a3c2419 = static function (mixed ...$args) { throw new NotPorted('PrintConv 9b0a3c2419'); };
 $f_db0d47df74 = static function (mixed ...$args) { throw new NotPorted('RawConv db0d47df74'); };
 $f_8e0beee4a3 = static function (mixed ...$args) { throw new NotPorted('Condition 8e0beee4a3'); };
-$f_ae2db35ce3 = static function (mixed ...$args) { throw new NotPorted('PrintConv ae2db35ce3'); };
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $self->ConvertDateTime($val);
+};
 $f_c0351c22d2 = static function (mixed ...$args) { throw new NotPorted('ValueConv c0351c22d2'); };
 $f_ab36a2cd23 = static function (mixed ...$args) { throw new NotPorted('Condition ab36a2cd23'); };
 $f_a9fc4cb9b9 = static function (mixed ...$args) { throw new NotPorted('Condition a9fc4cb9b9'); };

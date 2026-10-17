@@ -4,22 +4,66 @@
 
 namespace Image\ExifTool;
 
-$f_31f7343049 = static function (mixed ...$args) { throw new NotPorted('RawConv 31f7343049'); };
-$f_3f7f491eee = static function (mixed ...$args) { throw new NotPorted('PrintConv 3f7f491eee'); };
-$f_8cb58be616 = static function (mixed ...$args) { throw new NotPorted('RawConv 8cb58be616'); };
-$f_94f2c7bffb = static function (mixed ...$args) { throw new NotPorted('ValueConv 94f2c7bffb'); };
-$f_02df7a2a46 = static function (mixed ...$args) { throw new NotPorted('ValueConv 02df7a2a46'); };
-$f_7f57cde05c = static function (mixed ...$args) { throw new NotPorted('Condition 7f57cde05c'); };
-$f_a3972b70a2 = static function (mixed ...$args) { throw new NotPorted('ValueConv a3972b70a2'); };
-$f_2275c08708 = static function (mixed ...$args) { throw new NotPorted('ValueConv 2275c08708'); };
-$f_da5914e6bc = static function (mixed ...$args) { throw new NotPorted('ValueConv da5914e6bc'); };
-$f_24eebf3aff = static function (mixed ...$args) { throw new NotPorted('PrintConv 24eebf3aff'); };
-$f_e9f5acccb2 = static function (mixed ...$args) { throw new NotPorted('ValueConv e9f5acccb2'); };
-$f_ae2db35ce3 = static function (mixed ...$args) { throw new NotPorted('PrintConv ae2db35ce3'); };
-$f_ff909df216 = static function (mixed ...$args) { throw new NotPorted('ValueConv ff909df216'); };
-$f_1b487e7ccb = static function (mixed ...$args) { throw new NotPorted('ValueConv 1b487e7ccb'); };
-$f_dbc5622757 = static function (mixed ...$args) { throw new NotPorted('ValueConv dbc5622757'); };
-$f_cf49427e8a = static function (mixed ...$args) { throw new NotPorted('ValueConv cf49427e8a'); };
+$f_31f7343049 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $self->OverrideFileType('APNG', null, 'PNG');
+    return $val;
+};
+$f_3f7f491eee = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ?: 'inf';
+};
+$f_8cb58be616 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Vars\PNG::$colorType = $val;
+};
+$f_94f2c7bffb = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return \strlen($val) <= 3 ? implode(' ', Perl::unpack('C*', $val)) : new ScalarRef($val);
+};
+$f_02df7a2a46 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(' ', Perl::unpack(\strlen($val) < 2 ? 'C' : 'n*', $val));
+};
+$f_7f57cde05c = static function (ExifTool $self, $valPt, $format, $count) {
+    // set FileType to "PNG Plus"
+    if (($self->VALUE['FileType'] ?? null) && Perl::str($self->VALUE['FileType']) === 'PNG') {
+        $self->VALUE['FileType'] = 'PNG Plus';
+    }
+    return 1;
+};
+$f_a3972b70a2 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $a = Perl::unpack('N', $val)[0] ?? null;
+    return $a ? Perl::int(1e9 / $a + 0.5) / 1e4 : $val;
+};
+$f_2275c08708 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $a = Perl::unpack('NNC', $val);
+    $a[2] = ($a[2] ?? null) ? 'microns' : 'pixels';
+    return Perl::str($a[0] ?? null).', '.Perl::str($a[1] ?? null).' ('.$a[2].')';
+};
+$f_da5914e6bc = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(' ', Perl::unpack('C*', $val));
+};
+$f_24eebf3aff = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return \count(Perl::split('/\0/', $val->value, 1));
+};
+$f_e9f5acccb2 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::unpack('C', $val)[0] ?? null;
+};
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $self->ConvertDateTime($val);
+};
+$f_ff909df216 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.4d:%.2d:%.2d %.2d:%.2d:%.2d', ...Perl::unpack('nC5', $val));
+};
+$f_1b487e7ccb = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if (\strlen($val) > 6) {
+        return new ScalarRef($val);
+    }
+    return implode(' ', Perl::unpack(Perl::num(Vars\PNG::$colorType) == 3 ? 'C*' : 'n*', $val));
+};
+$f_dbc5622757 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 100000;
+};
+$f_cf49427e8a = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    ExifTool::RequireModule('Image::ExifTool::XMP');
+    return XMP::ConvertXMPDate($val);
+};
 
 return [
     'load' => [

@@ -5,14 +5,28 @@
 namespace Image\ExifTool;
 
 $f_dd44dff4d9 = static function (mixed ...$args) { throw new NotPorted('ValueConv dd44dff4d9'); };
-$f_4828c7c932 = static function (mixed ...$args) { throw new NotPorted('ValueConv 4828c7c932'); };
-$f_b2e41c1595 = static function (mixed ...$args) { throw new NotPorted('PrintConv b2e41c1595'); };
-$f_354c879439 = static function (mixed ...$args) { throw new NotPorted('PrintConv 354c879439'); };
-$f_a26a3a2fee = static function (mixed ...$args) { throw new NotPorted('ValueConv a26a3a2fee'); };
+$f_4828c7c932 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) + 1;
+};
+$f_b2e41c1595 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::ConvertDuration($val);
+};
+$f_354c879439 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::ConvertBitrate($val);
+};
+$f_a26a3a2fee = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) * 1000;
+};
 $f_2ff2ee06ab = static function (mixed ...$args) { throw new NotPorted('ValueConv 2ff2ee06ab'); };
-$f_090fcb29a6 = static function (mixed ...$args) { throw new NotPorted('PrintConv 090fcb29a6'); };
-$f_ae2db35ce3 = static function (mixed ...$args) { throw new NotPorted('PrintConv ae2db35ce3'); };
-$f_b9974209cd = static function (mixed ...$args) { throw new NotPorted('PrintConv b9974209cd'); };
+$f_090fcb29a6 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::int(Perl::num($val) * 1000 + 0.5) / 1000;
+};
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $self->ConvertDateTime($val);
+};
+$f_b9974209cd = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::int(Perl::num($val) + 0.5);
+};
 
 return [
     'load' => [

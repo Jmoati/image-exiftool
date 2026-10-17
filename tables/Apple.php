@@ -4,10 +4,20 @@
 
 namespace Image\ExifTool;
 
-$f_b2e41c1595 = static function (mixed ...$args) { throw new NotPorted('PrintConv b2e41c1595'); };
-$f_eaa44adf91 = static function (mixed ...$args) { throw new NotPorted('ValueConv eaa44adf91'); };
-$f_0fb2685b8c = static function (mixed ...$args) { throw new NotPorted('PrintConv 0fb2685b8c'); };
-$f_f594b218a5 = static function (mixed ...$args) { throw new NotPorted('PrintConv f594b218a5'); };
+$f_b2e41c1595 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::ConvertDuration($val);
+};
+$f_eaa44adf91 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $vals[1] ? Perl::num($vals[0]) / Perl::num($vals[1]) : null;
+};
+$f_0fb2685b8c = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $a = Perl::split(' ', $val);
+    return Perl::sprintf('%.2f - %.2f m', ...(Perl::num($a[0] ?? null) <= Perl::num($a[1] ?? null) ? $a : array_reverse($a)));
+};
+$f_f594b218a5 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $a = Perl::split(' ', $val);
+    return Perl::sprintf('%d %d %d', $a[0] ?? null, (Perl::int($a[1] ?? null) >> 28) & 0xFFFFFFFFF, Perl::int($a[1] ?? null) & 0xfffffff);
+};
 
 return [
     'load' => [

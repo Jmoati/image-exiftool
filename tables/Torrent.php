@@ -5,8 +5,12 @@
 namespace Image\ExifTool;
 
 $f_22a8c76e68 = static function (mixed ...$args) { throw new NotPorted('PrintConv 22a8c76e68'); };
-$f_ae2db35ce3 = static function (mixed ...$args) { throw new NotPorted('PrintConv ae2db35ce3'); };
-$f_59c79d4e80 = static function (mixed ...$args) { throw new NotPorted('ValueConv 59c79d4e80'); };
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $self->ConvertDateTime($val);
+};
+$f_59c79d4e80 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::ConvertUnixTime($val, 1);
+};
 
 return [
     'load' => [
