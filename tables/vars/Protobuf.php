@@ -8,9 +8,9 @@ namespace Image\ExifTool\Vars;
 final class Protobuf
 {
     /** lexical $int64sMin */
-    public static $int64sMin = 1.8446744069414584e+19;
+    public static $int64sMin = '18446744069414584320';
 
     /** lexical $intMax */
-    public static $intMax = 1.8446744073709552e+19;
+    public static $intMax = '18446744073709551615';
 
 }

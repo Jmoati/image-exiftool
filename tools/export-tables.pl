@@ -257,8 +257,15 @@ sub PhpScalar
     return 'null' unless defined $v;
     my $f = B::svref_2object(\$v)->FLAGS;
     my ($isInt, $isNum, $isStr) = ($f & B::SVf_IOK, $f & B::SVf_NOK, $f & B::SVf_POK);
-    if ($isInt and not $isNum and (not $isStr or "$v" eq sprintf('%d', $v))) {
-        return "$v" if "$v" =~ /^-?\d{1,18}$/;
+    if ($isInt and not $isNum and (not $isStr or "$v" =~ /^(-?[1-9]\d*|0)$/)) {
+        my $s = "$v";
+        if ($s =~ /^(-?)(\d+)$/) {
+            my ($neg, $abs) = ($1, $2);
+            # 64-bit values stay exact: an int when PHP can hold it, else the digits as a string
+            return $s if length($abs) < 19 or (length($abs) == 19 and $abs le '9223372036854775807');
+            return 'PHP_INT_MIN' if $neg and $abs eq '9223372036854775808';
+            return PhpString($s);
+        }
     }
     if (($isNum or $isInt) and (not $isStr or "$v" eq (0 + $v) . '')) {
         return 'INF' if $v == 9**9**9;
