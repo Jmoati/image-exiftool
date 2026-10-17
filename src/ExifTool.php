@@ -4140,7 +4140,29 @@ GR_TAG:     foreach ($rtnTags as $tag) {
         $fmt = $this->OPTIONS['DateFormat'];
         $shift = $this->OPTIONS['GlobalTimeShift'];
         if ($shift) {
-            // ponytail: Shift.pl (ShiftTime) not ported, GlobalTimeShift is ignored
+            $g = $t = $dir = null;
+            $matches = [];
+            $shift = Perl::str($shift);
+            if (preg_match('/^((\d?[A-Z][-\w]*\w:)*)([A-Z][-\w]*\w)([-+])/i', $shift, $m)) {
+                $shift = substr($shift, strlen($m[0]));
+                [$g, $t, $dir] = [$m[1], $m[3], $m[4] === '-' ? -1 : 1];
+            } else {
+                $dir = 1;
+                if (preg_match('/^([-+])/', $shift, $m)) { $shift = substr($shift, 1); if ($m[1] === '-') $dir = -1; }
+            }
+            if ($this->GLOBAL_TIME_OFFSET === null) {
+                $this->GLOBAL_TIME_OFFSET = [];
+                if ($t) {
+                    $matches = preg_grep('/^' . $t . '( \(|$)/i', array_keys($this->VALUE));
+                    sort($matches, SORT_STRING);
+                    if ($g and $matches) $matches = $this->GroupMatchesList(preg_replace('/:$/', '', $g), $matches);
+                }
+                if ($matches) {
+                    $val = $this->GetValue($matches[0], 'ValueConv');
+                    if ($val !== null) self::ShiftTime($val, $shift, $dir, $this->GLOBAL_TIME_OFFSET);
+                }
+            }
+            self::ShiftTime($date, $shift, $dir, $this->GLOBAL_TIME_OFFSET);
         }
         // only convert date if a format was specified and the date is recognizable
         if ($fmt) {
@@ -4998,11 +5020,11 @@ GR_TAG:     foreach ($rtnTags as $tag) {
                     }
                     if (self::$evalWarning) $this->Warn("RawConv $tag: " . self::CleanWarning());
                     if ($val === null) return null;
-                    $dataPt = self::IsScalarRef($val) ? Perl::str($val->value) : Perl::str($val);
+                    $dataPt = self::IsScalarRef($val) ? Perl::str($val->value) : (is_array($val) ? $val : Perl::str($val));
                     $subdirStart = 0;
-                    $subdirLen = strlen($dataPt);
+                    $subdirLen = strlen(Perl::str($dataPt));
                 } elseif ($dataPt === null) {
-                    $dataPt = self::IsScalarRef($val) ? Perl::str($val->value) : Perl::str($val);
+                    $dataPt = self::IsScalarRef($val) ? Perl::str($val->value) : (is_array($val) ? $val : Perl::str($val));
                 }
                 if (!empty($subdir['Start'])) {
                     $valuePtr = 0;
@@ -5024,7 +5046,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
                 $dirInfo = [
                     'DirName'  => ($subdir['DirName'] ?? null) ?: $tagInfo->Name,
                     'DataPt'   => $dataPt,
-                    'DataLen'  => strlen($dataPt),
+                    'DataLen'  => strlen(Perl::str($dataPt)),
                     'DataPos'  => $parms['DataPos'] ?? null,
                     'DirStart' => $subdirStart,
                     'DirLen'   => $subdirLen,

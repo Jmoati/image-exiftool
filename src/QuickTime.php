@@ -45,8 +45,8 @@
 // PHP port of Image::ExifTool::QuickTime 3.35 (reading only). Tag tables and package
 // variables (%ftypLookup, %eeBox, %qtFlags...) are generated into tables/QuickTime.php and
 // Vars\QuickTime. The read-side subs of WriteQuickTime.pl (GetLangInfo) are included, and
-// the subs of QuickTimeStream.pl (timed metadata, ExtractEmbedded option) are stubs at the
-// end of this class.
+// the subs of QuickTimeStream.pl (timed metadata, ExtractEmbedded option) are in the
+// trait QuickTime\Stream (src/QuickTime/Stream.php).
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -55,6 +55,8 @@ use Image\ExifTool\File\RandomAccess;
 
 final class QuickTime
 {
+    use QuickTime\Stream;
+
     public static $VERSION = '3.35';
 
     /** ValueConv of %unknownInfo (Perl: '$val =~ /^([\x20-\x7e]*)\0*$/ ? $1 : \$val') */
@@ -2102,195 +2104,5 @@ final class QuickTime
         $langCode = strtr($langCode, '_', '-'); // RFC 3066 specifies '-' as a separator
         $langInfo = self::CoreGetLangInfo($tagInfo, $langCode);
         return $langInfo;
-    }
-
-    //==============================================================================
-    // QuickTimeStream.pl (timed metadata, ExtractEmbedded option)
-    //
-    // TODO port QuickTimeStream.pl: the subs below are stubs (except ConvertLatLon)
-
-    //------------------------------------------------------------------------------
-    // Convert latitude/longitude from DDDMM.MMMM format to decimal degrees
-    // Inputs: 0) latitude, 1) longitude
-    // Returns: lat/lon are changed in place
-    // (note: this method works fine for negative coordinates)
-    public static function ConvertLatLon(&$lat, &$lon)
-    {
-        $deg = Perl::int(Perl::num($lat) / 100);    // latitude
-        $lat = $deg + (Perl::num($lat) - $deg * 100) / 60;
-        $deg = Perl::int(Perl::num($lon) / 100);    // longitude
-        $lon = $deg + (Perl::num($lon) - $deg * 100) / 60;
-    }
-
-    // Save information from keys in OtherSampleDesc directory for processing timed metadata
-    public static function SaveMetaKeys(ExifTool $et, array &$dirInfo, TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Extract embedded information referenced from a track
-    public static function ParseTag(ExifTool $et, $tag, $dataPt)
-    {
-        // TODO port QuickTimeStream.pl
-    }
-
-    // Process samples in media data
-    public static function ProcessSamples(ExifTool $et)
-    {
-        // TODO port QuickTimeStream.pl
-    }
-
-    // Process subtitle 'text'
-    public static function Process_text(ExifTool $et, array &$dirInfo, TagTable $tagTbl, $options = null)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process "freeGPS " data blocks
-    public static function ProcessFreeGPS(ExifTool $et, array &$dirInfo, TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process Yuneec 'tx3g' and Autel sbtl metadata
-    public static function Process_tx3g(ExifTool $et, array &$dirInfo, TagTable $tagTablePtr)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process QuickTime 'mebx' timed metadata
-    public static function Process_mebx(ExifTool $et, array &$dirInfo, TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process QuickTime '3gf' timed metadata (Pittasoft Blackvue dashcam)
-    public static function Process_3gf(ExifTool $et, array &$dirInfo, TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process DuDuBell M1 dashcam / VSYS M6L 'gps0' atom
-    public static function Process_gps0(ExifTool $et, array &$dirInfo, TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process DuDuBell M1 dashcam / VSYS M6L 'gsen' atom
-    public static function Process_gsen(ExifTool $et, array &$dirInfo, TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process 'gdat' atom (Rove R3-W-HD dashcam)
-    public static function Process_gdat(ExifTool $et, array &$dirInfo, TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process 'nbmt' atom (Nextbase dashcam)
-    public static function Process_nbmt(ExifTool $et, array &$dirInfo, TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process Kenwood 'udta' atom
-    public static function ProcessKenwood(ExifTool $et, array &$dirInfo, TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process RIFF-format trailer (written by Auto-Vox dashcam)
-    public static function ProcessRIFFTrailer(ExifTool $et, array &$dirInfo, ?TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process Kenwood trailer
-    public static function ProcessKenwoodTrailer(ExifTool $et, array &$dirInfo, ?TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process NMEA text data
-    public static function ProcessNMEA(ExifTool $et, array &$dirInfo, TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process GPS log (Akaso V1, etc)
-    public static function ProcessGPSLog(ExifTool $et, array &$dirInfo, ?TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process TomTom Bandit Action Cam TTAD atom
-    public static function ProcessTTAD(ExifTool $et, array &$dirInfo, TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process Insta360 trailer
-    public static function ProcessInsta360(ExifTool $et, ?array &$dirInfo = null)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process Insta360 camera motion metadata
-    public static function ProcessCAMM(ExifTool $et, array &$dirInfo, TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process Garmin GPS 'uuid' atom
-    public static function ProcessGarminGPS(ExifTool $et, array &$dirInfo, TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process 360Fly 'uuid' atom
-    public static function Process360Fly(ExifTool $et, array &$dirInfo, TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process GPS from Vantrue N2S dashcam
-    public static function ProcessFMAS(ExifTool $et, array &$dirInfo, TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Process Wolfbox dashcam timed GPS
-    public static function ProcessWolfbox(ExifTool $et, array &$dirInfo, TagTable $tagTbl)
-    {
-        // TODO port QuickTimeStream.pl
-        return 0;
-    }
-
-    // Scan media data for "freeGPS" metadata if not found already
-    public static function ScanMediaData(ExifTool $et)
-    {
-        // TODO port QuickTimeStream.pl
     }
 }
