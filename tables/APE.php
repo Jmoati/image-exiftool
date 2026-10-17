@@ -12,7 +12,7 @@ $f_9e4705998a = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
         ? ((Perl::num($vals[1]) - 1) * Perl::num($vals[2] ?? null) + Perl::num($vals[3] ?? null)) / Perl::num($vals[0])
         : null;
 };
-$f_0d775f45f3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_0d775f45f3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     if (Perl::num($val) < 0 && Perl::num($val) >= -2147483648) {
         $val = Perl::num($val) + 4294967296;
     }

@@ -22,7 +22,7 @@ $f_5817105f7a = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_64552f9356 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_64552f9356 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertUnixTime(Perl::num($val) / 1000, 1, 3);
 };
 $f_9c417307ae = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
@@ -34,7 +34,7 @@ $f_2a20e62bf5 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_7b446e214d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1000;
 };
-$f_cf74aeb6b6 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_cf74aeb6b6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertUnixTime($val, 1);
 };
 $f_cab15f4655 = static function ($a, $b) {

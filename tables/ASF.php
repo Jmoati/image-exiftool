@@ -13,18 +13,18 @@ $f_b2e41c1595 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_a0c64fe734 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_a0c64fe734 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ASF::GetGUID($val);
 };
-$f_d086f2c3d3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_d086f2c3d3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), '-T', ': ');
 };
-$f_e062c0cfaa = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_e062c0cfaa = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     // (89 leap years between 1601 and 1970)
     $t = Perl::num($val) / 1e7 - (((1970 - 1601) * 365 + 89) * 24 * 3600);
     return Perl::str(ExifTool::ConvertUnixTime($t)).'Z';
 };
-$f_7bdbdedf8f = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_7bdbdedf8f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1e7;
 };
 $f_7353747461 = static function ($val, $et) {
@@ -34,7 +34,7 @@ $f_7353747461 = static function ($val, $et) {
 $f_22d6c61b16 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' s';
 };
-$f_99fdc41360 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_99fdc41360 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return (Perl::int($val) & 0x7f).((Perl::int($val) & 0x8000) ? ' (encrypted)' : '');
 };
 $f_17211e2c45 = static function (ExifTool $self, $valPt, $format, $count) {

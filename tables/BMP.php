@@ -7,7 +7,7 @@ namespace Image\ExifTool;
 $f_d424d6a4e3 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->BMPVersion = $val;
 };
-$f_d7d9531062 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_d7d9531062 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return abs(Perl::num($val));
 };
 $f_d725a99af9 = static function ($val, $inv, $conv) {
@@ -16,13 +16,13 @@ $f_d725a99af9 = static function ($val, $inv, $conv) {
 $f_403de42b11 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->BMPCompression = $val;
 };
-$f_82bfafaf02 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_82bfafaf02 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) > 256 ? Perl::unpack('A4', Perl::pack('V', $val))[0] : $val;
 };
 $f_bdc154a3b8 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->BMPImageLength = $val;
 };
-$f_3fb35c39ef = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_3fb35c39ef = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? $val : 'Use BitDepth';
 };
 $f_3512943993 = static function (ExifTool $self, &$format, &$varSize, $size, $dataPt, $pos): void {
@@ -30,7 +30,7 @@ $f_3512943993 = static function (ExifTool $self, &$format, &$varSize, $size, $da
         $varSize += $size;
     }
 };
-$f_91e3abe3f3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_91e3abe3f3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? $val : 'All';
 };
 $f_9e58826a8f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
@@ -42,14 +42,14 @@ $f_629b3bb84c = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_bfc9e148b9 = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::str($self->BMPColorSpace) === '0';
 };
-$f_21f9ba507b = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_21f9ba507b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::split(' ', $val);
     foreach ($a as $i => $_) {
         $a[$i] = Perl::sprintf('%.6f', $_);
     }
     return implode(' ', $a);
 };
-$f_18572086fe = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_18572086fe = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::split(' ', $val);
     foreach ($a as $i => $_) {
         $a[$i] = Perl::str(Perl::num($_) / 0x40000000);

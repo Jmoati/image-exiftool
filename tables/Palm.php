@@ -12,7 +12,7 @@ $f_ecab1e9a5d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     return $self->CodePage = $val;
 };
 $f_b54ccb7821 = static function (mixed ...$args) { throw new NotPorted('RawConv b54ccb7821'); };
-$f_cf74aeb6b6 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_cf74aeb6b6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertUnixTime($val, 1);
 };
 

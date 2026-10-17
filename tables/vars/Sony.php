@@ -459,8 +459,8 @@ final class Sony
     /** package %sonyLensTypes2 */
     public static $sonyLensTypes2 = [
         0 => 'Unknown E-mount lens or other lens',
-        '0.1' => 'Sigma 19mm F2.8 [EX] DN',
         '0.10' => 'Zeiss Touit 50mm F2.8 Macro',
+        '0.1' => 'Sigma 19mm F2.8 [EX] DN',
         '0.11' => 'Zeiss Loxia 50mm F2',
         '0.12' => 'Zeiss Loxia 35mm F2',
         '0.13' => 'Viltrox 85mm F1.8',

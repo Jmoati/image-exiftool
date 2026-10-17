@@ -4,7 +4,7 @@
 
 namespace Image\ExifTool;
 
-$f_a0c64fe734 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_a0c64fe734 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ASF::GetGUID($val);
 };
 $f_ed4506a7d9 = static function (mixed ...$args) { throw new NotPorted('RawConv ed4506a7d9'); };
