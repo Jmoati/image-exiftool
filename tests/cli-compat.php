@@ -15,6 +15,15 @@ $cases = [
     ['-p', '$filename: $model ${make} $$ ${exif:iso} ${model;}', 'Canon.jpg', 'Nikon.jpg'],
     ['-ee', '-p', '#[SECT]$directory', '-p', '#[IF]$imagewidth', '-p', '$imagewidth $doc1:imagewidth', 'ICO.ico', 'MRC.mrc'],
     ['-listf'], ['-listd'], ['-listg2'], ['-list', '-IFD0:all'],
+    // geolocation (without a file when the option holds a position)
+    ['-api', 'geolocation', '-api', 'geolocminpop=5000', '-geolocation*', 'GPS.jpg'],
+    ['-api', 'geolocation=$city,$country,Kingston', '-a', '-G1', 'GPS.jpg', 'Canon.jpg'],
+    ['-api', 'geolocation=48.1375,11.5755,num=2', '-api', 'geolocfeature=-PPLX', '-a'],
+    ['-j', '-api', 'geolocation=45.5 S 70.1 W', '-api', 'geolocmaxdist=500'],
+    ['-api', 'geolocation=/^Paris \d+/i,-sr/x/,num=3', '-m', '-a', '-n'],
+    ['-api', 'geolocation=saint-germain-en-laye,num=3', '-a', '-api', 'duplicates'],
+    ['-api', 'geolocation=nosuchcity'],
+    ['-listgeo', '-sort', '-api', 'geolocminpop=2e6', '-api', 'geolocfeature=-PPLA'],
 ];
 $fail = 0;
 foreach ($cases as $args) {

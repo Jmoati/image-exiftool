@@ -581,7 +581,7 @@ class ExifTool
             } elseif ($param === 'KeepUTCTime' or $param === 'SystemTimeRes') {
                 $this->OPTIONS[$param] = self::$static_vars[$param] = $newVal;
             } elseif (strtolower($param) === 'geodir') {
-                // ponytail: Geolocation module not ported (option ignored)
+                Geolocation::$geoDir = $newVal;
             } else {
                 if ($param === 'Escape') {
                     // set ESCAPE_PROC
@@ -2413,7 +2413,130 @@ COMPOSITE_TAG:
             Validate::FinishValidate($this, $this->REQ_TAG_LOOKUP['validate'] ?? null);
         }
         // generate geolocation tags if requested
-        // (ponytail: Geolocation module (and its database) not ported, option ignored)
+        if ($opts['Geolocation']) {
+            $doneCity = $both = null;
+            $defaults = $tags = $coord = $ref = $city = [];
+            $geoOpt = $opts['Geolocation'];
+            foreach (Perl::split('/\s*,\s*/', $opts['Geolocation']) as $arg) {
+                if (strtolower($arg) === 'both') {
+                    $both = 1;
+                    continue;
+                }
+                if (!str_starts_with($arg, '$')) {
+                    $defaults[] = $arg;
+                    continue;
+                }
+                $tags[] = substr($arg, 1);   // argument is a tag name
+            }
+            $arg = null;    // (Perl restores the foreach variable)
+            if (!$tags) {
+                // default tags to read if not specified
+                $tags = ['GPSLatitude', 'GPSLongitude', 'GPSLatitudeRef', 'GPSLongitudeRef',
+                         'GPSCoordinates', 'LocationShownGPSLatitude', 'LocationShownGPSLongitude',
+                         'XMP:City', 'State', 'CountryCode', 'Country',
+                         'IPTC:City', 'Province-State', 'Country-PrimaryLocationCode', 'Country-PrimaryLocationName',
+                         'LocationShownCity', 'LocationShownProvinceState', 'LocationShownCountryCode', 'LocationShownCountryName'];
+            }
+            // get information for specified tags
+            $info = $this->GetInfo($tags, ['PrintConv' => 0, 'Duplicates' => 0]); // (returns tags in proper case)
+            // (PHP: GetInfo restores IO_TAG_LIST when called from ExtractInfo, so build the
+            // updated list here like GetInfo does; tags without a value are skipped below anyway)
+            $tags = $this->GetTagList(array_keys($info), $this->OPTIONS['Sort'], $this->OPTIONS['Sort2']);
+            $opts = $this->OPTIONS;    // (necessary because GetInfo changes the OPTIONS hash)
+            foreach ($tags as $tag) {
+                $val = $info[$tag] ?? null;
+                if ($val === null) continue;
+                $this->VPrint(0, 'Found ' . $tag . ' (' . Perl::str($val) . ")\n");
+                if (str_contains($tag, 'Coordinates')) {
+                    if (isset($coord[0], $coord[1])) continue;
+                    $coord = Perl::split(' ', $val);
+                    continue;
+                }
+                $n = str_contains($tag, 'Latitude') ? 0 : (str_contains($tag, 'Longitude') ? 1 : null);
+                if ($n !== null) {
+                    if (str_ends_with($tag, 'Ref')) {
+                        if (empty($ref[$n])) $ref[$n] = $val;
+                    } elseif (!isset($coord[$n])) {
+                        $coord[$n] = $val;
+                    }
+                    continue;
+                }
+                // handle city tags (save info for first city found)
+                if (str_contains($tag, 'City')) {
+                    if ($city) {
+                        $doneCity = 1;
+                        continue;
+                    }
+                    $city[] = $val;
+                } elseif ($city) {
+                    if (!$doneCity) $city[] = $val;
+                    if ($doneCity) continue;
+                }
+            }
+            if (isset($coord[0], $coord[1])) {
+                if (!empty($ref[0]) and Perl::num($coord[0]) > 0 and $ref[0] === 'S') $coord[0] = -Perl::num($coord[0]);
+                if (!empty($ref[1]) and Perl::num($coord[1]) > 0 and $ref[1] === 'W') $coord[1] = -Perl::num($coord[1]);
+                $arg = implode(',', array_map(Perl::str(...), $coord));
+            } elseif ($city) {
+                $arg = implode(',', array_map(Perl::str(...), $city));
+            }
+            if ($arg === null) {
+                // use specified default values if no tags found
+                $arg = implode(',', $defaults);
+                if ($arg === '1') $arg = null;
+                $both = 1;  // use 'both' GPS and place names if provided
+            }
+            if ($arg) {
+                if ($both) $arg .= ',both';
+                $arg = $this->Encode($arg, 'UTF8');
+                Geolocation::Load();
+                if ($opts['Verbose']) {
+                    // (Perl prints these to STDOUT)
+                    if (Geolocation::$dbInfo) {
+                        fwrite($opts['TextOut'], 'Loaded ' . Geolocation::$dbInfo . "\n");
+                    } else {
+                        fwrite($opts['TextOut'], "Error loading Geolocation.dat\n");
+                    }
+                }
+                // local $SIG{'__WARN__'} = \&SetWarning;
+                self::$evalWarning = null;
+                self::EvalBegin();
+                try {
+                    $opts['GeolocMulti'] = $opts['Duplicates'];
+                    $this->VPrint(0, "Geolocation arguments: '{$arg}'\n");
+                    [$cities, $dist] = Geolocation::Geolocate($arg, $opts);
+                    unset($opts['GeolocMulti']);
+                    if ($cities and (count($cities) < 2 or $dist or !$this->Warn('Multiple Geolocation cities are possible', 2))) {
+                        if (count($cities) > 1) $this->FoundTag('GeolocationWarning', 'Search matched ' . count($cities) . ' cities');
+                        foreach ($cities as $cty) {     // (Perl $city)
+                            if ($cty !== $cities[0]) $this->DOC_NUM = ++$this->DOC_COUNT;
+                            $geo = Geolocation::GetEntry($cty, $opts['Lang']);
+                            $this->FoundTag('GeolocationCity', $geo[0]);
+                            if ($geo[1]) $this->FoundTag('GeolocationRegion', $geo[1]);
+                            if ($geo[2]) $this->FoundTag('GeolocationSubregion', $geo[2]);
+                            $this->FoundTag('GeolocationCountryCode', $geo[3]);
+                            if ($geo[4]) $this->FoundTag('GeolocationCountry', $geo[4]);
+                            if ($geo[5]) $this->FoundTag('GeolocationTimeZone', $geo[5]);
+                            $this->FoundTag('GeolocationFeatureCode', $geo[6]);
+                            if ($geo[10]) $this->FoundTag('GeolocationFeatureType', $geo[10]);
+                            $this->FoundTag('GeolocationPopulation', $geo[7]);
+                            $this->FoundTag('GeolocationPosition', "$geo[8] $geo[9]");
+                            if ($dist) {
+                                $this->FoundTag('GeolocationDistance', $dist[0][0]);
+                                $this->FoundTag('GeolocationBearing', $dist[0][1]);
+                                array_shift($dist);
+                            }
+                            if (!$opts['Duplicates']) break;
+                        }
+                        $this->DOC_NUM = null;
+                    } elseif (self::$evalWarning) {
+                        $this->Warn(self::CleanWarning());
+                    }
+                } finally {
+                    self::EvalEnd();
+                }
+            }
+        }
 
         // generate tags for user-defined parameters that ended with '#'
         if ($opts['UserParam']) {
@@ -7445,7 +7568,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     }
 
     /** a PCRE for a Perl regular expression held in a string */
-    private static function Rx($re, string $mods = ''): string
+    public static function Rx($re, string $mods = ''): string
     {
         $re = Perl::str($re);
         foreach (['/', '#', '~', '%', '!', '@', ';', ',', '`'] as $d) {

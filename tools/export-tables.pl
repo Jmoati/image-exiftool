@@ -27,7 +27,7 @@ my $lib = shift || "$ENV{HOME}/exiftool/lib";
 my $project = shift || abs_path(dirname(abs_path($0)) . '/..');
 unshift @INC, $lib;
 
-# modules we don't port (writing, documentation, translations, geolocation database)
+# modules without tables to export (writing, documentation, translations; Geolocation and Shift are ported by hand)
 my %skipModule = map { $_ => 1 } qw(BuildTagLookup TagLookup TagInfoXML Geolocation HtmlDump Shift);
 
 # load-time actions recorded per module (AddCompositeTags calls)

@@ -3,6 +3,7 @@
 namespace Image\ExifTool\App;
 
 use Image\ExifTool\ExifTool;
+use Image\ExifTool\Geolocation;
 use Image\ExifTool\Perl;
 use Image\ExifTool\ScalarRef;
 use Image\ExifTool\Vars\ExifTool as ExifToolVars;
@@ -14,7 +15,7 @@ use Image\ExifTool\XMP;
  * File-scope variables of the script are properties, its subs are methods with the same names,
  * and the main script is run(). Not ported (the command stops with an error): writing
  * (TAG=VALUE, -tagsFromFile, -o, -csv=/-j= import, -geotag...), -X, -h, -htmlDump, -listx,
- * -listgeo, -diff, -plot, -w/-W, -efile, -fileNUM, -fileOrder, -srcfile, -use, -z and -config
+ * -diff, -plot, -w/-W, -efile, -fileNUM, -fileOrder, -srcfile, -use, -z and -config
  * files. -if and -p evaluate Perl code: -if supports a subset of Perl expressions (see
  * CompileCondition()), and -p advanced formatting expressions (${TAG;EXPR}) are not supported.
  *
@@ -131,6 +132,7 @@ final class Application
     private $filterFlag = 0;            // file filter flag (0x01=deny extensions, 0x02=allow extensions, 0x04=add ext)
     private $fixLen;                    // flag to fix description lengths when writing alternate languages
     private $forcePrint;                // string to use for missing tag values (undef to not print them)
+    private $geoOnly;                   // flag to extract Geolocation tags only
     private $helped;                    // flag to avoid printing help if no tags specified
     private $ignoreHidden;              // flag to ignore hidden files
     private $isBinary;                  // true if value is a SCALAR ref
@@ -328,7 +330,7 @@ final class Application
             $this->allGroup = $this->altEnc = $this->argFormat = $this->binaryOutput = $this->binSep = null;
             $this->binTerm = $this->comma = $this->csv = $this->disableOutput = $this->escapeC = null;
             $this->escapeHTML = $this->executeID = $this->fileHeader = $this->filtered = $this->fixLen = null;
-            $this->forcePrint = $this->ignoreHidden = $this->isBinary = $this->joinLists = $this->langOpt = null;
+            $this->forcePrint = $this->geoOnly = $this->ignoreHidden = $this->isBinary = $this->joinLists = $this->langOpt = null;
             $this->listDir = $this->listItem = $this->multiFile = $this->noBinary = $this->progress = null;
             $this->progressCount = $this->progressIncr = $this->progressMax = $this->progressNext = null;
             $this->purge = $this->recurse = $this->setCharset = $this->showGroup = $this->showTagID = null;
@@ -518,7 +520,53 @@ final class Application
                         } elseif ('d' === $type) {
                             $this->PrintTagList('Deletable groups', ...ExifTool::GetDeleteGroups());
                         } elseif ('geo' === $type) {
-                            $badCmd = $this->NotPorted($arg);   // (Geolocation module not ported)
+                            Geolocation::Load();
+                            if (!$this->quiet) {
+                                fwrite($this->stdout, "Geolocation database:\n");
+                            }
+                            $isAlt = $mt->Options('GeolocAltNames') ? ',AltNames' : '';
+                            if ($isAlt && !Geolocation::ReadAltNames()) {
+                                $isAlt = '';
+                            }
+                            fwrite($this->stdout, "City,Region,Subregion,CountryCode,Country,TimeZone,FeatureCode,Population,Latitude,Longitude$isAlt\n");
+                            if ($sortOpt) {
+                                Geolocation::SortDatabase('City');
+                            }
+                            $minPop = $mt->Options('GeolocMinPop');
+                            $feature = $mt->Options('GeolocFeature') ?: '';
+                            $neg = preg_match('/^-/', $feature);
+                            $feature = preg_replace('/^-/', '', $feature, 1);
+                            $fcodes = [];
+                            foreach (Perl::split('/\s*,\s*/', $feature) as $fc) {
+                                $fcodes[strtolower($fc)] = 1;
+                            }
+                            $isUTF8 = [0, 1, 2, 4];   // items that need converting from UTF8
+                            if ($isAlt) {
+                                $isUTF8[] = 10;
+                            }
+                            for ($i = 0; ; ++$i) {
+                                $entry = Geolocation::GetEntry($i, $this->langOpt, 1);
+                                if (!$entry) {
+                                    break;
+                                }
+                                $entry = \array_slice($entry, 0, 10);  // remove everything after latitude (eg. feature type)
+                                if ($minPop && Perl::num($entry[7]) < Perl::num($minPop)) {
+                                    continue;
+                                }
+                                if ($fcodes && ($neg ? isset($fcodes[strtolower($entry[6])]) : !isset($fcodes[strtolower($entry[6])]))) {
+                                    continue;
+                                }
+                                if ($isAlt) {
+                                    $entry[] = Geolocation::GetAltNames($i, 1);
+                                }
+                                foreach ($isUTF8 as $k) {
+                                    $entry[$k] = null !== $entry[$k] ? $mt->Decode($entry[$k], 'UTF8') : '';
+                                }
+                                if ($isAlt && !$entry[10]) {
+                                    array_pop($entry);
+                                }
+                                fwrite($this->stdout, implode(',', $entry)."\n");
+                            }
                         } else { // 'g(\d*)'
                             // list all groups in specified family
                             $family = ($m[2] ?? '') ?: 0;
@@ -1224,6 +1272,16 @@ final class Application
             // set "OK" UserParam based on result of last command
             $mt->Options('UserParam', 'OK=' . ($this->rtnValPrev ? '' : '1'));
 
+            // allow geolocation without input file if set to a position
+            if (!$this->files) {    // (-o and writing are not ported)
+                $loc = $mt->Options('Geolocation');
+                // use undocumented feature to input JSON file directly from command line
+                if ($loc && '1' !== Perl::str($loc)) {
+                    $this->files[] = '@JSON:{}';
+                    $this->geoOnly = 1;
+                }
+            }
+
             // print help
             if (!($this->tags || $this->files)) {
                 if (!$this->helped) {
@@ -1513,10 +1571,24 @@ final class Application
                 $info = null;
                 --$et->FILE_SEQUENCE;
             }
+        } elseif (preg_match('/^(\@JSON:)(.*)/', $file, $m)) {
+            // read JSON file from command line
+            $file = preg_replace('/^(\@JSON:)(.*)/', '$1', $file, 1);
+            $info = $et->ImageInfo(new ScalarRef($m[2]), $foundTags);
+            $foundTags = $et->IO_TAG_LIST;
+            if ($this->geoOnly) {
+                foreach (array_keys($info) as $key) {
+                    if (!str_starts_with($key, 'Geolocation')) {
+                        unset($info[$key]);
+                    }
+                }
+                $file = ' ';
+            }
         }
 
         // extract information from this file
-        if (!('-' === $file || $et->Exists($file) || $info)) {
+        // (Perl $info is a hash ref: true even when empty)
+        if (!('-' === $file || $et->Exists($file) || null !== $info)) {
             $this->Warn("Error: File not found - $file\n");
             $this->FileNotFound($file);
             ++$this->countBad;
@@ -1538,7 +1610,7 @@ final class Application
         if ($o) {
             $this->Progress($o, "======== $file");
         }
-        if ($info) {
+        if (null !== $info) {
             // get the information we wanted
             if ($this->tags && !$this->printFmt) {
                 $foundTags = $this->tags;

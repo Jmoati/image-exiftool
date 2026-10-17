@@ -15,6 +15,8 @@ Command line (a subset of the Perl `exiftool` options, same output):
 bin/exiftool -j -g photo.heic
 bin/exiftool -s -G1 -n IMG_0001.CR3
 bin/exiftool -stay_open True -@ -        # same protocol as the Perl tool
+bin/exiftool -api geolocation photo.jpg  # nearest city from the GPS position (Geolocation* tags)
+bin/exiftool -api geolocation=48.8566,2.3522,num=3   # no file needed for a position or a city
 ```
 
 From PHP, without spawning a process:
@@ -39,9 +41,12 @@ $info = $et->ImageInfo('photo.heic');
 - `tools/parity.php` compares the output with Perl ExifTool, `tests/` checks the Perl built-in
   emulation and the command line
 
-Not ported: writing, `-lang` translations, geolocation, `-listx`, the HTML dump.
+Not ported: writing (including the `Geolocate` tag), `-lang` translations (so geolocation names are
+in English), `-listx`, the HTML dump.
 
 ## License
 
 ExifTool is Copyright 2003-2026 Phil Harvey. This port is free software; you can redistribute it
 and/or modify it under the same terms as Perl itself (either the Perl Artistic License or GPL).
+The geolocation database `src/Geolocation.dat` comes with ExifTool and is based on data from
+[geonames.org](https://www.geonames.org/) with a Creative Commons license.
