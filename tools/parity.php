@@ -20,6 +20,9 @@
  *   --php=COMMAND          the PHP tool (default: php bin/exiftool)
  *
  * Ignored: FileAccessDate (reading the file changes it), ExifToolVersion when it differs.
+ * Perl runs with a fixed hash seed (PERL_HASH_SEED=0, PERL_PERTURB_KEYS=0): with -struct, some
+ * XMP structures (Geotag.gpx/.kml/.xml, XISF.xisf...) are built in hash order, which otherwise
+ * changes from one Perl run to the next.
  * Exit status: 0 when every tag of every file matches.
  */
 
@@ -47,6 +50,7 @@ if (isset($opt['file'])) {
 sort($files, SORT_NATURAL | SORT_FLAG_CASE);
 
 $perlCmd = ['perl', "$etDir/exiftool"];
+$perlEnv = ['PERL_HASH_SEED' => '0', 'PERL_PERTURB_KEYS' => '0'];   // deterministic reference
 $phpCmd = isset($opt['php']) ? preg_split('/\s+/', trim($opt['php'])) : [PHP_BINARY, "$root/bin/exiftool"];
 $cacheDir = "$root/var/parity-cache";
 @mkdir($cacheDir, 0777, true);
@@ -70,12 +74,12 @@ foreach ($files as $file) {
         // Perl output (cached)
         $path = $cwd . '/' . $file;
         $st = @stat($file[0] === '/' ? $file : $path) ?: [];
-        $key = sha1(json_encode([$file, $cwd, $st['size'] ?? 0, $st['mtime'] ?? 0, $st['ctime'] ?? 0, $pOpts, $perlVersion]));
+        $key = sha1(json_encode([$file, $cwd, $st['size'] ?? 0, $st['mtime'] ?? 0, $st['ctime'] ?? 0, $pOpts, $perlVersion, $perlEnv]));
         $cached = "$cacheDir/$key.json";
         if (!isset($opt['no-cache']) && is_file($cached)) {
             $perlOut = file_get_contents($cached);
         } else {
-            [, $perlOut, , $failure] = runProcess([...$perlCmd, ...$args], $cwd, $timeout);
+            [, $perlOut, , $failure] = runProcess([...$perlCmd, ...$args], $cwd, $timeout, $perlEnv);
             if ($failure) {
                 $row .= sprintf(' | %-38s', "perl $failure");
                 continue;
@@ -235,9 +239,9 @@ function unmark($val)
 }
 
 /** @return array{?int, string, string, ?string} exit status, stdout, stderr, failure ('timeout' or null) */
-function runProcess(array $cmd, string $cwd, float $timeout): array
+function runProcess(array $cmd, string $cwd, float $timeout, array $env = []): array
 {
-    $proc = proc_open($cmd, [['pipe', 'r'], ['pipe', 'w'], ['pipe', 'w']], $pipes, $cwd);
+    $proc = proc_open($cmd, [['pipe', 'r'], ['pipe', 'w'], ['pipe', 'w']], $pipes, $cwd, $env + getenv());
     fclose($pipes[0]);
     [$out, $err, $failure] = readUntil($pipes, $timeout, static fn () => false);   // (until 'eof')
     if ('timeout' === $failure) {
