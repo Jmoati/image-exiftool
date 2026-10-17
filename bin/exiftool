@@ -1,0 +1,14 @@
+#!/usr/bin/env php
+<?php
+// exiftool - Read meta information in files (PHP port of the Perl script, see src/App/Application.php)
+
+ini_set('display_errors', 'stderr');    // PHP notices must not end up in the output
+ini_set('log_errors', '0');             // (shown once, on stderr)
+ini_set('memory_limit', '-1');          // (no limit in Perl either)
+if (function_exists('pcntl_signal')) {
+    pcntl_signal(SIGPIPE, SIG_DFL);     // die quietly on a closed pipe, like Perl
+}
+
+require $GLOBALS['_composer_autoload_path'] ?? __DIR__ . '/../vendor/autoload.php';
+
+exit(Image\ExifTool\App\Application::main($argv));
