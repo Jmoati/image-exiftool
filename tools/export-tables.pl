@@ -148,6 +148,21 @@ foreach my $file (glob("$project/translations/*.txt")) {
     close $fh;
 }
 foreach (values %translation) { s/\s+$//; }
+# skip translations that don't parse (a translator may be editing its file right now)
+if (%translation) {
+    require JSON::PP;
+    my $tmp = "/tmp/export-tables-$$.json";
+    open my $jfh, '>', $tmp or die;
+    print $jfh JSON::PP->new->utf8(0)->encode(\%translation);
+    close $jfh;
+    my $bad = `php "$project/tools/parse-check.php" < "$tmp"`;
+    unlink $tmp;
+    foreach my $line (split /\n/, $bad) {
+        my ($id, $msg) = split /\t/, $line, 2;
+        warn "translation $id ignored: $msg\n";
+        delete $translation{$id};
+    }
+}
 
 #------------------------------------------------------------------------------
 # PHP emitters

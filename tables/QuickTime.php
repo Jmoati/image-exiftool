@@ -549,7 +549,7 @@ $f_25363d59b6 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^\0/', $valPt);
 };
 $f_038fcedd65 = static function (ExifTool $self, $valPt, $format, $count) {
-    $self->ItemRefVersion = \ord($valPt);
+    $self->ItemRefVersion = \ord($valPt[0] ?? "\0");
     return 1;
 };
 $f_8b0a13084c = static function (ExifTool $self, $valPt, $format, $count) {

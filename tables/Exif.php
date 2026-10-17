@@ -151,7 +151,8 @@ $f_d4336af81c = static function ($val, ExifTool $self, array $vals, array $prt, 
     {
         return Perl::str($vals[2]) . ' ' . Perl::str($vals[3]);
     }
-    if (ExifTool::IsFloat($vals[0] ?? null) && ExifTool::IsFloat($vals[1] ?? null)) {
+    // (IsFloat may translate ',' to '.' in its argument: pass the elements themselves; 0 and 1 are Required)
+    if (ExifTool::IsFloat($vals[0]) && ExifTool::IsFloat($vals[1])) {
         return Perl::str($vals[0]) . ' ' . Perl::str($vals[1]);
     }
     return null;
@@ -234,7 +235,8 @@ $f_9c98df8b6c = static function ($val, ExifTool $self, array $vals, array $prt, 
     return Perl::sprintf('%.1f', $val);
 };
 $f_ae250af2f2 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
-    return Exif::CalculateLV($vals[0] ?? null, $vals[1] ?? null, $prt[2] ?? null);
+    // (all three are Required, so the elements exist)
+    return Exif::CalculateLV($vals[0], $vals[1], $prt[2]);
 };
 $f_0f19c9c8d5 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.*f', (Perl::num($val) >= 1 ? 1 : (Perl::num($val) >= 0.001 ? 3 : 6)), $val);
