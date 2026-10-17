@@ -12,13 +12,13 @@ $f_c48f253bad = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_ee13473008 = static function ($val, ExifTool $et) {
     return $val;
 };
-$f_f908ad358d = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_f908ad358d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).' rows';
 };
-$f_14a0434719 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_14a0434719 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).' columns';
 };
-$f_6fa8308e1b = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_6fa8308e1b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return implode(' ', Perl::unpack('C*', Perl::pack('N', $val)));
 };
 

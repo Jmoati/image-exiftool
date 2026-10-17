@@ -4,26 +4,26 @@
 
 namespace Image\ExifTool;
 
-$f_02272264af = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_02272264af = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintFNumber($val);
 };
 $f_febc2be3a7 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return (($vals[0] ?? null) ?: ($vals[1] ?? null)) ? $val : null;
 };
-$f_e7e39cca95 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_e7e39cca95 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ($vals[0] ?? null) ?: ($vals[1] ?? null);
 };
-$f_9bb0293bb7 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_9bb0293bb7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::int(Perl::num($val) * 1e6 + 0.5) * 1e-6;
 };
-$f_829c0e1434 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_829c0e1434 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     // (@val spread as a dense list: missing elements are undef in Perl)
     return Exif::RedBlueBalance(1, ...array_replace(array_fill(0, $vals ? max(array_keys($vals)) + 1 : 0, null), $vals));
 };
-$f_056122455b = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_056122455b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintCFAPattern($val);
 };
-$f_c096f0c6e5 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_c096f0c6e5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::split('/ /', $vals[0] ?? null);
     $b = Perl::split('/ /', $vals[1] ?? null);
     if (!(count($a) == 2 && count($b) == Perl::num($a[0]) * Perl::num($a[1]))) {
@@ -31,13 +31,13 @@ $f_c096f0c6e5 = static function ($val, ExifTool $self, array $vals, array $prt, 
     }
     return "$a[0] $a[1] " . implode(' ', $b);
 };
-$f_bc2ecdf8df = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_bc2ecdf8df = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.3f mm', $val);
 };
-$f_60516f9e20 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_60516f9e20 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return sqrt(24 * 24 + 36 * 36) / (Perl::num($val) * 1440);
 };
-$f_95cf3abf39 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_95cf3abf39 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $val = strtr(Perl::str($val), ',', '.'); // in case locale is whacky
     $v = Perl::split(' ', $val);
     if (!($v[1] ?? null)) {
@@ -47,7 +47,7 @@ $f_95cf3abf39 = static function ($val, ExifTool $self, array $vals, array $prt, 
     $fmt = ($dof > 0 && $dof < 0.02) ? '%.3f' : '%.2f';
     return Perl::sprintf("$fmt m ($fmt - $fmt m)", $dof, $v[0], $v[1]);
 };
-$f_05bf82fdcc = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_05bf82fdcc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     ExifTool::ToFloat(...$vals);
     [$d, $f] = [$vals[3] ?? null, $vals[0] ?? null];
     if ($d !== null) {
@@ -76,19 +76,19 @@ $f_05bf82fdcc = static function ($val, ExifTool $self, array $vals, array $prt, 
 $f_f31b2db400 = static function (ExifTool $self, $valPt, $format, $count) {
     return !isset($self->VALUE['DateTimeOriginal']);
 };
-$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
 $f_a7630a27c7 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return (($vals[1] ?? null) && ($vals[2] ?? null)) ? $val : null;
 };
-$f_a109de0264 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_a109de0264 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     if (($vals[0] ?? null) && preg_match('/ /', Perl::str($vals[0]))) {
         return $vals[0];
     }
     return Perl::str($vals[1] ?? null) . ' ' . Perl::str($vals[2] ?? null);
 };
-$f_89852e7a1a = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_89852e7a1a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $v = Perl::split(' ', $val);
     $str = Perl::sprintf('%.1f deg', $v[0] ?? null);
     if ($v[1] ?? null) {
@@ -96,7 +96,7 @@ $f_89852e7a1a = static function ($val, ExifTool $self, array $vals, array $prt, 
     }
     return $str;
 };
-$f_024e988e5d = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_024e988e5d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     ExifTool::ToFloat(...$vals);
     if (!(($vals[0] ?? null) && ($vals[1] ?? null))) {
         return null;
@@ -115,34 +115,34 @@ $f_024e988e5d = static function ($val, ExifTool $self, array $vals, array $prt, 
     }
     return implode(' ', array_map(Perl::str(...), $fov));
 };
-$f_eb52af9996 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_eb52af9996 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ($vals[1] ?? null) ? Perl::sprintf('%.1f mm (35 mm equivalent: %.1f mm)', $vals[0] ?? null, $val) : Perl::sprintf('%.1f mm', $val);
 };
-$f_e28585d5d8 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_e28585d5d8 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     ExifTool::ToFloat(...$vals);
     return (($vals[0] ?? null) ?: 0) * (($vals[1] ?? null) ?: 1);
 };
-$f_8b88db0077 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_8b88db0077 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($prt[0] ?? null) . ', ' . Perl::str($prt[1] ?? null);
 };
-$f_f07b8dbda0 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_f07b8dbda0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return (strlen(Perl::str($vals[0] ?? null)) || strlen(Perl::str($vals[1] ?? null)))
         ? Perl::str($vals[0] ?? null) . ' ' . Perl::str($vals[1] ?? null) : null;
 };
-$f_684ecca7f6 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_684ecca7f6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.2f m', $val);
 };
-$f_40188b9dad = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_40188b9dad = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     ExifTool::ToFloat(...$vals);
     if (!(($vals[1] ?? null) && ($vals[2] ?? null))) {
         return 'inf';
     }
     return ($vals[0] ?? null) * ($vals[0] ?? null) / ($vals[1] * $vals[2] * 1000);
 };
-$f_32fa794234 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_32fa794234 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', 'x');
 };
-$f_d4336af81c = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_d4336af81c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     if ($vals[4] ?? null) {
         return $vals[4];
     }
@@ -161,7 +161,7 @@ $f_db96eb0a3d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     $grps = $self->GetGroup($val[0]);
     return Exif::ExtractImage($self, $vals[0] ?? null, $vals[1] ?? null, 'JpgFromRaw');
 };
-$f_9ad4569928 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_9ad4569928 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $pcv = null;
     // use LensType2 instead of LensType if available and valid (Sony E-mount lenses)
     // (0x8000 or greater; 0 for several older/3rd-party E-mount lenses)
@@ -202,10 +202,10 @@ $f_a2d0f96dc3 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     }
     return null;
 };
-$f_6b105e8189 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_6b105e8189 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val;
 };
-$f_87e42383b2 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_87e42383b2 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $_ = Perl::str($val);
     $_ = preg_replace('/(\d)\/F/', '${1}mm F', $_, 1);
     $_ = preg_replace('/mmF/', 'mm F', $_, 1);
@@ -225,23 +225,23 @@ $f_fb04b2fb4a = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     }
     return null;
 };
-$f_ab5682b8cc = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ab5682b8cc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     if (isset($vals[0]) && preg_match('/(mm|\d\/F)/', Perl::str($vals[0]))) {
         return $vals[0];
     }
     return $vals[1] ?? null;
 };
-$f_9c98df8b6c = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_9c98df8b6c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f', $val);
 };
-$f_ae250af2f2 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ae250af2f2 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     // (all three are Required, so the elements exist)
     return Exif::CalculateLV($vals[0], $vals[1], $prt[2]);
 };
-$f_0f19c9c8d5 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_0f19c9c8d5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.*f', (Perl::num($val) >= 1 ? 1 : (Perl::num($val) >= 0.001 ? 3 : 6)), $val);
 };
-$f_05a971c194 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_05a971c194 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     preg_match_all('/\d+/', Perl::str($val), $m);
     $d = $m[0];
     return Perl::num($d[0] ?? null) * Perl::num($d[1] ?? null) / 1000000;
@@ -279,7 +279,7 @@ $f_f2d8f3d284 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     $grps = $self->GetGroup($val[0]);
     return Exif::ExtractImage($self, $vals[0] ?? null, $vals[1] ?? null, 'PreviewImage');
 };
-$f_ca6d3f73a1 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ca6d3f73a1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($vals[0] ?? null) . 'x' . Perl::str($vals[1] ?? null);
 };
 $f_a70093b25a = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
@@ -306,21 +306,21 @@ $f_a70093b25a = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     }
     return new ScalarRef($image);
 };
-$f_4b2e7c45bf = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_4b2e7c45bf = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     // (@val spread as a dense list: missing elements are undef in Perl)
     return Exif::RedBlueBalance(0, ...array_replace(array_fill(0, $vals ? max(array_keys($vals)) + 1 : 0, null), $vals));
 };
-$f_84cd9cb095 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_84cd9cb095 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f', $val);
 };
-$f_2cde92d829 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_2cde92d829 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     // (@val spread as a dense list: missing elements are undef in Perl)
     return Exif::CalcScaleFactor35efl($self, ...array_replace(array_fill(0, $vals ? max(array_keys($vals)) + 1 : 0, null), $vals));
 };
-$f_a941801118 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintExposureTime($val);
 };
-$f_05a90d52bf = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_05a90d52bf = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return (($vals[2] ?? null) && Perl::num($vals[2]) > 0) ? $vals[2] : (isset($vals[0]) ? $vals[0] : ($vals[1] ?? null));
 };
 $f_e878392bad = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
@@ -394,7 +394,7 @@ $f_70a14663bd = static function (ExifTool $self, $valPt, $format, $count) {
     return $self->TIFF_TYPE === 'MRW' && $self->DIR_NAME === 'IFD0' &&
         preg_match('/^DiMAGE A200/', Perl::str($self->Model));
 };
-$f_07c9630a67 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_07c9630a67 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $val = implode(' ', Perl::unpack('N*', Perl::pack('V*', ...Perl::split(' ', $val))));
     return new ScalarRef($val);
 };
@@ -410,7 +410,7 @@ $f_ec4a58991d = static function (ExifTool $self, $valPt, $format, $count) {
             Perl::str($self->SubfileType) !== '0') &&
         !($self->TIFF_TYPE === 'APP1' && $self->DIR_NAME === 'IFD2');
 };
-$f_9daa8ac2fd = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_9daa8ac2fd = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strlen(Perl::str($val)) > 32 ? new ScalarRef($val) : $val;
 };
 $f_2bfd530eb7 = static function (ExifTool $self, $valPt, $format, $count) {
@@ -481,10 +481,10 @@ $f_8a35af95de = static function (ExifTool $self, $valPt, $format, $count) {
     return $self->DIR_NAME === 'IFD1' ||
         ($self->DIR_NAME === 'IFD0' && preg_match('/^(RIFF|MOV)$/', Perl::str($self->FILE_TYPE)));
 };
-$f_da0cfb73f0 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_da0cfb73f0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->Decode($val, 'UCS2', 'II');
 };
-$f_6caa22b786 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_6caa22b786 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strlen(Perl::str($val)) <= 64 ? $val : new ScalarRef($val);
 };
 $f_a312129faf = static function ($val, $self) {
@@ -500,7 +500,7 @@ $f_a312129faf = static function ($val, $self) {
 $f_d636379221 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Perl::str($val) . ExifTool::GetByteOrder();
 };
-$f_27d28dad89 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_27d28dad89 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/\s+/', ', ', Perl::str($val));
 };
 $f_f04122bab9 = static function ($val, $inv, $conv) {
@@ -532,22 +532,22 @@ $f_f04122bab9 = static function ($val, $inv, $conv) {
     }
     return implode(', ', $a);
 };
-$f_24541f7bac = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_24541f7bac = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return (ExifTool::IsFloat($val) && abs(Perl::num($val)) < 100) ? 2 ** (-Perl::num($val)) : 0;
 };
-$f_eb246ca11c = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_eb246ca11c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 2 ** (Perl::num($val) / 2);
 };
-$f_811b111291 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_811b111291 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintFraction($val);
 };
-$f_6913ff8c37 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_6913ff8c37 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_match('/^(inf|undef)$/', Perl::str($val)) ? $val : Perl::str($val) . ' m';
 };
-$f_8f0e71a82a = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_8f0e71a82a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f mm', $val);
 };
-$f_870d813f22 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_870d813f22 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', '.');
 };
 $f_90a620eb30 = static function (ExifTool $self, $valPt, $format, $count) {
@@ -947,7 +947,7 @@ $f_ea8a924275 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_24585565de = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^[\x09\x0d\x0a\x20-\x7e]+\0*$/', $valPt);
 };
-$f_609fe59810 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_609fe59810 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strlen(Perl::str($val)) > 64 ? new ScalarRef($val) : $val;
 };
 $f_1a47d140b4 = static function (ExifTool $self, $valPt, $format, $count) {
@@ -964,25 +964,25 @@ $f_5428ff8c7f = static function ($val, $et) {
     }
     return implode('; ', $rtn);
 };
-$f_fe5b177481 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_fe5b177481 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/ +$/', '', Perl::str($val), 1);
 };
-$f_98770fe8c4 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_98770fe8c4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' C';
 };
-$f_4181c3e612 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_4181c3e612 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintSFR($val);
 };
 $f_6e6121706d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Exif::DecodeCFAPattern($self, $val);
 };
-$f_be71053a96 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_be71053a96 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' mm';
 };
-$f_04ad710ee1 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_04ad710ee1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return (Perl::int($val) >> 8) . ' ' . (Perl::int($val) & 0xff);
 };
-$f_275db899ed = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_275db899ed = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->Decode($val, 'UTF8');
 };
 $f_1df0cb6a31 = static function ($val, $et) {
@@ -1017,7 +1017,7 @@ $f_2b8cf99703 = static function ($val, $et) {
     }
     return implode(' ', array_map(Perl::str(...), $v));
 };
-$f_e5fa544e5d = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_e5fa544e5d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     ExifTool::RequireModule('Image::ExifTool::ASF');
     $val = ASF::GetGUID($val);
     // GUID's are too long, so remove redundant information
@@ -1030,10 +1030,10 @@ $f_e5fa544e5d = static function ($val, ExifTool $self, array $vals, array $prt, 
 $f_566c263716 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->DNGVersion = $val;
 };
-$f_bdab3ac1f8 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_bdab3ac1f8 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->Printable($val, 0);
 };
-$f_5c5e090747 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_5c5e090747 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $cols = ['Red', 'Green', 'Blue', 'Cyan', 'Magenta', 'Yellow', 'White'];
     $vals = array_map(static fn ($_) => ($cols[$_] ?? null) ?: "Unknown($_)", Perl::split(' ', $val));
     return implode(',', $vals);
@@ -1054,20 +1054,20 @@ $f_a0e7036865 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_5e6cf4d3fa = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^RICOH\0(II|MM)/', $valPt);
 };
-$f_0c896b133e = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_0c896b133e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtoupper(Perl::unpack('H*', $val)[0]);
 };
 $f_75db46a4dc = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return strlen(Perl::str($val)) ? $val : null;
 };
-$f_141bbcf6d5 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_141bbcf6d5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::unpack('H*', $val)[0];
 };
-$f_610610827d = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_610610827d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     ExifTool::RequireModule('Image::ExifTool::XMP');
     return XMP::ConvertXMPDate($val);
 };
-$f_edb9b84ac8 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_edb9b84ac8 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = array_map(Perl::hex(...), Perl::split('/[. ]+/', $val));
     $v = [];
     while (count($a) >= 8) {
@@ -1114,7 +1114,7 @@ $f_edb9b84ac8 = static function ($val, ExifTool $self, array $vals, array $prt, 
     }
     return implode(' ', $v);
 };
-$f_01308100e9 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_01308100e9 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::split(' ', $val);
     $v = [];
     while (count($a) >= 8) {
@@ -1122,10 +1122,10 @@ $f_01308100e9 = static function ($val, ExifTool $self, array $vals, array $prt, 
     }
     return implode(' ', $v);
 };
-$f_090fcb29a6 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_090fcb29a6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::int(Perl::num($val) * 1000 + 0.5) / 1000;
 };
-$f_f74f28c1fe = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_f74f28c1fe = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return implode('-', array_map(static fn ($_) => Perl::sprintf('%.2f', $_), Perl::split(' ', $val)));
 };
 $f_fb063822c1 = static function (ExifTool $self, $valPt, $format, $count) {
@@ -1134,7 +1134,7 @@ $f_fb063822c1 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_6f29e35d81 = static function (ExifTool $self, $valPt, $format, $count) {
     return $self->TIFF_TYPE !== 'DCR';
 };
-$f_b7cb64e8b8 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_b7cb64e8b8 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/^.*: /', '', Perl::str($val), 1);
 };
 

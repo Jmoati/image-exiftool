@@ -4,7 +4,7 @@
 
 namespace Image\ExifTool;
 
-$f_5dbc52ad61 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_5dbc52ad61 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.2f', $val);
 };
 

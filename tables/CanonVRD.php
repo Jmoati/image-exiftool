@@ -8,7 +8,7 @@ $f_e9d43919cd = static function (mixed ...$args) { throw new NotPorted('PrintCon
 $f_13e7186c58 = static function (mixed ...$args) { throw new NotPorted('FormatCount 13e7186c58'); };
 $f_6f9ae4d345 = static function (mixed ...$args) { throw new NotPorted('PrintConv 6f9ae4d345'); };
 $f_570e4ee13b = static function (mixed ...$args) { throw new NotPorted('PrintConv 570e4ee13b'); };
-$f_ddae2f7edc = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ddae2f7edc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 10;
 };
 $f_82a9f4ee4b = static function (mixed ...$args) { throw new NotPorted('PrintConv 82a9f4ee4b'); };
@@ -23,7 +23,7 @@ $f_f6d62338c0 = static function (mixed ...$args) { throw new NotPorted('ValueCon
 $f_7f74aee2ff = static function (mixed ...$args) { throw new NotPorted('PrintConv 7f74aee2ff'); };
 $f_fd4edfe95c = static function (mixed ...$args) { throw new NotPorted('PrintConv fd4edfe95c'); };
 $f_f8b38c1bec = static function (mixed ...$args) { throw new NotPorted('RawConv f8b38c1bec'); };
-$f_5dbc52ad61 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_5dbc52ad61 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.2f', $val);
 };
 $f_3069b832b1 = static function (mixed ...$args) { throw new NotPorted('ValueConv 3069b832b1'); };
@@ -34,7 +34,7 @@ $f_1975d44dc4 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     return Perl::num($val) == 0x7fff ? null : $val;
 };
 $f_5d5a812a99 = static function (mixed ...$args) { throw new NotPorted('ValueConv 5d5a812a99'); };
-$f_2beaacd6d4 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_2beaacd6d4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 100;
 };
 $f_8bf86de79e = static function (mixed ...$args) { throw new NotPorted('RawConv 8bf86de79e'); };

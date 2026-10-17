@@ -4,24 +4,27 @@
 
 namespace Image\ExifTool;
 
-$f_7ae83d5506 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_7ae83d5506 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('0x%.4x', $val);
 };
-$f_227aa4ff88 = static function (mixed ...$args) { throw new NotPorted('PrintConv 227aa4ff88'); };
+$f_227aa4ff88 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = strtr(Perl::str($val), ' ', '.');
+    return $val;
+};
 $f_256c0c6579 = static function (mixed ...$args) { throw new NotPorted('ValueConv 256c0c6579'); };
 $f_6e58ee2654 = static function (mixed ...$args) { throw new NotPorted('PrintConv 6e58ee2654'); };
 $f_b6f107c4d0 = static function (mixed ...$args) { throw new NotPorted('ValueConv b6f107c4d0'); };
-$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
 $f_b13f70ef16 = static function (mixed ...$args) { throw new NotPorted('ValueConv b13f70ef16'); };
 $f_8ec8a3c511 = static function (mixed ...$args) { throw new NotPorted('PrintConv 8ec8a3c511'); };
-$f_98770fe8c4 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_98770fe8c4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' C';
 };
 $f_0128eb5b86 = static function (mixed ...$args) { throw new NotPorted('ValueConv 0128eb5b86'); };
 $f_3fbe14a0d1 = static function (mixed ...$args) { throw new NotPorted('PrintConv 3fbe14a0d1'); };
-$f_7b446e214d = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_7b446e214d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1000;
 };
 $f_8b477f5bd4 = static function (mixed ...$args) { throw new NotPorted('ValueConv 8b477f5bd4'); };

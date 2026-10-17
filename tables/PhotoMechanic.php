@@ -6,10 +6,10 @@ namespace Image\ExifTool;
 
 $f_22afa7dfc4 = static function (mixed ...$args) { throw new NotPorted('PrintConv 22afa7dfc4'); };
 $f_0ec2e7e81a = static function (mixed ...$args) { throw new NotPorted('ValueConv 0ec2e7e81a'); };
-$f_f62d9dd77e = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_f62d9dd77e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/\s*(\d+):\s*(\d+):\s*(\d+):\s*(\S*)/', 'Tagged:$1, ColorClass:$2, Rating:$3, FrameNum:$4', Perl::str($val), 1);
 };
-$f_746dd5d294 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_746dd5d294 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::ExifTime($val);
 };
 

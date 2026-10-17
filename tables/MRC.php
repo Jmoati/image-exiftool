@@ -5,10 +5,12 @@
 namespace Image\ExifTool;
 
 $f_541bc94911 = static function (mixed ...$args) { throw new NotPorted('RawConv 541bc94911'); };
-$f_9b0a3c2419 = static function (mixed ...$args) { throw new NotPorted('PrintConv 9b0a3c2419'); };
+$f_9b0a3c2419 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('0x%.8x', $val);
+};
 $f_db0d47df74 = static function (mixed ...$args) { throw new NotPorted('RawConv db0d47df74'); };
 $f_8e0beee4a3 = static function (mixed ...$args) { throw new NotPorted('Condition 8e0beee4a3'); };
-$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
 $f_c0351c22d2 = static function (mixed ...$args) { throw new NotPorted('ValueConv c0351c22d2'); };

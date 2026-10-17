@@ -15,7 +15,7 @@ $f_776710f713 = static function ($start, $base = 0) {
 $f_5879ccff58 = static function ($valuePtr = null, $val = null, $dirStart = null, $dataPt = null) {
     return $val;
 };
-$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
 

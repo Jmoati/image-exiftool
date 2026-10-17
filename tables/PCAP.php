@@ -12,7 +12,7 @@ $f_ce4cba76f7 = static function (mixed ...$args) { throw new NotPorted('ValueCon
 $f_a396e4b481 = static function (mixed ...$args) { throw new NotPorted('ValueConv a396e4b481'); };
 $f_ba632b06f1 = static function (mixed ...$args) { throw new NotPorted('ValueConv ba632b06f1'); };
 $f_9c3c3d0153 = static function (mixed ...$args) { throw new NotPorted('RawConv 9c3c3d0153'); };
-$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
 $f_79f5deff45 = static function (mixed ...$args) { throw new NotPorted('ValueConv 79f5deff45'); };

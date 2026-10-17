@@ -5,7 +5,7 @@
 namespace Image\ExifTool;
 
 $f_9fb2dfcfa5 = static function (mixed ...$args) { throw new NotPorted('RawConv 9fb2dfcfa5'); };
-$f_9c417307ae = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_9c417307ae = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return XMP::DecodeBase64($val);
 };
 

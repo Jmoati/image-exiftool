@@ -168,7 +168,7 @@ $f_225ce42dc4 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_44adf9de92 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^DTAT\0\0.\{/s', $valPt);
 };
-$f_5daa4c82db = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_5daa4c82db = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return \strlen($val) < 7 ? null : substr($val, 7);
 };
 $f_2fbe1e7810 = static function (ExifTool $self, $valPt, $format, $count) {
@@ -232,22 +232,22 @@ $f_100cd03bed = static function (ExifTool $self, $valPt, $format, $count) {
 $f_956ffe8b1d = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^\xff\xd8\xff/', $valPt);
 };
-$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_25e36f4c47 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_25e36f4c47 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertUnixTime((Perl::num($val) - (70 * 365 + 17 + 2)) * 24 * 3600);
 };
-$f_9ee7fc9740 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_9ee7fc9740 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%d.%.2d', ...Perl::split(' ', $val));
 };
-$f_904ad315f9 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_904ad315f9 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return \chr(Perl::int($val) & 0xff);
 };
-$f_433fd9acab = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_433fd9acab = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('0x%x', $val);
 };
-$f_870d813f22 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_870d813f22 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', '.');
 };
 

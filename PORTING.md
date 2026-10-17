@@ -127,7 +127,7 @@ Each context has a fixed closure signature. Perl variable names are kept:
 |---|---|
 | `Condition` (GetTagInfo) | `static function (ExifTool $self, $valPt, $format, $count)` — `$$valPt` → `$valPt` |
 | `RawConv` string (FoundTag/HandleTag) | `static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals)` — Perl `@val` (Composite) → `$vals` |
-| `ValueConv`, `PrintConv` strings, items of conversion arrays (GetValue) | `static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag)` — Perl `$val[0]` → `$vals[0]` |
+| `ValueConv`, `PrintConv` strings, items of conversion arrays (GetValue) | `static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag)` — Perl `$val[0]` → `$vals[0]`; `$vals` by reference because Perl's PrintConv sees what the ValueConv did to `@val` (`ToFloat(@val)`) |
 | anonymous `sub` used as `ValueConv`/`PrintConv`/`RawConv` | called as `$conv($val, $self)`: write `static function ($val, $et) { ... }` with the parameter names of the Perl `my (...) = @_` |
 | anonymous `sub` in a PrintConv hash `OTHER` | called as `$other($val, $inv, $conv)` |
 | `Hook` (ProcessBinaryData) | `static function (ExifTool $self, &$format, &$varSize, $size, $dataPt, $pos): void` |
@@ -139,10 +139,11 @@ Each context has a fixed closure signature. Perl variable names are kept:
 | `IsOffset` (string) | `static function ($val, ExifTool $et)` |
 | `ChangeBase` | `static function ($dirStart, $dataPos)` |
 | `WrongBase` | `static function (ExifTool $self)` |
-| `FixOffsets` | `static function (&$valuePtr, $valEnd, $size, $tagID, $wFlag)` |
+| `FixOffsets` | `static function (&$valuePtr, &$valEnd, $size, $tagID, $wFlag)` |
 
 Callers always pass every positional argument of the signature (empty arrays / null when Perl had
-nothing), e.g. `$conv($val, $self, [], [], [], $tagInfo, $tag)`.
+nothing), as variables for by-reference parameters, e.g. `$conv($val, $self, $vals, $prt, $raw, $tagInfo, $tag)`.
+Any `\Throwable` thrown by a closure (NotPorted, TypeError, DivisionByZeroError...) is a failed Perl eval.
 
 The closure returns what the Perl expression evaluates to (make the implicit Perl result an explicit
 `return`). Closures must be self-contained: refer to module code as `\Image\ExifTool\Canon::Foo()`,

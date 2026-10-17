@@ -31,7 +31,7 @@ $f_90700a895d = static function ($val, $et) {
     $img = ExifTool::MakeTiffHeader($w, $h, 3, 8).substr($val, 2);
     return new ScalarRef($img);
 };
-$f_e9b7a7461b = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_e9b7a7461b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%d.%.2d', ...Perl::split(' ', $val));
 };
 $f_7ccbacc898 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {

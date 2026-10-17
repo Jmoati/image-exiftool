@@ -4,11 +4,14 @@
 
 namespace Image\ExifTool;
 
-$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
 $f_2f60fb9a16 = static function (mixed ...$args) { throw new NotPorted('ValueConv 2f60fb9a16'); };
-$f_227aa4ff88 = static function (mixed ...$args) { throw new NotPorted('PrintConv 227aa4ff88'); };
+$f_227aa4ff88 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = strtr(Perl::str($val), ' ', '.');
+    return $val;
+};
 $f_ea5de7648b = static function (mixed ...$args) { throw new NotPorted('ValueConv ea5de7648b'); };
 $f_995d4a21e2 = static function (mixed ...$args) { throw new NotPorted('Condition 995d4a21e2'); };
 

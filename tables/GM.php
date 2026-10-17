@@ -8,22 +8,22 @@ $f_d53f82205c = static function (mixed ...$args) { throw new NotPorted('PrintCon
 $f_6253547297 = static function (mixed ...$args) { throw new NotPorted('RawConv 6253547297'); };
 $f_161ac1b9d8 = static function (mixed ...$args) { throw new NotPorted('ValueConv 161ac1b9d8'); };
 $f_8dccec5c51 = static function (mixed ...$args) { throw new NotPorted('PrintConv 8dccec5c51'); };
-$f_5f55a3e4a5 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_5f55a3e4a5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1, 'N');
 };
-$f_5817105f7a = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_5817105f7a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1, 'E');
 };
 $f_b46f32aeb8 = static function (mixed ...$args) { throw new NotPorted('PrintConv b46f32aeb8'); };
 $f_7bdbdedf8f = static function (mixed ...$args) { throw new NotPorted('ValueConv 7bdbdedf8f'); };
-$f_22d6c61b16 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_22d6c61b16 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' s';
 };
-$f_870d813f22 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_870d813f22 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', '.');
 };
 $f_105b9b00de = static function (mixed ...$args) { throw new NotPorted('ValueConv 105b9b00de'); };
-$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
 $f_90bc75affe = static function (mixed ...$args) { throw new NotPorted('RawConv 90bc75affe'); };

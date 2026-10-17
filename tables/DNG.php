@@ -401,7 +401,7 @@ $f_ea8a924275 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_24585565de = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^[\x09\x0d\x0a\x20-\x7e]+\0*$/', $valPt);
 };
-$f_609fe59810 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_609fe59810 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strlen(Perl::str($val)) > 64 ? new ScalarRef($val) : $val;
 };
 $f_1a47d140b4 = static function (ExifTool $self, $valPt, $format, $count) {

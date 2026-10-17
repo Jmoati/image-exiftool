@@ -4,12 +4,12 @@
 
 namespace Image\ExifTool;
 
-$f_b2e41c1595 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_b2e41c1595 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertDuration($val);
 };
 $f_9e4705998a = static function (mixed ...$args) { throw new NotPorted('RawConv 9e4705998a'); };
 $f_0d775f45f3 = static function (mixed ...$args) { throw new NotPorted('ValueConv 0d775f45f3'); };
-$f_7b446e214d = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_7b446e214d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1000;
 };
 

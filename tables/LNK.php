@@ -6,7 +6,7 @@ namespace Image\ExifTool;
 
 $f_a0c64fe734 = static function (mixed ...$args) { throw new NotPorted('ValueConv a0c64fe734'); };
 $f_ed4506a7d9 = static function (mixed ...$args) { throw new NotPorted('RawConv ed4506a7d9'); };
-$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
 $f_20cca199c4 = static function (mixed ...$args) { throw new NotPorted('ValueConv 20cca199c4'); };

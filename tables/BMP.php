@@ -13,7 +13,7 @@ $f_bdc154a3b8 = static function (mixed ...$args) { throw new NotPorted('RawConv 
 $f_3fb35c39ef = static function (mixed ...$args) { throw new NotPorted('PrintConv 3fb35c39ef'); };
 $f_3512943993 = static function (mixed ...$args) { throw new NotPorted('Hook 3512943993'); };
 $f_91e3abe3f3 = static function (mixed ...$args) { throw new NotPorted('PrintConv 91e3abe3f3'); };
-$f_9e58826a8f = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_9e58826a8f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('0x%.8x', $val);
 };
 $f_629b3bb84c = static function (mixed ...$args) { throw new NotPorted('RawConv 629b3bb84c'); };

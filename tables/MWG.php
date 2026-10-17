@@ -7,7 +7,7 @@ namespace Image\ExifTool;
 $f_25780f1581 = static function (mixed ...$args) { throw new NotPorted('RawConv 25780f1581'); };
 $f_e4706d5423 = static function (mixed ...$args) { throw new NotPorted('RawConv e4706d5423'); };
 $f_9d2458d245 = static function (mixed ...$args) { throw new NotPorted('RawConv 9d2458d245'); };
-$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
 $f_000e9a42a6 = static function (mixed ...$args) { throw new NotPorted('RawConv 000e9a42a6'); };
@@ -16,7 +16,7 @@ $f_45f3c6f0c4 = static function (mixed ...$args) { throw new NotPorted('RawConv 
 $f_c86dfdb9c1 = static function (mixed ...$args) { throw new NotPorted('RawConv c86dfdb9c1'); };
 $f_2e720198bc = static function (mixed ...$args) { throw new NotPorted('RawConv 2e720198bc'); };
 $f_fd33864163 = static function (mixed ...$args) { throw new NotPorted('RawConv fd33864163'); };
-$f_6b105e8189 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_6b105e8189 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val;
 };
 

@@ -8,13 +8,13 @@ $f_663c32625f = static function (mixed ...$args) { throw new NotPorted('RawConv 
 $f_4fbc773655 = static function (mixed ...$args) { throw new NotPorted('Condition 4fbc773655'); };
 $f_d9ac8832a2 = static function (mixed ...$args) { throw new NotPorted('FormatCount d9ac8832a2'); };
 $f_838a2f25f3 = static function (mixed ...$args) { throw new NotPorted('Condition 838a2f25f3'); };
-$f_9413c3e59c = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_9413c3e59c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%x.%x.%x', ...Perl::unpack('nCC', $val));
 };
 $f_a22fc6ea1a = static function (array $val, $size, $varSize, ExifTool $self) {
     return $size - 8;
 };
-$f_15b2e52360 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_15b2e52360 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     preg_match_all('/.{4}/s', $val, $m);
     $a = $m[0];
     $a = array_values(array_filter($a, static fn ($_) => !preg_match('/\0/', $_)));
@@ -29,7 +29,7 @@ $f_13b68dafdf = static function (mixed ...$args) { throw new NotPorted('ValueCon
 $f_f0ef039bf7 = static function (mixed ...$args) { throw new NotPorted('Condition f0ef039bf7'); };
 $f_d0068e0c89 = static function (mixed ...$args) { throw new NotPorted('Condition d0068e0c89'); };
 $f_2ff855b7de = static function (mixed ...$args) { throw new NotPorted('Condition 2ff855b7de'); };
-$f_06c813ca7a = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_06c813ca7a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::unpack('H*', $val)[0];
 };
 $f_f51f62bd63 = static function (mixed ...$args) { throw new NotPorted('Condition f51f62bd63'); };

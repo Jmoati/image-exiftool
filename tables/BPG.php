@@ -4,7 +4,7 @@
 
 namespace Image\ExifTool;
 
-$f_c069b38d1f = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_c069b38d1f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) + 8;
 };
 

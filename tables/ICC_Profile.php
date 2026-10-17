@@ -4,21 +4,21 @@
 
 namespace Image\ExifTool;
 
-$f_7a509ddc2c = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_7a509ddc2c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $v = Perl::int($val);
     return ($v >> 8).'.'.(($v & 0xf0) >> 4).'.'.($v & 0x0f);
 };
-$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_ae0a2f8e4b = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ae0a2f8e4b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.4d:%.2d:%.2d %.2d:%.2d:%.2d', ...Perl::split(' ', $val));
 };
-$f_6ddac015e4 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_6ddac015e4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ((Perl::int($val) & 0x01) ? 'Embedded, ' : 'Not Embedded, ').
         ((Perl::int($val) & 0x02) ? 'Not Independent' : 'Independent');
 };
-$f_7f99a580ac = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_7f99a580ac = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $v = Perl::split(' ', $val);
     $v1 = Perl::int($v[1] ?? null);
     return (($v1 & 0x01) ? 'Transparency, ' : 'Reflective, ').
@@ -26,7 +26,7 @@ $f_7f99a580ac = static function ($val, ExifTool $self, array $vals, array $prt, 
         (($v1 & 0x04) ? 'Negative, ' : 'Positive, ').
         (($v1 & 0x08) ? 'B&W' : 'Color');
 };
-$f_1c7f24a80a = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_1c7f24a80a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ICC_Profile::HexID($val);
 };
 $f_dce70b49e6 = static function ($val = null, $dirData = null, $subdirStart = null, $size = null, $type = null) {
@@ -35,7 +35,7 @@ $f_dce70b49e6 = static function ($val = null, $dirData = null, $subdirStart = nu
 $f_3ef60fa52e = static function ($val = null, $dirData = null, $subdirStart = null, $size = null, $type = null) {
     return Perl::str($type) === 'clrt';
 };
-$f_5b9508f551 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_5b9508f551 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/\0.*/', '', Perl::str($val), 1);
 };
 $f_134ca9e133 = static function ($val = null, $dirData = null, $subdirStart = null, $size = null, $type = null) {
@@ -44,14 +44,14 @@ $f_134ca9e133 = static function ($val = null, $dirData = null, $subdirStart = nu
 $f_2baa379938 = static function ($val = null, $dirData = null, $subdirStart = null, $size = null, $type = null) {
     return Perl::str($type) === 'dict';
 };
-$f_f344c7d150 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_f344c7d150 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $val = preg_replace('/\0.*/', '', Perl::str($val), 1);
     return \strlen($val) > 128 ? new ScalarRef($val) : $val;
 };
 $f_8a19872dcf = static function ($val = null, $dirData = null, $subdirStart = null, $size = null, $type = null) {
     return Perl::str($type) === 'view';
 };
-$f_15c2e15e04 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_15c2e15e04 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str(Perl::num($val) * 100).'%';
 };
 

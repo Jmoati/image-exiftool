@@ -22,10 +22,10 @@ $f_ec7fb927a0 = static function (array $val, $size, $varSize, ExifTool $self) {
 $f_79f2c2179d = static function (array $val, $size, $varSize, ExifTool $self) {
     return 32;
 };
-$f_ea51c8e58d = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ea51c8e58d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::ExifDate($val);
 };
-$f_746dd5d294 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_746dd5d294 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::ExifTime($val);
 };
 $f_9293a7ef3c = static function (array $val, $size, $varSize, ExifTool $self) {
@@ -34,10 +34,10 @@ $f_9293a7ef3c = static function (array $val, $size, $varSize, ExifTool $self) {
 $f_a3c7e9a9ea = static function (array $val, $size, $varSize, ExifTool $self) {
     return 10;
 };
-$f_13319458b5 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_13319458b5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->Options('DateFormat') ? $self->ConvertDateTime(Perl::str($val).' 00:00:00') : $val;
 };
-$f_d2616b07a4 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_d2616b07a4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->Options('DateFormat') ? $self->ConvertDateTime('1970:01:01 '.Perl::str($val)) : $val;
 };
 $f_b63e312c51 = static function (array $val, $size, $varSize, ExifTool $self) {
@@ -52,28 +52,28 @@ $f_5b9816eabb = static function (array $val, $size, $varSize, ExifTool $self) {
 $f_aae3c34833 = static function (array $val, $size, $varSize, ExifTool $self) {
     return 256000;
 };
-$f_f62d9dd77e = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_f62d9dd77e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/\s*(\d+):\s*(\d+):\s*(\d+):\s*(\S*)/', 'Tagged:$1, ColorClass:$2, Rating:$3, FrameNum:$4', Perl::str($val), 1);
 };
 $f_53d8b2a59b = static function (array $val, $size, $varSize, ExifTool $self) {
     return 1024;
 };
-$f_a207a71d87 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_a207a71d87 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/\0+/', "\n", Perl::str($val));
 };
 $f_a439e850cc = static function (array $val, $size, $varSize, ExifTool $self) {
     return 4096;
 };
-$f_ae2db35ce3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_fc992187ee = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_fc992187ee = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($vals[0]).' '.Perl::str($vals[1]);
 };
 $f_9c8780888e = static function (array $val, $size, $varSize, ExifTool $self) {
     return 80;
 };
-$f_78a5a99c34 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_78a5a99c34 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return IPTC::ConvertPictureNumber($val);
 };
 

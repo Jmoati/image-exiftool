@@ -1662,8 +1662,11 @@ final class ExifTool
     /** lexical %weakMagic */
     public static $weakMagic = ['MP3' => 1];
 
+    /** lexical %writeTypes */
+    public static $writeTypes = [];
+
     /** lexical @writeTypes */
-    public static $writeTypes = [
+    public static $writeTypes_2 = [
         'JPEG',
         'TIFF',
         'GIF',
@@ -1695,9 +1698,6 @@ final class ExifTool
         'FLIF',
         'RIFF',
     ];
-
-    /** lexical %writeTypes */
-    public static $writeTypes_2 = [];
 
     /** package $xmpAPP1hdr */
     public static $xmpAPP1hdr = "http://ns.adobe.com/xap/1.0/\x00";

@@ -8,7 +8,7 @@ $f_2bbb9d7031 = static function (mixed ...$args) { throw new NotPorted('ValueCon
 $f_8943e0e81d = static function (mixed ...$args) { throw new NotPorted('RawConv 8943e0e81d'); };
 $f_3ce3a4fd7e = static function (mixed ...$args) { throw new NotPorted('PrintConv 3ce3a4fd7e'); };
 $f_944258fc60 = static function (mixed ...$args) { throw new NotPorted('RawConv 944258fc60'); };
-$f_354c879439 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_354c879439 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertBitrate($val);
 };
 $f_3ab71eb818 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
