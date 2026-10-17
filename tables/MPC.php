@@ -4,7 +4,9 @@
 
 namespace Image\ExifTool;
 
-$f_84d1419d8f = static function (mixed ...$args) { throw new NotPorted('PrintConv 84d1419d8f'); };
+$f_84d1419d8f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return preg_replace('/(\d)(\d)(\d)$/', '$1.$2.$3', Perl::str($val), 1);
+};
 
 return [
     'load' => [

@@ -4,20 +4,49 @@
 
 namespace Image\ExifTool;
 
-$f_e81fcb4818 = static function (mixed ...$args) { throw new NotPorted('code:OTHER e81fcb4818'); };
-$f_5a26fb72a0 = static function (mixed ...$args) { throw new NotPorted('PrintConv 5a26fb72a0'); };
-$f_b961744366 = static function (mixed ...$args) { throw new NotPorted('ValueConv b961744366'); };
-$f_666acd7833 = static function (mixed ...$args) { throw new NotPorted('ValueConv 666acd7833'); };
-$f_23a80e4b27 = static function (mixed ...$args) { throw new NotPorted('ValueConv 23a80e4b27'); };
-$f_97f8c2b2bf = static function (mixed ...$args) { throw new NotPorted('PrintConv 97f8c2b2bf'); };
-$f_57465997a1 = static function (mixed ...$args) { throw new NotPorted('ValueConv 57465997a1'); };
-$f_97379c267a = static function (mixed ...$args) { throw new NotPorted('PrintConv 97379c267a'); };
-$f_8d04bbb28e = static function (mixed ...$args) { throw new NotPorted('code:OTHER 8d04bbb28e'); };
-$f_99ff857c52 = static function (mixed ...$args) { throw new NotPorted('ValueConv 99ff857c52'); };
+$f_e81fcb4818 = static function ($val, $inv, $conv) {
+    return Perl::sprintf('%.1f', 2.0 ** ((Perl::int($val) & 63) / 8));
+};
+$f_5a26fb72a0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) == 42 ? 'Out of range' : Perl::str($val) . ' dB';
+};
+$f_b961744366 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return (Perl::num($val) - 1) * 3;
+};
+$f_666acd7833 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) == 15 ? null : $val;
+};
+$f_23a80e4b27 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) == 7 ? null : $val;
+};
+$f_97f8c2b2bf = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $foc = (Perl::int($val) & 0x7e) / ((Perl::int($val) & 0x01) ? 40 : 400);
+    return ((Perl::int($val) & 0x80) ? 'Manual' : 'Auto') . ' (' . Perl::str($foc) . ')';
+};
+$f_57465997a1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) == 0xff ? null : $val;
+};
+$f_97379c267a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('0x%.2x', $val);
+};
+$f_8d04bbb28e = static function ($val, $inv, $conv) {
+    return Perl::sprintf('%s (0x%.2x)', (Perl::int($val) & 16) ? 'On' : 'Off', $val);
+};
+$f_99ff857c52 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.2x:%.2x:%.2x:%.2x', ...array_reverse(Perl::unpack('C*', $val)));
+};
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_709b4ccced = static function (mixed ...$args) { throw new NotPorted('ValueConv 709b4ccced'); };
+$f_709b4ccced = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $a = Perl::unpack('C*', $val);
+    $tz = Perl::int(array_shift($a));
+    return Perl::sprintf('%.2x%.2x:%.2x:%.2x %.2x:%.2x:%.2x%s%.2d:%s%s', ...$a, ...[
+        ($tz & 0x20) ? '-' : '+', ($tz >> 1) & 0x0f,
+        ($tz & 0x01) ? '30' : '00',
+        ($tz & 0x40) ? ' DST' : '',
+    ]);
+};
 $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintExposureTime($val);
 };
@@ -48,7 +77,9 @@ $f_017f96b76a = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_d721e23504 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDegrees($val);
 };
-$f_6e093008fd = static function (mixed ...$args) { throw new NotPorted('ValueConv 6e093008fd'); };
+$f_6e093008fd = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ? 1 : 0;
+};
 $f_1f57b9342a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::PrintTimeStamp($val);
 };
@@ -58,14 +89,25 @@ $f_20f3ea07a3 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_ea51c8e58d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::ExifDate($val);
 };
-$f_fa7de83af0 = static function (mixed ...$args) { throw new NotPorted('Condition fa7de83af0'); };
-$f_791c895b24 = static function (mixed ...$args) { throw new NotPorted('Condition 791c895b24'); };
-$f_f78bd76651 = static function (mixed ...$args) { throw new NotPorted('RawConv f78bd76651'); };
-$f_cfcf7a99aa = static function (mixed ...$args) { throw new NotPorted('RawConv cfcf7a99aa'); };
+$f_fa7de83af0 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->Make) === 'Canon';
+};
+$f_791c895b24 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->Make) === 'Sony';
+};
+$f_f78bd76651 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Perl::str($val) === '' ? null : $val;
+};
+$f_cfcf7a99aa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $self->Make = (Vars\H264::$convMake[Perl::str($val)] ?? null) ?: 'Unknown';
+    return $val;
+};
 $f_1975d44dc4 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Perl::num($val) == 0x7fff ? null : $val;
 };
-$f_d8f508b47f = static function (mixed ...$args) { throw new NotPorted('ValueConv d8f508b47f'); };
+$f_d8f508b47f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 28125;
+};
 
 return [
     'load' => [

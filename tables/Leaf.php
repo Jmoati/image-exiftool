@@ -4,7 +4,9 @@
 
 namespace Image\ExifTool;
 
-$f_13aa3b925b = static function (mixed ...$args) { throw new NotPorted('PrintConv 13aa3b925b'); };
+$f_13aa3b925b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return preg_replace('/ .*/s', '', Perl::str($val), 1);
+};
 $f_0ba968218d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->ValidateImage((is_object($val) || is_array($val)) ? $val : new ScalarRef($val), $tag);
 };

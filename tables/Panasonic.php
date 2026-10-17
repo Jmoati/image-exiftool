@@ -28,7 +28,12 @@ $f_d1af7138dd = static function ($val, $flag, $conv) {
 $f_937d045758 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($vals[0] ?? null) . ' ' . Perl::str($vals[1] ?? null) . ' ' . Perl::str($vals[2] ?? null);
 };
-$f_aa6671e067 = static function (mixed ...$args) { throw new NotPorted('code:OTHER aa6671e067'); };
+$f_aa6671e067 = static function ($val, $inv, $conv) {
+    if ($inv) return null;
+    $val = preg_replace('/ .*/', '', Perl::str($val), 1, $n);
+    if (!$n) return null;
+    return $conv[$val] ?? null;
+};
 $f_d534348227 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ((Perl::int($val) >> 2) & 0xffff) . ' ' . (Perl::int($val) & 0x3);
 };

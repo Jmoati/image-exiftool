@@ -439,7 +439,18 @@ $f_7ab95ed6ea = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_644e8c7e89 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 2 ** ((Perl::num($val) - 1) / 32);
 };
-$f_e5a20fbbeb = static function (mixed ...$args) { throw new NotPorted('code:OTHER e5a20fbbeb'); };
+$f_e5a20fbbeb = static function ($val, $inv, $conv) {
+    if ($inv) return null;
+    $orig = $val;
+    $val = preg_replace('/^4 /', '7 ', Perl::str($val), 1, $n);
+    if ($n && ($conv[$val] ?? null)) return $conv[$val] . ' (' . Perl::str($orig) . ')';
+    $val = preg_replace('/^7 /', '8 ', $val, 1, $n);
+    if ($n && ($conv[$val] ?? null)) return $conv[$val] . ' ? (' . Perl::str($orig) . ')';
+    $val = preg_replace('/^11 /', '13 ', $val, 1, $n);
+    if (!$n) $val = preg_replace('/^13 /', '11 ', $val, 1, $n);
+    if ($n && ($conv[$val] ?? null)) return $conv[$val] . ' ? (' . Perl::str($orig) . ')';
+    return null;
+};
 $f_014cde05dd = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $v = Perl::split(' ', $val);
     $v[0] = Perl::int($v[0] ?? null) & 0x0f;

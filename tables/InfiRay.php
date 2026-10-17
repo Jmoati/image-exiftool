@@ -4,8 +4,12 @@
 
 namespace Image\ExifTool;
 
-$f_d9c0c2c453 = static function (mixed ...$args) { throw new NotPorted('PrintConv d9c0c2c453'); };
-$f_42cc0367e2 = static function (mixed ...$args) { throw new NotPorted('PrintConv 42cc0367e2'); };
+$f_d9c0c2c453 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.1f %%', Perl::num($val) * 100);
+};
+$f_42cc0367e2 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.2f C', $val);
+};
 $f_684ecca7f6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.2f m', $val);
 };

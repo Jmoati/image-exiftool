@@ -4,7 +4,14 @@
 
 namespace Image\ExifTool;
 
-$f_b02e7333a4 = static function (mixed ...$args) { throw new NotPorted('code:OTHER b02e7333a4'); };
+$f_b02e7333a4 = static function ($val, $inv, $conv) {
+    if ($inv) {
+        // (when the match fails, Perl returns the $1 of an earlier match: null here)
+        preg_match('/([-+]?\d+)/', Perl::str($val), $m);
+        return $m[1] ?? null;
+    }
+    return Perl::num($val) < 0 ? 'Front Focus (' . Perl::str($val) . ')' : 'Back Focus (+' . Perl::str($val) . ')';
+};
 $f_289c9037c6 = static function (mixed ...$args) { throw new NotPorted('PrintConv 289c9037c6'); };
 $f_b9974209cd = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::int(Perl::num($val) + 0.5);
@@ -80,7 +87,25 @@ $f_0ba968218d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_a7559f737e = static function (mixed ...$args) { throw new NotPorted('Condition a7559f737e'); };
 $f_a03f2287f9 = static function (mixed ...$args) { throw new NotPorted('Condition a03f2287f9'); };
 $f_1636566ae9 = static function (mixed ...$args) { throw new NotPorted('Condition 1636566ae9'); };
-$f_f77455784a = static function (mixed ...$args) { throw new NotPorted('code:OTHER f77455784a'); };
+$f_f77455784a = static function ($val, $inv, $conv) {
+    if ($inv) return null;
+    $id = Perl::int($val) & 65280;
+    $mb = Vars\Minolta::$metabonesID[$id] ?? null;
+    if ($mb) {
+        if (!\is_string($mb)) {
+            $id = $mb;
+            $mb = Vars\Minolta::$metabonesID[$id] ?? null;
+        }
+        ExifTool::RequireModule('Image::ExifTool::Canon');
+        $lens = Vars\Canon::$canonLensTypes[Perl::str(Perl::num($val) - $id)] ?? null;
+        if ($lens) return $lens . ' + ' . Perl::str($mb);
+    } elseif (Perl::num($val) >= 18688) {
+        ExifTool::RequireModule('Image::ExifTool::Sigma');
+        $lens = Vars\Sigma::$sigmaLensTypes[Perl::str(Perl::num($val) - 18688)] ?? null;
+        if ($lens) return $lens . ' + MC-11 SA-E';
+    }
+    return null;
+};
 $f_d11596abe8 = static function (mixed ...$args) { throw new NotPorted('Condition d11596abe8'); };
 $f_fafc4e62b1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return (Perl::num($val) - 106) / 8;

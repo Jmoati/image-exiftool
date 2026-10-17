@@ -16,7 +16,10 @@ $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_2b8497e657 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1e6;
 };
-$f_bf6d7ed630 = static function (mixed ...$args) { throw new NotPorted('RawConv bf6d7ed630'); };
+$f_bf6d7ed630 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $val = preg_replace('/^SERIAL NUMBER:/', '', Perl::str($val), 1, $n);
+    return $n ? $val : null;
+};
 
 return [
     'load' => [

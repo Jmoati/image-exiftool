@@ -10,10 +10,57 @@ $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_b2e41c1595 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertDuration($val);
 };
-$f_641c610afa = static function (mixed ...$args) { throw new NotPorted('PrintConv 641c610afa'); };
-$f_8b11072305 = static function (mixed ...$args) { throw new NotPorted('ValueConv 8b11072305'); };
-$f_986bcca18f = static function (mixed ...$args) { throw new NotPorted('RawConv 986bcca18f'); };
-$f_962d85de43 = static function (mixed ...$args) { throw new NotPorted('PrintConv 962d85de43'); };
+$f_641c610afa = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = Perl::str($val);
+    if (!preg_match("/^('.*?') ('.*?') /s", $val, $m)) return $val;
+    $val = substr($val, \strlen($m[0]));
+    [$type, $creator] = [$m[1], $m[2]];
+    [$flags, $y, $x, $exFlags, $putAway] = array_pad(Perl::split(' ', $val), 5, null);
+    $label = (Perl::int($flags) >> 1) & 0x07;
+    $flags = ExifTool::DecodeBits(((Perl::int($exFlags) << 16) | Perl::int($flags)) & 0xfff1, [
+        0 => 'OnDesk',
+        6 => 'Shared',
+        7 => 'HasNoInits',
+        8 => 'Inited',
+        10 => 'CustomIcon',
+        11 => 'Stationery',
+        12 => 'NameLocked',
+        13 => 'HasBundle',
+        14 => 'Invisible',
+        15 => 'Alias',
+        // extended flags
+        22 => 'HasRoutingInfo',
+        23 => 'ObjectBusy',
+        24 => 'CustomBadge',
+        31 => 'ExtendedFlagsValid',
+    ]);
+    $str = "Type=$type Creator=$creator Flags=" . Perl::str($flags) . " Label=$label Pos=(" . Perl::str($x) . ',' . Perl::str($y) . ')';
+    if ($putAway) $str .= ' Putaway=' . Perl::str($putAway);
+    return $str;
+};
+$f_8b11072305 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if (!$val instanceof ScalarRef) {
+        throw new \RuntimeException(null === $val ? 'Can\'t use an undefined value as a SCALAR reference' : 'Can\'t use string ("' . substr(Perl::str($val), 0, 32) . '"' . (\strlen(Perl::str($val)) > 32 ? '...' : '') . ') as a SCALAR ref while "strict refs" in use');
+    }
+    $a = Perl::unpack('a4a4n3x10nx2N', $val->value);
+    foreach ([0, 1] as $i) {
+        $a[$i] = "'" . str_replace("\0", '', Perl::str($a[$i] ?? null)) . "'";
+    }
+    return implode(' ', $a);
+};
+$f_986bcca18f = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (!$val instanceof ScalarRef) {
+        throw new \RuntimeException(null === $val ? 'Can\'t use an undefined value as a SCALAR reference' : 'Can\'t use string ("' . substr(Perl::str($val), 0, 32) . '"' . (\strlen(Perl::str($val)) > 32 ? '...' : '') . ') as a SCALAR ref while "strict refs" in use');
+    }
+    return ExifTool::ConvertUnixTime(Perl::unpack('V', $val->value)[0] ?? null);
+};
+$f_962d85de43 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $a = Perl::split('/;/', $val);
+    $a[0] = 'Flags=' . Perl::str($a[0] ?? null);
+    $a[1] = 'set at ' . ExifTool::ConvertUnixTime(Perl::hex($a[1] ?? null));
+    $a[2] = 'by ' . Perl::str($a[2] ?? null);
+    return implode(' ', $a);
+};
 
 return [
     'load' => [

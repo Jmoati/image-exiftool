@@ -51,14 +51,24 @@ $f_732e29c6b9 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_870d813f22 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', '.');
 };
-$f_6fef8e6758 = static function (mixed ...$args) { throw new NotPorted('code:OTHER 6fef8e6758'); };
+$f_6fef8e6758 = static function ($val, $inv, $conv) {
+    if (!$inv) return null;
+    if (preg_match('/(^|[^A-Z])([NS])(orth|outh)?\b/i', Perl::str($val), $m)) return strtoupper($m[2]);
+    if (preg_match('/([-+]?)\d+/', Perl::str($val), $m)) return $m[1] === '-' ? 'S' : 'N';
+    return null;
+};
 $f_017f96b76a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1);
 };
 $f_d721e23504 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDegrees($val);
 };
-$f_50c8d94b43 = static function (mixed ...$args) { throw new NotPorted('code:OTHER 50c8d94b43'); };
+$f_50c8d94b43 = static function ($val, $inv, $conv) {
+    if (!$inv) return null;
+    if (preg_match('/(^|[^A-Z])([EW])(ast|est)?\b/i', Perl::str($val), $m)) return strtoupper($m[2]);
+    if (preg_match('/([-+]?)\d+/', Perl::str($val), $m)) return $m[1] === '-' ? 'W' : 'E';
+    return null;
+};
 $f_eae5f4d018 = static function ($val, $inv, $conv) {
     if (!($inv && preg_match('/^([-+0-9])/', Perl::str($val), $m))) {
         return null;

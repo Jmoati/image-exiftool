@@ -10,8 +10,13 @@ $f_8cb58be616 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_9b0a3c2419 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('0x%.8x', $val);
 };
-$f_d9f7eadef3 = static function (mixed ...$args) { throw new NotPorted('ValueConv d9f7eadef3'); };
-$f_786692d581 = static function (mixed ...$args) { throw new NotPorted('ValueConv 786692d581'); };
+$f_d9f7eadef3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(' ', Perl::unpack('n*', $val));
+};
+$f_786692d581 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    preg_match_all('/..../', Perl::str($val), $m);
+    return implode(' ', $m[0]);
+};
 $f_6ec7688590 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $val = preg_replace('/\0.*/s', '', Perl::str($val), 1);
     return $val;

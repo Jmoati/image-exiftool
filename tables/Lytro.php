@@ -23,11 +23,15 @@ $f_a26a3a2fee = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_a928b39f8a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f C', $val);
 };
-$f_ceb1940464 = static function (mixed ...$args) { throw new NotPorted('ValueConv ceb1940464'); };
+$f_ceb1940464 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return 25.4 / Perl::num($val) / 1000;
+};
 $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintExposureTime($val);
 };
-$f_04896603bd = static function (mixed ...$args) { throw new NotPorted('PrintConv 04896603bd'); };
+$f_04896603bd = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%+.1f', $val);
+};
 
 return [
     'load' => [

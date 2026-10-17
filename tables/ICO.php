@@ -4,9 +4,15 @@
 
 namespace Image\ExifTool;
 
-$f_feb5f2db69 = static function (mixed ...$args) { throw new NotPorted('ValueConv feb5f2db69'); };
-$f_8b48d9b74e = static function (mixed ...$args) { throw new NotPorted('Condition 8b48d9b74e'); };
-$f_2ed14b29d9 = static function (mixed ...$args) { throw new NotPorted('RawConv 2ed14b29d9'); };
+$f_feb5f2db69 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ?: Perl::num($val) + 256;
+};
+$f_8b48d9b74e = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->FileType) === 'ICO';
+};
+$f_2ed14b29d9 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->ImageCount = $val;
+};
 
 return [
     'load' => [

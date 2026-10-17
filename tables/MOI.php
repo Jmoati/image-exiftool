@@ -7,18 +7,41 @@ namespace Image\ExifTool;
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_c51aacf802 = static function (mixed ...$args) { throw new NotPorted('code:conv c51aacf802'); };
+$f_c51aacf802 = static function ($val) {
+    if (!(\strlen(Perl::str($val)) >= 8)) return null;
+    $v = Perl::unpack('nCCCCn', $val);
+    $v[5] /= 1000;
+    return Perl::sprintf('%.4d:%.2d:%.2d %.2d:%.2d:%06.3f', ...$v);
+};
 $f_b2e41c1595 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertDuration($val);
 };
 $f_7b446e214d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1000;
 };
-$f_25eae02c5c = static function (mixed ...$args) { throw new NotPorted('PrintConv 25eae02c5c'); };
+$f_25eae02c5c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $lo = Perl::int($val) & 0x0f;
+    $hi = (Perl::int($val) >> 4) & 0x0FFFFFFFFFFFFFFF;
+    if ($lo < 2) {
+        $aspect = '4:3';
+    } elseif ($lo == 4 || $lo == 5) {
+        $aspect = '16:9';
+    } else {
+        $aspect = 'Unknown';
+    }
+    if ($hi == 4) {
+        $aspect .= ' NTSC';
+    } elseif ($hi == 5) {
+        $aspect .= ' PAL';
+    }
+    return $aspect;
+};
 $f_354c879439 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertBitrate($val);
 };
-$f_67af300c1a = static function (mixed ...$args) { throw new NotPorted('ValueConv 67af300c1a'); };
+$f_67af300c1a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) * 16000 + 48000;
+};
 
 return [
     'load' => [

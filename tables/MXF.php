@@ -4,21 +4,39 @@
 
 namespace Image\ExifTool;
 
-$f_2d163fdb11 = static function (mixed ...$args) { throw new NotPorted('ValueConv 2d163fdb11'); };
-$f_18d8a6354f = static function (mixed ...$args) { throw new NotPorted('RawConv 18d8a6354f'); };
-$f_13dc02e074 = static function (mixed ...$args) { throw new NotPorted('RawConv 13dc02e074'); };
+$f_2d163fdb11 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return strtr(Perl::str($val), ' ', '.');
+};
+$f_18d8a6354f = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $self->MXFInfo['FooterPos'] = $val;
+    return null;
+};
+$f_13dc02e074 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $self->MXFInfo['HeaderType'] = $self->DIR_NAME;
+    $self->MXFInfo['HeaderSize'] = $val;
+    return null; // I don't think anyone would care about this
+};
 $f_b2e41c1595 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertDuration($val);
 };
-$f_38ccb958fe = static function (mixed ...$args) { throw new NotPorted('RawConv 38ccb958fe'); };
-$f_9afb299c9b = static function (mixed ...$args) { throw new NotPorted('PrintConv 9afb299c9b'); };
+$f_38ccb958fe = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Perl::num($val) > 1e18 ? null : $val;
+};
+$f_9afb299c9b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    throw new \RuntimeException('Search pattern not terminated at (eval 1) line 1.');
+};
 $f_5f55a3e4a5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1, 'N');
 };
 $f_5817105f7a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1, 'E');
 };
-$f_2dff47ce96 = static function (mixed ...$args) { throw new NotPorted('PrintConv 2dff47ce96'); };
+$f_2dff47ce96 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    [$lat, $lon] = array_pad(Perl::split(' ', $val), 2, null);
+    $lat = GPS::ToDMS($self, $lat, 1, 'N');
+    $lon = GPS::ToDMS($self, $lon, 1, 'E');
+    return Perl::str($lat) . ', ' . Perl::str($lon);
+};
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
@@ -28,8 +46,12 @@ $f_354c879439 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_8f0e71a82a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f mm', $val);
 };
-$f_7c487dd968 = static function (mixed ...$args) { throw new NotPorted('ValueConv 7c487dd968'); };
-$f_54c280533b = static function (mixed ...$args) { throw new NotPorted('RawConv 54c280533b'); };
+$f_7c487dd968 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 10;
+};
+$f_54c280533b = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return \strlen(Perl::str($val)) > 8 ? implode(' ', Perl::unpack('x8C*', $val)) : null;
+};
 
 $d_1 = [2 => 'Location'];
 $d_2 = [2 => 'Location'];

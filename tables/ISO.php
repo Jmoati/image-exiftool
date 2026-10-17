@@ -7,13 +7,32 @@ namespace Image\ExifTool;
 $f_fe5b177481 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/ +$/', '', Perl::str($val), 1);
 };
-$f_2640ac8baf = static function (mixed ...$args) { throw new NotPorted('code:conv 2640ac8baf'); };
-$f_7e5e331064 = static function (mixed ...$args) { throw new NotPorted('ValueConv 7e5e331064'); };
+$f_2640ac8baf = static function ($val) {
+    $val = preg_replace('/ +$/', '', Perl::str($val), 1);
+    return \strlen($val) ? $val : null;
+};
+$f_7e5e331064 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($vals[0] ?? null) * Perl::num($vals[1] ?? null);
+};
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_8b69d6a61b = static function (mixed ...$args) { throw new NotPorted('ValueConv 8b69d6a61b'); };
-$f_20da16fccd = static function (mixed ...$args) { throw new NotPorted('ValueConv 20da16fccd'); };
+$f_8b69d6a61b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $a = array_pad(Perl::unpack('C6c', $val), 6, null);
+    $a[0] = Perl::num($a[0]) + 1900;
+    $a[6] = ExifTool::TimeZoneString(Perl::num($a[6] ?? null) * 15);
+    return Perl::sprintf('%.4d:%.2d:%.2d %.2d:%.2d:%.2d%s', ...$a);
+};
+$f_20da16fccd = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if (!preg_match('/[^0\0 ]/', Perl::str($val))) return null; // ignore if empty
+    $tz = null;
+    $val = preg_replace_callback('/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(.)/s', static function ($m) use (&$tz) {
+        $tz = $m[8];
+        return "$m[1]:$m[2]:$m[3] $m[4]:$m[5]:$m[6].$m[7]";
+    }, Perl::str($val), 1, $n);
+    if ($n) $val .= ExifTool::TimeZoneString(Perl::unpack('c', $tz)[0] * 15);
+    return $val;
+};
 
 $d_1 = [2 => 'Time'];
 

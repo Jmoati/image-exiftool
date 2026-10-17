@@ -5,7 +5,9 @@
 namespace Image\ExifTool;
 
 $f_d5ded72b61 = static function (mixed ...$args) { throw new NotPorted('RawConv d5ded72b61'); };
-$f_2d163fdb11 = static function (mixed ...$args) { throw new NotPorted('ValueConv 2d163fdb11'); };
+$f_2d163fdb11 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return strtr(Perl::str($val), ' ', '.');
+};
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };

@@ -4,7 +4,25 @@
 
 namespace Image\ExifTool;
 
-$f_a40b497124 = static function (mixed ...$args) { throw new NotPorted('ValueConv a40b497124'); };
+$f_a40b497124 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $unixTimeZero = 134774 * 24 * 3600;
+    $valList = Perl::split(' ', $val);
+    foreach ($valList as &$_) {
+        if (preg_match('/[^0-9a-f]/i', $_)) {
+            $_ = '0000:00:00 00:00:00';
+        } elseif (\strlen($_) > 8) {
+            $lo = Perl::hex(substr($_, -8));
+            $hi = Perl::hex(substr($_, 0, -8));
+            $_ = 1e-7 * ($hi * 4294967296 + $lo);
+        } else {
+            $_ = 1e-7 * Perl::hex($_);
+        }
+        // shift from Jan 1, 1601 to Jan 1, 1970
+        $_ = ExifTool::ConvertUnixTime(Perl::num($_) - $unixTimeZero);
+    }
+    unset($_);
+    return $valList;
+};
 
 return [
     'load' => [

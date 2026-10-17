@@ -10,7 +10,14 @@ $f_b0d8c37186 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_deccff2e7a = static function (ExifTool $self, $valPt, $format, $count) {
     return !preg_match('/^ILCA-/', Perl::str($self->Model));
 };
-$f_b02e7333a4 = static function (mixed ...$args) { throw new NotPorted('code:OTHER b02e7333a4'); };
+$f_b02e7333a4 = static function ($val, $inv, $conv) {
+    if ($inv) {
+        // (when the match fails, Perl returns the $1 of an earlier match: null here)
+        preg_match('/([-+]?\d+)/', Perl::str($val), $m);
+        return $m[1] ?? null;
+    }
+    return Perl::num($val) < 0 ? 'Front Focus (' . Perl::str($val) . ')' : 'Back Focus (+' . Perl::str($val) . ')';
+};
 $f_191cae0bcf = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^ILCA-/', Perl::str($self->Model));
 };
@@ -600,7 +607,25 @@ $f_8d3dac56f3 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_f989a2eb75 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? (Perl::num($val) == 0xffffffff ? 'n/a' : $val) : 'Auto';
 };
-$f_f77455784a = static function (mixed ...$args) { throw new NotPorted('code:OTHER f77455784a'); };
+$f_f77455784a = static function ($val, $inv, $conv) {
+    if ($inv) return null;
+    $id = Perl::int($val) & 65280;
+    $mb = Vars\Minolta::$metabonesID[$id] ?? null;
+    if ($mb) {
+        if (!\is_string($mb)) {
+            $id = $mb;
+            $mb = Vars\Minolta::$metabonesID[$id] ?? null;
+        }
+        ExifTool::RequireModule('Image::ExifTool::Canon');
+        $lens = Vars\Canon::$canonLensTypes[Perl::str(Perl::num($val) - $id)] ?? null;
+        if ($lens) return $lens . ' + ' . Perl::str($mb);
+    } elseif (Perl::num($val) >= 18688) {
+        ExifTool::RequireModule('Image::ExifTool::Sigma');
+        $lens = Vars\Sigma::$sigmaLensTypes[Perl::str(Perl::num($val) - 18688)] ?? null;
+        if ($lens) return $lens . ' + MC-11 SA-E';
+    }
+    return null;
+};
 $f_00c8dbeae0 = static function (ExifTool $self, $valPt, $format, $count) {
     return $valPt !== "\0\0\0\0";
 };

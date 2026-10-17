@@ -78,6 +78,7 @@ $cases = [
     ['join("|", unpack("C0U*", "\xc3\xa9t\xe2\x82\xac"))', fn () => implode('|', Perl::unpack('C0U*', "\xc3\xa9t\xe2\x82\xac"))],
     ['unpack("H*", pack("C0U*", 233, 0x20ac, 65))', fn () => bin2hex(Perl::pack('C0U*', 233, 0x20AC, 65))],
     ['unpack("H*", pack("nNvVCa3A3Z3H4", 258, 16909060, 258, 16909060, 65, "ab", "cd", "efgh", "beef"))', fn () => bin2hex(Perl::pack('nNvVCa3A3Z3H4', 258, 16909060, 258, 16909060, 65, 'ab', 'cd', 'efgh', 'beef'))],
+    ['join("|", map { unpack("H*", pack($$_[0], $$_[1])) } ["H*","zz12g."],["h*","zz12g."],["H4","a"],["H3","abcd"],["h3","abcd"],["H*","1"],["H2","A"])', fn () => implode('|', array_map(fn ($t) => bin2hex(Perl::pack($t[0], $t[1])), [['H*', 'zz12g.'], ['h*', 'zz12g.'], ['H4', 'a'], ['H3', 'abcd'], ['h3', 'abcd'], ['H*', '1'], ['H2', 'A']]))],
     ['do { my $s = "hello world"; (my $n = $s) =~ tr/a-y/b-z/; $n }', fn () => Perl::tr('hello world', 'a-y', 'b-z')[0]],
     ['do { my $s = "a.b.c"; my $c = ($s =~ tr/.//); $c }', fn () => Perl::tr('a.b.c', '.')[1]],
     ['do { my $s = "aabbcc"; $s =~ tr/a-z//s; $s }', fn () => Perl::tr('aabbcc', 'a-z', '', 's')[0]],

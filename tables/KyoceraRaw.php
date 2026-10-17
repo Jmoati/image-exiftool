@@ -10,11 +10,15 @@ $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintExposureTime($val);
 };
-$f_ff1a9e6cc4 = static function (mixed ...$args) { throw new NotPorted('ValueConv ff1a9e6cc4'); };
+$f_ff1a9e6cc4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return 2.0 ** (Perl::num($val) / 8) / 16000;
+};
 $f_6e8113b609 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.2g', $val);
 };
-$f_cd8ee40766 = static function (mixed ...$args) { throw new NotPorted('ValueConv cd8ee40766'); };
+$f_cd8ee40766 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return 2.0 ** (Perl::num($val) / 16);
+};
 $f_be71053a96 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' mm';
 };

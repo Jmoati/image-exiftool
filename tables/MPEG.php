@@ -4,26 +4,73 @@
 
 namespace Image\ExifTool;
 
-$f_e4285fab41 = static function (mixed ...$args) { throw new NotPorted('RawConv e4285fab41'); };
-$f_87a38528b5 = static function (mixed ...$args) { throw new NotPorted('RawConv 87a38528b5'); };
-$f_dab54bb1d9 = static function (mixed ...$args) { throw new NotPorted('Condition dab54bb1d9'); };
+$f_e4285fab41 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->MPEG_Vers = $val;
+};
+$f_87a38528b5 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->MPEG_Layer = $val;
+};
+$f_dab54bb1d9 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->MPEG_Vers) == 3 && Perl::num($self->MPEG_Layer) == 3;
+};
 $f_354c879439 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertBitrate($val);
 };
-$f_b95ac5a993 = static function (mixed ...$args) { throw new NotPorted('Condition b95ac5a993'); };
-$f_6e46fe1c3e = static function (mixed ...$args) { throw new NotPorted('Condition 6e46fe1c3e'); };
-$f_44ece3a299 = static function (mixed ...$args) { throw new NotPorted('Condition 44ece3a299'); };
-$f_219ffa0044 = static function (mixed ...$args) { throw new NotPorted('Condition 219ffa0044'); };
-$f_bf8b1cb82d = static function (mixed ...$args) { throw new NotPorted('Condition bf8b1cb82d'); };
-$f_54ba209c33 = static function (mixed ...$args) { throw new NotPorted('Condition 54ba209c33'); };
-$f_5b2fc4ac1a = static function (mixed ...$args) { throw new NotPorted('Condition 5b2fc4ac1a'); };
-$f_b266a2e424 = static function (mixed ...$args) { throw new NotPorted('RawConv b266a2e424'); };
-$f_97e07650dc = static function (mixed ...$args) { throw new NotPorted('Condition 97e07650dc'); };
-$f_92e9fb2ca6 = static function (mixed ...$args) { throw new NotPorted('Condition 92e9fb2ca6'); };
-$f_efd6bf0f4c = static function (mixed ...$args) { throw new NotPorted('ValueConv efd6bf0f4c'); };
-$f_3ce3a4fd7e = static function (mixed ...$args) { throw new NotPorted('PrintConv 3ce3a4fd7e'); };
-$f_58e93a5ea7 = static function (mixed ...$args) { throw new NotPorted('ValueConv 58e93a5ea7'); };
-$f_56b8cab11a = static function (mixed ...$args) { throw new NotPorted('PrintConv 56b8cab11a'); };
+$f_b95ac5a993 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->MPEG_Vers) == 3 && Perl::num($self->MPEG_Layer) == 2;
+};
+$f_6e46fe1c3e = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->MPEG_Vers) == 3 && Perl::num($self->MPEG_Layer) == 1;
+};
+$f_44ece3a299 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->MPEG_Vers) != 3 && Perl::num($self->MPEG_Layer) == 3;
+};
+$f_219ffa0044 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->MPEG_Vers) != 3 && $self->MPEG_Layer;
+};
+$f_bf8b1cb82d = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->MPEG_Vers) == 3;
+};
+$f_54ba209c33 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->MPEG_Vers) == 2;
+};
+$f_5b2fc4ac1a = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->MPEG_Vers) == 0;
+};
+$f_b266a2e424 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->MPEG_Mode = $val;
+};
+$f_97e07650dc = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->MPEG_Layer) == 1;
+};
+$f_92e9fb2ca6 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::num($self->MPEG_Layer) > 1;
+};
+$f_efd6bf0f4c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if (!($vals[3] ?? null)) return null;
+    $mfs = Perl::num($prt[1] ?? null) / (Perl::num($vals[0] ?? null) == 3 ? 144 : 72);
+    return $mfs * Perl::num($vals[2] ?? null) / Perl::num($vals[3]);
+};
+$f_3ce3a4fd7e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::ConvertDuration($val) . ' (approx)';
+};
+$f_58e93a5ea7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if (($vals[4] ?? null) && ($vals[5] ?? null) !== null && ($vals[6] ?? null) !== null) {
+        // calculate from number of VBR audio frames
+        $mfs = Perl::num($prt[5] ?? null) / (Perl::num($vals[6]) == 3 ? 144 : 72);
+        // calculate using VBR length
+        return 8 * Perl::num($vals[4]) / $mfs;
+    }
+    // calculate duration as file size divided by total bitrate
+    // (note: this is only approximate!)
+    if (!(($vals[2] ?? null) || ($vals[3] ?? null))) return null;
+    if (($vals[2] ?? null) && !preg_match('/^\d+$/', Perl::str($vals[2]))) return null;
+    if (($vals[3] ?? null) && !preg_match('/^\d+$/', Perl::str($vals[3]))) return null;
+    return (8 * (Perl::num($vals[0] ?? null) - Perl::num(($vals[1] ?? null) ?: 0))) / (Perl::num(($vals[2] ?? null) ?: 0) + Perl::num(($vals[3] ?? null) ?: 0));
+};
+$f_56b8cab11a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str(Perl::num($val) / 1000) . ' kHz';
+};
 $f_b94c7bf60c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) * 100;
 };
@@ -33,7 +80,9 @@ $f_a26a3a2fee = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_8859373a48 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' fps';
 };
-$f_ab1d26bf96 = static function (mixed ...$args) { throw new NotPorted('ValueConv ab1d26bf96'); };
+$f_ab1d26bf96 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val) === '262143' ? 'Variable' : Perl::num($val) * 400;
+};
 
 return [
     'load' => [

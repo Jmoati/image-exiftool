@@ -1016,17 +1016,15 @@ final class Perl
                     break;
                 case 'H':
                 case 'h':
+                    // like Perl: every character gives a nybble (letters: (c+9)&15, others: c&15)
                     $s = self::str($args[$ai++] ?? '');
-                    if ('*' !== $count) {
-                        $s = substr(str_pad($s, $count ?? 1, '0'), 0, $count ?? 1);
+                    $n = '*' === $count ? \strlen($s) : ($count ?? 1);
+                    $len = \strlen($s);
+                    for ($k = 0; $k < $n; $k += 2) {
+                        $hi = $k < $len ? self::nybble($s[$k]) : 0;
+                        $lo = $k + 1 < $n && $k + 1 < $len ? self::nybble($s[$k + 1]) : 0;
+                        $out .= \chr('H' === $code ? ($hi << 4) | $lo : ($lo << 4) | $hi);
                     }
-                    if (\strlen($s) % 2) {
-                        $s .= '0';
-                    }
-                    if ('h' === $code) {
-                        $s = implode('', array_map(strrev(...), str_split($s, 2) ?: []));
-                    }
-                    $out .= (string) hex2bin($s);
                     break;
                 case 'b':
                 case 'B':
@@ -1080,6 +1078,11 @@ final class Perl
                     }
             }
         }
+    }
+
+    private static function nybble(string $c): int
+    {
+        return ctype_alpha($c) ? (\ord($c) + 9) & 15 : \ord($c) & 15;
     }
 
     private static function packNum(string $code, string $mods, mixed $v): string
