@@ -341,7 +341,7 @@ $f_1a84020a32 = static function ($val, ExifTool $self, array &$vals, array $prt,
     $val = preg_replace('/ 0 0$/', '', Perl::str($val), 1);
     return "$val C";
 };
-$f_a928b39f8a = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_a928b39f8a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f C', $val);
 };
 $f_2ea8aad22c = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {

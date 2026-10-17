@@ -37,6 +37,7 @@ $cases = [
     ['sprintf("%.1f|%e|%g|%.2f|%d", 0, 0, 0, -0.0, 0)', fn () => Perl::sprintf('%.1f|%e|%g|%.2f|%d', 0, 0, 0, -0.0, 0)],
     ['sprintf("%.1f|%+.1f|%g", 0.0, 0.0, -1e-320)', fn () => Perl::sprintf('%.1f|%+.1f|%g', 0.0, 0.0, -1e-320)],
     ['"" . 0.0 . "|" . (0 * -1.5)', fn () => Perl::str(0.0).'|'.Perl::str(0 * -1.5)],
+    ['join("|", map { my $f = $_; map { sprintf($f, $_) } "inf", "-inf", "nan" } "%d", "%.3d", "%5d", "%-5d", "%05d", "%x", "%+d", "% d", "%f", "%05.1f", "%+f", "% f", "%-6e", "%08g")', fn () => implode('|', array_merge(...array_map(fn ($f) => array_map(fn ($v) => Perl::sprintf($f, $v), ['inf', '-inf', 'nan']), ['%d', '%.3d', '%5d', '%-5d', '%05d', '%x', '%+d', '% d', '%f', '%05.1f', '%+f', '% f', '%-6e', '%08g'])))],
     ['sprintf("%.1f", "inf")', fn () => Perl::sprintf('%.1f', 'inf')],
     ['"" . (1/3)', fn () => Perl::str(1 / 3)],
     ['"" . 1e15', fn () => Perl::str(1e15)],

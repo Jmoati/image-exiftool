@@ -7,7 +7,7 @@ namespace Image\ExifTool;
 $f_8cb58be616 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Vars\PNG::$colorType = $val;
 };
-$f_9b0a3c2419 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_9b0a3c2419 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('0x%.8x', $val);
 };
 $f_d9f7eadef3 = static function (mixed ...$args) { throw new NotPorted('ValueConv d9f7eadef3'); };

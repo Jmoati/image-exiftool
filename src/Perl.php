@@ -461,6 +461,11 @@ final class Perl
         $plus = str_contains($flags, '+') ? '+' : (str_contains($flags, ' ') ? ' ' : '');
         switch ($conv) {
             case 'c':
+                $n = self::num($arg);
+                if (\is_float($n) && (is_nan($n) || is_infinite($n))) {
+                    throw new \RuntimeException('Cannot printf '.(is_nan($n) ? 'NaN' : ($n < 0 ? '-Inf' : 'Inf'))." with 'c'");
+                }
+
                 return self::pad(self::chr($arg), $flags, $width, false);
             case 's':
                 $s = self::str($arg);
@@ -472,7 +477,11 @@ final class Perl
             case 'd':
             case 'i':
             case 'D':
-                $n = self::toIV(self::int($arg));
+                $n = self::int($arg);
+                if (\is_float($n) && (is_nan($n) || is_infinite($n))) {
+                    return self::infNan($n, $flags, $width);
+                }
+                $n = self::toIV($n);
                 $s = PHP_INT_MIN === $n ? '9223372036854775808' : (string) abs($n);
                 if (null !== $prec) {
                     $s = ('0' === $prec && 0 === $n) ? '' : str_pad($s, (int) $prec, '0', STR_PAD_LEFT);
@@ -487,7 +496,11 @@ final class Perl
             case 'X':
             case 'b':
             case 'B':
-                $n = self::toIV(self::int($arg));
+                $n = self::int($arg);
+                if (\is_float($n) && (is_nan($n) || is_infinite($n))) {
+                    return self::infNan($n, $flags, $width);
+                }
+                $n = self::toIV($n);
                 $s = match ($conv) {
                     'u', 'U' => \sprintf('%u', $n),
                     'o', 'O' => \sprintf('%o', $n),
@@ -516,7 +529,7 @@ final class Perl
                 $negative = $f < 0 || (0.0 === $f && fdiv(1, $f) < 0);
                 $sign = $negative ? '-' : $plus;
                 if (is_nan($f) || is_infinite($f)) {
-                    return self::pad(is_nan($f) ? 'NaN' : 'Inf', str_replace('0', '', $flags), $width, false, is_nan($f) ? $plus : $sign);
+                    return self::infNan($f, $flags, $width);
                 }
                 $s = self::fmtFloat(abs($f), null === $prec ? 6 : (int) $prec, strtolower($conv), str_contains($flags, '#'));
                 if (ctype_upper($conv)) {
@@ -527,6 +540,21 @@ final class Perl
         }
 
         return '';
+    }
+
+    /** Perl's output for Inf/NaN in any numeric conversion: no precision, '0' pads on the far left */
+    private static function infNan(float $f, string $flags, string $width): string
+    {
+        $s = is_nan($f) ? 'NaN' : ($f < 0 ? '-Inf' : (str_contains($flags, '+') || str_contains($flags, ' ') ? '+Inf' : 'Inf'));
+        $w = '' === $width ? 0 : (int) $width;
+        if (\strlen($s) >= $w) {
+            return $s;
+        }
+        if (str_contains($flags, '-')) {
+            return str_pad($s, $w);
+        }
+
+        return str_repeat(str_contains($flags, '0') ? '0' : ' ', $w - \strlen($s)).$s;
     }
 
     /** cast a Perl numeric value to a 64-bit IV the way Perl's sprintf does */

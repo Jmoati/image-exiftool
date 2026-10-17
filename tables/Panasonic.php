@@ -122,7 +122,7 @@ $f_fe5b177481 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_50d6207616 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/Typ 006/', Perl::str($self->Model));
 };
-$f_227aa4ff88 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_227aa4ff88 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $val = strtr(Perl::str($val), ' ', '.');
     return $val;
 };

@@ -20,7 +20,7 @@ $f_ddae2f7edc = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_d9fec15555 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).' m';
 };
-$f_79eca42b5f = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_79eca42b5f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1000;
 };
 $f_7dd30aeae6 = static function (mixed ...$args) { throw new NotPorted('ValueConv 7dd30aeae6'); };

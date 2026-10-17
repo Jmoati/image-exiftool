@@ -56,7 +56,7 @@ $f_0ba968218d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 };
 $f_8f39d73f6e = static function (mixed ...$args) { throw new NotPorted('PrintConv 8f39d73f6e'); };
 $f_5999296365 = static function (mixed ...$args) { throw new NotPorted('PrintConv 5999296365'); };
-$f_8c7544bff1 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_8c7544bff1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) === 'inf' ? $val : Perl::str($val).' m';
 };
 $f_48a49eb03c = static function (mixed ...$args) { throw new NotPorted('ValueConv 48a49eb03c'); };

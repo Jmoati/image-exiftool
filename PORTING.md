@@ -71,6 +71,7 @@ must not blow up). Type objects and arrays (`ExifTool $et`, `TagTable $tagTableP
 | `==`, `<`, arithmetic on values that may be non-numeric strings | `Perl::num($x)` first (PHP 8 throws `TypeError` on `"abc" * 1`) |
 | `$a \|\| $b`, `$a // $b`, value of `$a && $b` | `$a ?: $b`, `$a ?? $b`, `$a ? $b : $a` (PHP `\|\|`/`&&` return bool) |
 | `%` with possibly negative operands | `Perl::mod($a, $b)` (Perl takes the sign of the right operand) |
+| `2 ** $n`, `$a / $b` | Perl always computes a float (`2**62` prints `4.61168601842739e+18`); PHP keeps integers: write `2.0 ** $n`, or `Perl::str()` a float result when its digits matter |
 | bitwise ops (`>>`, `&`, `~`...) | Perl works on unsigned integers: `>>` of a negative value is a logical shift, `~0` is `0xFFFFFFFFFFFFFFFF`; mask first when the value may be negative (`($x & 0xFFFFFFFF) >> 8` for 32-bit data) |
 | `defined $x` / `exists $h{k}` / `delete $h{k}` | `$x !== null` / `array_key_exists` or `isset` / `unset` |
 | `local $x = ...` | save + `try { } finally { restore }` |

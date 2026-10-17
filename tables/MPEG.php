@@ -24,7 +24,7 @@ $f_efd6bf0f4c = static function (mixed ...$args) { throw new NotPorted('ValueCon
 $f_3ce3a4fd7e = static function (mixed ...$args) { throw new NotPorted('PrintConv 3ce3a4fd7e'); };
 $f_58e93a5ea7 = static function (mixed ...$args) { throw new NotPorted('ValueConv 58e93a5ea7'); };
 $f_56b8cab11a = static function (mixed ...$args) { throw new NotPorted('PrintConv 56b8cab11a'); };
-$f_b94c7bf60c = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_b94c7bf60c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) * 100;
 };
 $f_a26a3a2fee = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {

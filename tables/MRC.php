@@ -5,7 +5,7 @@
 namespace Image\ExifTool;
 
 $f_541bc94911 = static function (mixed ...$args) { throw new NotPorted('RawConv 541bc94911'); };
-$f_9b0a3c2419 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_9b0a3c2419 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('0x%.8x', $val);
 };
 $f_db0d47df74 = static function (mixed ...$args) { throw new NotPorted('RawConv db0d47df74'); };

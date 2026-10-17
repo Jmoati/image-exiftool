@@ -19,7 +19,7 @@ $f_273894f86a = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     return $val ? $val : null;
 };
 $f_22cb252942 = static function (mixed ...$args) { throw new NotPorted('ValueConv 22cb252942'); };
-$f_74304bceba = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_74304bceba = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('0x%.2x', $val);
 };
 $f_581e67ee93 = static function (mixed ...$args) { throw new NotPorted('PrintConv 581e67ee93'); };

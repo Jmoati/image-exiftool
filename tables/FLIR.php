@@ -9,7 +9,7 @@ $f_5dbc52ad61 = static function ($val, ExifTool $self, array &$vals, array $prt,
     return Perl::sprintf('%.2f', $val);
 };
 $f_da43241945 = static function (mixed ...$args) { throw new NotPorted('PrintConv da43241945'); };
-$f_a928b39f8a = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+$f_a928b39f8a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f C', $val);
 };
 $f_e08f223b37 = static function (mixed ...$args) { throw new NotPorted('ValueConv e08f223b37'); };
