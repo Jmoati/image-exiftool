@@ -1,0 +1,5 @@
+==== b2db2f0728 code:OTHER
+# Canon FilterInfo GrainyBWFilter (shared hash, surfaced after the shared-structure fix)
+static function ($val, $inv, $conv) {
+    return 'On (' . Perl::str($val) . ')';
+}

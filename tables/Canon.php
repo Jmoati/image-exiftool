@@ -673,7 +673,9 @@ $f_3e4dd26379 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_effeb0fe5a = static function (ExifTool $self, $valPt, $format, $count) {
     return $self->FocusDistanceUpper2;
 };
-$f_b2db2f0728 = static function (mixed ...$args) { throw new NotPorted('code:OTHER b2db2f0728'); };
+$f_b2db2f0728 = static function ($val, $inv, $conv) {
+    return 'On (' . Perl::str($val) . ')';
+};
 $f_8f0e71a82a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f mm', $val);
 };

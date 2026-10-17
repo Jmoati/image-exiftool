@@ -6440,10 +6440,10 @@ GR_TAG:     foreach ($rtnTags as $tag) {
 
     /** depth of nested Perl eval emulations (see EvalBegin) */
     private static int $evalDepth = 0;
-    /** @var array<int, bool> */
-    private static array $isCode = [];
-    /** @var array<int, bool> */
-    private static array $usesData = [];
+    /** @var \WeakMap<\Closure, bool>|null (keyed by the closure: an object id can be reused once it is freed) */
+    private static ?\WeakMap $isCode = null;
+    /** @var \WeakMap<\Closure, bool>|null */
+    private static ?\WeakMap $usesData = null;
     /** @var array<string, list<string>> */
     private static array $sourceLines = [];
     private static ?array $tableIndex = null;
@@ -6508,24 +6508,26 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     private static function IsCodeRef($conv): bool
     {
         if (!$conv instanceof \Closure) return is_string($conv) or is_array($conv);
-        return self::$isCode[spl_object_id($conv)] ??= (new \ReflectionFunction($conv))->getNumberOfParameters() !== 7;
+        $isCode = self::$isCode ??= new \WeakMap();
+
+        return $isCode[$conv] ??= (new \ReflectionFunction($conv))->getNumberOfParameters() !== 7;
     }
 
     /** Perl: $condition =~ /\$(valPt|format|count)\b/ (the condition needs the data) */
     private static function ConditionUsesData($condition): bool
     {
         if (!$condition instanceof \Closure) return false;
-        $id = spl_object_id($condition);
-        if (!isset(self::$usesData[$id])) {
+        $usesData = self::$usesData ??= new \WeakMap();
+        if (!isset($usesData[$condition])) {
             $r = new \ReflectionFunction($condition);
             $file = $r->getFileName();
             $lines = self::$sourceLines[$file] ??= ((is_string($file) and is_file($file)) ? file($file) : []);
             $src = implode('', array_slice($lines, $r->getStartLine() - 1, $r->getEndLine() - $r->getStartLine() + 1));
             // (only the body counts, not the parameter list)
             $src = preg_replace('/^.*?function\s*\([^)]*\)/s', '', $src);
-            self::$usesData[$id] = (bool) preg_match('/\$(valPt|format|count)\b/', $src);
+            $usesData[$condition] = (bool) preg_match('/\$(valPt|format|count)\b/', $src);
         }
-        return self::$usesData[$id];
+        return $usesData[$condition];
     }
 
     /** Perl's '\$val' ValueConv for Binary tags */
