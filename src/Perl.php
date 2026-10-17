@@ -790,12 +790,21 @@ final class Perl
                     break;
                 case 'x':
                     $pos += '*' === $count ? 0 : ($count ?? 1);
+                    if ($pos > $len) {
+                        throw new \RuntimeException("'x' outside of string in unpack");
+                    }
                     break;
                 case 'X':
-                    $pos = max(0, $pos - ('*' === $count ? 0 : ($count ?? 1)));
+                    $pos -= '*' === $count ? 0 : ($count ?? 1);
+                    if ($pos < 0) {
+                        throw new \RuntimeException("'X' outside of string in unpack");
+                    }
                     break;
                 case '@':
                     $pos = $groupStart + ('*' === $count ? 0 : ($count ?? 0));
+                    if ($pos > $len) {
+                        throw new \RuntimeException("'@' outside of string in unpack");
+                    }
                     break;
                 case 'U':
                     if (0 === $count) {
