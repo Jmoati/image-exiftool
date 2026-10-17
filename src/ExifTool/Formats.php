@@ -139,7 +139,7 @@ trait Formats
             //   DirLen  - length of this trailer (subsequent trailers are not processed if this is not set)
             //   Fixup   - for any pointers in the trailer that need adjusting
             //
-            $result = $proc($self, $dirInfo);
+            $result = $self->CallProc($proc, $dirInfo);   // (&$proc($self, $dirInfo))
 
             // restore PATH (pop last 2 items)
             array_splice($path, -2);
@@ -798,7 +798,7 @@ trait Formats
                     self::RequireModule('Image::ExifTool::CanonRaw');
                     \Image\ExifTool\CanonRaw::ProcessCRW($self, $dirInfo);
                     array_pop($self->PATH);
-                    unset($self->SET_GROUP1);
+                    $self->SET_GROUP1 = null;
                 } elseif (preg_match('/^(AVI1|Ocad)/', $segDataPt, $m)) {
                     $dumpType = $m[1];
                     self::SetByteOrder('MM');
@@ -1307,15 +1307,15 @@ trait Formats
                     $self->SET_GROUP0 = 'APP7';
                     $self->SET_GROUP1 = 'Huawei';
                     $self->ProcessDirectory($dirInfo, $tagTablePtr);
-                    unset($self->SET_GROUP0);
-                    unset($self->SET_GROUP1);
+                    $self->SET_GROUP0 = null;
+                    $self->SET_GROUP1 = null;
                 } elseif (preg_match('/^DJI-DBG\x00/', $segDataPt)) {
                     $dumpType = 'DJI Info';
                     $tagTablePtr = self::GetTagTable('Image::ExifTool::DJI::Info');
                     self::DirStart($dirInfo, 8, 0);
                     $self->SET_GROUP0 = 'APP7';
                     $self->ProcessDirectory($dirInfo, $tagTablePtr);
-                    unset($self->SET_GROUP0);
+                    $self->SET_GROUP0 = null;
                 } elseif (preg_match('/^\x1aQualcomm Camera Attributes/', $segDataPt)) {
                     // found in HP iPAQ_VoiceMessenger
                     $dumpType = 'Qualcomm';
@@ -1653,7 +1653,7 @@ trait Formats
         $self = $this;
         $self->DOC_NUM = ++$self->DOC_COUNT;
         $rtnVal = $self->ProcessTIFF($dirInfo, $tagTablePtr);
-        unset($self->DOC_NUM);
+        $self->DOC_NUM = null;
         return $rtnVal;
     }
 
