@@ -1,0 +1,13 @@
+image-exiftool: a PHP port of ExifTool
+
+ExifTool is Copyright 2003-2026, Phil Harvey (https://exiftool.org/).
+PHP port Copyright 2026, Jacques Moati.
+
+This is free software; you can redistribute it and/or modify it under the same
+terms as Perl itself, that is under either:
+
+  a) the GNU General Public License as published by the Free Software
+     Foundation; either version 1, or (at your option) any later version, or
+
+  b) the "Artistic License" which comes with Perl
+     (https://dev.perl.org/licenses/artistic.html).
