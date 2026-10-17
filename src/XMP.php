@@ -1807,13 +1807,6 @@ class XMP
 
         // set XMP parsing options
         $et->XMPParseOpts = $dirInfo['XMPParseOpts'] ?? null;
-        // (the module providing the FoundProc may not be ported yet)
-        $foundProc = $et->XMPParseOpts['FoundProc'] ?? null;
-        if ($foundProc and !is_callable($foundProc)) {
-            $et->Warn('Not ported: ' . (is_string($foundProc) ? $foundProc : get_debug_type($foundProc)));
-            $et->XMPParseOpts = null;
-            return 1;
-        }
 
         // ignore any specified properties (XML hack)
         if (!empty($dirInfo['IgnoreProp'])) {

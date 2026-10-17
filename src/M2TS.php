@@ -101,10 +101,7 @@ final class M2TS
             if (preg_match('/^LIGOGPSINFO/s', $dataPt)) {
                 $tbl = ExifTool::GetTagTable('Image::ExifTool::QuickTime::Stream');
                 $dirInfo = ['DataPt' => $dataPt, 'DirName' => 'Ligo0x0300'];
-                // (module may not be ported yet)
-                if (ExifTool::RequireModule('Image::ExifTool::LigoGPS') and method_exists(LigoGPS::class, 'ProcessLigoGPS')) {
-                    LigoGPS::ProcessLigoGPS($et, $dirInfo, $tbl, strlen($dataPt) != 200);
-                }
+                LigoGPS::ProcessLigoGPS($et, $dirInfo, $tbl, strlen($dataPt) != 200);
                 $et->FoundGoodGPS = 1;
                 $more = 1;
             } elseif (preg_match('#^Viidure(20\d{2})/(\d{2})/(\d{2}) (\d{2}:\d{2}:\d{2}) ([NS]):(\S+) ([EW]):(\S+) (\S+) km/h (\S+) (\S+) (\S+) x:(\S+) y:(\S+) z:(\S+)#s', $dataPt, $m)) {
@@ -147,9 +144,7 @@ final class M2TS
         } elseif ($type == 0x15) {
             // packetized metadata (look for MISB code starting after 5-byte header)
             if (preg_match('/^.{5}\x06\x0e\x2b\x34/s', $dataPt)) {
-                // (module may not be ported yet)
-                $more = (ExifTool::RequireModule('Image::ExifTool::MISB') and method_exists(MISB::class, 'ParseMISB')) ?
-                    MISB::ParseMISB($et, $dataPt, ExifTool::GetTagTable('Image::ExifTool::MISB::Main')) : 0;
+                $more = MISB::ParseMISB($et, $dataPt, ExifTool::GetTagTable('Image::ExifTool::MISB::Main'));
                 if (!$et->OPTIONS['ExtractEmbedded']) {
                     $more = 0;  // extract from only the first packet unless ExtractEmbedded is used
                 } elseif ($et->OPTIONS['ExtractEmbedded'] > 2) {
@@ -371,10 +366,7 @@ final class M2TS
                 //  only extract data from the first one)
                 $tbl = ExifTool::GetTagTable('Image::ExifTool::QuickTime::Stream');
                 $dirInfo = ['DataPt' => $dataPt, 'DirStart' => 8, 'DirName' => Perl::sprintf('Ligo0x%.4x', $pid)];
-                // (module may not be ported yet)
-                if (ExifTool::RequireModule('Image::ExifTool::LigoGPS') and method_exists(LigoGPS::class, 'ProcessLigoGPS')) {
-                    LigoGPS::ProcessLigoGPS($et, $dirInfo, $tbl, 1);
-                }
+                LigoGPS::ProcessLigoGPS($et, $dirInfo, $tbl, 1);
                 $et->FoundGoodGPS = 1;
             } elseif ($et->FoundGoodGPS) {
                 $more = 1;
@@ -865,10 +857,7 @@ final class M2TS
             if ($len < $raf->Tell() and $raf->Seek(-$len, 2) and $raf->Read($buff, $len) == $len) {
                 $tbl = ExifTool::GetTagTable('Image::ExifTool::QuickTime::Stream');
                 $di = ['DataPt' => $buff, 'DirStart' => 8, 'DirName' => 'LigoTrailer'];  // (Perl %dirInfo)
-                // (module may not be ported yet)
-                if (ExifTool::RequireModule('Image::ExifTool::LigoGPS') and method_exists(LigoGPS::class, 'ProcessLigoGPS')) {
-                    LigoGPS::ProcessLigoGPS($et, $di, $tbl);
-                }
+                LigoGPS::ProcessLigoGPS($et, $di, $tbl);
             }
         }
 

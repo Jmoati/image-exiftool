@@ -305,34 +305,10 @@ final class QuickTime
     // Returns: new tagInfo hash ref, or undef if invalid
     public static function GetLangInfoQT(ExifTool $et, TagInfo $tagInfo, $langCode)
     {
-        $langInfo = self::CoreGetLangInfo($tagInfo, $langCode);
+        $langInfo = ExifTool::GetLangInfo($tagInfo, $langCode);
         if ($langInfo) {
             if (!$et->QTLang) $et->QTLang = [];
             $et->QTLang[] = $langInfo->Name;
-        }
-        return $langInfo;
-    }
-
-    /**
-     * Image::ExifTool::GetLangInfo (Writer.pl): make a new tagInfo hash for this locale.
-     * (PHP: the core doesn't have it, this is a copy)
-     */
-    private static function CoreGetLangInfo(TagInfo $tagInfo, $langCode): ?TagInfo
-    {
-        if (method_exists(ExifTool::class, 'GetLangInfo')) return ExifTool::GetLangInfo($tagInfo, $langCode);
-        // make a new tagInfo hash for this locale
-        $table = $tagInfo->Table;
-        $tagID = Perl::str($tagInfo->TagID) . '-' . $langCode;
-        $langInfo = $table[$tagID];
-        if (!$langInfo instanceof TagInfo) {
-            // make a new tagInfo entry for this locale
-            $langInfo = ExifTool::AddTagToTable($table, $tagID, [
-                ...$tagInfo->toArray(),
-                'Name' => $tagInfo->Name . '-' . $langCode,
-                'Description' => ExifTool::MakeDescription($tagInfo->Name) . " ($langCode)",
-                'LangCode' => $langCode,
-                'SrcTagInfo' => $tagInfo, // save reference to original tagInfo
-            ]);
         }
         return $langInfo;
     }
@@ -2044,10 +2020,7 @@ final class QuickTime
                     $tbl = ExifTool::GetTagTable('Image::ExifTool::QuickTime::Stream');
                     $di = ['DataPt' => $buff, 'DataPos' => $trailer[1] + 8, 'DirName' => 'LigoGPSTrailer'];
                     $et->VerboseDump($buff, DataPos: $di['DataPos']);
-                    // (module may not be ported yet)
-                    if (ExifTool::RequireModule('Image::ExifTool::LigoGPS') and method_exists(LigoGPS::class, 'ProcessLigoGPS')) {
-                        LigoGPS::ProcessLigoGPS($et, $di, $tbl);
-                    }
+                    LigoGPS::ProcessLigoGPS($et, $di, $tbl);
                 } else {
                     $et->Warn('Unrecognized data in LigoGPS trailer');
                 }
@@ -2061,11 +2034,9 @@ final class QuickTime
                 $di = ['RAF' => $raf, 'DirName' => $trailer[0], 'Offset' => $offset];
                 self::ProcessInsta360($et, $di);
             } elseif ($trailer[0] === 'MIE') {
+                ExifTool::RequireModule('Image::ExifTool::MIE');
                 $di = ['RAF' => $raf, 'DirName' => 'MIE', 'Trailer' => 1];
-                // (module may not be ported yet)
-                if (ExifTool::RequireModule('Image::ExifTool::MIE') and method_exists(MIE::class, 'ProcessMIE')) {
-                    MIE::ProcessMIE($et, $di);
-                }
+                MIE::ProcessMIE($et, $di);
             }
         }
         // brute force scan for metadata embedded in media data
@@ -2102,7 +2073,7 @@ final class QuickTime
         if ($writable === null) $writable = $tagInfo->Table ? $tagInfo->Table['WRITABLE'] : null;
         if (!$writable) return null;
         $langCode = strtr($langCode, '_', '-'); // RFC 3066 specifies '-' as a separator
-        $langInfo = self::CoreGetLangInfo($tagInfo, $langCode);
+        $langInfo = ExifTool::GetLangInfo($tagInfo, $langCode);
         return $langInfo;
     }
 }

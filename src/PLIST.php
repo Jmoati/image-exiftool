@@ -165,7 +165,8 @@ final class PLIST
             if ($proc) {
                 $val = $proc($buff, 0);
             } elseif ($size == 16) {
-                $val = self::GetGUID($buff);
+                ExifTool::RequireModule('Image::ExifTool::ASF');
+                $val = ASF::GetGUID($buff);
             } else {
                 $val = '0x' . bin2hex($buff);
             }
@@ -430,18 +431,5 @@ final class PLIST
         if (Perl::num($len) < PHP_INT_MAX) return $raf->Read($buff, $len);
         $buff = '';
         return 0;
-    }
-
-    /**
-     * Image::ExifTool::ASF::GetGUID (ASF isn't ported)
-     * (ponytail: inlined; call ASF::GetGUID() once ASF.pm is ported)
-     */
-    private static function GetGUID($val)
-    {
-        // must do some byte swapping
-        if (strlen($val) != 16) return $val;
-        $buff = bin2hex(Perl::pack('NnnNN', ...Perl::unpack('VvvNN', $val)));
-        $buff = preg_replace('/(.{8})(.{4})(.{4})(.{4})/', '$1-$2-$3-$4-', $buff, 1);
-        return strtoupper($buff);
     }
 }

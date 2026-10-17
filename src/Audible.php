@@ -146,7 +146,7 @@ final class Audible
             $num = ExifTool::Get32u($buff, 0);
             if ($num > 0x200) { $et->Warn('Bad dictionary count'); continue; }
             $pos = 4;   // dictionary starts immediately after count
-            // (Perl: require Image::ExifTool::HTML for UnescapeHTML)
+            ExifTool::RequireModule('Image::ExifTool::HTML');  // (for UnescapeHTML)
             $et->VerboseDir('Audible Metadata', $num);
             for ($i = 0; $i < $num; ++$i) {
                 $tagPos = $pos + 9;                     // position of tag string
@@ -165,7 +165,7 @@ final class Audible
                     ExifTool::AddTagToTable($tagTablePtr, $tag, ['Name' => $name]);
                 }
                 // unescape HTML character references and convert from UTF-8
-                $val = $et->Decode(self::UnescapeHTML($val), 'UTF8');
+                $val = $et->Decode(HTML::UnescapeHTML($val), 'UTF8');
                 $et->HandleTag($tagTablePtr, $tag, $val,
                     DataPos : $offset,
                     DataPt  : $buff,
@@ -177,15 +177,5 @@ final class Audible
             }
         }
         return 1;
-    }
-
-    //------------------------------------------------------------------------------
-    // Image::ExifTool::HTML::UnescapeHTML: unescape all HTML character references
-    // ponytail: HTML.pm isn't ported yet, this is its one-line body; call HTML's once it is
-    private static function UnescapeHTML($str)
-    {
-        if (is_callable('Image\ExifTool\HTML::UnescapeHTML')) return HTML::UnescapeHTML($str);
-        ExifTool::RequireModule('Image::ExifTool::XMP');
-        return XMP::UnescapeXML($str, Vars\HTML::$entityNum);
     }
 }

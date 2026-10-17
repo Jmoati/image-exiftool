@@ -17,8 +17,6 @@
 
 namespace Image\ExifTool;
 
-use Image\ExifTool\File\RandomAccess;
-
 final class Real
 {
     public static $VERSION = '1.07';
@@ -213,9 +211,10 @@ final class Real
             $tagTablePtr = ExifTool::GetTagTable('Image::ExifTool::Real::Metafile');
             $ext = $et->FILE_EXT;
             $type = ($ext and $ext === 'RPM') ? 'RPM' : 'RAM';
+            ExifTool::RequireModule('Image::ExifTool::PostScript');
             // (local $/)
             $oldRS = Perl::$RS;
-            Perl::$RS = self::GetInputRecordSeparator($raf) ?: "\n";
+            Perl::$RS = PostScript::GetInputRecordSeparator($raf) ?: "\n";
             try {
                 $raf->Seek(0, 0);
                 while ($raf->ReadLine($buff)) {
@@ -371,33 +370,5 @@ final class Real
             }
         }
         return 1;
-    }
-
-    /**
-     * Image::ExifTool::PostScript::GetInputRecordSeparator: get input record separator
-     * Inputs: 0) RAF reference
-     * Returns: separator string or undef if not found
-     * (ponytail: PostScript.pm isn't ported, local copy; call PostScript's once it is)
-     */
-    private static function GetInputRecordSeparator(RandomAccess $raf)
-    {
-        $pos = $raf->Tell(); // save current position
-        $data = $sep = null;
-        if (!$raf->Read($data, 256)) return null;
-        [$a, $d] = [999, 999];
-        if (($p = strpos($data, "\x0a")) !== false) $a = $p + 1;
-        if (($p = strpos($data, "\x0d")) !== false) $d = $p + 1;
-        $diff = $a - $d;
-        if ($diff == 1) {
-            $sep = "\x0d\x0a";
-        } elseif ($diff == -1) {
-            $sep = "\x0a\x0d";
-        } elseif ($diff > 0) {
-            $sep = "\x0d";
-        } elseif ($diff < 0) {
-            $sep = "\x0a";
-        } // else error
-        $raf->Seek($pos, 0);    // restore original position
-        return $sep;
     }
 }

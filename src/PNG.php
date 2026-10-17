@@ -606,11 +606,9 @@ final class PNG
         if ($wasTrailer and $raf->Seek(-8, 2) and
             $raf->Read($dbuf, 8) and preg_match('/\0\0(QDIOBS|SEFT)$/', $dbuf))    // (have only seen SEFT type)
         {
-            // (ponytail: skipped while the Samsung module isn't ported)
-            if (ExifTool::RequireModule('Image::ExifTool::Samsung') and method_exists(Samsung::class, 'ProcessSamsung')) {
-                $samsungInfo = ['DirName' => 'Samsung', 'RAF' => $raf];
-                Samsung::ProcessSamsung($et, $samsungInfo);
-            }
+            ExifTool::RequireModule('Image::ExifTool::Samsung');
+            $samsungInfo = ['DirName' => 'Samsung', 'RAF' => $raf];
+            Samsung::ProcessSamsung($et, $samsungInfo);
         }
         return 1;   // this was a valid PNG/MNG/JNG image
     }

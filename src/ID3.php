@@ -764,7 +764,6 @@ final class ID3
                     $module = (Vars\ID3::$audioModule[$type] ?? null) ?: $type;
                     if (!ExifTool::RequireModule("Image::ExifTool::$module")) continue;
                     $func = ["Image\\ExifTool\\$module", "Process$type"];
-                    if (!is_callable($func)) continue;  // (PHP: module not ported)
                     // process the file
                     if ($func($et, $dirInfo)) break;
                 }

@@ -37,45 +37,6 @@ final class PDF
     public static $lastFetched = null;
 
     //------------------------------------------------------------------------------
-    // ponytail: tools/export-tables.pl (IsTagTable) misses the PDF tag tables whose entries have
-    // no Name (Kids, Resources, XObject...): they are dumped as package variables into
-    // tables/vars/PDF.php, with their Conditions left as Perl source. Register them as tag tables
-    // from those variables (Conditions translated below) until the generator emits them; this
-    // does nothing for a table that tables/PDF.php has.
-    private static function AddMissingTables(): void
-    {
-        static $done = false;
-        if ($done) return;
-        $done = true;
-        $missing = [];
-        foreach (['AdobePhotoshop', 'ColorSpace', 'DefaultRGB', 'Illustrator', 'Kids', 'MC', 'Perms',
-                  'PieceInfo', 'Private', 'Properties', 'Reference', 'Resources', 'XObject'] as $name) {
-            if (!ExifTool::PackageTable("Image::ExifTool::PDF::$name")) $missing[] = $name;
-        }
-        if (!$missing) return;
-        // '$self->Options("ExtractEmbedded")'
-        $embedded = static fn (ExifTool $self) => $self->Options('ExtractEmbedded');
-        // PieceInfo Illustrator
-        $illustrator = static function (ExifTool $self) {
-            if (!($self->FILE_EXT and $self->FILE_EXT === 'PDF')) $self->OverrideFileType('AI');
-            return 1;
-        };
-        $prop = new \ReflectionProperty(ExifTool::class, 'rawTables');
-        $raw = $prop->getValue();
-        foreach ($missing as $name) {
-            $table = Vars\PDF::${$name};
-            foreach ($table as $tag => &$info) {
-                if (is_array($info) and isset($info['Condition'])) {
-                    $info['Condition'] = $tag === 'Illustrator' ? $illustrator : $embedded;
-                }
-            }
-            unset($info);
-            $raw["Image::ExifTool::PDF::$name"] = $table;
-        }
-        $prop->setValue(null, $raw);
-    }
-
-    //------------------------------------------------------------------------------
     // Convert from PDF to EXIF-style date/time
     // Inputs: 0) PDF date/time string (D:YYYYmmddHHMMSS+HH'MM')
     // Returns: EXIF date string (YYYY:mm:dd HH:MM:SS+HH:MM)
@@ -1889,7 +1850,6 @@ final class PDF
     // Returns: 1 if this was a valid PDF file
     public static function ProcessPDF(ExifTool $et, array &$dirInfo)
     {
-        self::AddMissingTables();
         Vars\PDF::$cryptInfo = null;    // (must not delete after returning so writer can use it)
         Vars\PDF::$cryptStream = null;
         Vars\PDF::$cryptString = null;
