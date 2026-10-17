@@ -7,7 +7,9 @@ namespace Image\ExifTool;
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_868d729654 = static function (mixed ...$args) { throw new NotPorted('ValueConv 868d729654'); };
+$f_868d729654 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::IsFloat($val) ? ExifTool::ConvertUnixTime((Perl::num($val) - 25569) * 24 * 3600) : $val;
+};
 $f_b2e41c1595 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertDuration($val);
 };
@@ -17,7 +19,12 @@ $f_5f55a3e4a5 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_5817105f7a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1, 'E');
 };
-$f_0c90ebb73d = static function (mixed ...$args) { throw new NotPorted('RawConv 0c90ebb73d'); };
+$f_0c90ebb73d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (Perl::str($val) === 'ModdXML' && Perl::str($self->FILE_TYPE) === 'XMP') {
+        $self->OverrideFileType('MODD');
+    }
+    return $val;
+};
 
 return [
     'load' => [

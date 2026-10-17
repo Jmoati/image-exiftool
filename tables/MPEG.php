@@ -30,7 +30,9 @@ $f_b94c7bf60c = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_a26a3a2fee = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) * 1000;
 };
-$f_8859373a48 = static function (mixed ...$args) { throw new NotPorted('PrintConv 8859373a48'); };
+$f_8859373a48 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str($val) . ' fps';
+};
 $f_ab1d26bf96 = static function (mixed ...$args) { throw new NotPorted('ValueConv ab1d26bf96'); };
 
 return [

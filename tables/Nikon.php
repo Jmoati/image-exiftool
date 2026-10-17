@@ -396,7 +396,11 @@ $f_72c5a70a5f = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_fec60285e0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.4d', $val);
 };
-$f_43dc567337 = static function (mixed ...$args) { throw new NotPorted('code:OTHER 43dc567337'); };
+$f_43dc567337 = static function ($val, $inv, $conv) {
+    if (!$inv) return Perl::sprintf('%d.%.2d (Unknown model)', ...Perl::split(' ', $val));
+    if (preg_match('/(\d+)\.(\d+)/', Perl::str($val), $m)) return $m[1] . ' ' . $m[2];
+    return '0 0';
+};
 $f_2d9969069b = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->FlashControlMode = $val;
 };
@@ -674,7 +678,13 @@ $f_d8d3b394c0 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_9613e7b9d4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return !preg_match('/undef/', Perl::str($val)) ? Exif::PrintFraction($val) : 'n/a';
 };
-$f_063ca8f9b9 = static function (mixed ...$args) { throw new NotPorted('code:OTHER 063ca8f9b9'); };
+$f_063ca8f9b9 = static function ($val, $inv, $conv) {
+    if ($inv) return null;
+    $a = Perl::split(' ', $val);
+    if (count($a) != 7) return 'Unknown (' . Perl::str($val) . ')';
+    $a[0] = ($conv[$a[0]] ?? null) ?: 'Unknown (' . $a[0] . ')';
+    return $a[0] . ' (' . $a[1] . 'x' . $a[2] . ' cropped to ' . $a[3] . 'x' . $a[4] . ' at pixel ' . $a[5] . ',' . $a[6] . ')';
+};
 $f_7927c89367 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^01/', $valPt);
 };
