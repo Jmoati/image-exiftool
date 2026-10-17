@@ -3,3 +3,29 @@
 static function ($val, $inv, $conv) {
     return 'On (' . Perl::str($val) . ')';
 }
+
+==== 74c5103544 code:OTHER
+# Extra:Validate summary ("2 Errors and 3 Warnings (all minor)")
+static function ($val, $inv, $conv) {
+    $vals = Perl::split(' ', $val);
+    $rtn = [];
+    if (Perl::num($vals[0] ?? 0)) $rtn[] = Perl::sprintf('%d Error%s', $vals[0], Perl::num($vals[0]) == 1 ? '' : 's');
+    if (Perl::num($vals[1] ?? 0)) $rtn[] = Perl::sprintf('%d Warning%s', $vals[1], Perl::num($vals[1]) == 1 ? '' : 's');
+    if (Perl::num($vals[2] ?? 0)) {
+        $str = Perl::num($vals[1] ?? 0) == Perl::num($vals[2]) ? (Perl::num($vals[1] ?? 0) == 1 ? '' : 'all ') : $vals[2] . ' ';
+        $last = array_key_last($rtn);
+        if (null === $last) {
+            $rtn[-1] = ' (' . $str . 'minor)';
+        } else {
+            $rtn[$last] .= ' (' . $str . 'minor)';
+        }
+    }
+    return implode(' and ', $rtn);
+}
+
+==== a8f1099fe9 Condition
+# PDF PieceInfo Illustrator: an AI file unless the extension is PDF
+static function (ExifTool $self, $valPt, $format, $count) {
+    if (!($self->FILE_EXT and $self->FILE_EXT === 'PDF')) $self->OverrideFileType('AI');
+    return 1;
+}

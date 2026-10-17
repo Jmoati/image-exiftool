@@ -111,7 +111,7 @@ final class Trailer
                 $raf->Read($buff, $jlen - 8) == $jlen - 8)
             {
                 $buff = preg_replace('/\0+$/', '', $buff);  // remove trailing null(s)
-                $list = self::ReadJSONObject($buff);
+                $list = Import::ReadJSONObject(null, $buff);
                 if (is_array($list) and array_is_list($list)) {
                     foreach ($list as $item) {
                         $o = is_array($item) ? ($item['offset'] ?? null) : null;
@@ -254,16 +254,5 @@ final class Trailer
         [$dirInfo['DataPos'], $dirInfo['DirLen']] = [$start, $pos];
 
         return 1;
-    }
-
-    /**
-     * Image::ExifTool::Import::ReadJSONObject(undef, \$buff), which isn't ported: returns the
-     * decoded JSON (objects as string-keyed arrays, arrays as lists), or null on error.
-     * (ponytail: json_decode() is stricter than ReadJSONObject() with malformed JSON, and
-     *  doesn't decode "base64:" strings; port Import.pm if a trailer needs that)
-     */
-    private static function ReadJSONObject($buff)
-    {
-        return json_decode((string) $buff, true, 512, JSON_BIGINT_AS_STRING);
     }
 }

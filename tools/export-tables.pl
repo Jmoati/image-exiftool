@@ -28,7 +28,7 @@ my $project = shift || abs_path(dirname(abs_path($0)) . '/..');
 unshift @INC, $lib;
 
 # modules we don't port (writing, documentation, translations, geolocation database)
-my %skipModule = map { $_ => 1 } qw(BuildTagLookup TagLookup TagInfoXML Geolocation Validate HtmlDump Shift);
+my %skipModule = map { $_ => 1 } qw(BuildTagLookup TagLookup TagInfoXML Geolocation HtmlDump Shift);
 
 # load-time actions recorded per module (AddCompositeTags calls)
 my %loadActions;
@@ -114,6 +114,26 @@ sub IsTagTable
     return 0;
 }
 WalkPackage('Image::ExifTool');
+# hashes used as a SubDirectory TagTable are tag tables too, even when no entry has a Name
+# (the PDF dictionaries: Kids, Resources, XObject...)
+for (my $more = 1; $more; ) {
+    $more = 0;
+    foreach my $t (sort keys %tables) {
+        foreach my $v (values %{$tables{$t}}) {
+            foreach my $i (ref $v eq 'ARRAY' ? @$v : $v) {
+                next unless ref $i eq 'HASH' and ref $$i{SubDirectory} eq 'HASH';
+                my $name = $$i{SubDirectory}{TagTable};
+                next unless $name and not ref $name and not $tables{$name} and $name =~ /^Image::ExifTool::/;
+                my $h = \%{$name};
+                next unless %$h;
+                $tables{$name} = $h;
+                my ($pkg, $var) = $name =~ /^(.*)::(\w+)$/;
+                delete $varsOf{$pkg}{"%$var"} if $varsOf{$pkg};
+                $more = 1;
+            }
+        }
+    }
+}
 use strict 'refs';
 
 # module key of a package or table name: Image::ExifTool::Canon::Main => Canon

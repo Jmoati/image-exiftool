@@ -742,7 +742,7 @@ trait Formats
                 (($req['jpegdigest'] ?? null) or ($req['jpegqualityestimate'] ?? null)
                 or ($options['RequestAll'] and $options['RequestAll'] > 2)))
             {
-                $num = ord($segDataPt) & 0x0f;      // get table index
+                $num = \ord($segDataPt[0] ?? "\0") & 0x0f;      // get table index
                 if ($num < 4) {
                     $dqt[$num] = $segDataPt;        // save for hash calculation
                 }

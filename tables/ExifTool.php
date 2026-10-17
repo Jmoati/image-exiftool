@@ -66,6 +66,22 @@ $f_0ba968218d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_423d194042 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.3g s', $val);
 };
+$f_74c5103544 = static function ($val, $inv, $conv) {
+    $vals = Perl::split(' ', $val);
+    $rtn = [];
+    if (Perl::num($vals[0] ?? 0)) $rtn[] = Perl::sprintf('%d Error%s', $vals[0], Perl::num($vals[0]) == 1 ? '' : 's');
+    if (Perl::num($vals[1] ?? 0)) $rtn[] = Perl::sprintf('%d Warning%s', $vals[1], Perl::num($vals[1]) == 1 ? '' : 's');
+    if (Perl::num($vals[2] ?? 0)) {
+        $str = Perl::num($vals[1] ?? 0) == Perl::num($vals[2]) ? (Perl::num($vals[1] ?? 0) == 1 ? '' : 'all ') : $vals[2] . ' ';
+        $last = array_key_last($rtn);
+        if (null === $last) {
+            $rtn[-1] = ' (' . $str . 'minor)';
+        } else {
+            $rtn[$last] .= ' (' . $str . 'minor)';
+        }
+    }
+    return implode(' and ', $rtn);
+};
 
 $d_1 = [0 => 'ExifTool', 1 => 'ExifTool', 2 => 'ExifTool'];
 $d_2 = [0 => 'ExifTool', 1 => 'ExifTool', 2 => 'Location'];
@@ -470,6 +486,12 @@ return [
                 'Writable' => 1,
             ],
             'VARS' => ['ID_FMT' => 'none'],
+            'Validate' => [
+                'Groups' => [0 => 'ExifTool', 1 => 'ExifTool', 2 => 'ExifTool'],
+                'Hidden' => 0,
+                'Name' => 'Validate',
+                'PrintConv' => ['0 0 0' => 'OK', 'OTHER' => $f_74c5103544],
+            ],
             'Warning' => [
                 'Groups' => $d_1,
                 'Priority' => 0,

@@ -19,6 +19,13 @@ $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_a0310d8df4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/^\//', '', Perl::str($val));
 };
+$f_986101391e = static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->Options('ExtractEmbedded');
+};
+$f_a8f1099fe9 = static function (ExifTool $self, $valPt, $format, $count) {
+    if (!($self->FILE_EXT and $self->FILE_EXT === 'PDF')) $self->OverrideFileType('AI');
+    return 1;
+};
 $f_82b718182a = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     if (Perl::num($self->PDFVersion) < Perl::num($val)) $self->PDFVersion = $val;
     return $val;
@@ -81,6 +88,46 @@ return [
                 'PrintConv' => ['false' => 'No', 'true' => 'Yes'],
             ],
         ],
+        'Image::ExifTool::PDF::AdobePhotoshop' => [
+            'Private' => [
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::Private',
+                ],
+            ],
+        ],
+        'Image::ExifTool::PDF::ColorSpace' => [
+            'CS0' => [
+                'ConvertToDict' => 1,
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::DefaultRGB',
+                ],
+            ],
+            'Cs1' => [
+                'ConvertToDict' => 1,
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::DefaultRGB',
+                ],
+            ],
+            'DefaultCMYK' => [
+                'ConvertToDict' => 1,
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::DefaultRGB',
+                ],
+            ],
+            'DefaultRGB' => [
+                'ConvertToDict' => 1,
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::DefaultRGB',
+                ],
+            ],
+        ],
+        'Image::ExifTool::PDF::DefaultRGB' => [
+            'ICCBased' => [
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::ICCBased',
+                ],
+            ],
+        ],
         'Image::ExifTool::PDF::EF' => [
             'F' => [
                 'Name' => 'F_',
@@ -127,6 +174,13 @@ return [
                 'Name' => 'ICC_Profile',
                 'SubDirectory' => [
                     'TagTable' => 'Image::ExifTool::ICC_Profile::Main',
+                ],
+            ],
+        ],
+        'Image::ExifTool::PDF::Illustrator' => [
+            'Private' => [
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::AIPrivate',
                 ],
             ],
         ],
@@ -206,6 +260,36 @@ return [
             'VARS' => ['CAPTURE' => ['Info']],
             'WRITABLE' => 'string',
         ],
+        'Image::ExifTool::PDF::Kids' => [
+            'Kids' => [
+                'Condition' => $f_986101391e,
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::Kids',
+                ],
+            ],
+            'Metadata' => [
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::Metadata',
+                ],
+            ],
+            'PieceInfo' => [
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::PieceInfo',
+                ],
+            ],
+            'Resources' => [
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::Resources',
+                ],
+            ],
+        ],
+        'Image::ExifTool::PDF::MC' => [
+            'Metadata' => [
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::Metadata',
+                ],
+            ],
+        ],
         'Image::ExifTool::PDF::Main' => [
             'Encrypt' => [
                 'NoProcess' => 1,
@@ -258,6 +342,77 @@ return [
             'MediaBox' => [
                 'List' => 1,
                 'Name' => 'MediaBox',
+            ],
+        ],
+        'Image::ExifTool::PDF::Perms' => [
+            'DocMDP' => [
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::Signature',
+                ],
+            ],
+            'FieldMDP' => [
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::Signature',
+                ],
+            ],
+            'UR3' => [
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::Signature',
+                ],
+            ],
+        ],
+        'Image::ExifTool::PDF::PieceInfo' => [
+            'AdobePhotoshop' => [
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::AdobePhotoshop',
+                ],
+            ],
+            'Illustrator' => [
+                'Condition' => $f_a8f1099fe9,
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::Illustrator',
+                ],
+            ],
+        ],
+        'Image::ExifTool::PDF::Private' => [
+            'ImageResources' => [
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::ImageResources',
+                ],
+            ],
+        ],
+        'Image::ExifTool::PDF::Properties' => [
+            'EXTRACT_UNKNOWN' => 0,
+            'MC' => [
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::MC',
+                ],
+            ],
+        ],
+        'Image::ExifTool::PDF::Reference' => [
+            'TransformParams' => [
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::TransformParams',
+                ],
+            ],
+        ],
+        'Image::ExifTool::PDF::Resources' => [
+            'ColorSpace' => [
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::ColorSpace',
+                ],
+            ],
+            'Properties' => [
+                'Condition' => $f_986101391e,
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::Properties',
+                ],
+            ],
+            'XObject' => [
+                'Condition' => $f_986101391e,
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::XObject',
+                ],
             ],
         ],
         'Image::ExifTool::PDF::Root' => [
@@ -378,6 +533,14 @@ return [
         ],
         'Image::ExifTool::PDF::Unknown' => [
             'GROUPS' => [2 => 'Unknown'],
+        ],
+        'Image::ExifTool::PDF::XObject' => [
+            'EXTRACT_UNKNOWN' => 0,
+            'Im' => [
+                'SubDirectory' => [
+                    'TagTable' => 'Image::ExifTool::PDF::Im',
+                ],
+            ],
         ],
     ],
 ];

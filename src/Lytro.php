@@ -10,7 +10,6 @@
 // References:   1) http://optics.miloush.net/lytro/TheFileFormat.aspx
 //
 // PHP port of Image::ExifTool::Lytro 1.04. Tag tables are generated into tables/Lytro.php.
-// (Image::ExifTool::Import isn't ported: ReadJSONObject is ported here for a buffer, see below)
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -18,9 +17,6 @@ namespace Image\ExifTool;
 final class Lytro
 {
     public static $VERSION = '1.04';
-
-    // (Import.pm lexical %unescapeJSON)
-    private const array UNESCAPE_JSON = ['t' => "\t", 'n' => "\n", 'r' => "\r", 'b' => "\x08", 'f' => "\f"];
 
     //------------------------------------------------------------------------------
     // Extract tags from a parsed JSON hash
@@ -108,8 +104,8 @@ final class Lytro
                 $et->VerboseDump($buff, Addr: $raf->Tell() - $size);
                 if (preg_match('/^\{\s+"/', $buff)) { // JSON metadata?
                     $et->HandleTag($tagTablePtr, 'JSONMetadata', $buff);
-                    $bpos = 0;
-                    $meta = self::ReadJSONObject($buff, $bpos);
+                    $bpos = 0;  // (Perl: pos($buff) = 0)
+                    $meta = Import::ReadJSONObject(null, $buff, $bpos);
                     self::ExtractTags($et, $meta, '');
                 } elseif (preg_match('/^\xff\xd8\xff/', $buff)) { // embedded JPEG image?
                     $et->HandleTag($tagTablePtr, 'EmbeddedImage', $buff);
@@ -120,138 +116,5 @@ final class Lytro
             if ($pad != 16) $raf->Seek($pad, 1);
         }
         return 1;
-    }
-
-    //------------------------------------------------------------------------------
-    // Read JSON object from a buffer (port of Image::ExifTool::Import::ReadJSONObject
-    // with an undef RAF, as called by ProcessLFP)
-    // Inputs: 0) data buffer, 1) position in buffer (Perl pos($$buffPt), undef = start)
-    // Returns: JSON object (scalar, hash ref, or array ref), or undef on EOF or
-    //          empty object or array
-    // Notes: position in buffer is significant
-    // (PHP: a JSON object is a string-keyed array with an '_ordered_keys_' list, a JSON
-    //  array is a list, numbers and true/false/null are kept as their text, like Perl)
-    // ponytail: local port because Import.pm isn't ported; move it there when it is
-    private static function ReadJSONObject(string $buff, ?int &$bpos)
-    {
-        // initialize buffer if necessary
-        $readMore = $rtnVal = $tok = $key = null;
-        $pos = $bpos;
-        if ($pos === null) $pos = $bpos = 0;
-        for (;;) {      // (Perl label Tok)
-            // (didn't spend the time to understand how $pos could be undef, but
-            //  put a test here to be safe because one user reported this problem)
-            if ($pos === null) break;
-            if ($pos >= strlen($buff) or $readMore) {
-                break;  // (no RAF to read more from)
-            }
-            if (!$tok) {
-                // skip white space and find next character
-                if (!self::NextChar($buff, $bpos, $c)) {
-                    $pos = strlen($buff);
-                    continue;
-                }
-                $tok = $c;
-                $pos = $bpos;
-            }
-            // see what type of object this is
-            if ($tok === '{') {     // object (hash)
-                if ($rtnVal === null) $rtnVal = ['_ordered_keys_' => []];
-                for (;;) {
-                    // read "KEY":"VALUE" pairs
-                    if ($key === null) {
-                        $key = self::ReadJSONObject($buff, $bpos);
-                        $pos = $bpos;
-                    }
-                    // ($key may be undef for empty JSON object)
-                    if ($key !== null) {
-                        // scan to delimiting ':'
-                        if (!self::NextChar($buff, $bpos, $c)) {
-                            $readMore = 1;
-                            continue 2;
-                        }
-                        if ($c !== ':') return null;    // error if not a colon
-                        $val = self::ReadJSONObject($buff, $bpos);
-                        $pos = $bpos;
-                        if ($val === null) return null;
-                        $key = Perl::str($key);
-                        $rtnVal[$key] = $val;
-                        $rtnVal['_ordered_keys_'][] = $key;
-                        $key = null;
-                    }
-                    // scan to delimiting ',' or bounding '}'
-                    if (!self::NextChar($buff, $bpos, $c)) {
-                        $readMore = 1;
-                        continue 2;
-                    }
-                    if ($c === '}') break;      // check for end of object
-                    if ($c !== ',') return null;    // error if not a comma
-                }
-            } elseif ($tok === '[') {   // array
-                if ($rtnVal === null) $rtnVal = [];
-                for (;;) {
-                    $item = self::ReadJSONObject($buff, $bpos);
-                    $pos = $bpos;
-                    // ($item may be undef for empty array)
-                    if ($item !== null) $rtnVal[] = $item;
-                    // scan to delimiting ',' or bounding ']'
-                    if (!self::NextChar($buff, $bpos, $c)) {
-                        $readMore = 1;
-                        continue 2;
-                    }
-                    if ($c === ']') break;      // check for end of array
-                    if ($c !== ',') return null;    // error if not a comma
-                }
-            } elseif ($tok === '"') {   // quoted string
-                $p = $bpos;
-                for (;;) {
-                    if (!preg_match('/(\\\\*)"/', $buff, $m, PREG_OFFSET_CAPTURE, (int) $p)) {
-                        $bpos = null;
-                        $readMore = 1;
-                        continue 2;
-                    }
-                    $p = $m[0][1] + strlen($m[0][0]);
-                    if (!(strlen($m[1][0]) & 1)) break; // check for escaped quote
-                }
-                $bpos = $p;
-                $rtnVal = substr($buff, $pos, $bpos - $pos - 1);
-                // unescape characters
-                $rtnVal = preg_replace_callback('/\\\\u([0-9a-f]{4})/i',
-                    static fn ($m) => Charset::Recompose(null, [hexdec($m[1])]), $rtnVal);
-                $rtnVal = preg_replace_callback('/\\\\(.)/s',
-                    static fn ($m) => self::UNESCAPE_JSON[$m[1]] ?? $m[1], $rtnVal);
-                // decode base64 (binary data) values
-                if (preg_match('/^base64:[A-Za-z0-9+\/]*={0,2}$/', $rtnVal) and strlen($rtnVal) % 4 == 3) {
-                    $rtnVal = XMP::DecodeBase64(substr($rtnVal, 7))->value;
-                }
-            } elseif ($tok === ']' or $tok === '}' or $tok === ',') {
-                // return undef for empty object, array, or list item
-                // (empty list item actually not valid JSON)
-                $bpos = $bpos - 1;
-            } else {                // number, 'true', 'false', 'null'
-                if (!preg_match('/[\s:,\}\]]/', $buff, $m, PREG_OFFSET_CAPTURE, (int) $bpos)) {
-                    $bpos = null;
-                    $readMore = 1;
-                    continue;
-                }
-                $bpos = $m[0][1];
-                $rtnVal = $tok . substr($buff, $pos, $bpos - $pos);
-            }
-            break;
-        }
-        return $rtnVal;
-    }
-
-    // Perl: $$buffPt =~ /(\S)/g (starts at pos, or 0 if undef; sets pos after the
-    // character, or resets it to undef on failure)
-    private static function NextChar(string $buff, ?int &$bpos, &$c): bool
-    {
-        if (!preg_match('/\S/', $buff, $m, PREG_OFFSET_CAPTURE, $bpos ?? 0)) {
-            $bpos = null;
-            return false;
-        }
-        $c = $m[0][0];
-        $bpos = $m[0][1] + 1;
-        return true;
     }
 }
