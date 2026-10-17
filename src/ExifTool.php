@@ -950,7 +950,7 @@ class ExifTool
                     // (PHP: process function not ported yet: try the next type if this one
                     //  was only a guess, otherwise the format is known but unsupported)
                     if (is_array($func) ? !is_callable($func) : !method_exists($this, $func)) {
-                        if (!$magicOK or !empty(Vars\ExifTool::$weakMagic[$type])) {
+                        if (!$magicOK or !empty(Vars\ExifTool::$weakMagic[$type]) or $buff === '') {
                             if (!$raf->Seek($pos, 0)) $err = 'Error seeking in file';
                             continue;
                         }
@@ -1468,7 +1468,7 @@ class ExifTool
         $valA = $prtA = $rawA = [];
         foreach ($convTypes as $convType) {
             // don't convert a scalar reference or structure
-            if ($value instanceof ScalarRef and !$tagInfo->ConvertBinary) break;
+            if (self::IsScalarRef($value) and !$tagInfo->ConvertBinary) break;
             $conv = $tagInfo->$convType;
             if ($conv === null) {
                 if ($convType === 'ValueConv') {
@@ -1613,7 +1613,7 @@ class ExifTool
                 }
                 if ($vals === null) break;
                 // must store a separate copy of each binary data value in the list
-                if ($value instanceof ScalarRef) $value = new ScalarRef($value->value);
+                if (self::IsScalarRef($value)) $value = new ScalarRef($value->value);
                 // save this converted value and step to next value in list
                 if ($value !== null) $values[] = $value;
                 if (++$i >= count($vals)) {
@@ -3695,7 +3695,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
         self::$ratDenom = self::Get16s($dataPt, $pos + 2);
         if (!self::$ratDenom) return self::$ratNumer ? 'inf' : 'undef';
         // round off to a reasonable number of significant figures
-        return self::RoundFloat(self::$ratNumer / self::$ratDenom, 7);
+        return self::RoundFloat((float) self::$ratNumer / self::$ratDenom, 7);
     }
 
     public static function GetRational32u($dataPt, $pos)
@@ -3703,7 +3703,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
         self::$ratNumer = self::Get16u($dataPt, $pos);
         self::$ratDenom = self::Get16u($dataPt, $pos + 2);
         if (!self::$ratDenom) return self::$ratNumer ? 'inf' : 'undef';
-        return self::RoundFloat(self::$ratNumer / self::$ratDenom, 7);
+        return self::RoundFloat((float) self::$ratNumer / self::$ratDenom, 7);
     }
 
     public static function GetRational64s($dataPt, $pos)
@@ -3711,7 +3711,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
         self::$ratNumer = self::Get32s($dataPt, $pos);
         self::$ratDenom = self::Get32s($dataPt, $pos + 4);
         if (!self::$ratDenom) return self::$ratNumer ? 'inf' : 'undef';
-        return self::RoundFloat(self::$ratNumer / self::$ratDenom, 10);
+        return self::RoundFloat((float) self::$ratNumer / self::$ratDenom, 10);
     }
 
     public static function GetRational64u($dataPt, $pos)
@@ -3719,7 +3719,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
         self::$ratNumer = self::Get32u($dataPt, $pos);
         self::$ratDenom = self::Get32u($dataPt, $pos + 4);
         if (!self::$ratDenom) return self::$ratNumer ? 'inf' : 'undef';
-        return self::RoundFloat(self::$ratNumer / self::$ratDenom, 10);
+        return self::RoundFloat((float) self::$ratNumer / self::$ratDenom, 10);
     }
 
     public static function GetFixed16s($dataPt, $pos)
@@ -4069,7 +4069,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
                 $valPt = $new;
                 $rtnVal = 1;
             }
-        } elseif ($valPt instanceof ScalarRef) {
+        } elseif (self::IsScalarRef($valPt)) {
             $val = $valPt->value;   // make a copy to avoid filtering twice
             $rtnVal = $this->Filter($filter, $val);
             $valPt = new ScalarRef($val);
@@ -4094,7 +4094,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     public function Printable($outStr, $maxLen = null)
     {
         if ($outStr === null) return '(undef)';
-        if ($outStr instanceof ScalarRef) return '(Binary data ' . strlen(Perl::str($outStr->value)) . ' bytes)';
+        if (self::IsScalarRef($outStr)) return '(Binary data ' . strlen(Perl::str($outStr->value)) . ' bytes)';
         $outStr = preg_replace('/[\x01-\x1f\x7f-\xff]/', '.', Perl::str($outStr));
         $outStr = str_replace("\0", '', $outStr);
         $verbose = $this->OPTIONS['Verbose'];
@@ -4961,11 +4961,11 @@ GR_TAG:     foreach ($rtnTags as $tag) {
                     }
                     if (self::$evalWarning) $this->Warn("RawConv $tag: " . self::CleanWarning());
                     if ($val === null) return null;
-                    $dataPt = $val instanceof ScalarRef ? Perl::str($val->value) : Perl::str($val);
+                    $dataPt = self::IsScalarRef($val) ? Perl::str($val->value) : Perl::str($val);
                     $subdirStart = 0;
                     $subdirLen = strlen($dataPt);
                 } elseif ($dataPt === null) {
-                    $dataPt = $val instanceof ScalarRef ? Perl::str($val->value) : Perl::str($val);
+                    $dataPt = self::IsScalarRef($val) ? Perl::str($val->value) : Perl::str($val);
                 }
                 if (!empty($subdir['Start'])) {
                     $valuePtr = 0;
@@ -6120,6 +6120,282 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     }
 
     //------------------------------------------------------------------------------
+    // Assemble a continuing fraction into a rational value
+    // Inputs: 0) numerator, 1) denominator
+    //         2-N) list of fraction denominators, deepest first
+    // Returns: numerator, denominator (in list context)
+    public static function AssembleRational($num, $denom, ...$fracs): array
+    {
+        foreach ($fracs as $frac) {
+            [$num, $denom] = [$frac * $num + $denom, $num];
+        }
+        return [$num, $denom];
+    }
+
+    //------------------------------------------------------------------------------
+    // Convert a floating point number (or 'inf' or 'undef' or a fraction) into a rational
+    // Inputs: 0) floating point number, 1) optional maximum value (defaults to 0x7fffffff)
+    // Returns: numerator, denominator (in list context)
+    // Notes:
+    // - the returned rational will be accurate to at least 8 significant figures if possible
+    // - eg. an input of 3.14159265358979 returns a rational of 104348/33215,
+    //   which equals    3.14159265392142 and is accurate to 10 significant figures
+    // - the returned rational will be reduced to the lowest common denominator except when
+    //   the input is a fraction in which case the input is returned unchanged
+    // - these routines were a bit tricky, but fun to write!
+    public static function Rationalize($val, $maxInt = null): array
+    {
+        $str = Perl::str($val);
+        if ($str === 'inf') return [1, 0];
+        if ($str === 'undef') return [0, 0];
+        if (preg_match('{^([-+]?\d+)/(\d+)$}', $str, $m)) return [$m[1], $m[2]]; // accept fractional values
+        // Note: Just testing "if $val" doesn't work because '0.0' is true!  (ugghh!)
+        $val = Perl::num($val);
+        if ($val == 0) return [0, 1];
+        $sign = 1;
+        if ($val < 0) {
+            $val = -$val;
+            $sign = -1;
+        }
+        $num = $denom = null;
+        $fracs = [];
+        $frac = $val;
+        if (!$maxInt) $maxInt = 0x7fffffff;
+        for (;;) {
+            [$n, $d] = self::AssembleRational(Perl::int($frac + 0.5), 1, ...$fracs);
+            if ($n > $maxInt or $d > $maxInt) {
+                if ($num !== null) break;
+                if ($val < 1) return [$sign, $maxInt];
+                return [$sign * $maxInt, 1];
+            }
+            [$num, $denom] = [$n, $d];      // save last good values
+            $err = ($n / $d - $val) / $val; // get error of this rational
+            if (abs($err) < 1e-8) break;    // all done if error is small
+            $int = Perl::int($frac);
+            array_unshift($fracs, $int);
+            $frac -= $int;
+            if (!$frac) break;
+            $frac = 1 / $frac;
+        }
+        return [$num * $sign, $denom];
+    }
+
+    //------------------------------------------------------------------------------
+    // Utility routines to for writing binary data values
+    // Inputs: 0) value, 1) data ref, 2) offset
+    // Notes: prototype is (@) so values can be passed from list if desired
+    public static function Set16s($value, &$dataPt = null, $pos = null)
+    {
+        $val = Perl::num($value);
+        if ($val < 0) $val += 0x10000;
+        return func_num_args() > 1 ? self::Set16u($val, $dataPt, $pos) : self::Set16u($val);
+    }
+
+    public static function Set32s($value, &$dataPt = null, $pos = null)
+    {
+        $val = Perl::num($value);
+        if ($val < 0) {
+            $val += 0xffffffff;
+            ++$val;
+        }
+        return func_num_args() > 1 ? self::Set32u($val, $dataPt, $pos) : self::Set32u($val);
+    }
+
+    public static function Set64u($value, &$dataPt = null, $pos = null)
+    {
+        $val = Perl::num($value);
+        $hi = Perl::int($val / 4294967296);
+        $lo = self::Set32u($val - $hi * 4294967296); // NOTE: subject to round-off errors!
+        $hi = self::Set32u($hi);
+        $val = self::GetByteOrder() === 'MM' ? $hi . $lo : $lo . $hi;
+        if (func_num_args() > 1 and $dataPt !== null) self::PutData($dataPt, $pos, $val);
+        return $val;
+    }
+
+    public static function Set64s($value, &$dataPt = null, $pos = null)
+    {
+        $val = Perl::num($value);
+        if ($val < 0) $val += 4294967296 * 4294967296; // (temporary hack won't really work due to round-off errors)
+        return func_num_args() > 1 ? self::Set64u($val, $dataPt, $pos) : self::Set64u($val);
+    }
+
+    public static function SetRational64u($value, &$dataPt = null, $pos = null)
+    {
+        [$numer, $denom] = self::Rationalize($value, 0xffffffff);
+        $val = self::Set32u($numer) . self::Set32u($denom);
+        if (func_num_args() > 1 and $dataPt !== null) self::PutData($dataPt, $pos, $val);
+        return $val;
+    }
+
+    public static function SetRational64s($value, &$dataPt = null, $pos = null)
+    {
+        [$numer, $denom] = self::Rationalize($value);
+        $val = self::Set32s($numer) . self::Set32u($denom);
+        if (func_num_args() > 1 and $dataPt !== null) self::PutData($dataPt, $pos, $val);
+        return $val;
+    }
+
+    public static function SetRational32u($value, &$dataPt = null, $pos = null)
+    {
+        [$numer, $denom] = self::Rationalize($value, 0xffff);
+        $val = self::Set16u($numer) . self::Set16u($denom);
+        if (func_num_args() > 1 and $dataPt !== null) self::PutData($dataPt, $pos, $val);
+        return $val;
+    }
+
+    public static function SetRational32s($value, &$dataPt = null, $pos = null)
+    {
+        [$numer, $denom] = self::Rationalize($value, 0x7fff);
+        $val = self::Set16s($numer) . self::Set16u($denom);
+        if (func_num_args() > 1 and $dataPt !== null) self::PutData($dataPt, $pos, $val);
+        return $val;
+    }
+
+    public static function SetFixed16u($value, &$dataPt = null, $pos = null)
+    {
+        $val = Perl::int(Perl::num($value) * 0x100 + 0.5);
+        return func_num_args() > 1 ? self::Set16u($val, $dataPt, $pos) : self::Set16u($val);
+    }
+
+    public static function SetFixed16s($value, &$dataPt = null, $pos = null)
+    {
+        $val = Perl::num($value);
+        $val = Perl::int($val * 0x100 + ($val < 0 ? -0.5 : 0.5));
+        return func_num_args() > 1 ? self::Set16s($val, $dataPt, $pos) : self::Set16s($val);
+    }
+
+    public static function SetFixed32u($value, &$dataPt = null, $pos = null)
+    {
+        $val = Perl::int(Perl::num($value) * 0x10000 + 0.5);
+        return func_num_args() > 1 ? self::Set32u($val, $dataPt, $pos) : self::Set32u($val);
+    }
+
+    public static function SetFixed32s($value, &$dataPt = null, $pos = null)
+    {
+        $val = Perl::num($value);
+        $val = Perl::int($val * 0x10000 + ($val < 0 ? -0.5 : 0.5));
+        return func_num_args() > 1 ? self::Set32s($val, $dataPt, $pos) : self::Set32s($val);
+    }
+
+    public static function SetFloat($value, &$dataPt = null, $pos = null)
+    {
+        // (PHP: pack in the current byte order instead of native order + SwapBytes)
+        $val = pack(self::GetByteOrder() === 'MM' ? 'G' : 'g', (float) Perl::num($value));
+        if (func_num_args() > 1 and $dataPt !== null) self::PutData($dataPt, $pos, $val);
+        return $val;
+    }
+
+    public static function SetDouble($value, &$dataPt = null, $pos = null)
+    {
+        // swap 32-bit words (ARM quirk) and bytes if necessary
+        $val = pack(self::GetByteOrder() === 'MM' ? 'E' : 'e', (float) Perl::num($value));
+        if (func_num_args() > 1 and $dataPt !== null) self::PutData($dataPt, $pos, $val);
+        return $val;
+    }
+
+    // (Perl: substr($$dataPt, $pos, length($val)) = $val)
+    private static function PutData(&$dataPt, $pos, string $val): void
+    {
+        $dataPt = substr_replace((string) $dataPt, $val, (int) $pos, strlen($val));
+    }
+
+    //------------------------------------------------------------------------------
+    // hash lookups for writing binary data values
+    private const array WRITE_VALUE_PROC = [
+        'int8s' => 'Set8s',
+        'int8u' => 'Set8u',
+        'int16s' => 'Set16s',
+        'int16u' => 'Set16u',
+        'int16uRev' => 'Set16uRev',
+        'int32s' => 'Set32s',
+        'int32u' => 'Set32u',
+        'int64s' => 'Set64s',
+        'int64u' => 'Set64u',
+        'rational32s' => 'SetRational32s',
+        'rational32u' => 'SetRational32u',
+        'rational64s' => 'SetRational64s',
+        'rational64u' => 'SetRational64u',
+        'fixed16u' => 'SetFixed16u',
+        'fixed16s' => 'SetFixed16s',
+        'fixed32u' => 'SetFixed32u',
+        'fixed32s' => 'SetFixed32s',
+        'float' => 'SetFloat',
+        'double' => 'SetDouble',
+        'ifd' => 'Set32u',
+    ];
+
+    //------------------------------------------------------------------------------
+    // write binary data value (with current byte ordering)
+    // Inputs: 0) value, 1) format string
+    //         2) number of values:
+    //               undef = 1 for numerical types, or data length for string/undef types
+    //                  -1 = number of space-delimited values in the input string
+    //         3) optional data reference, 4) value offset (may be negative for bytes from end)
+    // Returns: packed value (and sets value in data) or undef on error
+    // Notes: May modify input value to round for integer formats
+    //        (PHP: the input value is not modified)
+    public static function WriteValue($val, $format, $count = null, &$dataPt = null, $offset = null)
+    {
+        $proc = self::WRITE_VALUE_PROC[$format] ?? null;
+        $hasData = (func_num_args() > 3 and $dataPt !== null);
+
+        if ($proc) {
+            $vals = Perl::split(' ', $val);
+            if ($count) {
+                if ($count < 0) $count = count($vals);
+            } else {
+                $count = 1;   // assume 1 if count not specified
+            }
+            $packed = '';
+            while ($count--) {
+                $val = array_shift($vals);
+                if ($val === null) return null;
+                // validate numerical formats
+                if (str_starts_with($format, 'int')) {
+                    if (!(self::IsInt($val) or self::IsHex($val))) {
+                        if (!self::IsFloat($val)) return null;
+                        // round to nearest integer
+                        $val = Perl::num($val);
+                        $val = Perl::int($val + ($val < 0 ? -0.5 : 0.5));
+                    }
+                } elseif (!self::IsFloat($val)) {
+                    if (!(str_starts_with($format, 'rational') and ($val === 'inf' or
+                        $val === 'undef' or self::IsRational($val)))) return null;
+                }
+                $packed .= self::$proc($val);
+            }
+        } elseif ($format === 'string' or $format === 'undef') {
+            $val = Perl::str($val);
+            if ($format === 'string') $val .= "\0";   // null-terminate strings
+            if ($count and $count > 0) {
+                $diff = $count - strlen($val);
+                if ($diff) {
+                    // adjust length of string to match specified count
+                    if ($diff < 0) {
+                        if ($format === 'string') {
+                            if (!$count) return null;
+                            $val = substr($val, 0, $count - 1) . "\0";
+                        } else {
+                            $val = substr($val, 0, (int) $count);
+                        }
+                    } else {
+                        $val .= str_repeat("\0", (int) $diff);
+                    }
+                }
+            } else {
+                $count = strlen($val);
+            }
+            if ($hasData) $dataPt = substr_replace((string) $dataPt, $val, (int) $offset, (int) $count);
+            return $val;
+        } else {
+            self::PerlWarn("Sorry, Can't write $format values on this platform\n");
+            return null;
+        }
+        if ($hasData) self::PutData($dataPt, $offset, $packed);
+        return $packed;
+    }
+
+    //------------------------------------------------------------------------------
     // return the number of days in a month (from Shift.pl)
     // Inputs: 0) month number (Jan=1, may be outside range), 1) year
     // Returns: number of days in month
@@ -6240,7 +6516,13 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     /** Perl hash key of a value */
     private static function HashKey($val): string
     {
-        return $val instanceof ScalarRef ? Perl::str($val->value) : Perl::str($val);
+        return Perl::str($val);
+    }
+
+    /** Perl: ref $val eq 'SCALAR' (binary data; a reference to a reference is a 'REF') */
+    public static function IsScalarRef($val): bool
+    {
+        return $val instanceof ScalarRef and !is_array($val->value) and !is_object($val->value);
     }
 
     /** Perl join() */
