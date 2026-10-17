@@ -625,7 +625,7 @@ static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, arra
 
 ==== 9a7735c8f9 RawConv
 static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
-    $a = Perl::split('/\0/', \strlen(Perl::str($val)) < 20 ? null : substr(Perl::str($val), 20));
+    $a = Perl::split('/\0/', substr(Perl::str($val), 20));
     return $a;
 }
 

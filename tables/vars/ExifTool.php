@@ -7,8 +7,14 @@ namespace Image\ExifTool\Vars;
 /** Package variables and file lexicals of Image::ExifTool */
 final class ExifTool
 {
+    /** package @EXPORT_FAIL */
+    public static $EXPORT_FAIL = [];
+
     /** package $RELEASE */
     public static $RELEASE = '';
+
+    /** package %UserDefined */
+    public static $UserDefined = [];
 
     /** lexical %allGroupsExifTool */
     public static $allGroupsExifTool = [0 => 'ExifTool', 1 => 'ExifTool', 2 => 'ExifTool'];
@@ -296,6 +302,9 @@ final class ExifTool
         'WB_RGGBLevels' => ['Samsung-WB_RGGBLevels', 'Canon-WB_RGGBLevels'],
         'ZoomedPreviewImage' => ['Olympus-ZoomedPreviewImage'],
     ];
+
+    /** package @configFiles */
+    public static $configFiles = [];
 
     /** lexical %createTypes */
     public static $createTypes = ['DR4' => 1, 'EXIF' => 1, 'EXV' => 1, 'ICC' => 1, 'MIE' => 1, 'VRD' => 1, 'XMP' => 1];
@@ -1539,6 +1548,12 @@ final class ExifTool
     /** lexical %onlyWriteFile */
     public static $onlyWriteFile = ['RIFF' => ['WEBP']];
 
+    /** package %pluginTags */
+    public static $pluginTags = [];
+
+    /** package @pluginTags */
+    public static $pluginTags_a = [];
+
     /** package %previewImageTagInfo */
     public static $previewImageTagInfo = [
         'DataTag' => 'PreviewImage',
@@ -1641,6 +1656,9 @@ final class ExifTool
         'WRITE_PROC' => 1,
     ];
 
+    /** package %static_vars */
+    public static $static_vars = [];
+
     /** package @tableOrder */
     public static $tableOrder = ['Image::ExifTool::Composite'];
 
@@ -1659,11 +1677,17 @@ final class ExifTool
     /** package %unpackStd */
     public static $unpackStd = ['C' => 'C', 'L' => 'N', 'S' => 'n', 'c' => 'c'];
 
+    /** package %userLens */
+    public static $userLens = [];
+
     /** lexical %weakMagic */
     public static $weakMagic = ['MP3' => 1];
 
+    /** lexical %writeTypes */
+    public static $writeTypes = [];
+
     /** lexical @writeTypes */
-    public static $writeTypes = [
+    public static $writeTypes_2 = [
         'JPEG',
         'TIFF',
         'GIF',
@@ -1695,9 +1719,6 @@ final class ExifTool
         'FLIF',
         'RIFF',
     ];
-
-    /** lexical %writeTypes */
-    public static $writeTypes_2 = [];
 
     /** package $xmpAPP1hdr */
     public static $xmpAPP1hdr = "http://ns.adobe.com/xap/1.0/\x00";

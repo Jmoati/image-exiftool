@@ -340,7 +340,7 @@ $f_b00814e750 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^\xf8\xab\x72\x1e\x84\x73\x44\xa0\xb8\xc8\x1b\x04\x82\x6e\x07\x24/s', $valPt);
 };
 $f_9a7735c8f9 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
-    $a = Perl::split('/\0/', \strlen(Perl::str($val)) < 20 ? null : substr(Perl::str($val), 20));
+    $a = Perl::split('/\0/', substr(Perl::str($val), 20));
     return $a;
 };
 $f_ae34cbd690 = static function (ExifTool $self, $valPt, $format, $count) {

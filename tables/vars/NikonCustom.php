@@ -7,6 +7,9 @@ namespace Image\ExifTool\Vars;
 /** Package variables and file lexicals of Image::ExifTool::NikonCustom */
 final class NikonCustom
 {
+    /** package @EXPORT_FAIL */
+    public static $EXPORT_FAIL = [];
+
     /** package %buttonsZ8 */
     public static $buttonsZ8 = [
         'PrintConv' => [

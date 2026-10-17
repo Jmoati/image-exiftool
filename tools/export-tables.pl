@@ -94,9 +94,10 @@ sub WalkPackage
             next;
         }
         next if $k =~ /^(ISA|EXPORT|EXPORT_OK|EXPORT_TAGS|VERSION|AUTOLOAD|BEGIN|END|INC|ENV|ARGV|_<.*|[^\w].*|\d+)$/;
-        $varsOf{$pkg}{"%$k"} = $h if $h and %$h;
+        # (empty ones too: %Image::ExifTool::userLens is filled at run time)
+        $varsOf{$pkg}{"%$k"} = $h if $h;
         my $a = *{$glob}{ARRAY};
-        $varsOf{$pkg}{"\@$k"} = $a if $a and @$a;
+        $varsOf{$pkg}{"\@$k"} = $a if $a and (@$a or $k !~ /^(ARGV|INC|_)$/ and defined *{$glob}{ARRAY});
         my $s = *{$glob}{SCALAR};
         $varsOf{$pkg}{"\$$k"} = $s if $s and defined $$s and not ref $$s and $k ne 'a' and $k ne 'b';
     }
@@ -408,7 +409,7 @@ sub SortKeys
     return sort {
         my $na = $a =~ /^-?\d+(?:\.\d+)?$/ ? 1 : 0;
         my $nb = $b =~ /^-?\d+(?:\.\d+)?$/ ? 1 : 0;
-        $na && $nb ? $a <=> $b : $na ? -1 : $nb ? 1 : $a cmp $b
+        $na && $nb ? ($a <=> $b || $a cmp $b) : $na ? -1 : $nb ? 1 : $a cmp $b
     } keys %$h;
 }
 

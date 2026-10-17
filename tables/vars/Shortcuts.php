@@ -245,4 +245,7 @@ final class Shortcuts
         ],
     ];
 
+    /** package %UserDefined */
+    public static $UserDefined = [];
+
 }
