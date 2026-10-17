@@ -3654,7 +3654,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
         $pos = (int) $pos;
         $dataPt = (string) $dataPt;
         if ($pos < 0 or $pos + $bytes > strlen($dataPt)) return null;
-        $big = self::$currentByteOrder === 'MM';
+        $big = self::DoUnpackBigEndian();
         switch ($template) {
             case 's':
                 $val = unpack($big ? 'n' : 'v', $dataPt, $pos)[1];
@@ -3676,7 +3676,18 @@ GR_TAG:     foreach ($rtnTags as $tag) {
         $pos = (int) $pos;
         $dataPt = (string) $dataPt;
         if ($pos < 0 or $pos + 8 > strlen($dataPt)) return null;
-        return unpack(self::$currentByteOrder === 'MM' ? 'E' : 'e', $dataPt, $pos)[1];
+        return unpack(self::DoUnpackBigEndian() ? 'E' : 'e', $dataPt, $pos)[1];
+    }
+
+    // Byte order used by DoUnpack/DoUnpackDbl: like Perl's $swapBytes, which stays undef (no swap,
+    // so native order) until SetByteOrder is first called, while Get16u/Get32u default to 'MM'
+    private static function DoUnpackBigEndian(): bool
+    {
+        static $nativeBig = null;
+        if (null === self::$swapBytes) {
+            return $nativeBig ??= pack('S', 1) === "\x00\x01";
+        }
+        return self::$currentByteOrder === 'MM';
     }
 
     // Inputs: 0) data reference, 1) offset into data

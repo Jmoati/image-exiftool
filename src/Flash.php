@@ -266,101 +266,13 @@ final class Flash
                 }
             }
             if ($buff !== null) {
-                // ponytail: FLAC.pm isn't ported yet, so the Audio/Video tables (PROCESS_PROC
-                // FLAC::ProcessBitStream) use the copy below; delete both once FLAC.php exists
-                $proc = null;
-                if ($tagInfo->BitMask and !is_callable('Image\ExifTool\FLAC::ProcessBitStream')) $proc = self::ProcessBitStream(...);
                 $et->HandleTag($tagTablePtr, $type, null,
                     DataPt  : $buff,
                     DataPos : $raf->Tell() - strlen($buff),
-                    ProcessProc : $proc,
                 );
             }
             if (!$flags) break;
             if ($len and !$raf->Seek($len, 1)) break;
-        }
-        return 1;
-    }
-
-    //------------------------------------------------------------------------------
-    // Process information in a bit stream
-    // (PHP: copy of Image::ExifTool::FLAC::ProcessBitStream, see ProcessFLV)
-    // Inputs: 0) ExifTool object ref, 1) dirInfo ref, 2) tag table ref
-    // Notes: Byte order is used to determine the ordering of bits in the stream:
-    // 'MM' = bit 0 is most significant, 'II' = bit 0 is least significant
-    // - can handle arbitrarily wide values (eg. 8-byte or larger integers)
-    private static function ProcessBitStream(ExifTool $et, array &$dirInfo, TagTable $tagTablePtr)
-    {
-        $dataPt   = $dirInfo['DataPt'];
-        $dataPos  = $dirInfo['DataPos'] ?? null;
-        $dirStart = ($dirInfo['DirStart'] ?? null) ?: 0;
-        $dirLen   = ($dirInfo['DirLen'] ?? null) ?: (strlen($dataPt) - $dirStart);
-        $verbose  = $et->Options('Verbose');
-        $byteOrder = ExifTool::GetByteOrder();
-
-        if ($verbose) {
-            $et->VPrint(0, "  + [BitStream directory, $dirLen bytes, '{$byteOrder}' order]\n");
-        }
-        $keys = $tagTablePtr->keys();
-        sort($keys, SORT_STRING);
-        foreach ($keys as $tag) {
-            if (!preg_match('/^Bit(\d+)-?(\d+)?/', (string) $tag, $m)) continue;
-            [$b1, $b2] = [(int) $m[1], (int) (($m[2] ?? null) ?: $m[1])];   // start/end bit numbers in stream
-            [$i1, $i2] = [Perl::int($b1 / 8), Perl::int($b2 / 8)];  // start/end byte numbers
-            [$f1, $f2] = [$b1 % 8, $b2 % 8]; // start/end bit numbers within each byte
-            if ($i2 >= $dirLen) break;
-            $val = $extra = null;
-            // if Format is unspecified, convert the specified number of bits to an unsigned integer,
-            // otherwise allow HandleTag to convert whole bytes the normal way (via undefined $val)
-            if (!($tagTablePtr[$tag] instanceof TagInfo) or !$tagTablePtr[$tag]->Format) {
-                $val = 0;
-                if ($verbose and ($f1 != 0 or $f2 != 7)) $extra = ', Mask=0x';
-                if ($byteOrder === 'MM') {
-                    // loop from high byte to low byte
-                    for ($i = $i1; $i <= $i2; ++$i) {
-                        $mask = 0xff;
-                        if ($i == $i1 and $f1) {
-                            // mask off high bits in first word (0 is high bit)
-                            for ($_ = 8 - $f1; $_ <= 7; ++$_) $mask ^= (1 << $_);
-                        }
-                        if ($i == $i2 and $f2 < 7) {
-                            // mask off low bits in last word (7 is low bit)
-                            for ($_ = 0; $_ <= 6 - $f2; ++$_) $mask ^= (1 << $_);
-                        }
-                        $val = $val * 256 + ($mask & ExifTool::Get8u($dataPt, $i + $dirStart));
-                        if ($extra) $extra .= Perl::sprintf('%.2x', $mask);
-                    }
-                } else {
-                    // (FLAC is big-endian, but support little-endian bit streams
-                    //  so this routine can be used by other modules)
-                    // loop from high byte to low byte
-                    for ($i = $i2; $i >= $i1; --$i) {
-                        $mask = 0xff;
-                        if ($i == $i1 and $f1) {
-                            // mask off low bits in first word (0 is low bit)
-                            for ($_ = 0; $_ <= $f1 - 1; ++$_) $mask ^= (1 << $_);
-                        }
-                        if ($i == $i2 and $f2 < 7) {
-                            // mask off high bits in last word (7 is high bit)
-                            for ($_ = $f2 + 1; $_ <= 7; ++$_) $mask ^= (1 << $_);
-                        }
-                        $val = $val * 256 + ($mask & ExifTool::Get8u($dataPt, $i + $dirStart));
-                        if ($extra) $extra .= Perl::sprintf('%.2x', $mask);
-                    }
-                }
-                // shift word down until low bit is in position 0
-                while (!($mask & 0x01)) {
-                    $val /= 2;
-                    $mask >>= 1;
-                }
-            }
-            $et->HandleTag($tagTablePtr, $tag, $val,
-                DataPt  : $dataPt,
-                DataPos : $dataPos,
-                Start   : $dirStart + $i1,
-                Size    : $i2 - $i1 + 1,
-                Extra   : $extra,
-            );
         }
         return 1;
     }
