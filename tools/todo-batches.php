@@ -6,6 +6,13 @@
 declare(strict_types=1);
 
 $size = (int) ($argv[1] ?? 220);
+// modules another agent is translating right now: --exclude=Apple,PLIST
+$exclude = [];
+foreach ($argv as $arg) {
+    if (str_starts_with($arg, '--exclude=')) {
+        $exclude = explode(',', substr($arg, 10));
+    }
+}
 $dir = __DIR__.'/../tables/_todo';
 // modules translated first (most common files), the rest alphabetically
 $priority = ['ExifTool', 'Exif', 'GPS', 'JPEG', 'JFIF', 'XMP', 'IPTC', 'ICC_Profile', 'Photoshop', 'MPF', 'PNG',
@@ -22,6 +29,9 @@ $seen = [];
 $byModule = [];
 foreach ($files as $file) {
     $module = basename($file, '.txt');
+    if (in_array($module, $exclude, true)) {
+        continue;
+    }
     foreach (preg_split('/^(?=====)/m', file_get_contents($file), -1, PREG_SPLIT_NO_EMPTY) as $entry) {
         if (!preg_match('/^==== (\w+)/', $entry, $m) || isset($seen[$m[1]])) {
             continue;
