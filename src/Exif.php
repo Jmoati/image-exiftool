@@ -1827,7 +1827,7 @@ final class Exif
             // calculate image data hash if requested
             if ($doHash) self::AddImageDataHash($et, $dirInfo, $offsetInfo);
             // validate image data offsets for this IFD (note: modifies %offsetInfo)
-            if ($validate) Validate::ValidateOffsetInfo($et, $offsetInfo, $dirName, $inMakerNotes);
+            if ($validate and class_exists(Validate::class)) Validate::ValidateOffsetInfo($et, $offsetInfo, $dirName, $inMakerNotes);
         }
 
         // scan for subsequent IFD's if specified
