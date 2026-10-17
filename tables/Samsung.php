@@ -7,14 +7,41 @@ namespace Image\ExifTool;
 $f_06c813ca7a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::unpack('H*', $val)[0];
 };
-$f_313126bd3a = static function (mixed ...$args) { throw new NotPorted('ValueConv 313126bd3a'); };
-$f_f1ef17801d = static function (mixed ...$args) { throw new NotPorted('ValueConv f1ef17801d'); };
-$f_a17511e320 = static function (mixed ...$args) { throw new NotPorted('Hook a17511e320'); };
+$f_313126bd3a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if (\strlen($vals[0]->value) != Perl::num($vals[1] ?? null) * Perl::num($vals[2] ?? null)) {
+        return null;
+    }
+    $tiff = ExifTool::MakeTiffHeader($vals[1], $vals[2], 1, 8) . $vals[0]->value;
+    return new ScalarRef($tiff);
+};
+$f_f1ef17801d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $a = Perl::split(' ', $vals[0] ?? null);
+    $b = Perl::split(' ', $vals[1] ?? null);
+    foreach (array_keys($a) as $i) {
+        $a[$i] = Perl::num($a[$i]) - Perl::num($b[$i] ?? null);
+    }
+    return implode(' ', array_map(Perl::str(...), $a));
+};
+$f_a17511e320 = static function (ExifTool $self, &$format, &$varSize, $size, $dataPt, $pos): void {
+    if (Perl::num($size) >= 96) {
+        $tmp = substr($dataPt, $pos, 64);
+        // (have seen 0x01,0x03 and 0x07)
+        if (preg_match('/[\x01-\x09]\x00\xff\xff/', $tmp, $m, PREG_OFFSET_CAPTURE)
+            && !(($m[0][1] + \strlen($m[0][0])) % 4)) {
+            $self->DepthMapTagPos = $m[0][1] + \strlen($m[0][0]);
+            $varSize += $self->DepthMapTagPos - 32;
+        }
+    }
+};
 $f_d169d7671a = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return null;
 };
-$f_80e44496b1 = static function (mixed ...$args) { throw new NotPorted('Condition 80e44496b1'); };
-$f_1ebbf70bf0 = static function (mixed ...$args) { throw new NotPorted('PrintConv 1ebbf70bf0'); };
+$f_80e44496b1 = static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->DepthMapTagPos;
+};
+$f_1ebbf70bf0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ucfirst(strtolower(Perl::str($val)));
+};
 $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintExposureTime($val);
 };
@@ -24,62 +51,146 @@ $f_4b82d7ad40 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_9c98df8b6c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f', $val);
 };
-$f_b0002f8635 = static function (mixed ...$args) { throw new NotPorted('PrintConv b0002f8635'); };
-$f_a77d8bb127 = static function (mixed ...$args) { throw new NotPorted('RawConv a77d8bb127'); };
-$f_491d3cb6df = static function (mixed ...$args) { throw new NotPorted('Condition 491d3cb6df'); };
+$f_b0002f8635 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ? Perl::sprintf('%+.1f', $val) : 0;
+};
+$f_a77d8bb127 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (!preg_match('/^SAMSUNG/', Perl::str($val))) {
+        return null;
+    }
+    $self->SamsungMP4 = 1;
+    return $val;
+};
+$f_491d3cb6df = static function (ExifTool $self, $valPt, $format, $count) {
+    return $self->SamsungMP4;
+};
 $f_776710f713 = static function ($start, $base = 0) {
     return $start;
 };
-$f_2d52aafe35 = static function (mixed ...$args) { throw new NotPorted('Condition 2d52aafe35'); };
-$f_f35ab42c3c = static function (mixed ...$args) { throw new NotPorted('FormatCount f35ab42c3c'); };
-$f_96e91196b7 = static function (mixed ...$args) { throw new NotPorted('ValueConv 96e91196b7'); };
-$f_ea67e5c065 = static function (mixed ...$args) { throw new NotPorted('Condition ea67e5c065'); };
+$f_2d52aafe35 = static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^[^\x00]\x00\x00\x00/', $valPt);
+};
+$f_f35ab42c3c = static function (array $val, $size, $varSize, ExifTool $self) {
+    return $size - 44;
+};
+$f_96e91196b7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) - 4;
+};
+$f_ea67e5c065 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->SamsungTagName) !== 'DualShot_2';
+};
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_c1de75adb7 = static function (mixed ...$args) { throw new NotPorted('ValueConv c1de75adb7'); };
+$f_c1de75adb7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::ConvertUnixTime(Perl::num($val) / 1e3, 1, 3);
+};
 $f_ba67746b79 = static function (ExifTool $self, $valPt, $format, $count) {
     return \strlen($valPt) == 12;
 };
-$f_2f0a59a86b = static function (mixed ...$args) { throw new NotPorted('ValueConv 2f0a59a86b'); };
-$f_d71c449a1c = static function (mixed ...$args) { throw new NotPorted('Condition d71c449a1c'); };
-$f_6f42cbaf52 = static function (mixed ...$args) { throw new NotPorted('RawConv 6f42cbaf52'); };
-$f_20029733a1 = static function (mixed ...$args) { throw new NotPorted('Condition 20029733a1'); };
-$f_2e3336fedd = static function (mixed ...$args) { throw new NotPorted('Condition 2e3336fedd'); };
+$f_2f0a59a86b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(' ', Perl::unpack('x4N2', $val));
+};
+$f_d71c449a1c = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->DepthMapName) === 'DualShot_DepthMap_1';
+};
+$f_6f42cbaf52 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->DepthMapName = $val;
+};
+$f_20029733a1 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->SamsungTagName) === 'PhotoEditor_Re_Edit_Data';
+};
+$f_2e3336fedd = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->SamsungTagName) === 'Original_Path_Hash_Key';
+};
 $f_67c23481b4 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^\0{4}/', $valPt);
 };
-$f_f083d1874f = static function (mixed ...$args) { throw new NotPorted('ValueConv f083d1874f'); };
-$f_8850269b88 = static function (mixed ...$args) { throw new NotPorted('Condition 8850269b88'); };
+$f_f083d1874f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = preg_replace('/\x00\x00.*/', '', Perl::str($val), 1);
+    $val = preg_replace('/\x00 */', "\n", $val);
+    return $val;
+};
+$f_8850269b88 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->TIFF_TYPE) === 'SRW' && Perl::str($self->Model) !== 'EK-GN120';
+};
 $f_5879ccff58 = static function ($valuePtr = null, $val = null, $dirStart = null, $dataPt = null) {
     return $val;
 };
-$f_b3b084779b = static function (mixed ...$args) { throw new NotPorted('Condition b3b084779b'); };
-$f_5396013a83 = static function (mixed ...$args) { throw new NotPorted('Start 5396013a83'); };
-$f_6a8f5fe893 = static function (mixed ...$args) { throw new NotPorted('PrintConv 6a8f5fe893'); };
-$f_3d594e1db3 = static function (mixed ...$args) { throw new NotPorted('Condition 3d594e1db3'); };
-$f_c4ce3b175c = static function (mixed ...$args) { throw new NotPorted('ValueConv c4ce3b175c'); };
+$f_b3b084779b = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->TIFF_TYPE) === 'SRW';
+};
+$f_5396013a83 = static function ($valuePtr = null, $val = null, $dirStart = null, $dataPt = null) {
+    return Perl::num($val) - 36;
+};
+$f_6a8f5fe893 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return preg_match('/\d/', Perl::str($val)) ? Perl::str($val) . ' C' : $val;
+};
+$f_3d594e1db3 = static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^\w{5}/', $valPt);
+};
+$f_c4ce3b175c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return preg_replace('/ .*/', '', Perl::str($val), 1);
+};
 $f_be71053a96 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' mm';
 };
 $f_ddae2f7edc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 10;
 };
-$f_edc9eab8c2 = static function (mixed ...$args) { throw new NotPorted('RawConv edc9eab8c2'); };
-$f_aeb24e1832 = static function (mixed ...$args) { throw new NotPorted('RawConv aeb24e1832'); };
-$f_4a447f69fa = static function (mixed ...$args) { throw new NotPorted('RawConv 4a447f69fa'); };
-$f_2e02341390 = static function (mixed ...$args) { throw new NotPorted('RawConv 2e02341390'); };
-$f_321d502259 = static function (mixed ...$args) { throw new NotPorted('RawConv 321d502259'); };
-$f_5b0cbfc5f8 = static function (mixed ...$args) { throw new NotPorted('RawConv 5b0cbfc5f8'); };
-$f_d2d2b2f154 = static function (mixed ...$args) { throw new NotPorted('RawConv d2d2b2f154'); };
-$f_f326ec0de6 = static function (mixed ...$args) { throw new NotPorted('RawConv f326ec0de6'); };
-$f_3549cbfabe = static function (mixed ...$args) { throw new NotPorted('RawConv 3549cbfabe'); };
-$f_6e0f95f235 = static function (mixed ...$args) { throw new NotPorted('RawConv 6e0f95f235'); };
-$f_ec4e1c9650 = static function (mixed ...$args) { throw new NotPorted('RawConv ec4e1c9650'); };
-$f_45f65bceae = static function (mixed ...$args) { throw new NotPorted('RawConv 45f65bceae'); };
-$f_c4d170ca95 = static function (mixed ...$args) { throw new NotPorted('RawConv c4d170ca95'); };
-$f_588a82f62f = static function (mixed ...$args) { throw new NotPorted('FormatCount 588a82f62f'); };
-$f_4409cb753d = static function (mixed ...$args) { throw new NotPorted('RawConv 4409cb753d'); };
+$f_edc9eab8c2 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $self->EncryptionKey = Perl::split(' ', $val);
+    return $val;
+};
+$f_aeb24e1832 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Samsung::Crypt($self, $val, $tagInfo, '-0');
+};
+$f_4a447f69fa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Samsung::Crypt($self, $val, $tagInfo, -4);
+};
+$f_2e02341390 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Samsung::Crypt($self, $val, $tagInfo, -8);
+};
+$f_321d502259 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Samsung::Crypt($self, $val, $tagInfo, -1);
+};
+$f_5b0cbfc5f8 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Samsung::Crypt($self, $val, $tagInfo, 0);
+};
+$f_d2d2b2f154 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Samsung::Crypt($self, $val, $tagInfo, 4);
+};
+$f_f326ec0de6 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Samsung::Crypt($self, $val, $tagInfo, -2);
+};
+$f_3549cbfabe = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Samsung::Crypt($self, $val, $tagInfo, 0, '-0');
+};
+$f_6e0f95f235 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Samsung::Crypt($self, $val, $tagInfo, '-0', -7, -3);
+};
+$f_ec4e1c9650 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Samsung::Crypt($self, $val, $tagInfo, 8);
+};
+$f_45f65bceae = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Samsung::Crypt($self, $val, $tagInfo, 5);
+};
+$f_c4d170ca95 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Samsung::Crypt($self, $val, $tagInfo, 2);
+};
+$f_588a82f62f = static function (array $val, $size, $varSize, ExifTool $self) {
+    return $val[0x208] ?? null;
+};
+$f_4409cb753d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $pt = $self->ValidateImage(new ScalarRef($val), $tag);
+    if ($pt) {
+        $self->BASE += 0x20c;
+        $self->DOC_NUM = ++$self->DOC_COUNT;
+        $self->ExtractInfo($pt, ['ReEntry' => 1]);
+        $self->DOC_NUM = 0;
+    }
+    return $pt;
+};
 
 return [
     'load' => [

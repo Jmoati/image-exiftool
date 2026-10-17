@@ -10,12 +10,18 @@ $f_0a6503c132 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_770b7e2b24 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::unpack('N', $val)[0] ?? null;
 };
-$f_c8863b2298 = static function (mixed ...$args) { throw new NotPorted('ValueConv c8863b2298'); };
+$f_c8863b2298 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $self->Decode(\strlen($val) < 4 ? null : substr($val, 4), 'UTF16', 'MM');
+};
 $f_9c98df8b6c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f', $val);
 };
-$f_b76913b17f = static function (mixed ...$args) { throw new NotPorted('ValueConv b76913b17f'); };
-$f_d8c0bde29d = static function (mixed ...$args) { throw new NotPorted('PrintConv d8c0bde29d'); };
+$f_b76913b17f = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return preg_replace('/^[A-Za-z ]*/', '', Perl::str($val), 1);
+};
+$f_d8c0bde29d = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return strtr(Perl::str($val), '-', 'x');
+};
 $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintExposureTime($val);
 };
@@ -25,8 +31,12 @@ $f_438f87995e = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_4aeb53d8a5 = static function (mixed ...$args) { throw new NotPorted('ValueConv 4aeb53d8a5'); };
-$f_a7eda33df7 = static function (mixed ...$args) { throw new NotPorted('RawConv a7eda33df7'); };
+$f_4aeb53d8a5 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return preg_match('/^\d+$/', Perl::str($val)) ? ExifTool::ConvertUnixTime($val) : $val;
+};
+$f_a7eda33df7 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->CameraType = $val;
+};
 
 return [
     'load' => [

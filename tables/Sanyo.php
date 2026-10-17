@@ -22,8 +22,12 @@ $f_811b111291 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_8f0e71a82a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f mm', $val);
 };
-$f_1ebbf70bf0 = static function (mixed ...$args) { throw new NotPorted('PrintConv 1ebbf70bf0'); };
-$f_b0002f8635 = static function (mixed ...$args) { throw new NotPorted('PrintConv b0002f8635'); };
+$f_1ebbf70bf0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ucfirst(strtolower(Perl::str($val)));
+};
+$f_b0002f8635 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ? Perl::sprintf('%+.1f', $val) : 0;
+};
 $f_debf48792d = static function (mixed ...$args) { throw new NotPorted('RawConv debf48792d'); };
 $f_62fc89f6ac = static function (mixed ...$args) { throw new NotPorted('RawConv 62fc89f6ac'); };
 $f_1c8a7f5ea5 = static function (mixed ...$args) { throw new NotPorted('Condition 1c8a7f5ea5'); };

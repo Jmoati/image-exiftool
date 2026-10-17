@@ -8,9 +8,13 @@ $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt,
     return $self->ConvertDateTime($val);
 };
 $f_2aed912966 = static function (mixed ...$args) { throw new NotPorted('ValueConv 2aed912966'); };
-$f_ecab1e9a5d = static function (mixed ...$args) { throw new NotPorted('RawConv ecab1e9a5d'); };
+$f_ecab1e9a5d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->CodePage = $val;
+};
 $f_b54ccb7821 = static function (mixed ...$args) { throw new NotPorted('RawConv b54ccb7821'); };
-$f_cf74aeb6b6 = static function (mixed ...$args) { throw new NotPorted('ValueConv cf74aeb6b6'); };
+$f_cf74aeb6b6 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::ConvertUnixTime($val, 1);
+};
 
 return [
     'load' => [

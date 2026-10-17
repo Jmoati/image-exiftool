@@ -27,7 +27,9 @@ $f_8f0e71a82a = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_797e422167 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 256;
 };
-$f_e662e9c143 = static function (mixed ...$args) { throw new NotPorted('PrintConv e662e9c143'); };
+$f_e662e9c143 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ? Perl::str($val) . ' m' : 'inf';
+};
 $f_7b446e214d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1000;
 };
@@ -52,13 +54,13 @@ $f_a63541d7d7 = static function ($val, ExifTool $self, array $vals, array $prt, 
     return $val ? Exif::PrintExposureTime($val) : 'Bulb';
 };
 $f_d18cb03143 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
-    return $val ? 2 ** (6 - Perl::num($val) / 8) : 0;
+    return $val ? 2.0 ** (6 - Perl::num($val) / 8) : 0;
 };
 $f_02272264af = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintFNumber($val);
 };
 $f_da8878109c = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
-    return 2 ** ((Perl::num($val) / 8 - 1) / 2);
+    return 2.0 ** ((Perl::num($val) / 8 - 1) / 2);
 };
 $f_22d6c61b16 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' s';

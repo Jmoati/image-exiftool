@@ -13,17 +13,36 @@ $f_b2e41c1595 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_a0c64fe734 = static function (mixed ...$args) { throw new NotPorted('ValueConv a0c64fe734'); };
-$f_d086f2c3d3 = static function (mixed ...$args) { throw new NotPorted('ValueConv d086f2c3d3'); };
-$f_e062c0cfaa = static function (mixed ...$args) { throw new NotPorted('ValueConv e062c0cfaa'); };
-$f_7bdbdedf8f = static function (mixed ...$args) { throw new NotPorted('ValueConv 7bdbdedf8f'); };
-$f_7353747461 = static function (mixed ...$args) { throw new NotPorted('code:conv 7353747461'); };
+$f_a0c64fe734 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ASF::GetGUID($val);
+};
+$f_d086f2c3d3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return strtr(Perl::str($val), '-T', ': ');
+};
+$f_e062c0cfaa = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    // (89 leap years between 1601 and 1970)
+    $t = Perl::num($val) / 1e7 - (((1970 - 1601) * 365 + 89) * 24 * 3600);
+    return Perl::str(ExifTool::ConvertUnixTime($t)).'Z';
+};
+$f_7bdbdedf8f = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 1e7;
+};
+$f_7353747461 = static function ($val, $et) {
+    $et->ASF_STREAM_TYPE = (Vars\ASF::$streamType[Perl::str(ASF::GetGUID($val))] ?? null) ?: '';
+    return $val;
+};
 $f_22d6c61b16 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' s';
 };
-$f_99fdc41360 = static function (mixed ...$args) { throw new NotPorted('PrintConv 99fdc41360'); };
-$f_17211e2c45 = static function (mixed ...$args) { throw new NotPorted('Condition 17211e2c45'); };
-$f_638fe4ac1c = static function (mixed ...$args) { throw new NotPorted('Condition 638fe4ac1c'); };
+$f_99fdc41360 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return (Perl::int($val) & 0x7f).((Perl::int($val) & 0x8000) ? ' (encrypted)' : '');
+};
+$f_17211e2c45 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->ASF_STREAM_TYPE) === 'Audio';
+};
+$f_638fe4ac1c = static function (ExifTool $self, $valPt, $format, $count) {
+    return preg_match('/^(Video|JFIF|Degradable JPEG)$/', Perl::str($self->ASF_STREAM_TYPE));
+};
 
 return [
     'load' => [

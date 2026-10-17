@@ -4,7 +4,9 @@
 
 namespace Image\ExifTool;
 
-$f_16c7ed6979 = static function (mixed ...$args) { throw new NotPorted('Condition 16c7ed6979'); };
+$f_16c7ed6979 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($format) === 'string';
+};
 $f_3b5912c7d8 = static function (mixed ...$args) { throw new NotPorted('ValueConv 3b5912c7d8'); };
 $f_e074f8843d = static function (mixed ...$args) { throw new NotPorted('ValueConv e074f8843d'); };
 $f_1e2999e8a9 = static function (mixed ...$args) { throw new NotPorted('ValueConv 1e2999e8a9'); };
@@ -15,7 +17,9 @@ $f_1d8e1d18f7 = static function (mixed ...$args) { throw new NotPorted('ValueCon
 $f_80f3ca2302 = static function (mixed ...$args) { throw new NotPorted('ValueConv 80f3ca2302'); };
 $f_3c9685c4c3 = static function (mixed ...$args) { throw new NotPorted('ValueConv 3c9685c4c3'); };
 $f_9b86aafa14 = static function (mixed ...$args) { throw new NotPorted('PrintConv 9b86aafa14'); };
-$f_50e54f3cb2 = static function (mixed ...$args) { throw new NotPorted('Condition 50e54f3cb2'); };
+$f_50e54f3cb2 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($format) === 'int32u';
+};
 $f_54241c3f11 = static function (mixed ...$args) { throw new NotPorted('ValueConv 54241c3f11'); };
 $f_35a9a0c90a = static function (mixed ...$args) { throw new NotPorted('ValueConv 35a9a0c90a'); };
 $f_18cba2cf9b = static function (mixed ...$args) { throw new NotPorted('Condition 18cba2cf9b'); };

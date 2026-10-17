@@ -4,7 +4,9 @@
 
 namespace Image\ExifTool;
 
-$f_74f2e67d1a = static function (mixed ...$args) { throw new NotPorted('FormatCount 74f2e67d1a'); };
+$f_74f2e67d1a = static function (array $val, $size, $varSize, ExifTool $self) {
+    return $val[4] ?? null;
+};
 $f_c10c4f2466 = static function (array $val, $size, $varSize, ExifTool $self) {
     return $val[6] ?? null;
 };

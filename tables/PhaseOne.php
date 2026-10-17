@@ -16,7 +16,9 @@ $f_b83b0ea072 = static function (mixed ...$args) { throw new NotPorted('PrintCon
 $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintExposureTime($val);
 };
-$f_d2cf720ed7 = static function (mixed ...$args) { throw new NotPorted('ValueConv d2cf720ed7'); };
+$f_d2cf720ed7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return abs(Perl::num($val)) < 100 ? 2 ** (-Perl::num($val)) : 0;
+};
 $f_9c98df8b6c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f', $val);
 };

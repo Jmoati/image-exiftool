@@ -15,7 +15,9 @@ $f_b94c7bf60c = static function ($val, ExifTool $self, array $vals, array $prt, 
     return Perl::num($val) * 100;
 };
 $f_bcf0582141 = static function (mixed ...$args) { throw new NotPorted('Condition bcf0582141'); };
-$f_bd1a8a43d0 = static function (mixed ...$args) { throw new NotPorted('PrintConv bd1a8a43d0'); };
+$f_bd1a8a43d0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ? $val : 'Auto';
+};
 $f_db49c4f56d = static function (mixed ...$args) { throw new NotPorted('Condition db49c4f56d'); };
 $f_f3f197306a = static function (mixed ...$args) { throw new NotPorted('Condition f3f197306a'); };
 

@@ -7,12 +7,18 @@ namespace Image\ExifTool;
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_a3035551af = static function (mixed ...$args) { throw new NotPorted('ValueConv a3035551af'); };
-$f_5a2fb97b64 = static function (mixed ...$args) { throw new NotPorted('ValueConv 5a2fb97b64'); };
+$f_a3035551af = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::ConvertUnixTime(Perl::num($val) - ((66 * 365 + 17) * 24 * 3600));
+};
+$f_5a2fb97b64 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $self->Decode($val, 'MacRoman');
+};
 $f_b2e41c1595 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertDuration($val);
 };
-$f_48a32c90ce = static function (mixed ...$args) { throw new NotPorted('RawConv 48a32c90ce'); };
+$f_48a32c90ce = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return (($vals[0] ?? null) && ($vals[1] ?? null)) ? Perl::num($vals[1]) / Perl::num($vals[0]) : null;
+};
 
 $d_1 = null /* circular reference */;
 

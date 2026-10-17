@@ -7,8 +7,18 @@ namespace Image\ExifTool;
 $f_4590050baf = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::str($format) === 'int16u';
 };
-$f_5ca75bdff8 = static function (mixed ...$args) { throw new NotPorted('RawConv 5ca75bdff8'); };
-$f_74930d334f = static function (mixed ...$args) { throw new NotPorted('ValueConv 74930d334f'); };
+$f_5ca75bdff8 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (!$val) {
+        return null;
+    }
+    ExifTool::RequireModule('Image::ExifTool::Olympus'); // (to load Composite LensID)
+    return $val;
+};
+$f_74930d334f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $_ = Perl::sprintf('%.4x', $val);
+    $_ = preg_replace('/(..)(..)/', '$2 $1', $_, 1);
+    return $_;
+};
 $f_be71053a96 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' mm';
 };
@@ -32,8 +42,12 @@ $f_5741fef021 = static function (mixed ...$args) { throw new NotPorted('ValueCon
 $f_1f2667c7fa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->ValidateImage(new ScalarRef($val), $tag);
 };
-$f_43bee149a1 = static function (mixed ...$args) { throw new NotPorted('RawConv 43bee149a1'); };
-$f_54b7e82bc9 = static function (mixed ...$args) { throw new NotPorted('RawConv 54b7e82bc9'); };
+$f_43bee149a1 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->Make = $val;
+};
+$f_54b7e82bc9 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->Model = $val;
+};
 $f_9daa8ac2fd = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strlen(Perl::str($val)) > 32 ? new ScalarRef($val) : $val;
 };

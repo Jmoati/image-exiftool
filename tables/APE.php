@@ -7,8 +7,17 @@ namespace Image\ExifTool;
 $f_b2e41c1595 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertDuration($val);
 };
-$f_9e4705998a = static function (mixed ...$args) { throw new NotPorted('RawConv 9e4705998a'); };
-$f_0d775f45f3 = static function (mixed ...$args) { throw new NotPorted('ValueConv 0d775f45f3'); };
+$f_9e4705998a = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return (($vals[0] ?? null) && ($vals[1] ?? null))
+        ? ((Perl::num($vals[1]) - 1) * Perl::num($vals[2] ?? null) + Perl::num($vals[3] ?? null)) / Perl::num($vals[0])
+        : null;
+};
+$f_0d775f45f3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if (Perl::num($val) < 0 && Perl::num($val) >= -2147483648) {
+        $val = Perl::num($val) + 4294967296;
+    }
+    return Perl::num($val) * 1e-7;
+};
 $f_7b446e214d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1000;
 };

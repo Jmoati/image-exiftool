@@ -4,7 +4,9 @@
 
 namespace Image\ExifTool;
 
-$f_5df0cbcf9c = static function (mixed ...$args) { throw new NotPorted('RawConv 5df0cbcf9c'); };
+$f_5df0cbcf9c = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->ProcessGoogleTrailer = $val;
+};
 $f_d9fec15555 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).' m';
 };
@@ -20,7 +22,9 @@ $f_5817105f7a = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_64552f9356 = static function (mixed ...$args) { throw new NotPorted('ValueConv 64552f9356'); };
+$f_64552f9356 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::ConvertUnixTime(Perl::num($val) / 1000, 1, 3);
+};
 $f_9c417307ae = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return XMP::DecodeBase64($val);
 };
@@ -30,8 +34,14 @@ $f_2a20e62bf5 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_7b446e214d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1000;
 };
-$f_cf74aeb6b6 = static function (mixed ...$args) { throw new NotPorted('ValueConv cf74aeb6b6'); };
-$f_cab15f4655 = static function (mixed ...$args) { throw new NotPorted('code cab15f4655'); };
+$f_cf74aeb6b6 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::ConvertUnixTime($val, 1);
+};
+$f_cab15f4655 = static function ($a, $b) {
+    $a = preg_replace_callback('/(\d+)/', static fn ($m) => Perl::sprintf('%.3d', $m[1]), Perl::str($a));
+    $b = preg_replace_callback('/(\d+)/', static fn ($m) => Perl::sprintf('%.3d', $m[1]), Perl::str($b));
+    return strcmp($a, $b) <=> 0;
+};
 
 $d_1 = null /* circular reference */;
 $d_2 = null /* circular reference */;

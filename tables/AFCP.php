@@ -4,7 +4,12 @@
 
 namespace Image\ExifTool;
 
-$f_eb2bd9da15 = static function (mixed ...$args) { throw new NotPorted('RawConv eb2bd9da15'); };
+$f_eb2bd9da15 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $val = Perl::str($val);
+    $start = (\strlen($val) >= 10 && preg_match('/\xff\xd8\xff/', $val, $m, PREG_OFFSET_CAPTURE, 10)) ? $m[0][1] + \strlen($m[0][0]) - 3 : 18;
+    $img = \strlen($val) < $start ? null : substr($val, $start);
+    return $self->ValidateImage(new ScalarRef($img), $tag);
+};
 
 return [
     'load' => [

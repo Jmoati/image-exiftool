@@ -4,7 +4,9 @@
 
 namespace Image\ExifTool;
 
-$f_16c7ed6979 = static function (mixed ...$args) { throw new NotPorted('Condition 16c7ed6979'); };
+$f_16c7ed6979 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($format) === 'string';
+};
 
 return [
     'load' => [

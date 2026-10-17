@@ -12,8 +12,12 @@ $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt,
     return $self->ConvertDateTime($val);
 };
 $f_048f8cfb43 = static function (mixed ...$args) { throw new NotPorted('ValueConv 048f8cfb43'); };
-$f_7bdbdedf8f = static function (mixed ...$args) { throw new NotPorted('ValueConv 7bdbdedf8f'); };
-$f_d086f2c3d3 = static function (mixed ...$args) { throw new NotPorted('ValueConv d086f2c3d3'); };
+$f_7bdbdedf8f = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 1e7;
+};
+$f_d086f2c3d3 = static function ($val, ExifTool $self, array $vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return strtr(Perl::str($val), '-T', ': ');
+};
 $f_0eeb438c6f = static function (mixed ...$args) { throw new NotPorted('ValueConv 0eeb438c6f'); };
 
 $d_1 = null /* circular reference */;
