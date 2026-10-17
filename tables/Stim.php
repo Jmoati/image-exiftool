@@ -7,7 +7,9 @@ namespace Image\ExifTool;
 $f_be71053a96 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' mm';
 };
-$f_ee534f858a = static function (mixed ...$args) { throw new NotPorted('PrintConv ee534f858a'); };
+$f_ee534f858a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ? Perl::str($val) . ' mm' : 'inf';
+};
 
 return [
     'load' => [

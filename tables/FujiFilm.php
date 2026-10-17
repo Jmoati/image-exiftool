@@ -143,7 +143,7 @@ $f_3517b56753 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_8c7eb1dafc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $v = Perl::num($val);
     if ($v <= 0) {
-        throw new \RuntimeException("Can't take log of " . Perl::str($v));
+        throw new \RuntimeException("Can't take log of " . Perl::sprintf('%g', $v));
     }
     return log($v) / log(2);
 };

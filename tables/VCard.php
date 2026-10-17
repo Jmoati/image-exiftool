@@ -7,9 +7,18 @@ namespace Image\ExifTool;
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_d2323c7474 = static function (mixed ...$args) { throw new NotPorted('ValueConv d2323c7474'); };
-$f_4f0e233bc2 = static function (mixed ...$args) { throw new NotPorted('ValueConv 4f0e233bc2'); };
-$f_e1f6496b03 = static function (mixed ...$args) { throw new NotPorted('PrintConv e1f6496b03'); };
+$f_d2323c7474 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = preg_replace('/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z?)/', '$1:$2:$3 $4:$5:$6$7', Perl::str($val));
+    $val = preg_replace('/(\d{4})(\d{2})(\d{2})/', '$1:$2:$3', $val);
+    $val = preg_replace('/(\d{4})-(\d{2})-(\d{2})/', '$1:$2:$3', $val);
+    return $val;
+};
+$f_4f0e233bc2 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return preg_replace('/^geo:/', '', Perl::str($val), 1);
+};
+$f_e1f6496b03 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return preg_replace('/^_\$!<(.*)>!\$_$/', '$1', Perl::str($val), 1);
+};
 
 return [
     'load' => [

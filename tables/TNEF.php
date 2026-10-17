@@ -7,14 +7,33 @@ namespace Image\ExifTool;
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_2ca6591080 = static function (mixed ...$args) { throw new NotPorted('RawConv 2ca6591080'); };
+$f_2ca6591080 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $val = preg_replace('/ .*/', '', Perl::str($val), 1);
+    $self->Charset = Vars\ExifTool::$charsetName["cp$val"] ?? null;
+    return $val;
+};
 $f_870d813f22 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', '.');
 };
-$f_0422d8103a = static function (mixed ...$args) { throw new NotPorted('ValueConv 0422d8103a'); };
-$f_b932af580b = static function (mixed ...$args) { throw new NotPorted('RawConv b932af580b'); };
-$f_699f763a19 = static function (mixed ...$args) { throw new NotPorted('RawConv 699f763a19'); };
-$f_98b900dca0 = static function (mixed ...$args) { throw new NotPorted('ValueConv 98b900dca0'); };
+$f_0422d8103a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $a = array_reverse(Perl::split(' ', $val));
+    return implode(' ', $a);
+};
+$f_b932af580b = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (!$val instanceof ScalarRef) {
+        throw new \RuntimeException(null === $val ? 'Can\'t use an undefined value as a SCALAR reference' : (\is_array($val) ? 'Not a SCALAR reference' : 'Can\'t use string ("' . substr(Perl::str($val), 0, 32) . '"' . (\strlen(Perl::str($val)) > 32 ? '...' : '') . ') as a SCALAR ref while "strict refs" in use'));
+    }
+    return $val->value;
+};
+$f_699f763a19 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if ($val instanceof ScalarRef) return $val->value;
+    if (\is_array($val) || \is_object($val)) throw new \RuntimeException('Not a SCALAR reference');
+    return $val;
+};
+$f_98b900dca0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $dat = TNEF::DecompressRTF($self, $val);
+    return new ScalarRef($dat);
+};
 
 $d_1 = [2 => 'Time'];
 

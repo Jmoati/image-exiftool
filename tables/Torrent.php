@@ -4,7 +4,9 @@
 
 namespace Image\ExifTool;
 
-$f_22a8c76e68 = static function (mixed ...$args) { throw new NotPorted('PrintConv 22a8c76e68'); };
+$f_22a8c76e68 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::ConvertFileSize($val);
+};
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };

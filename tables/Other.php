@@ -4,7 +4,9 @@
 
 namespace Image\ExifTool;
 
-$f_5ffceb2535 = static function (mixed ...$args) { throw new NotPorted('PrintConv 5ffceb2535'); };
+$f_5ffceb2535 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) > 0 ? 'Big-endian' : 'Little-endian';
+};
 
 return [
     'load' => [

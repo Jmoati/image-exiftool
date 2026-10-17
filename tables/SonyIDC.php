@@ -4,11 +4,23 @@
 
 namespace Image\ExifTool;
 
-$f_a32435b63c = static function (mixed ...$args) { throw new NotPorted('RawConv a32435b63c'); };
-$f_b6c0baa5a0 = static function (mixed ...$args) { throw new NotPorted('PrintConv b6c0baa5a0'); };
-$f_8f4757174a = static function (mixed ...$args) { throw new NotPorted('ValueConv 8f4757174a'); };
-$f_28f4f642f1 = static function (mixed ...$args) { throw new NotPorted('PrintConv 28f4f642f1'); };
-$f_a2edd7d09b = static function (mixed ...$args) { throw new NotPorted('PrintConv a2edd7d09b'); };
+$f_a32435b63c = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $grps = $self->GetGroup($val[0]);
+    ExifTool::RequireModule('Image::ExifTool::SonyIDC');
+    return SonyIDC::ExtractPreviews($self);
+};
+$f_b6c0baa5a0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.2f', Perl::num($val) / 300);
+};
+$f_8f4757174a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return (Perl::num($val) + 100) / 2;
+};
+$f_28f4f642f1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.1f deg', Perl::num($val) / 1000);
+};
+$f_a2edd7d09b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::sprintf('%.1f', Perl::num($val) / 10);
+};
 $f_776710f713 = static function ($start, $base = 0) {
     return $start;
 };

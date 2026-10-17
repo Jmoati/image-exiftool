@@ -4,14 +4,18 @@
 
 namespace Image\ExifTool;
 
-$f_fe74943110 = static function (mixed ...$args) { throw new NotPorted('ValueConv fe74943110'); };
+$f_fe74943110 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::str((Perl::int($val) >> 16) & 0x0000FFFFFFFFFFFF) . '.' . Perl::str(Perl::int($val) & 0xffff);
+};
 $f_141bbcf6d5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::unpack('H*', $val)[0];
 };
 $f_9c98df8b6c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f', $val);
 };
-$f_fea4159259 = static function (mixed ...$args) { throw new NotPorted('Condition fea4159259'); };
+$f_fea4159259 = static function (ExifTool $self, $valPt, $format, $count) {
+    return !$self->IsJpgFromRaw;
+};
 $f_811b111291 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintFraction($val);
 };
@@ -30,7 +34,9 @@ $f_8f0e71a82a = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_98770fe8c4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' C';
 };
-$f_76cbd6b2d3 = static function (mixed ...$args) { throw new NotPorted('ValueConv 76cbd6b2d3'); };
+$f_76cbd6b2d3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return preg_match('/^[0-9a-f]+$/i', Perl::str($val)) ? Perl::hex($val) : $val;
+};
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };

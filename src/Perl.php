@@ -761,8 +761,9 @@ final class Perl
             [$code, $count, $mods] = $item;
             switch ($code) {
                 case '(':
+                    // (a numeric count repeats the group even past the end of the data, like Perl)
                     $reps = '*' === $count ? PHP_INT_MAX : $count;
-                    for ($r = 0; $r < $reps && $pos < $len; ++$r) {
+                    for ($r = 0; $r < $reps && ('*' !== $count || $pos < $len); ++$r) {
                         self::unpackGroup($item[3], $data, $pos, $pos, $out);
                     }
                     break;

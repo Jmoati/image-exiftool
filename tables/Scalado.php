@@ -4,7 +4,9 @@
 
 namespace Image\ExifTool;
 
-$f_6c0c3ba838 = static function (mixed ...$args) { throw new NotPorted('ValueConv 6c0c3ba838'); };
+$f_6c0c3ba838 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ? abs(Perl::num($val)) : null;
+};
 
 return [
     'load' => [

@@ -10,15 +10,29 @@ $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_59c79d4e80 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertUnixTime($val, 1);
 };
-$f_1bce55eb57 = static function (mixed ...$args) { throw new NotPorted('PrintConv 1bce55eb57'); };
-$f_ec8552e80f = static function (mixed ...$args) { throw new NotPorted('code:conv ec8552e80f'); };
+$f_1bce55eb57 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return $val ? Perl::sprintf('0x%.4x', $val) : $val;
+};
+$f_ec8552e80f = static function ($val) {
+    return Perl::sprintf('%.4d:%.2d:%.2d %.2d:%.2d:%.2d', ((Perl::int($val) >> 25) & 0x0000007FFFFFFFFF) + 1980, (Perl::int($val) >> 21) & 15, (Perl::int($val) >> 16) & 31, (Perl::int($val) >> 11) & 31, (Perl::int($val) >> 5) & 63, (Perl::int($val) & 31) * 2);
+};
 $f_9e58826a8f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('0x%.8x', $val);
 };
-$f_629c2b03d5 = static function (mixed ...$args) { throw new NotPorted('RawConv 629c2b03d5'); };
-$f_ca2229643c = static function (mixed ...$args) { throw new NotPorted('FormatCount ca2229643c'); };
-$f_9d3cf4629d = static function (mixed ...$args) { throw new NotPorted('RawConv 9d3cf4629d'); };
-$f_58442d5f12 = static function (mixed ...$args) { throw new NotPorted('FormatCount 58442d5f12'); };
+$f_629c2b03d5 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $self->ZipFileNameLength = $val;
+    return null;
+};
+$f_ca2229643c = static function (array $val, $size, $varSize, ExifTool $self) {
+    return $self->ZipFileNameLength;
+};
+$f_9d3cf4629d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $self->FileNameLength = $val;
+    return null;
+};
+$f_58442d5f12 = static function (array $val, $size, $varSize, ExifTool $self) {
+    return $self->FileNameLength;
+};
 
 return [
     'load' => [

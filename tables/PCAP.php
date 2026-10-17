@@ -4,18 +4,41 @@
 
 namespace Image\ExifTool;
 
-$f_244a69650b = static function (mixed ...$args) { throw new NotPorted('ValueConv 244a69650b'); };
-$f_335c33a98e = static function (mixed ...$args) { throw new NotPorted('ValueConv 335c33a98e'); };
-$f_d571a0121b = static function (mixed ...$args) { throw new NotPorted('RawConv d571a0121b'); };
-$f_0d04c51d08 = static function (mixed ...$args) { throw new NotPorted('ValueConv 0d04c51d08'); };
-$f_ce4cba76f7 = static function (mixed ...$args) { throw new NotPorted('ValueConv ce4cba76f7'); };
-$f_a396e4b481 = static function (mixed ...$args) { throw new NotPorted('ValueConv a396e4b481'); };
-$f_ba632b06f1 = static function (mixed ...$args) { throw new NotPorted('ValueConv ba632b06f1'); };
-$f_9c3c3d0153 = static function (mixed ...$args) { throw new NotPorted('RawConv 9c3c3d0153'); };
+$f_244a69650b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if (!(\strlen(Perl::str($val)) > 4)) return null;
+    $len = ExifTool::Get16u($val, 2);
+    if (!(Perl::num($len) > 4 && Perl::num($len) <= \strlen($val) - 4)) return null;
+    return 'Type=' . Perl::str(ExifTool::Get16u($val, 0)) . ' PEN=' . Perl::str(ExifTool::Get32u($val, 4)) . ' Val=' . substr($val, 8, $len - 4);
+};
+$f_335c33a98e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = Perl::str($val);
+    return Perl::str(ExifTool::Get8u($val, 0)) . ': ' . substr($val, 1);
+};
+$f_d571a0121b = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->TSOff = $val;
+};
+$f_0d04c51d08 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    throw new \RuntimeException('syntax error at (eval 1) line 1, near "))"');
+};
+$f_ce4cba76f7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(':', Perl::unpack('(H4)8', $val)) . '/' . Perl::str(Perl::unpack('x16C', $val)[0] ?? null);
+};
+$f_a396e4b481 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode('-', Perl::unpack('(H2)6', $val));
+};
+$f_ba632b06f1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return implode(':', Perl::unpack('(H4)4', $val));
+};
+$f_9c3c3d0153 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->TSResol = ((Perl::int($val) & 0x80) ? 2.0 ** -(Perl::int($val) & 0x7f) : 10.0 ** -Perl::num($val));
+};
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_79f5deff45 = static function (mixed ...$args) { throw new NotPorted('ValueConv 79f5deff45'); };
+$f_79f5deff45 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    if ($self->WindowsTS) return $val;
+    return ExifTool::ConvertUnixTime($val, 1, Perl::num($self->TSResol) < 1e-7 ? 9 : 6);
+};
 
 return [
     'load' => [

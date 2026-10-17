@@ -4,7 +4,11 @@
 
 namespace Image\ExifTool;
 
-$f_f369e3e698 = static function (mixed ...$args) { throw new NotPorted('PrintConv f369e3e698'); };
+$f_f369e3e698 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = Perl::str(Perl::int(Perl::num($val) * 10) / 10);
+    $val = preg_replace('/^-/', '', $val, 1, $n);
+    return ($n ? "$val m Below" : "$val m Above") . ' Sea Level';
+};
 $f_9c98df8b6c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f', $val);
 };
@@ -23,7 +27,9 @@ $f_5f55a3e4a5 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_5817105f7a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1, 'E');
 };
-$f_8d14bfb5dc = static function (mixed ...$args) { throw new NotPorted('PrintConv 8d14bfb5dc'); };
+$f_8d14bfb5dc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return ExifTool::TimeZoneString(Perl::num($val) / 60);
+};
 
 return [
     'load' => [

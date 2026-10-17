@@ -345,7 +345,7 @@ static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?Ta
 static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $v = Perl::num($val);
     if ($v <= 0) {
-        throw new \RuntimeException("Can't take log of " . Perl::str($v));
+        throw new \RuntimeException("Can't take log of " . Perl::sprintf('%g', $v));
     }
     return log($v) / log(2);
 }

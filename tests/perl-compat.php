@@ -68,6 +68,7 @@ $cases = [
     ['join("|", unpack("H*", "\x12\xab"), unpack("h*", "\x12\xab"), unpack("B8", "\xa5"), unpack("b8", "\xa5"))', fn () => implode('|', [...Perl::unpack('H*', "\x12\xab"), ...Perl::unpack('h*', "\x12\xab"), ...Perl::unpack('B8', "\xa5"), ...Perl::unpack('b8', "\xa5")])],
     ['join("|", unpack("c C s< S> l> L<", "\xff\xff\xfe\xff\x01\x02\xff\xff\xff\xfe\x01\0\0\0"))', fn () => implode('|', Perl::unpack('c C s< S> l> L<', "\xff\xff\xfe\xff\x01\x02\xff\xff\xff\xfe\x01\0\0\0"))],
     ['join("|", unpack("(H2)3", "\x01\x02\x03\x04"))', fn () => implode('|', Perl::unpack('(H2)3', "\x01\x02\x03\x04"))],
+    ['join("|", map {"[$_]"} unpack("(H2)3", "\x01"), unpack("(n)3", "\x00\x01"), unpack("(a2)3", "x"), unpack("(H2)*", "\x01\x02"))', fn () => implode('|', array_map(fn ($v) => "[$v]", [...Perl::unpack('(H2)3', "\x01"), ...Perl::unpack('(n)3', "\x00\x01"), ...Perl::unpack('(a2)3', 'x'), ...Perl::unpack('(H2)*', "\x01\x02")]))],
     ['join("|", unpack("n/a*", "\0\x03abcdef"))', fn () => implode('|', Perl::unpack('n/a*', "\0\x03abcdef"))],
     ['join("|", map { eval { unpack($_, "ab"); "ok" } || "died" } "x4n", "x2n", "\\@5", "X3", "\\@2n")', fn () => implode('|', array_map(function ($t) { try { Perl::unpack($t, 'ab'); return 'ok'; } catch (\RuntimeException) { return 'died'; } }, ['x4n', 'x2n', '@5', 'X3', '@2n']))],
     ['join("|", unpack("N", "ab"))', fn () => implode('|', Perl::unpack('N', 'ab'))],

@@ -4,12 +4,20 @@
 
 namespace Image\ExifTool;
 
-$f_2bbb9d7031 = static function (mixed ...$args) { throw new NotPorted('ValueConv 2bbb9d7031'); };
-$f_8943e0e81d = static function (mixed ...$args) { throw new NotPorted('RawConv 8943e0e81d'); };
+$f_2bbb9d7031 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    ExifTool::RequireModule('Image::ExifTool::XMP');
+    return XMP::DecodeBase64($val);
+};
+$f_8943e0e81d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    ExifTool::RequireModule('Image::ExifTool::XMP');
+    return XMP::DecodeBase64($val);
+};
 $f_3ce3a4fd7e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertDuration($val) . ' (approx)';
 };
-$f_944258fc60 = static function (mixed ...$args) { throw new NotPorted('RawConv 944258fc60'); };
+$f_944258fc60 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return ($vals[0] ?? null) ? Perl::num($vals[1] ?? null) * 8 / Perl::num($vals[0]) : null;
+};
 $f_354c879439 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertBitrate($val);
 };

@@ -7,7 +7,9 @@ namespace Image\ExifTool;
 $f_74304bceba = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('0x%.2x', $val);
 };
-$f_7265d9f4b7 = static function (mixed ...$args) { throw new NotPorted('RawConv 7265d9f4b7'); };
+$f_7265d9f4b7 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->PGFColorMode = $val;
+};
 
 return [
     'load' => [

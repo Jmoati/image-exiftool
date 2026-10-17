@@ -4,11 +4,21 @@
 
 namespace Image\ExifTool;
 
-$f_e0e7bc4eb5 = static function (mixed ...$args) { throw new NotPorted('RawConv e0e7bc4eb5'); };
-$f_d1b142c688 = static function (mixed ...$args) { throw new NotPorted('RawConv d1b142c688'); };
-$f_798d96abb0 = static function (mixed ...$args) { throw new NotPorted('ValueConv 798d96abb0'); };
-$f_82f1ab424f = static function (mixed ...$args) { throw new NotPorted('ValueConv 82f1ab424f'); };
-$f_a7768dc684 = static function (mixed ...$args) { throw new NotPorted('RawConv a7768dc684'); };
+$f_e0e7bc4eb5 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->LeftMargin = $val;
+};
+$f_d1b142c688 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $self->TopMargin = $val;
+};
+$f_798d96abb0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) - Perl::num($self->LeftMargin) + 1;
+};
+$f_82f1ab424f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) - Perl::num($self->TopMargin) + 1;
+};
+$f_a7768dc684 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return $val ?: null;
+};
 
 return [
     'load' => [

@@ -7,13 +7,22 @@ namespace Image\ExifTool;
 $f_870d813f22 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', '.');
 };
-$f_2ed5b3c8eb = static function (mixed ...$args) { throw new NotPorted('ValueConv 2ed5b3c8eb'); };
+$f_2ed5b3c8eb = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return (Perl::int($val) >> 8) & 0x00FFFFFFFFFFFFFF;
+};
 $f_090fcb29a6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::int(Perl::num($val) * 1000 + 0.5) / 1000;
 };
-$f_938d2018a6 = static function (mixed ...$args) { throw new NotPorted('ValueConv 938d2018a6'); };
-$f_f31b033e5b = static function (mixed ...$args) { throw new NotPorted('ValueConv f31b033e5b'); };
-$f_23530d03db = static function (mixed ...$args) { throw new NotPorted('ValueConv 23530d03db'); };
+$f_938d2018a6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $a = Perl::split(' ', $val);
+    return ((Perl::int($a[0] ?? null) << 8) + ((Perl::int($a[1] ?? null) >> 8) & 0x00FFFFFFFFFFFFFF)) / (((Perl::int($a[1] ?? null) & 0xff) << 8) + Perl::num($a[2] ?? null));
+};
+$f_f31b033e5b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return (Perl::int($val) >> 2) & 0x3FFFFFFFFFFFFFFF;
+};
+$f_23530d03db = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return (Perl::int($val) >> 3) & 0x3;
+};
 
 return [
     'load' => [

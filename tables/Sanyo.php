@@ -28,17 +28,33 @@ $f_1ebbf70bf0 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_b0002f8635 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? Perl::sprintf('%+.1f', $val) : 0;
 };
-$f_debf48792d = static function (mixed ...$args) { throw new NotPorted('RawConv debf48792d'); };
-$f_62fc89f6ac = static function (mixed ...$args) { throw new NotPorted('RawConv 62fc89f6ac'); };
-$f_1c8a7f5ea5 = static function (mixed ...$args) { throw new NotPorted('Condition 1c8a7f5ea5'); };
+$f_debf48792d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (!preg_match('/^SANYO/', Perl::str($val))) return null;
+    $val = str_replace("\0", '', Perl::str($val));
+    $self->SanyoSledder0xd1 = 1;
+    return $val;
+};
+$f_62fc89f6ac = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (!preg_match('/^SANYO/', Perl::str($val))) return null;
+    $val = str_replace("\0", '', Perl::str($val));
+    $self->SanyoSledder0xd2 = 1;
+    return $val;
+};
+$f_1c8a7f5ea5 = static function (ExifTool $self, $valPt, $format, $count) {
+    return (bool) $self->SanyoSledder0xd1;
+};
 $f_776710f713 = static function ($start, $base = 0) {
     return $start;
 };
-$f_42870d06cd = static function (mixed ...$args) { throw new NotPorted('Condition 42870d06cd'); };
+$f_42870d06cd = static function (ExifTool $self, $valPt, $format, $count) {
+    return (bool) $self->SanyoSledder0xd2;
+};
 $f_1f2667c7fa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->ValidateImage(new ScalarRef($val), $tag);
 };
-$f_03c93132e2 = static function (mixed ...$args) { throw new NotPorted('Condition 03c93132e2'); };
+$f_03c93132e2 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($format) === 'rational64u';
+};
 
 $d_1 = [0 => 'Off', 1 => 'On'];
 

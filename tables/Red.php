@@ -4,13 +4,22 @@
 
 namespace Image\ExifTool;
 
-$f_c5d1bb442c = static function (mixed ...$args) { throw new NotPorted('ValueConv c5d1bb442c'); };
+$f_c5d1bb442c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $val = preg_replace('/(\d{4})_(\d{2})_/', '$1:$2:', Perl::str($val), 1);
+    return strtr($val, '_', ' ');
+};
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_310fc191ff = static function (mixed ...$args) { throw new NotPorted('ValueConv 310fc191ff'); };
-$f_dd14c53f98 = static function (mixed ...$args) { throw new NotPorted('ValueConv dd14c53f98'); };
-$f_8cf237615f = static function (mixed ...$args) { throw new NotPorted('ValueConv 8cf237615f'); };
+$f_310fc191ff = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return preg_replace('/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/', '$1:$2:$3 $4:$5:', Perl::str($val), 1);
+};
+$f_dd14c53f98 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return preg_replace('/(\d{4})(\d{2})/', '$1:$2:', Perl::str($val), 1);
+};
+$f_8cf237615f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return preg_replace('/(\d{2})(\d{2})/', '$1:$2:', Perl::str($val), 1);
+};
 $f_090fcb29a6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::int(Perl::num($val) * 1000 + 0.5) / 1000;
 };
@@ -23,7 +32,10 @@ $f_d9fec15555 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_79eca42b5f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1000;
 };
-$f_7dd30aeae6 = static function (mixed ...$args) { throw new NotPorted('ValueConv 7dd30aeae6'); };
+$f_7dd30aeae6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    $a = Perl::split(' ', $val);
+    return (Perl::num($a[1] ?? null) * 0x10000 + Perl::num($a[2] ?? null)) / Perl::num($a[0] ?? null);
+};
 
 return [
     'load' => [

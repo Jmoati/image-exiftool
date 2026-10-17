@@ -7,11 +7,18 @@ namespace Image\ExifTool;
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_2aed912966 = static function (mixed ...$args) { throw new NotPorted('ValueConv 2aed912966'); };
+$f_2aed912966 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    ExifTool::RequireModule('Image::ExifTool::XMP');
+    return XMP::ConvertXMPDate($val, 1);
+};
 $f_ecab1e9a5d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->CodePage = $val;
 };
-$f_b54ccb7821 = static function (mixed ...$args) { throw new NotPorted('RawConv b54ccb7821'); };
+$f_b54ccb7821 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    $offset = (66 * 365 + 17) * 24 * 3600;
+    if (Perl::num($val) >= $offset) return Perl::num($val) - $offset;
+    return $val;
+};
 $f_cf74aeb6b6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertUnixTime($val, 1);
 };

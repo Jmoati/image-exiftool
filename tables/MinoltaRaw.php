@@ -4,22 +4,49 @@
 
 namespace Image\ExifTool;
 
-$f_fdfdd27aa5 = static function (mixed ...$args) { throw new NotPorted('RawConv fdfdd27aa5'); };
-$f_509d3350e9 = static function (mixed ...$args) { throw new NotPorted('PrintConv 509d3350e9'); };
-$f_226b70524d = static function (mixed ...$args) { throw new NotPorted('code:OTHER 226b70524d'); };
-$f_ce5064b203 = static function (mixed ...$args) { throw new NotPorted('RawConv ce5064b203'); };
-$f_6f13ad7ab9 = static function (mixed ...$args) { throw new NotPorted('Condition 6f13ad7ab9'); };
-$f_bfa0c2c3d6 = static function (mixed ...$args) { throw new NotPorted('Condition bfa0c2c3d6'); };
-$f_22935065a3 = static function (mixed ...$args) { throw new NotPorted('Condition 22935065a3'); };
+$f_fdfdd27aa5 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    if (Perl::str($self->FILE_TYPE) === 'MRW') $self->MinoltaPRD = 1;
+    return $val;
+};
+$f_509d3350e9 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return MinoltaRaw::ConvertWBMode($val);
+};
+$f_226b70524d = static function ($val, $inv, $conv) {
+    if (!$inv) return Perl::int(2.0 ** ((Perl::num($val) - 48) / 8) * 100 + 0.5);
+    if (ExifTool::IsFloat($val) && Perl::num($val) != 0) {
+        $v = Perl::num($val) / 100;
+        if ($v <= 0) throw new \RuntimeException("Can't take log of " . Perl::sprintf('%g', $v));
+        return 48 + 8 * log($v) / 0.69314718055994528623;
+    }
+    return null;
+};
+$f_ce5064b203 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
+    return Perl::num($val) == 255 ? null : $val;
+};
+$f_6f13ad7ab9 = static function (ExifTool $self, $valPt, $format, $count) {
+    return !preg_match('/^SONY/', Perl::str($self->Make));
+};
+$f_bfa0c2c3d6 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->Model) === 'DSLR-A100';
+};
+$f_22935065a3 = static function (ExifTool $self, $valPt, $format, $count) {
+    return Perl::str($self->Model) === 'DSLR-A100' || $self->MinoltaPRD;
+};
 $f_b94c7bf60c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) * 100;
 };
-$f_bcf0582141 = static function (mixed ...$args) { throw new NotPorted('Condition bcf0582141'); };
+$f_bcf0582141 = static function (ExifTool $self, $valPt, $format, $count) {
+    return (bool) preg_match('/^SONY/', Perl::str($self->Make));
+};
 $f_bd1a8a43d0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? $val : 'Auto';
 };
-$f_db49c4f56d = static function (mixed ...$args) { throw new NotPorted('Condition db49c4f56d'); };
-$f_f3f197306a = static function (mixed ...$args) { throw new NotPorted('Condition f3f197306a'); };
+$f_db49c4f56d = static function (ExifTool $self, $valPt, $format, $count) {
+    return (bool) preg_match('/^DSLR-A(200|700)$/', Perl::str($self->Model));
+};
+$f_f3f197306a = static function (ExifTool $self, $valPt, $format, $count) {
+    return (bool) preg_match('/DiMAGE A200\b/', Perl::str($self->Model));
+};
 
 return [
     'load' => [

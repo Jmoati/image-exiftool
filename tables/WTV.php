@@ -7,18 +7,26 @@ namespace Image\ExifTool;
 $f_b2e41c1595 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertDuration($val);
 };
-$f_fec2dab05e = static function (mixed ...$args) { throw new NotPorted('ValueConv fec2dab05e'); };
+$f_fec2dab05e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return Perl::num($val) / 1e7;
+};
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_048f8cfb43 = static function (mixed ...$args) { throw new NotPorted('ValueConv 048f8cfb43'); };
+$f_048f8cfb43 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    return strtr(Perl::str($val), '-T', ': ');
+};
 $f_7bdbdedf8f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1e7;
 };
 $f_d086f2c3d3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), '-T', ': ');
 };
-$f_0eeb438c6f = static function (mixed ...$args) { throw new NotPorted('ValueConv 0eeb438c6f'); };
+$f_0eeb438c6f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
+    // (719162 days from 0001:01:01 to 1970:01:01)
+    $t = Perl::num($val) / 1e7 - 719162 * 24 * 3600;
+    return ExifTool::ConvertUnixTime($t) . 'Z';
+};
 
 $d_1 = [0 => 'No', 1 => 'Yes'];
 
