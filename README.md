@@ -17,6 +17,7 @@ bin/exiftool -s -G1 -n IMG_0001.CR3
 bin/exiftool -stay_open True -@ -        # same protocol as the Perl tool
 bin/exiftool -api geolocation photo.jpg  # nearest city from the GPS position (Geolocation* tags)
 bin/exiftool -api geolocation=48.8566,2.3522,num=3   # no file needed for a position or a city
+bin/exiftool -lang fr photo.jpg          # descriptions and values in French (18 languages)
 ```
 
 From PHP, without spawning a process:
@@ -35,14 +36,14 @@ $info = $et->ImageInfo('photo.heic');
 
 - `src/` hand-ported Perl modules, one PHP class per module, same function names (see
   [PORTING.md](PORTING.md))
-- `tables/` tag tables and module data, generated from the Perl library by
-  `perl tools/export-tables.pl ~/exiftool/lib`
+- `tables/` tag tables, module data and language translations, generated from the Perl library
+  by `perl tools/export-tables.pl ~/exiftool/lib`
 - `translations/` PHP translations of the Perl code embedded in the tag tables
 - `tools/parity.php` compares the output with Perl ExifTool, `tests/` checks the Perl built-in
-  emulation and the command line
+  emulation and the command line, and replays ExifTool's `t/Geolocation.t` and `t/Lang.t`
 
-Not ported: writing (including the `Geolocate` tag), `-lang` translations (so geolocation names are
-in English), `-listx`, the HTML dump.
+Not ported: writing (including the `Geolocate` tag), translations of geolocation names (ExifTool
+ships them only with its alternate geolocation databases), `-listx`, the HTML dump.
 
 ## License
 

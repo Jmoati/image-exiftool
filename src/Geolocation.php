@@ -440,8 +440,9 @@ final class Geolocation
         $cc = substr($ctry, 0, 2);
         $country = substr($ctry, 2);
         $ft = self::$featureTypes[$fc] ?? null;
-        // (ponytail: GeoLang translations for $lang not ported, like the Lang option itself,
-        // which can only be 'en' here)
+        // (ponytail: the $lang translations aren't ported: ExifTool doesn't distribute the
+        // GeoLang/<lang>.pm modules (they come with the alternate databases of exiftool.org),
+        // and the user-defined %geoLang comes from config files)
         return [$city, $rgn, $sub, $cc, $country, self::$timezoneList[$tn] ?? null, $fc, $pop, $lt, $ln, $ft];
     }
 

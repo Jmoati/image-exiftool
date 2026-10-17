@@ -9,6 +9,8 @@
 #   tables/<Module>.php        tag tables of each Perl module (+ load-time actions)
 #   tables/vars/<Module>.php   class Image\ExifTool\Vars\<Module>: package variables and
 #                              file lexicals of the module (lens lists, file types...)
+#   tables/vars/Lang/<lang>.php class Image\ExifTool\Vars\Lang\<lang>: the Translate hash of
+#                              Image::ExifTool::Lang::<lang> (-lang)
 #   tables/_index.php          table name => module
 #   tables/_todo/<Module>.txt  Perl code found in tables with no translation yet
 # Reads translations/*.txt (see PORTING.md).
@@ -59,6 +61,14 @@ foreach my $f (glob("$lib/Image/ExifTool/Charset/*.pm")) {
     require "Image/ExifTool/Charset/$cs.pm";
     no strict 'refs';
     $charsets{$cs} = \%{"Image::ExifTool::Charset::$cs"};
+}
+# language translations (%Image::ExifTool::Lang::fr::Translate...)
+my %langs;
+foreach my $f (glob("$lib/Image/ExifTool/Lang/*.pm")) {
+    my ($lang) = $f =~ m{/(\w+)\.pm$};
+    require "Image/ExifTool/Lang/$lang.pm";
+    no strict 'refs';
+    $langs{$lang} = \%{"Image::ExifTool::Lang::${lang}::Translate"};
 }
 require 'Image/ExifTool/XMP2.pl';
 require 'Image/ExifTool/XMPStruct.pl';
@@ -699,6 +709,16 @@ foreach my $cs (sort keys %charsets) {
     my $fh = Out("$out/vars/Charset/$cs.php");
     print $fh "<?php\n\n$header\nnamespace Image\\ExifTool\\Vars\\Charset;\n\n";
     print $fh "/** %Image::ExifTool::Charset::$cs */\nfinal class $cs\n{\n    public static \$map = " . Data($charsets{$cs}, { depth => 1 }, 1, "Charset $cs") . ";\n}\n";
+    close $fh;
+}
+
+# language translations: one class each, loaded on demand
+make_path("$out/vars/Lang");
+foreach my $lang (sort keys %langs) {
+    (%shared, @sharedOrder, %sharedCount) = ();
+    my $fh = Out("$out/vars/Lang/$lang.php");
+    print $fh "<?php\n\n$header\nnamespace Image\\ExifTool\\Vars\\Lang;\n\n";
+    print $fh "/** %Image::ExifTool::Lang::${lang}::Translate */\nfinal class $lang\n{\n    public static \$Translate = " . Data($langs{$lang}, { depth => 1 }, 1, "Lang $lang") . ";\n}\n";
     close $fh;
 }
 

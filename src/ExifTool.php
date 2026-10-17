@@ -358,8 +358,14 @@ class ExifTool
                     $this->CUR_LANG = null;
                 // make sure the language is available
                 } else {
-                    // ponytail: the Lang modules (Image::ExifTool::Lang::*) aren't ported,
-                    // so other languages are unavailable and Lang isn't changed
+                    // (the Translate hashes are generated into tables/vars/Lang/<lang>.php)
+                    $xlat = 'Image\ExifTool\Vars\Lang\\' . $newVal;
+                    if (in_array($newVal, Vars\ExifTool::$langs, true) and class_exists($xlat)) {
+                        if ($xlat::$Translate) {
+                            $this->CUR_LANG = $xlat::$Translate;
+                            $this->OPTIONS[$param] = $newVal;
+                        }
+                    }
                 } // else don't change Lang
             } elseif ($param === 'Exclude' and $newVal !== null) {
                 // clone Exclude list and expand shortcuts
@@ -1591,7 +1597,22 @@ class ExifTool
                             }
                         }
                         // override with our localized language PrintConv if available
-                        // (ponytail: CUR_LANG is never set, the Lang modules aren't ported)
+                        if ($this->CUR_LANG and $convType === 'PrintConv' and
+                            // (no need to check for lang-alt tag names -- they won't have a PrintConv)
+                            is_array($tmp = $this->CUR_LANG[$tagInfo->Name] ?? null) and
+                            ($tmp = $tmp['PrintConv'] ?? null))
+                        {
+                            if (isset($conv['BITMASK']) and !isset($conv[self::HashKey($val)])) {
+                                $bits = Perl::split('/, /', $value);    // (Perl @vals)
+                                foreach ($bits as &$b) {
+                                    if (isset($tmp[$b])) $b = $tmp[$b];
+                                }
+                                unset($b);
+                                $value = implode(', ', $bits);
+                            } elseif (($tmp = $tmp[self::HashKey($value)] ?? null) !== null) {
+                                $value = $this->Decode($tmp, 'UTF8');
+                            }
+                        }
                     } else {
                         // call subroutine or do eval to convert value
                         self::$evalWarning = null;
@@ -1712,7 +1733,27 @@ class ExifTool
         // ($tagInfo won't be defined for missing tags extracted with -f)
         if ($tagInfo) {
             // use alternate language description if available
-            // (ponytail: CUR_LANG is never set, the Lang modules aren't ported)
+            while ($this->CUR_LANG) {
+                $desc = $this->CUR_LANG[$tagInfo->Name] ?? null;
+                if ($desc) {
+                    // must look up Description if this tag also has a PrintConv
+                    if (is_array($desc) and !($desc = $desc['Description'] ?? null)) break;
+                } else {
+                    // look up default language of lang-alt tag
+                    $langCode = $tagInfo->LangCode;
+                    if (!($langCode and preg_match('/-' . preg_quote((string) $langCode, '/') . '$/', (string) $tagInfo->Name) and
+                        ($desc = $this->CUR_LANG[preg_replace('/-' . preg_quote((string) $langCode, '/') . '$/', '', (string) $tagInfo->Name, 1)] ?? null)))
+                    {
+                        break;
+                    }
+                    if (is_array($desc) and !($desc = $desc['Description'] ?? null)) break;
+                    $desc .= " ($langCode)";
+                }
+                // escape description if necessary
+                if ($this->ESCAPE_PROC) self::DoEscape($desc, $this->ESCAPE_PROC);
+                // return description in proper Charset
+                return $this->Decode($desc, 'UTF8');
+            }
             $desc = $tagInfo->Description;
         }
         // just make the tag more readable if description doesn't exist

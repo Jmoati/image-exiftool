@@ -24,6 +24,10 @@ $cases = [
     ['-api', 'geolocation=saint-germain-en-laye,num=3', '-a', '-api', 'duplicates'],
     ['-api', 'geolocation=nosuchcity'],
     ['-listgeo', '-sort', '-api', 'geolocminpop=2e6', '-api', 'geolocfeature=-PPLA'],
+    // languages (descriptions, PrintConv values, lang-alt tags, alignment of wide characters)
+    ['-lang'], ['-lang', 'zz', 'Canon.jpg'], ['-lang', 'fr', 'Canon.jpg'],
+    ['-lang', 'de', '-j', '-a', 'Canon.jpg', 'Nikon.jpg'], ['-lang', 'ja', '-a', '-G1', 'XMP5.xmp'],
+    ['-lang', 'ru', '-t', '-flash', '-exposureprogram', 'Canon.jpg'],
 ];
 $fail = 0;
 foreach ($cases as $args) {
