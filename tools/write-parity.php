@@ -898,6 +898,15 @@ $cases = [
     ['FujiFilm.raf', ['-v3', '-Comment=x', '-o', 'out.raf']],
     ['FujiFilm.raf', ['-Artist=in place']],
     ['FujiFilm.raf', ['-_memin', '-_memout', '-Artist=mem', '-o', 'out.raf']],
+    // Panasonic RW2 (WriteJpgFromRaw, WriteDistortionInfo): the JpgFromRaw gets the EXIF but no XMP/IPTC
+    ['Panasonic.rw2', ['-XMP:Title=new title', '-IPTC:Keywords=a keyword', '-ModifyDate=2009:03:25 12:11:46', '-o', 'out.rw2']],
+    ['Panasonic.rw2', ['-PanasonicRaw:DistortionParam02=0.02', '-PanasonicRaw:DistortionScale=2', '-o', 'out.rw2']],
+    ['Panasonic.rw2', ['-Artist=me', '-Model=Other', '-o', 'out.rw2']],
+    ['Panasonic.rw2', ['-all=', '-o', 'out.rw2']],
+    ['Panasonic.rw2', ['-EXIF:all=', '-o', 'out.rw2']],
+    ['Panasonic.rw2', ['-JpgFromRaw=', '-o', 'out.rw2']],
+    ['Panasonic.rw2', ['-v3', '-Artist=verbose', '-o', 'out.rw2']],
+    ['Panasonic.rw2', ['-Artist=in place']],
 ];
 // RIFF, PDF, PostScript and InDesign writers (inputs made by DocumentInputs(), see below)
 array_push($cases,

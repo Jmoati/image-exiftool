@@ -8,9 +8,7 @@ require __DIR__.'/TestLib.php';
 
 use Image\ExifTool\ExifTool;
 
-$skip = [
-    5 => 'PanasonicRaw WriteJpgFromRaw (the IFD0 of the RW2 is in its JpgFromRaw too)',
-];
+$skip = [];
 $t = testDir();
 $testname = 'Panasonic';
 

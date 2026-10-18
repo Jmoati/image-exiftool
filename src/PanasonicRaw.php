@@ -15,8 +15,7 @@
 //              IB) Iliah Borg private communication (LibRaw)
 //              JD) Jens Duttke private communication (TZ3,FZ30,FZ50)
 //
-// PHP port of Image::ExifTool::PanasonicRaw 1.29 (WriteJpgFromRaw and WriteDistortionInfo
-// are not ported; PatchRawDataOffset is, for the EXIF writer). Tag tables are generated into
+// PHP port of Image::ExifTool::PanasonicRaw 1.29. Tag tables are generated into
 // tables/PanasonicRaw.php, %jpgFromRawMap into Vars\PanasonicRaw.
 //------------------------------------------------------------------------------
 
@@ -65,6 +64,26 @@ final class PanasonicRaw
             $et->Warn('Invalid DistortionInfo', 1);
         }
         return $et->ProcessBinaryData($dirInfo, $tagTablePtr);
+    }
+
+    //------------------------------------------------------------------------------
+    // Write lens distortion information
+    // Inputs: 0) ExifTool ref, 1) dirInfo ref, 2) tag table ref
+    // Returns: updated distortion information or undef on error
+    public static function WriteDistortionInfo(?ExifTool $et = null, ?array &$dirInfo = null, ?TagTable $tagTablePtr = null)
+    {
+        if (!$et) return 1;  // (allow dummy access)
+        $dat = ExifTool::WriteBinaryData($et, $dirInfo, $tagTablePtr);
+        if ($dat !== null and strlen($dat) == 32) {
+            // fix checksums (ref 3)
+            ExifTool::Set16u(self::Checksum($dat,  4, 12, 1), $dat,  2);
+            ExifTool::Set16u(self::Checksum($dat, 16, 12, 1), $dat, 28);
+            ExifTool::Set16u(self::Checksum($dat,  2, 14, 2), $dat,  0);
+            ExifTool::Set16u(self::Checksum($dat,  3, 14, 2), $dat, 30);
+        } else {
+            $et->Warn('Error wriing DistortionInfo', 1);
+        }
+        return $dat;
     }
 
     //------------------------------------------------------------------------------
@@ -135,6 +154,46 @@ final class PanasonicRaw
         $offsetInfo[0x117][3][0] = $len;   // (Perl: $$stripByteCounts[3][0])
 
         return null;
+    }
+
+    //------------------------------------------------------------------------------
+    // Write meta information to Panasonic JpgFromRaw in RAW/RW2/RWL image
+    // Inputs: 0) ExifTool object ref, 1) dirInfo ref, 2) tag table ref
+    // Returns: updated image data, or undef if nothing changed
+    public static function WriteJpgFromRaw(?ExifTool $et = null, ?array &$dirInfo = null, ?TagTable $tagTablePtr = null)
+    {
+        if (!$et) return 1;  // (allow dummy access)
+        $dataPt = $dirInfo['DataPt'];
+        $byteOrder = ExifTool::GetByteOrder();
+        $fileType = $et->TIFF_TYPE;   // RAW, RW2 or RWL
+        $dirStart = $dirInfo['DirStart'] ?? null;
+        if ($dirStart) { // DirStart is non-zero in DNG-converted RW2/RWL
+            $dirLen = Perl::int($dirInfo['DirLen'] ?? null) | strlen($dataPt) - $dirStart;
+            $dataPt = substr($dataPt, $dirStart, $dirLen);
+        }
+        $raf = new RandomAccess($dataPt);
+        $outbuff = new ScalarRef(null);
+        $jpgDirInfo = [     // (Perl: my %dirInfo)
+            'RAF' => $raf,
+            'OutFile' => $outbuff,
+        ];
+        $et->BASE = $dirInfo['DataPos'] ?? null;
+        $et->FILE_TYPE = $et->TIFF_TYPE = 'JPEG';
+        // use a specialized map so we don't write XMP or IPTC (or other junk) into the JPEG
+        $editDirs = $et->EDIT_DIRS;
+        $addDirs = $et->ADD_DIRS;
+        $et->InitWriteDirs(Vars\PanasonicRaw::$jpgFromRawMap);
+        // don't add XMP segment (IPTC won't get added because it is in Photoshop record)
+        unset($et->ADD_DIRS['XMP']);
+        $result = $et->WriteJPEG($jpgDirInfo);
+        // restore variables we changed
+        $et->BASE = 0;
+        $et->FILE_TYPE = 'TIFF';
+        $et->TIFF_TYPE = $fileType;
+        $et->EDIT_DIRS = $editDirs;
+        $et->ADD_DIRS = $addDirs;
+        ExifTool::SetByteOrder($byteOrder);
+        return $result > 0 ? $outbuff->value : $dataPt;
     }
 
     //------------------------------------------------------------------------------
