@@ -326,7 +326,9 @@ New values (`src/ExifTool/NewValues.php`):
   `~/exiftool/t`), and never write into `~/exiftool` or the user's own files.
 - `tools/write-parity.php` writes the same changes with Perl and with the port and compares the
   output files byte for byte (then their tags, when the bytes differ). A writer is done when its
-  `t/*.t` tests pass and its write-parity cases give identical files.
+  `t/*.t` tests pass and its write-parity cases give identical files. Its Perl side runs with
+  global warnings on (`$^W = 1`), like the exiftool script: a warning in the code of the tag
+  tables is then an error for the tag, and the port always behaves that way.
 - A test replay (`tests/writer.php` is the model) runs with `var/` as current directory and writes
   its files as `t/<Name>_<num>_failed.<ext>` (the expected outputs contain `Directory: t`); the
   tests needing writers not ported yet are in its `$skip` list (`--all` runs them anyway): remove

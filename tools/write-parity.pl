@@ -14,6 +14,10 @@
 #------------------------------------------------------------------------------
 use strict;
 use warnings;
+# like the exiftool script (#!/usr/bin/perl -w): with global warnings on, a warning in the code
+# of the tag tables makes ConvInv reject the value (writing "abc" to a numeric tag is an error
+# instead of writing 0), which is the behaviour the port reproduces
+BEGIN { $^W = 1 }
 
 my $lib = shift or die "usage: $0 EXIFTOOL_LIB ARGS... FILE\n";
 unshift @INC, $lib;
