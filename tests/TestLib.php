@@ -510,3 +510,51 @@ function testVerbose(string $testname, $testnum, $infile, $verbose): bool
 
     return $ok;
 }
+
+//------------------------------------------------------------------------------
+// Run a test of a replay script unless it is in $skip (test number => what it needs), in which
+// case it is skipped unless --all is given; $test returns true when it passed (check() prints
+// the result, set $print for a test that doesn't call it). testsDone() prints the summary.
+function runTest(string $testname, int $testnum, callable $test, array $skip = [], bool $print = false): void
+{
+    global $argv, $testsFailed, $testsSkipped;
+    if (isset($skip[$testnum]) && !in_array('--all', $argv, true)) {
+        echo "skip $testname $testnum (needs {$skip[$testnum]})\n";
+        $testsSkipped = ($testsSkipped ?? 0) + 1;
+
+        return;
+    }
+    try {
+        $ok = $test();
+    } catch (Throwable $e) {
+        fwrite(STDERR, "  $testname $testnum: ".get_class($e).': '.$e->getMessage()."\n");
+        $ok = false;
+        $print = true;
+    }
+    if ($print) {
+        echo ($ok ? 'ok   ' : 'FAIL ')."$testname $testnum\n";
+    }
+    if (!$ok) {
+        $testsFailed = ($testsFailed ?? 0) + 1;
+    }
+}
+
+// print the summary of the tests run by runTest(), return the exit status
+function testsDone(): int
+{
+    global $testsFailed, $testsSkipped;
+    echo $testsFailed ? "$testsFailed failed" : 'all passed', $testsSkipped ? " ($testsSkipped skipped)" : '', "\n";
+
+    return $testsFailed ? 1 : 0;
+}
+
+// copy a test image of ~/exiftool/t/images to var/t/images and return its name relative to var/
+// (for the read tests: their expected outputs contain "Directory: t/images")
+function testImage(string $name): string
+{
+    $file = "t/images/$name";
+    @mkdir('t/images', 0777, true);
+    copy(testDir()."/images/$name", $file);
+
+    return $file;
+}

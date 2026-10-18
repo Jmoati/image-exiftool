@@ -41,7 +41,6 @@ $skip = [
     33 => 'relies on test 32',
     34 => 'XMP writer',
     35 => 'EXIF, IPTC, XMP, MIE, CanonVRD, ICC_Profile writers',
-    36 => 'IPTC writer',
     38 => 'EXIF writer (test 37 writes EXIF as a block)',
     39 => 'EXIF writer',
     40 => 'EXIF writer',
