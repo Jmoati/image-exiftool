@@ -716,6 +716,11 @@ $cases = [
     ['CanonRaw.crw', ['-_handle', '-OwnerName=handle in place']],
     ['CanonRaw.cr2', ['-_raf', '-Artist=from RAF', '-o', 'out.cr2']],
     ['Minolta.mrw', ['-_handleout', '-Artist=to a handle', '-o', 'out.mrw']],
+    ["$inputs/seq.mie", ['-MIE:Title=out of sequence', '-o', 'out.mie']],
+    ["$inputs/type.mie", ['-MIE:Title=not a group', '-o', 'out.mie']],
+    ["$inputs/sync.mie", ['-MIE:Title=bad sync', '-o', 'out.mie']],
+    ["$inputs/short.mie", ['-MIE:Title=truncated', '-o', 'out.mie']],
+    ["$inputs/bad.crw", ['-OwnerName=bad directory pointer', '-o', 'out.crw']],
     // CanonRaw: CRW (WriteCRW, WriteCanonRaw), CIFF in JPEG, CR2 (WriteCR2)
     ['CanonRaw.crw', ['-OwnerName=new owner', '-o', 'out.crw']],
     ['CanonRaw.crw', ['-ROMOperationMode=CDN', '-SerialNumber=1234', '-FocalPlaneXSize=35 mm', '-o', 'out.crw']],
@@ -1169,6 +1174,15 @@ function QuickTimeInputs(string $etDir, string $inputs): void
     // a TIFF and a MOV with a MIE trailer
     file_put_contents("$inputs/mie.tif", file_get_contents("$images/ExifTool.tif").file_get_contents("$inputs/trailer.mie"));
     file_put_contents("$inputs/mie.mov", file_get_contents("$images/QuickTime.mov").file_get_contents("$inputs/trailer.mie"));
+    // MIE files with errors: tag out of sequence (0Type -> 9Type), Meta group element with an
+    // 'undef' format, bad sync byte (Camera group), truncated
+    $mie = file_get_contents("$images/MIE.mie");
+    file_put_contents("$inputs/seq.mie", substr_replace($mie, '9', 0x10, 1));
+    file_put_contents("$inputs/type.mie", substr_replace($mie, "\0", 0x4b, 1));
+    file_put_contents("$inputs/sync.mie", substr_replace($mie, 'X', 0x52, 1));
+    file_put_contents("$inputs/short.mie", substr($mie, 0, -30));
+    // a CRW with a bad root directory pointer (last 4 bytes)
+    file_put_contents("$inputs/bad.crw", substr(file_get_contents("$images/CanonRaw.crw"), 0, -4)."\xff\xff\xff\x7f");
     // CR2 images with other signatures (unsupported version, 1D RAW)
     file_put_contents("$inputs/cr3sig.cr2", substr_replace(file_get_contents("$images/CanonRaw.cr2"), "CR\x03\0", 8, 4));
     file_put_contents("$inputs/1d.cr2", substr_replace(file_get_contents("$images/CanonRaw.cr2"), "\xba\xb0\xac\xbb", 8, 4));
