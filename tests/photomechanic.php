@@ -9,7 +9,6 @@ require __DIR__.'/TestLib.php';
 use Image\ExifTool\ExifTool;
 
 $skip = [
-    3 => 'XMP writer',
 ];
 $testname = 'PhotoMechanic';
 

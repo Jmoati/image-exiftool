@@ -11,7 +11,6 @@ use Image\ExifTool\Perl;
 use Image\ExifTool\ScalarRef;
 
 $skip = [
-    4 => 'XMP writer (CreatorCountry)',
 ];
 $t = testDir();
 $testname = 'IPTC';

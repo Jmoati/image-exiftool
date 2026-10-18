@@ -10,9 +10,8 @@ use Image\ExifTool\ExifTool;
 use Image\ExifTool\MWG;
 
 $skip = [
-    3 => 'EXIF and XMP writers',
-    4 => 'EXIF and XMP writers',
-    6 => 'XMP writer',
+    3 => 'EXIF writer',
+    4 => 'EXIF writer',
 ];
 $t = testDir();
 $testname = 'MWG';

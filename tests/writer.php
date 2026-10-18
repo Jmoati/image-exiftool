@@ -11,58 +11,47 @@ require __DIR__.'/TestLib.php';
 
 use Image\ExifTool\ExifTool;
 use Image\ExifTool\ScalarRef;
+use Image\ExifTool\TagInfo;
 
 $skip = [
-    4 => 'EXIF, IPTC, XMP and Photoshop writers (TIFF)',
+    4 => 'EXIF writer (TIFF)',
     5 => 'relies on test 4',
-    6 => 'EXIF, XMP and IPTC writers',
+    6 => 'EXIF writer (and Exif::ConvertParameter for XMP-exif:Contrast)',
     7 => 'relies on test 6',
-    8 => 'EXIF, IPTC, XMP, Photoshop, ICC_Profile, MakerNotes writers',
-    9 => 'EXIF, IPTC, XMP, ICC_Profile writers',
+    8 => 'EXIF, MakerNotes writers',
+    9 => 'EXIF writer',
     10 => 'EXIF, MakerNotes writers',
-    11 => 'EXIF, IPTC, XMP, GPS, Ducky writers',
+    11 => 'EXIF, GPS writers',
     12 => 'relies on test 11',
     13 => 'EXIF, CanonRaw writers',
     14 => 'EXIF writer (deleting MakerNotes)',
     15 => 'EXIF writer',
-    16 => 'XMP writer',
-    17 => 'XMP writer',
-    18 => 'XMP writer',
-    19 => 'EXIF, XMP, IPTC writers',
-    22 => 'EXIF and XMP writers (Shift)',
-    25 => 'EXIF, IPTC, XMP writers',
-    26 => 'EXIF, IPTC, XMP writers',
-    27 => 'EXIF writer',
+    19 => 'EXIF writer',
+    22 => 'EXIF writer (Shift)',
+    25 => 'EXIF writer',
+    26 => 'EXIF writer',
+    27 => 'EXIF and MIE writers (trailer of ExifTool.jpg)',
     28 => 'EXIF writer (for t/tmp.jpg: the check alone passes without it)',
     29 => 'EXIF writer',
     30 => 'EXIF writer',
-    31 => 'EXIF and IPTC writers',
+    31 => 'EXIF writer',
     32 => 'EXIF writer (TIFF)',
     33 => 'relies on test 32',
-    34 => 'XMP writer',
-    35 => 'EXIF, IPTC, XMP, MIE, CanonVRD, ICC_Profile writers',
+    35 => 'EXIF, MIE, CanonVRD writers',
     38 => 'EXIF writer (test 37 writes EXIF as a block)',
     39 => 'EXIF writer',
     40 => 'EXIF writer',
     41 => 'Kodak Meta and CanonRaw writers',
     42 => 'EXIF writer',
     43 => 'EXIF and MakerNotes writers',
-    44 => 'XMP writer',
     45 => 'EXIF writer',
-    46 => 'EXIF, IPTC, XMP writers',
-    47 => 'EXIF and IPTC writers',
-    48 => 'XMP, IPTC and EXIF writers',
+    46 => 'EXIF writer',
+    47 => 'EXIF writer',
+    48 => 'EXIF writer',
     49 => 'relies on test 48',
-    50 => 'XMP writer',
     51 => 'MIE and CanonVRD writers (trailers of ExifTool.jpg)',
-    52 => 'XMP writer',
-    53 => 'XMP writer',
-    54 => 'XMP writer',
-    55 => 'EXIF, IPTC, XMP writers',
+    55 => 'EXIF writer',
     56 => 'relies on test 55',
-    59 => 'XMP writer',
-    60 => 'XMP writer',
-    61 => 'XMP writer',
 ];
 $runAll = in_array('--all', $argv, true);
 $t = testDir();
@@ -898,7 +887,8 @@ test(49, function () use ($et, $testname, $testfile48) {
 test(50, function () use ($et, $testname) {
     $testfile = "t/{$testname}_50_failed.xmp";
     @unlink($testfile);
-    ExifTool::AddUserDefinedTags('Image::ExifTool::XMP::dc', ['test' => []]);
+    // (Perl { }: an empty TagInfo, since an empty PHP array would be a list)
+    ExifTool::AddUserDefinedTags('Image::ExifTool::XMP::dc', ['test' => new TagInfo()]);
     $et->SetNewValue();
     $et->SetNewValue('XMP-dc:Title', 'A');
     $et->SetNewValue('XMP-dc:Test', 'B');

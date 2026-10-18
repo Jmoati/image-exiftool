@@ -9,7 +9,7 @@ require __DIR__.'/TestLib.php';
 use Image\ExifTool\ExifTool;
 
 $skip = [
-    3 => 'XMP and EXIF writers (Creator, XResolution)',
+    3 => 'EXIF writer (XResolution)',
 ];
 $t = testDir();
 $testname = 'Photoshop';
