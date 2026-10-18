@@ -293,7 +293,13 @@ New values (`src/ExifTool/NewValues.php`):
   `...$opts` for a hash); the internal `CreateGroups` and `SetTags` options are `\ArrayObject`s
   shared and filled in place like the Perl hash refs, so `$nvHash->CreateGroups` is one too
   (`$nvHash->CreateGroups[$grp] ?? null` works). A structure value is an associative array, a
-  list of values a list, binary data a `ScalarRef`.
+  list of values a list, binary data a `ScalarRef`; an empty structure (Perl `{ }`) is
+  `XMP::EMPTY_STRUCT`, and an empty tag information hash a `new TagInfo()`, because an empty
+  PHP array is a list.
+- XMP structure definitions (`Struct` of a tagInfo or of a field) are arrays that `CheckStruct`,
+  `AddNewStruct`, `SetPropertyPath` and `RegisterNamespace` change in place (new lang-alt and
+  wildcard fields, cached `PropertyPath`): pass them by reference (`$tagInfo->Struct` itself). A
+  field generated with a null `Struct` is a circular reference to the structure containing it.
 - Perl's dummy call `&$writeProc()` (to autoload a write package) is `ExifTool::DummyWriteCall()`:
   it returns what the write proc returns when called without arguments, so a write proc must
   accept a call without arguments (`?ExifTool $et = null, ?array &$dirInfo = null...`, then
