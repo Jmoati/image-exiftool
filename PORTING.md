@@ -244,6 +244,17 @@ Data:
   `ScalarRef` (data in memory) or a resource, and `$dst = null` to overwrite `$src`.
 - A directory rebuilt in memory is a string, returned like in Perl (`undef` → `null` for "no
   change", `''` to delete it).
+- dirInfo members holding a Perl scalar ref that the callee writes into are `ScalarRef`s
+  (`OutFile` of a trailer or of WriteTIFF, `HeaderPtr` of DoProcessTIFF); `ExtendedXMP` (data
+  returned by the XMP writer) is a string. `PREVIEW_INFO`, `HiddenData` and `LeicaTrailer` are
+  arrays whose `Fixup` is a `Fixup` object.
+- The write procs of Writer.pl named by the tables (`WriteBinaryData`, `WriteTIFF`,
+  `CheckBinaryData`, `DummyWriteProc`) are static methods of `ExifTool` taking `$self` first, like
+  the module ones: call them as `ExifTool::WriteBinaryData($et, $dirInfo, $tagTablePtr)`.
+- Until every writer is ported, `WriteDirectory()` gives a "Not ported: <proc>" error when the
+  write proc of a directory being edited (in `EDIT_DIRS`) doesn't exist yet, and leaves the other
+  directories unchanged (like the procs which only rewrite edited directories); the trailers whose
+  writer isn't ported (CanonVRD edits, MIE) give a minor "Not ported" error.
 
 Code in the tag tables (translated in `translations/<Module>.txt`, see above) has these contexts
 (from the `#### eval` comments of Writer.pl and WriteExif.pl):
@@ -274,4 +285,13 @@ generated as callables: the module port must provide the static method they name
 - `tools/write-parity.php` writes the same changes with Perl and with the port and compares the
   output files byte for byte (then their tags, when the bytes differ). A writer is done when its
   `t/*.t` tests pass and its write-parity cases give identical files.
+- A test replay (`tests/writer.php` is the model) runs with `var/` as current directory and writes
+  its files as `t/<Name>_<num>_failed.<ext>` (the expected outputs contain `Directory: t`); the
+  tests needing writers not ported yet are in its `$skip` list (`--all` runs them anyway): remove
+  them from the list as the writers get ported.
+- A write-parity case is one line `[source file of t/images, [exiftool arguments]]` in the section
+  of its format in `tools/write-parity.php` (`-TAG=VALUE`, `-TAG<=FILE`, `-o out.ext`, no `-o` to
+  edit in place, `-v3`...); `php tools/write-parity.php --case=TEXT -v` runs some of them and shows
+  what both tools printed. `MSG` means the same files but different results/warnings, `DIFF`
+  different files.
 
