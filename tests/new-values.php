@@ -7,8 +7,9 @@
 // child process so its warnings can be told apart), then compares the results, the
 // warnings, the verbose output and the new values left in the object.
 // A case that differs and involves untranslated Perl code ("not ported") is counted apart.
-// Run: php tests/new-values.php [-v] [--images] [name filter] [~/exiftool]
-// (--images also copies all the tags of each test image with SetNewValuesFromFile)
+// Run: php tests/new-values.php [-v] [--images] [--qt-init] [name filter] [~/exiftool]
+// (--images also copies all the tags of each test image with SetNewValuesFromFile; --qt-init
+// applies the load-time code of WriteQuickTime.pl that the generated tables lack so far)
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -27,10 +28,12 @@ if (($args[0] ?? '') === '--php') {
     runPhp();
     exit(0);
 }
-$images = false;
+$images = $qtInit = false;
 foreach ($args as $a) {
     if ($a === '--images') {
         $images = true;     // also copy all tags of each test image
+    } elseif ($a === '--qt-init') {
+        $qtInit = true;     // apply the load-time code of WriteQuickTime.pl (see InitWriteQuickTime)
     } elseif ($a === '-v') {
         $verbose = true;
     } elseif (is_dir($a)) {
@@ -231,6 +234,18 @@ $c('from xmp jpg', ['from', "$img/XMP.jpg"], ['count']);
 $c('from verbose', ['opt', 'Verbose', 3], ['from', "$img/Canon.jpg", 'Make', 'XMP:Title<Model', '-Model']);
 $c('from alt file', ['alt', 'File1', "$img/Nikon.jpg"], ['from', "$img/Canon.jpg", 'File1:Make>Artist', 'Model', 'File1:Model>XMP:Title'],
     ['get', 'Artist'], ['get', 'Model'], ['get', 'XMP:Title']);
+$c('bitmask', ['set', 'Canon:FlashBits', 'E-TTL, Built-in'], ['get', 'Canon:FlashBits'], ['set', 'Canon:FlashBits', '(none)'],
+    ['set', 'Canon:FlashBits', 'E-TTL, Foo'], ['set', 'Canon:FlashBits', 'Foo'], ['set', 'Canon:FlashBits', '[3], Manual']);
+$c('conv list', ['set', 'Canon:PictureStylePC', 'Standard; Portrait; Landscape'], ['get', 'Canon:PictureStylePC'],
+    ['set', 'CanonCustom:ShutterSpeedRange', 'Enable; 1/8000; 30'], ['set', 'Nikon:AFFineTuneAdj', '+2']);
+$c('lang', ['opt', 'Lang', 'de'], ['set', 'Orientation', 'Horizontal gespiegelt'], ['get', 'Orientation'], ['opt', 'Lang', 'fr'],
+    ['set', 'Flash', 'Flash non d' . "\xc3\xa9" . 'clench' . "\xc3\xa9" . ', mode auto'], ['get', 'Flash'], ['set', 'Flash', 'Fired']);
+$c('raw conv', ['set', 'Canon:CameraISO', '100', ['DelValue' => 1]], ['set', 'Canon:CameraISO', '200'], ['over', 'Canon:CameraISO', 17],
+    ['over', 'Canon:CameraISO', 0x7fff], ['over', 'Canon:CameraISO', 18]);
+// (not QuickTime:CreateDate: its ValueConv warns under -w without a file read, FileType being undef)
+$c('shift valueconv', ['set', 'XMP-xmp:CreateDate', '1:0:0', ['Shift' => 1]], ['over', 'XMP-xmp:CreateDate', '2020-01-02T03:04:05+01:00'],
+    ['get', 'XMP-xmp:CreateDate'], ['set', 'GPSAltitude', '10', ['Shift' => 1]], ['over', 'GPSAltitude', '100'], ['get', 'GPSAltitude'],
+    ['set', 'GPSTimeStamp', '0:30:0', ['Shift' => -1]], ['over', 'GPSTimeStamp', '12 0 0'], ['get', 'GPSTimeStamp']);
 $c('structure to non-struct', ['set', 'Artist', ['a' => 1]], ['set', 'XMP:Title', ['x' => 'y']], ['set', 'Keywords', [['a' => 1]]]);
 
 // IsOverwriting, GetGeolocateTags, IsWritable...
@@ -305,7 +320,7 @@ file_put_contents($casesFile, json_encode($cases));
 // (perl -w like the exiftool script: the translated table code raises the warnings of -w)
 $perl = run('PERL_HASH_SEED=0 PERL_PERTURB_KEYS=0 perl -w -I ' . escapeshellarg("$exiftool/lib") . ' ' .
     escapeshellarg(__DIR__ . '/new-values.pl') . ' < ' . escapeshellarg($casesFile), $perlErr);
-$php = run(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(__FILE__) . ' --php < ' . escapeshellarg($casesFile), $phpErr);
+$php = run(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(__FILE__) . ' --php' . ($qtInit ? ' --qt-init' : '') . ' < ' . escapeshellarg($casesFile), $phpErr);
 $perlOut = json_decode($perl, true);
 $phpOut = json_decode($php, true);
 if (!is_array($perlOut) or !is_array($phpOut)) {
@@ -343,8 +358,10 @@ foreach ($cases as $i => $case) {
     if (str_contains($out, 'not ported') or str_contains($out, 'call to undefined')) $reasons['(output)'] = 'not ported';
     if ($reasons) {
         // compare what is left without them (results of set/from and counts depend on them)
-        $p2 = residual($p, $reasons, $case['ops']);
-        $q2 = residual($q, $reasons, $case['ops']);
+        // (tags named by the not-ported errors of the PHP side)
+        preg_match_all('/(?:not ported|Call to undefined)[^"]*? (?:in|for) (?:[-\w]+:)?([-\w]+)(?: \(\w+\))?"/i', json_encode($q), $mm);
+        $p2 = residual($p, $reasons, $case['ops'], $mm[1]);
+        $q2 = residual($q, $reasons, $case['ops'], $mm[1]);
         if ($p2 === $q2) {
             ++$notPorted;
             $notPortedNames[] = $case['name'];
@@ -411,10 +428,11 @@ function keyed($r)
 }
 
 /** a case result without the new values affected by code not ported yet */
-function residual(array $r, array $reasons, array $ops): array
+function residual(array $r, array $reasons, array $ops, array $tags = []): array
 {
     // (names and family 0 groups of the tags concerned)
     $names = $groups = [];
+    foreach ($tags as $t) $names[strtolower($t)] = 1;
     foreach (array_keys($reasons) as $key) {
         if (!preg_match('/^(.+):([^:]+):([^:#]*)#\d+@/', $key, $m)) continue;
         $names[strtolower($m[2])] = 1;
@@ -609,7 +627,8 @@ function runPhp(): void
         return true;
     });
     $cases = json_decode(stream_get_contents(STDIN), true);
-    if (getenv('NV_SHIM')) require getenv('NV_SHIM');
+    global $argv;
+    if (in_array('--qt-init', $argv, true)) InitWriteQuickTime();
     $out = [];
     foreach ($cases as $i => $case) {
         fwrite(STDERR, "\x02$i\n");
@@ -644,6 +663,50 @@ function runPhp(): void
         ];
     }
     echo json_encode($out);
+}
+
+/**
+ * The code that WriteQuickTime.pl runs when Perl loads it (with the first dummy call to a QuickTime
+ * write proc), which tools/export-tables.pl doesn't capture yet: it marks the UserData tags that
+ * have no ItemList counterpart as Preferred, sets Preferred to 0 for the Avoid-ed tags, and
+ * Writable to 0 for the tags with a RawConv but no RawConvInv.  (--qt-init, until the generator
+ * loads WriteQuickTime.pl before exporting the tables)
+ */
+function InitWriteQuickTime(): void
+{
+    $itemList = ExifTool::GetTagTable('Image::ExifTool::QuickTime::ItemList');
+    $userData = ExifTool::GetTagTable('Image::ExifTool::QuickTime::UserData');
+    $pref = [];
+    foreach (ExifTool::TagTableKeys($itemList) as $tag) {
+        $tagInfo = $itemList[$tag];
+        if (!$tagInfo instanceof \Image\ExifTool\TagInfo) {
+            if (is_array($tagInfo)) continue;
+            $tagInfo = $itemList[$tag] = new \Image\ExifTool\TagInfo(['Name' => $tagInfo]);
+        } else {
+            if ($tagInfo->RawConv and !$tagInfo->RawConvInv) $tagInfo->Writable = 0;
+            if ($tagInfo->Avoid) {
+                $tagInfo->Preferred = 0;
+                continue;
+            }
+            if ($tagInfo->Preferred !== null and !$tagInfo->Preferred) continue;
+        }
+        $pref[$tagInfo->Name] = 1;
+    }
+    foreach (ExifTool::TagTableKeys($userData) as $tag) {
+        $tagInfo = $userData[$tag];
+        if (!$tagInfo instanceof \Image\ExifTool\TagInfo) {
+            if (is_array($tagInfo)) continue;
+            $tagInfo = $userData[$tag] = new \Image\ExifTool\TagInfo(['Name' => $tagInfo]);
+        } else {
+            if ($tagInfo->RawConv and !$tagInfo->RawConvInv) $tagInfo->Writable = 0;
+            if ($tagInfo->Avoid) {
+                $tagInfo->Preferred = 0;
+                continue;
+            }
+            if ($tagInfo->Preferred !== null or isset($pref[$tagInfo->Name])) continue;
+        }
+        $tagInfo->Preferred = 1;
+    }
 }
 
 function runOp(ExifTool $et, array $op)

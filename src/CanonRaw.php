@@ -17,8 +17,9 @@
 // PHP port of Image::ExifTool::CanonRaw 1.62 (reading only). Tag tables are generated into
 // tables/CanonRaw.php, %crwTagFormat into Vars\CanonRaw. From WriteCanonRaw.pl, only the
 // subs which build MakerNoteCanon for the MakerNotes option are ported (InitMakerNotes,
-// BuildMakerNotes, SaveMakerNotes), without the pointer Fixup (writing only). Not ported:
-// WriteCRW, WriteCR2, WriteCanonRaw, CheckCanonRaw.
+// BuildMakerNotes, SaveMakerNotes), without the pointer Fixup (writing only), and the
+// CHECK_PROC used when setting new values (CheckCanonRaw). Not ported: WriteCRW, WriteCR2,
+// WriteCanonRaw.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -321,7 +322,32 @@ final class CanonRaw
         return 1;
     }
     //==============================================================================
-    // Routines of WriteCanonRaw.pl used when reading (MakerNotes option)
+    // Routines of WriteCanonRaw.pl used when reading (MakerNotes option), and its
+    // CHECK_PROC used when setting new values
+
+    //------------------------------------------------------------------------------
+    // Check CanonRaw information
+    // Inputs: 0) ExifTool object reference, 1) tagInfo hash reference,
+    //         2) raw value reference
+    // Returns: error string or undef (and may change value) on success
+    public static function CheckCanonRaw(ExifTool $et, TagInfo $tagInfo, &$valPtr, $convType = null)
+    {
+        $tagName = $tagInfo->Name;
+        if ($tagName === 'JpgFromRaw' or $tagName === 'ThumbnailImage') {
+            if (!(str_starts_with(Perl::str($valPtr), "\xff\xd8") or $et->Options('IgnoreMinorErrors'))) {
+                return '[Minor] Not a valid image';
+            }
+        } else {
+            $format = $tagInfo->Format;
+            $count = $tagInfo->Count;
+            if (!$format) {
+                $tagType = (Perl::int($tagInfo->TagID) >> 8) & 0x38;
+                $format = Vars\CanonRaw::$crwTagFormat[$tagType] ?? null;
+            }
+            if ($format) return ExifTool::CheckValue($valPtr, $format, $count);
+        }
+        return null;
+    }
 
     //------------------------------------------------------------------------------
     // Initialize buffers for building MakerNotes from RAW data
