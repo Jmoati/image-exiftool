@@ -61,6 +61,7 @@ $utf16 = static fn (string $s) => pack('N', strlen($s)).implode('', array_map(st
 $ducky = 'Ducky'.pack('nnN', 1, 4, 75).pack('nn', 2, 30).$utf16('Ducky comment').pack('nn', 3, 20).$utf16('(c) Phil')."\0\0";
 file_put_contents("$inputs/ducky.jpg", "\xff\xd8\xff\xec".pack('n', strlen($ducky) + 2).$ducky.substr(file_get_contents("$images/Writer.jpg"), 2));
 QuickTimeInputs($etDir, $inputs);   // (see below)
+ImageInputs($etDir, $inputs);       // (see below)
 
 // cases: [source file in ~/exiftool/t/images, [exiftool arguments]]
 $cases = [
@@ -225,6 +226,146 @@ $cases = [
     ['ICC_Profile.icc', ['-ICC_Profile=', '-o', 'out.icc']],
     ['ICC_Profile.icc', ['-ProfileDescription=x', '-o', 'out.icc']],
     ['Writer.jpg', ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.icc']],
+    // PNG (WritePNG): text chunks (tEXt, zTXt, iTXt), PNG tags, chunks and profiles
+    ['PNG.png', ['-PNG:Title=a title', '-PNG:Author=me', '-o', 'out.png']],
+    ['PNG.png', ['-api', 'Compress=1', '-PNG:Description='.str_repeat('compress me ', 20), '-PNG:Title=short', '-o', 'out.png']],
+    ['PNG.png', ['-PNG:Comment-fr=commentaire', '-PNG:Title-de-DE=Titel', '-o', 'out.png']],
+    ['PNG.png', ['-api', 'Compress=1', '-PNG:Comment-fr='.str_repeat('commentaire ', 20), '-o', 'out.png']],
+    ['PNG.png', ["-PNG:Comment=caf\xc3\xa9", "-PNG:Title=\xc3\xa9t\xc3\xa9", '-o', 'out.png']],
+    ['PNG.png', ['-api', 'Charset=Latin', "-PNG:Comment=caf\xe9", '-o', 'out.png']],
+    ['PNG.png', ['-PNG:CreationTime=2020:01:02 03:04:05', '-PNG:CreateDate=2021:02:03 04:05:06+01:00', '-o', 'out.png']],
+    ['PNG.png', ['-api', 'StrictDate', '-PNG:CreationTime=2020:01:02 03:04:05+02:00', '-o', 'out.png']],
+    ['PNG.png', ['-api', 'StrictDate', '-PNG:CreationTime=2020:13:02 03:04', '-o', 'out.png']],
+    ['PNG.png', ['-PNG:ModifyDate=2021:02:03 04:05:06', '-SRGBRendering=Saturation', '-Gamma=2.2', '-o', 'out.png']],
+    ['PNG.png', ['-PixelsPerUnitY=1000', '-PixelUnits=Unknown', '-o', 'out.png']],
+    ['PNG.png', ['-PNG:all=', '-o', 'out.png']],
+    ['PNG.png', ['-all=', '-o', 'out.png']],
+    ['PNG.png', ['-XMP:all=', '-o', 'out.png']],
+    ['PNG.png', ['-XMP:Title=xmp title', '-o', 'out.png']],
+    ['PNG.png', ['-EXIF:Artist=exif artist', '-o', 'out.png']],
+    ['PNG.png', ["-ICC_Profile<=$images/ICC_Profile.icc", '-ProfileName=my profile', '-o', 'out.png']],
+    ['PNG.png', ["-EXIF<=$images/ExifTool.tif", '-o', 'out.png']],
+    ['PNG.png', ["-XMP<=$images/XMP.xmp", '-o', 'out.png']],
+    ['PNG.png', ['-IPTC:Keywords=png keyword', '-o', 'out.png']],
+    ['PNG.png', ['-v3', '-PNG:Title=verbose', '-XMP:Title=x', '-EXIF:Artist=y', '-o', 'out.png']],
+    ['PNG.png', ['-api', 'FastScan', '-PNG:Title=fast', '-o', 'out.png']],
+    ['PNG.png', ['-PNG:Title=in place']],
+    ['PNG.png', ['-PNG:Comment=', '-o', 'out.png']],
+    ["$inputs/img-text.png", ['-PNG:Description=changed', '-PNG:Title-de=geändert', '-o', 'out.png']],
+    ["$inputs/img-text.png", ['-api', 'Compress=1', '-PNG:Description='.str_repeat('compressed again ', 9), '-o', 'out.png']],
+    ["$inputs/img-text.png", ['-PNG:Title-de=', '-PNG:Author=', '-PNG:Comment=', '-o', 'out.png']],
+    ["$inputs/img-text.png", ['-EXIF:Artist=changed', '-XMP:Title=changed', '-IPTC:Keywords=changed', '-o', 'out.png']],
+    ["$inputs/img-text.png", ['-ICC_Profile=', '-o', 'out.png']],
+    ["$inputs/img-text.png", ["-ICC_Profile<=$images/ICC_Profile.icc", '-ProfileName=new name', '-o', 'out.png']],
+    ["$inputs/img-text.png", ['-ICC_Profile:all=', '-o', 'out.png']],
+    ["$inputs/img-text.png", ['-EXIF:all=', '-IPTC:all=', '-o', 'out.png']],
+    ["$inputs/img-text.png", ['-PNG-pHYs:all=', '-SRGBRendering=', '-o', 'out.png']],
+    ["$inputs/img-text.png", ['-PixelsPerUnitX=1', '-PNG:ModifyDate+=1:0:0 0:0:0', '-o', 'out.png']],
+    ["$inputs/img-text.png", ['-PNG:all=', '-PNG:Title=after delete', '-o', 'out.png']],
+    ["$inputs/img-text.png", ['-all=', '-o', 'out.png']],
+    ["$inputs/img-text.png", ['-v3', '-PNG:Description=v', '-EXIF:Artist=v', '-o', 'out.png']],
+    ["$inputs/img-raw.png", ['-EXIF:Artist=new raw', '-o', 'out.png']],
+    ["$inputs/img-raw.png", ['-XMP:Title=new raw xmp', '-o', 'out.png']],
+    ["$inputs/img-raw.png", ['-IPTC:Keywords=new raw', '-o', 'out.png']],
+    ["$inputs/img-raw.png", ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.png']],
+    ["$inputs/img-raw.png", ['-ICC_Profile:all=', '-IPTC:all=', '-o', 'out.png']],
+    ["$inputs/img-raw.png", ['-EXIF:all=', '-XMP:all=', '-o', 'out.png']],
+    ["$inputs/img-raw.png", ['-all=', '-o', 'out.png']],
+    ["$inputs/img-raw.png", ['-v3', '-EXIF:Artist=v', '-o', 'out.png']],
+    ["$inputs/img-zxif.png", ['-EXIF:Artist=zxif', '-o', 'out.png']],
+    ["$inputs/img-zxif.png", ['-EXIF:all=', '-o', 'out.png']],
+    ["$inputs/img-case.png", ['-EXIF:Artist=case', '-o', 'out.png']],
+    ["$inputs/img-case.png", ['-PNG:Title=case', '-o', 'out.png']],
+    ["$inputs/img-exif00.png", ['-EXIF:Artist=exif00', '-o', 'out.png']],
+    ["$inputs/img-after.png", ['-PNG:Comment=after', '-o', 'out.png']],
+    ["$inputs/img-after.png", ['-api', 'FastScan', '-PNG:Comment=fast', '-o', 'out.png']],
+    ["$inputs/img-trailer.png", ['-PNG:Title=x', '-o', 'out.png']],
+    ["$inputs/img-trailer.png", ['-v2', '-trailer:all=', '-o', 'out.png']],
+    ["$inputs/img-apng.png", ['-XMP:Title=apng', '-o', 'out.png']],
+    ["$inputs/img-plte.png", ['-SRGBRendering=Perceptual', '-Gamma=2.2', "-ICC_Profile<=$images/ICC_Profile.icc", '-PNG:Title=t', '-o', 'out.png']],
+    ["$inputs/img-big.png", ['-PNG:Title=big', '-o', 'out.png']],
+    ["$inputs/img-crc.png", ['-PNG:Title=crc', '-o', 'out.png']],
+    ["$inputs/img-crc.png", ['-m', '-PNG:Title=crc', '-o', 'out.png']],
+    ["$inputs/img-test.mng", ['-PNG:Title=mng', '-XMP:Title=x', '-o', 'out.mng']],
+    ["$inputs/img-test.jng", ['-PNG:Title=jng', '-EXIF:Artist=jng', '-o', 'out.jng']],
+    ["$inputs/img-cgbi.png", ['-PNG:Title=cgbi', '-o', 'out.png']],
+    ["$inputs/img-txmp.png", ['-XMP:Title=txmp', '-o', 'out.png']],
+    ["$inputs/img-txmp.png", ['-XMP:all=', '-o', 'out.png']],
+    ["$inputs/img-seal.png", ['-SEAL:all=', '-o', 'out.png']],
+    ["$inputs/img-jumbf.png", ['-JUMBF:all=', '-o', 'out.png']],
+    ["$inputs/img-jumbf.png", ['-PNG:Title=jumbf', '-o', 'out.png']],
+    // GIF (ProcessGIF): comments and application extensions (XMP, ICC_Profile)
+    ['GIF.gif', ['-Comment=new gif comment', '-o', 'out.gif']],
+    ['GIF.gif', ['-Comment=', '-o', 'out.gif']],
+    ['GIF.gif', ['-Comment='.str_repeat('0123456789', 60), '-o', 'out.gif']],
+    ['GIF.gif', ['-XMP:Title=new title', '-o', 'out.gif']],
+    ['GIF.gif', ['-XMP:all=', '-o', 'out.gif']],
+    ['GIF.gif', ['-ICC_Profile:all=', '-o', 'out.gif']],
+    ['GIF.gif', ['-all=', '-o', 'out.gif']],
+    ['GIF.gif', ['-File:all=', '-o', 'out.gif']],
+    ['GIF.gif', ["-XMP<=$images/XMP.xmp", '-o', 'out.gif']],
+    ['GIF.gif', ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.gif']],
+    ['GIF.gif', ['-v3', '-Comment=v', '-XMP:Title=v', '-o', 'out.gif']],
+    ['GIF.gif', ['-EXIF:Artist=not in gif', '-o', 'out.gif']],
+    ["$inputs/img-87a.gif", ['-Comment=87a', '-o', 'out.gif']],
+    ["$inputs/img-anim.gif", ['-Comment=anim', '-XMP:Title=anim', '-o', 'out.gif']],
+    ["$inputs/img-anim.gif", ['-all=', '-o', 'out.gif']],
+    // PPM, PGM, PBM (ProcessPPM): comments
+    ['PPM.ppm', ['-Comment=new comment', '-o', 'out.ppm']],
+    ['PPM.ppm', ['-Comment=', '-o', 'out.ppm']],
+    ['PPM.ppm', ["-Comment=line 1\nline 2", '-o', 'out.ppm']],
+    ["$inputs/img-p1.pbm", ['-Comment=pbm', '-o', 'out.pbm']],
+    ["$inputs/img-p5.pgm", ['-Comment=pgm', '-o', 'out.pgm']],
+    ["$inputs/img-p5.pgm", ['-Comment=', '-o', 'out.pgm']],
+    ["$inputs/img-seal.ppm", ['-SEAL:all=', '-o', 'out.ppm']],
+    // FLIF (WriteFLIF): EXIF, XMP and ICC_Profile chunks
+    ['FLIF.flif', ['-EXIF:Artist=flif', '-XMP:Title=flif', '-o', 'out.flif']],
+    ['FLIF.flif', ['-EXIF:all=', '-o', 'out.flif']],
+    ['FLIF.flif', ['-XMP:all=', '-ICC_Profile:all=', '-o', 'out.flif']],
+    ['FLIF.flif', ['-all=', '-o', 'out.flif']],
+    ['FLIF.flif', ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.flif']],
+    ['FLIF.flif', ["-EXIF<=$images/ExifTool.tif", '-o', 'out.flif']],
+    ['FLIF.flif', ["-XMP<=$images/XMP.xmp", '-o', 'out.flif']],
+    ['FLIF.flif', ['-v3', '-XMP:Title=v', '-o', 'out.flif']],
+    ["$inputs/img-none.flif", ['-EXIF:Artist=new', '-XMP:Title=new', "-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.flif']],
+    // JPEG 2000 (ProcessJpeg2000Box): UUID, XML and colr boxes
+    ['Jpeg2000.jp2', ['-EXIF:Artist=jp2', '-o', 'out.jp2']],
+    ['Jpeg2000.jp2', ['-XMP:Title=jp2', '-o', 'out.jp2']],
+    ['Jpeg2000.jp2', ['-IPTC:Keywords=jp2', '-o', 'out.jp2']],
+    ['Jpeg2000.jp2', ['-XML=<x>y</x>', '-o', 'out.jp2']],
+    ['Jpeg2000.jp2', ['-XML=', '-o', 'out.jp2']],
+    ['Jpeg2000.jp2', ['-all=', '-o', 'out.jp2']],
+    ['Jpeg2000.jp2', ['-EXIF:all=', '-o', 'out.jp2']],
+    ['Jpeg2000.jp2', ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.jp2']],
+    ['Jpeg2000.jp2', ['-ColorSpace=sRGB', '-o', 'out.jp2']],
+    ['Jpeg2000.jp2', ['-ColorSpecData=abc', '-ColorSpecApproximation=Accurate', '-o', 'out.jp2']],
+    ['Jpeg2000.jp2', ['-ColorSpecMethod=Vendor Color', '-o', 'out.jp2']],
+    ['Jpeg2000.jp2', ['-ColorSpecApproximation=Accurate', '-o', 'out.jp2']],
+    ['Jpeg2000.jp2', ['-v3', '-EXIF:Artist=v', '-XMP:Title=v', '-ColorSpace=sRGB', '-o', 'out.jp2']],
+    ['Jpeg2000.jp2', ['-EXIF=', '-o', 'out.jp2']],
+    ['Jpeg2000.jp2', ["-EXIF<=$images/ExifTool.tif", '-o', 'out.jp2']],
+    ['Jpeg2000.jp2', ["-XMP<=$images/XMP.xmp", '-o', 'out.jp2']],
+    ['Jpeg2000.j2c', ['-EXIF:Artist=j2c', '-o', 'out.j2c']],
+    ["$inputs/img-meta.jp2", ['-EXIF:Artist=changed', '-XMP:Title=changed', '-IPTC:Keywords=changed', '-o', 'out.jp2']],
+    ["$inputs/img-meta.jp2", ['-XMP:all=', '-IPTC:all=', '-o', 'out.jp2']],
+    ["$inputs/img-meta.jp2", ['-ColorSpace=Grayscale', '-o', 'out.jp2']],
+    ["$inputs/img-meta.jp2", ['-all=', '-o', 'out.jp2']],
+    ["$inputs/img-test.jpx", ['-XMP:Title=jpx', '-o', 'out.jpx']],
+    ["$inputs/img-big.jp2", ['-XMP:Title=big', '-o', 'out.jp2']],
+    ["$inputs/img-zero.jp2", ['-XMP:Title=zero', '-o', 'out.jp2']],
+    ["$inputs/img-jumbf.jp2", ['-XMP:Title=jumbf', '-o', 'out.jp2']],
+    ["$inputs/img-jumbf.jp2", ['-JUMBF:all=', '-o', 'out.jp2']],
+    // JPEG XL (ProcessJXL): Exif and xml boxes, codestream wrapped in a container, brob boxes
+    ['JXL.jxl', ['-XMP:Title=jxl', '-o', 'out.jxl']],
+    ['JXL.jxl', ['-m', '-XMP:Title=jxl', '-EXIF:Artist=jxl', '-o', 'out.jxl']],
+    ['JXL.jxl', ['-m', '-api', 'Compress=1', '-XMP:Title=c', '-o', 'out.jxl']],
+    ['JXL2.jxl', ['-XMP:Title=jxl2', '-o', 'out.jxl']],
+    ['JXL2.jxl', ['-EXIF:Artist=jxl2', '-o', 'out.jxl']],
+    ['JXL2.jxl', ['-all=', '-o', 'out.jxl']],
+    ["$inputs/img-meta.jxl", ['-XMP:Title=changed', '-EXIF:Artist=changed', '-o', 'out.jxl']],
+    ["$inputs/img-meta.jxl", ['-api', 'Compress=1', '-XMP:Title=compressed', '-o', 'out.jxl']],
+    ["$inputs/img-meta.jxl", ['-XMP:all=', '-EXIF:all=', '-o', 'out.jxl']],
+    ["$inputs/img-meta.jxl", ['-all=', '-o', 'out.jxl']],
     // MWG composite tags (also need the EXIF and XMP writers)
     ['IPTC.jpg', ['-use', 'MWG', '-MWG:Keywords+=mwg', '-o', 'out.jpg']],
     ['MWG.jpg', ['-MWG:Creator=Creator One', '-MWG:City=Some city', '-o', 'out.jpg']],
@@ -900,6 +1041,100 @@ function EmptyDir(string $dir, bool $remove = false): void
     if (!$remove && !is_dir($dir)) {
         mkdir($dir, 0777, true);
     }
+}
+
+/**
+ * PNG, GIF, PPM, FLIF, JP2 and JXL inputs: files written by Perl ExifTool (text chunks of
+ * every kind, profiles, boxes...) and files built here: raw profiles (ImageMagick), zxIf and
+ * miscased EXIF chunks, text after IDAT across a SEEK chunk, trailer, APNG, palette, a data
+ * chunk too big to be loaded, bad CRC, MNG, JNG, C2PA/JUMBF, SEAL, tXMP, PBM/PGM, GIF87a,
+ * animated GIF, JPX, JP2 with 64-bit and zero box lengths, JUMBF in JP2.
+ */
+function ImageInputs(string $etDir, string $inputs): void
+{
+    $images = "$etDir/t/images";
+    $perl = static fn (string $out, ?string $src, string ...$args) => Run(['perl', "$etDir/exiftool", '-q', '-m',
+        ...$args, '-o', "$inputs/$out", ...(array) $src], $inputs, ['PERL_HASH_SEED' => '0', 'PERL_PERTURB_KEYS' => '0']);
+    $chunk = static fn (string $type, string $data) => pack('N', strlen($data)).$type.$data.pack('N', crc32($type.$data));
+    $box = static fn (string $type, string $data) => pack('N', strlen($data) + 8).$type.$data;
+    $hex = static fn (string $type, string $d) => sprintf("\n%s\n%8d\n", $type, strlen($d)).implode('', array_map(
+        static fn ($s) => bin2hex($s)."\n", str_split($d, 36)));
+    $z = static fn (string $d) => deflate_add(deflate_init(ZLIB_ENCODING_DEFLATE, ['memory' => 9]), $d, ZLIB_FINISH);
+    foreach (glob("$inputs/img-*") as $f) {
+        unlink($f);
+    }
+    $long = str_repeat('a long description which compresses well. ', 20);
+    $perl('img-text.png', "$images/PNG.png", '-api', 'Compress=1', "-PNG:Description=$long", "-PNG:Title-de=$long",
+        '-PNG:Author=Phil', '-PNG:ModifyDate=2020:01:02 03:04:05', '-PixelsPerUnitX=3000', '-EXIF:Artist=artist',
+        '-XMP:Title=xmp', '-IPTC:Keywords=kw', "-ICC_Profile<=$images/ICC_Profile.icc", '-SRGBRendering=Perceptual',
+        '-Gamma=2.2', "-PNG:Comment=caf\xc3\xa9");
+    $perl('img-tiny.exif', null, '-EXIF:Artist=raw artist', '-EXIF:Make=raw make');
+    $tiff = (string) @file_get_contents("$inputs/img-tiny.exif");
+    $xmp = (string) file_get_contents("$images/XMP.xmp");
+    $icc = (string) file_get_contents("$images/ICC_Profile.icc");
+    $iptc = "\x1c\x02\x00\x00\x02\x00\x04\x1c\x02\x19\x00\x07keyword";
+    $png = (string) file_get_contents("$images/PNG.png");
+    $ihdr = substr($png, 8, 25);
+    $idat = $chunk('IDAT', $z(str_repeat("\0\0\0", 16)));
+    $iend = $chunk('IEND', '');
+    $sig = "\x89PNG\r\n\x1a\n";
+    $files = [
+        'img-raw.png' => $sig.$ihdr.
+            $chunk('tEXt', "Raw profile type exif\0".$hex('exif', "Exif\0\0".$tiff)).
+            $chunk('zTXt', "Raw profile type APP1\0\0".$z($hex('APP1', "http://ns.adobe.com/xap/1.0/\0".$xmp))).
+            $chunk('tEXt', "Raw profile type iptc\0".$hex('IPTC profile', $iptc)).
+            $chunk('zTXt', "Raw profile type icc\0\0".$z($hex('ICC Profile', $icc))).$idat.$iend,
+        'img-zxif.png' => $sig.$ihdr.$chunk('zxIf', "\0".pack('N', strlen($tiff)).$z($tiff)).$idat.$iend,
+        'img-case.png' => $sig.$ihdr.$chunk('EXIF', $tiff).$idat.$chunk('zTXt', "Comment\0\0".$z('compressed')).$iend,
+        'img-exif00.png' => $sig.$ihdr.$chunk('eXIf', "Exif\0\0".$tiff).$idat.$iend,
+        'img-after.png' => $sig.$ihdr.$idat.$chunk('tEXt', "Title\0moved").$chunk('SEEK', '').
+            $chunk('tEXt', "Author\0not moved").$iend,
+        'img-trailer.png' => $png.'trailer data',
+        'img-apng.png' => $sig.$ihdr.$chunk('acTL', pack('NN', 1, 0)).$chunk('fcTL', pack('NNNNNnnCC', 0, 16, 16, 0, 0, 1, 10, 0, 0)).
+            $idat.$iend,
+        'img-plte.png' => $sig.$chunk('IHDR', pack('NNCCCCC', 16, 16, 8, 3, 0, 0, 0)).$chunk('PLTE', "\0\0\0\xff\xff\xff").
+            $chunk('IDAT', $z(str_repeat("\0".str_repeat("\1", 16), 16))).$iend,
+        'img-big.png' => $sig.$ihdr.pack('N', 10000001).'IDAT'.str_repeat("\0", 10000001)."\0\0\0\0".$iend,
+        'img-crc.png' => substr($png, 0, 33).substr_replace(substr($png, 33, 14), "\0\0\0\0", 10, 4).substr($png, 47),
+        'img-test.mng' => "\x8aMNG\r\n\x1a\n".$chunk('MHDR', pack('N7', 16, 16, 1, 0, 0, 0, 1)).
+            $chunk('tEXt', "Title\0mng").$chunk('MEND', ''),
+        'img-test.jng' => "\x8bJNG\r\n\x1a\n".$chunk('JHDR', pack('NNCCCCCCCC', 16, 16, 10, 8, 8, 0, 8, 0, 0, 0)).
+            $chunk('JDAT', file_get_contents("$images/Writer.jpg")).$iend,
+        'img-cgbi.png' => $sig.$chunk('CgBI', "\x50\0\x20\x06").$ihdr.$idat.$iend,
+        'img-txmp.png' => $sig.$ihdr.$chunk('tXMP', $xmp).$idat.$iend,
+        'img-seal.png' => $sig.$ihdr.$chunk('seAl', '<seal seal="1" kv="1" ka="rsa" da="sha256" d="e.com" s="abc"/>').$idat.$iend,
+    ];
+    $jumd = $box('jumd', "c2pa\x00\x11\x00\x10\x80\x00\x00\xaa\x00\x38\x9b\x71\x03c2pa\0");
+    $jumb = $box('jumb', $jumd.$box('jumb', $box('jumd', "json\x00\x11\x00\x10\x80\x00\x00\xaa\x00\x38\x9b\x71\x03test\0").
+        $box('json', '{"a":1}')));
+    $files['img-jumbf.png'] = $sig.$ihdr.$idat.$chunk('caBX', $jumb).$iend;
+    // GIF: 87a version, animated GIF with 2 frames, loop, delay and plain text extensions
+    $gif = (string) file_get_contents("$images/GIF.gif");
+    $files['img-87a.gif'] = 'GIF87a'.substr($gif, 6);
+    $end = strrpos($gif, "\x2c");
+    $frame = substr($gif, $end, -1);
+    $files['img-anim.gif'] = substr($gif, 0, $end)."\x21\xff\x0bNETSCAPE2.0\x03\x01\x00\x00\x00".
+        "\x21\xf9\x04\x05\x0a\x00\x01\x00".$frame."\x21\x01\x0c".str_repeat("\0", 12)."\x04text\0".
+        "\x21\xf9\x04\x04\x14\x00\x00\x00".$frame.';';
+    // PPM: PBM and PGM with comments, SEAL comment
+    $files['img-p1.pbm'] = "P1\n# old comment\n# line 2\n4 2\n0 1 0 1\n1 0 1 0\n";
+    $files['img-p5.pgm'] = "P5\n3 1\n# after size\n255\n\x00\x80\xff";
+    $files['img-seal.ppm'] = "P6\n#<seal seal=\"1\" d=\"e.com\" s=\"abc\"/>\n1 1\n255\n\xff\0\0";
+    // JP2: JPX brand, extended (64-bit) box length, zero length (to end of file), JUMBF box
+    $jp2 = (string) file_get_contents("$images/Jpeg2000.jp2");
+    $files['img-test.jpx'] = substr_replace($jp2, 'jpx ', 20, 4);
+    $files['img-big.jp2'] = substr($jp2, 0, 619)."\0\0\0\x01xml ".pack('NN', 0, 393).substr($jp2, 627, 377).substr($jp2, 1004);
+    $files['img-zero.jp2'] = substr($jp2, 0, 619).substr($jp2, 1004).substr($jp2, 619, 385).substr($jp2, 401, 218);
+    $files['img-zero.jp2'] = substr_replace($files['img-zero.jp2'], "\0\0\0\0", strlen($files['img-zero.jp2']) - 218, 4);
+    $files['img-jumbf.jp2'] = substr($jp2, 0, 401).$jumb.substr($jp2, 401);
+    foreach ($files as $name => $data) {
+        file_put_contents("$inputs/$name", $data);
+    }
+    // written by Perl: metadata in JP2 (UUID boxes, colr with ICC), JXL container, FLIF without metadata
+    $perl('img-meta.jp2', "$images/Jpeg2000.jp2", '-IPTC:Keywords=kw', '-XMP:Title=xmp', '-EXIF:Artist=artist',
+        "-ICC_Profile<=$images/ICC_Profile.icc");
+    $perl('img-meta.jxl', "$images/JXL.jxl", '-XMP:Title=xmp', '-EXIF:Artist=artist');
+    $perl('img-none.flif', "$images/FLIF.flif", '-all=');
 }
 
 /**
