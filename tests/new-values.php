@@ -7,9 +7,12 @@
 // child process so its warnings can be told apart), then compares the results, the
 // warnings, the verbose output and the new values left in the object.
 // A case that differs and involves untranslated Perl code ("not ported") is counted apart.
-// Run: php tests/new-values.php [-v] [name filter] [~/exiftool]
+// Run: php tests/new-values.php [-v] [--images] [name filter] [~/exiftool]
+// (--images also copies all the tags of each test image with SetNewValuesFromFile)
 
 require __DIR__ . '/../vendor/autoload.php';
+
+ini_set('memory_limit', '4G');
 
 use Image\ExifTool\ExifTool;
 use Image\ExifTool\NewValue;
@@ -24,8 +27,11 @@ if (($args[0] ?? '') === '--php') {
     runPhp();
     exit(0);
 }
+$images = false;
 foreach ($args as $a) {
-    if ($a === '-v') {
+    if ($a === '--images') {
+        $images = true;     // also copy all tags of each test image
+    } elseif ($a === '-v') {
         $verbose = true;
     } elseif (is_dir($a)) {
         $exiftool = rtrim($a, '/');
@@ -223,6 +229,9 @@ $c('from missing', ['from', "$img/NoSuchFile.jpg", 'Artist'], ['from', "$img/NoS
 $c('from nikon', ['from', "$img/Nikon.jpg", 'MakerNotes:all'], ['count']);
 $c('from xmp jpg', ['from', "$img/XMP.jpg"], ['count']);
 $c('from verbose', ['opt', 'Verbose', 3], ['from', "$img/Canon.jpg", 'Make', 'XMP:Title<Model', '-Model']);
+$c('from alt file', ['alt', 'File1', "$img/Nikon.jpg"], ['from', "$img/Canon.jpg", 'File1:Make>Artist', 'Model', 'File1:Model>XMP:Title'],
+    ['get', 'Artist'], ['get', 'Model'], ['get', 'XMP:Title']);
+$c('structure to non-struct', ['set', 'Artist', ['a' => 1]], ['set', 'XMP:Title', ['x' => 'y']], ['set', 'Keywords', [['a' => 1]]]);
 
 // IsOverwriting, GetGeolocateTags, IsWritable...
 $c('over dates', ['set', 'DateTimeOriginal', '2020:01:02 03:04:05', ['DelValue' => 1]], ['set', 'DateTimeOriginal', '2021:01:01 00:00:00'],
@@ -279,6 +288,11 @@ $c('mwg', ['require', 'Image::ExifTool::MWG'], ['set', 'MWG:Description', 'd'], 
 $c('user defined', ['udt', 'Image::ExifTool::Exif::Main', ['53248' => ['Name' => 'MyNewTag', 'Writable' => 'int16u']]], ['set', 'MyNewTag', '5'],
     ['get', 'MyNewTag'], ['writable', 'MyNewTag'], ['set', 'MyNewTag', 'x']);
 
+if ($images) {
+    foreach (glob("$img/*") as $file) {
+        if (is_file($file)) $c('image ' . basename($file), ['from', $file], ['count']);
+    }
+}
 if ($filter !== null) {
     $cases = array_values(array_filter($cases, static fn ($c) => str_contains($c['name'], $filter)));
 }
@@ -438,6 +452,8 @@ function notPortedReason(string $table, string $tag): ?string
     $t = ExifTool::GetTagTable($table);
     if (!$t) return null;
     $infos = [];
+    // (flattened XMP tags are generated on demand)
+    if (($t['GROUPS'][0] ?? null) === 'XMP' or $t['NAMESPACE']) \Image\ExifTool\XMP::AddFlattenedTags($t);
     foreach ([$tag, preg_replace('/-.*/', '', $tag)] as $name) {
         foreach (ExifTool::TagTableKeys($t) as $id) {
             foreach (ExifTool::GetTagInfoList($t, $id) as $ti) {

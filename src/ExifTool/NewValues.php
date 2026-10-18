@@ -2177,8 +2177,9 @@ WriteAlso:
                 }
             }
             // loop through multiple values if necessary
+            // (PHP: a lookup hash is true in Perl even when empty)
             for (;;) {
-                if ($convInv) {
+                if ($convInv !== null and (is_array($convInv) or is_object($convInv) or $convInv)) {
                     // capture eval warnings too
                     self::$evalWarning = null;
                     self::EvalBegin();
@@ -2217,7 +2218,7 @@ WriteAlso:
                         $this->VPrint(2, "$err\n");
                         break 2;
                     }
-                } elseif ($conv) {
+                } elseif ($conv !== null and (is_array($conv) or is_object($conv) or $conv)) {
                     if (is_array($conv) and (!property_exists($tagInfo, "{$type}Inv") or $convInvList)) {
                         $multi = $lc = null;
                         // insert alternate language print conversions if required
@@ -2248,7 +2249,7 @@ WriteAlso:
                             $conv = $newConv;
                         }
                         self::$evalWarning = null;
-                        if (!empty($conv['BITMASK'])) {
+                        if (isset($conv['BITMASK'])) {
                             $lookupBits = $conv['BITMASK'];
                             [$wbits, $tbits] = [$tagInfo->BitsPerWord, $tagInfo->BitsTotal];
                             [$val2, $err2] = self::EncodeBitsList($val, $lookupBits, $wbits, $tbits);
