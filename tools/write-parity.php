@@ -526,6 +526,43 @@ $cases = [
     ["$inputs/dr4.cr3", ['-CanonVRD:GammaBlackPoint=1.5', '-o', 'out.cr3']],
     ["$inputs/dr4.cr3", ['-CanonVRD:all=', '-o', 'out.cr3']],
     ["$inputs/dr4.cr3", ['-v3', '-n', '-RedHSL=1 2 3', '-o', 'out.cr3']],
+    // MIE (WriteMIEGroup): MIE files edited and created, compressed, localized and with units,
+    // other directories inside, MIE trailers (ExifTool.jpg, TIFF)
+    ['MIE.mie', ['-MIE:Title=new title', '-MIE:Comment=new comment', '-o', 'out.mie']],
+    ['MIE.mie', ['-MIE:all=', '-o', 'out.mie']],
+    ['MIE.mie', ['-MIE-Doc:all=', '-MIE-Camera:Make=only make', '-o', 'out.mie']],
+    ['MIE.mie', ['-MIE1:all=', '-o', 'out.mie']],
+    ['MIE.mie', ['-all=', '-o', 'out.mie']],
+    ['MIE.mie', ['-MIE:Keywords+=added', '-MIE:Keywords-=Test', '-o', 'out.mie']],
+    ['MIE.mie', ['-MIE:Keywords=', '-MIE:Copyright=', '-MIE:Rotation=', '-o', 'out.mie']],
+    ['MIE.mie', ['-MIE:Comment-fr_FR=nouveau', '-MIE:Comment-de_DE=', '-MIE:Title-en_US=US title', '-o', 'out.mie']],
+    ['MIE.mie', ["-MIE:Comment=caf\xc3\xa9 \xe2\x82\xac", "-MIE:Title=\xf0\x9f\x98\x80 smile", '-o', 'out.mie']],
+    ['MIE.mie', ['-MIE:FocalLength=50', '-MIE:GPSAltitude=1000(ft)', '-MIE:Resolution=300x300(/in)', '-o', 'out.mie']],
+    ['MIE.mie', ['-MIE:GPSLatitude=12.5', '-MIE:GPSLongitude=-1.5', '-MIE:ExposureTime=1/125', '-o', 'out.mie']],
+    ['MIE.mie', ['-MIE:FNumber=abc', '-MIE:FocalLength=50(furlongs)', '-o', 'out.mie']],
+    ['MIE.mie', ['-EXIF:Artist=exif in MIE', '-XMP:Title=xmp in MIE', '-IPTC:Keywords=iptc', '-o', 'out.mie']],
+    ['MIE.mie', ["-ICC_Profile<=$images/ICC_Profile.icc", "-EXIF<=$images/ExifTool.tif", '-o', 'out.mie']],
+    ['MIE.mie', ['-MIE:TrailerSignature=1', '-o', 'out.mie']],
+    ['MIE.mie', ['-MIE:ThumbnailImage=', '-MIE:SubfileData=', '-o', 'out.mie']],
+    ['MIE.mie', ['-api', 'Compress', '-MIE:Title='.str_repeat('compressed ', 20), '-MIE:Author=short', '-o', 'out.mie']],
+    ['MIE.mie', ['-api', 'Compress', '-XMP:Title=compressed XMP', '-MIE:LensModel=new group', '-o', 'out.mie']],
+    ['MIE.mie', ['-v3', '-MIE:Title=verbose', '-MIE:Comment-ru_RU=', '-o', 'out.mie']],
+    ['MIE.mie', ['-MIE:Title=in place']],
+    [null, ['-MIE:Title=created', '-MIE:Author=me', '-MIE:Keywords=a', '-MIE:Keywords=b', '-o', 'out.mie']],
+    [null, ['-api', 'Compress', '-MIE:Title='.str_repeat('compressed ', 20), '-XMP:Title=x', '-o', 'out.mie']],
+    [null, ["-EXIF<=$images/ExifTool.tif", '-MIE:GPSLatitude=45', '-o', 'out.mie']],
+    [null, ['-v2', '-MIE:Comment=verbose creation', '-o', 'out.mie']],
+    ["$inputs/z.mie", ['-MIE:Title=edit compressed', '-o', 'out.mie']],
+    ["$inputs/z.mie", ['-MIE-Camera:all=', '-MIE:FNumber=8', '-o', 'out.mie']],
+    ["$inputs/z.mie", ['-MIE:Keywords+=more', '-v2', '-o', 'out.mie']],
+    ["$inputs/z.mie", ['-api', 'Compress', '-MIE:Copyright=again', '-o', 'out.mie']],
+    ['ExifTool.jpg', ['-MIE:all=', '-o', 'out.jpg']],
+    ['ExifTool.jpg', ['-MIE:Copyright=in trailer', '-MIE:Title=new', '-o', 'out.jpg']],
+    ['ExifTool.jpg', ['-v3', '-MIE:Comment=x', '-o', 'out.jpg']],
+    ['ExifTool.jpg', ['-api', 'Compress', '-MIE:Comment='.str_repeat('z', 100), '-o', 'out.jpg']],
+    ["$inputs/mie.tif", ['-MIE:Title=trailer of a TIFF', '-o', 'out.tif']],
+    ["$inputs/mie.tif", ['-MIE:all=', '-o', 'out.tif']],
+    ["$inputs/mie.tif", ['-Artist=only EXIF', '-o', 'out.tif']],
     // QuickTime: HEIC with EXIF and XMP items (written by Perl), plain and deflated
     ["$inputs/meta.heic", ['-XMP:Title=a longer title than before', '-o', 'out.heic']],
     ["$inputs/meta.heic", ['-EXIF:Artist=changed', '-EXIF:Copyright=new', '-o', 'out.heic']],
@@ -804,12 +841,17 @@ function QuickTimeInputs(string $etDir, string $inputs): void
         'vrd.jpg' => ['Writer.jpg', "-CanonVRD<=$images/CanonVRD.vrd"],
         'dr4.jpg' => ['Writer.jpg', "-CanonDR4<=$images/CanonVRD.dr4"],
         'dr4.cr3' => ['CanonRaw.cr3', "-CanonDR4<=$images/CanonVRD.dr4"],
+        // (a null source: created from scratch)
+        'z.mie' => [null, '-z', '-tagsFromFile', "$images/MIE.mie", '-all:all'],
+        'trailer.mie' => [null, '-MIE:TrailerSignature=1', '-MIE:Title=MIE trailer', '-MIE:Comment-fr_FR=bonjour'],
     ] as $out => $args) {
         $src = array_shift($args);
         @unlink("$inputs/$out");
-        Run(['perl', "$etDir/exiftool", '-q', '-m', ...$args, '-o', "$inputs/$out", "$images/$src"], $inputs,
-            ['PERL_HASH_SEED' => '0', 'PERL_PERTURB_KEYS' => '0']);
+        Run(['perl', "$etDir/exiftool", '-q', '-m', ...$args, '-o', "$inputs/$out", ...($src === null ? [] : ["$images/$src"])],
+            $inputs, ['PERL_HASH_SEED' => '0', 'PERL_PERTURB_KEYS' => '0']);
     }
+    // a TIFF with a MIE trailer
+    file_put_contents("$inputs/mie.tif", file_get_contents("$images/ExifTool.tif").file_get_contents("$inputs/trailer.mie"));
     // QuickTime.mov rebuilt with real chunk offsets
     $parse = static function (string $d) use (&$parse): array {
         $atoms = [];

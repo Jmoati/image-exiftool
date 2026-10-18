@@ -15,9 +15,7 @@ use Image\ExifTool\TagInfo;
 
 $skip = [
     15 => 'advanced formatting expressions (comment<${make;tr{ ,.}{_};...})',
-    27 => 'MIE writer (trailer of ExifTool.jpg)',
-    41 => 'CanonRaw and MIE writers',
-    51 => 'MIE writer (trailer of ExifTool.jpg)',
+    41 => 'CanonRaw writer (CIFF in ExifTool.jpg)',
 ];
 $runAll = in_array('--all', $argv, true);
 $t = testDir();

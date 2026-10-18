@@ -7,10 +7,8 @@
 //
 // Revisions:    11/18/2005 - P. Harvey Created
 //
-// PHP port of Image::ExifTool::MIE 1.57 (reading only). Tag tables are generated into
-// tables/MIE.php, the file lexicals ($hasZlib, %mieFormat, %mieMap...) into Vars\MIE.
-// Not ported (writing): UpdateMieMap, MIEGroupFormat, WriteMIEGroup and the OutFile
-// branches of ProcessMIE.
+// PHP port of Image::ExifTool::MIE 1.57. Tag tables are generated into tables/MIE.php,
+// the file lexicals ($hasZlib, %mieFormat, %mieCode, %mieMap...) into Vars\MIE.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -56,6 +54,68 @@ final class MIE
     }
 
     //------------------------------------------------------------------------------
+    // Add user-defined MIE groups to %mieMap
+    // Inputs: none;  Returns: nothing, but sets $doneMieMap flag
+    public static function UpdateMieMap()
+    {
+        Vars::$doneMieMap = 1;  // set flag so we only do this once
+        if (!ExifTool::$UserDefined) return;
+        $tables = [];
+        $doneTable = [];
+        // get list of top-level MIE tables with user-defined tags
+        foreach (array_keys(ExifTool::$UserDefined) as $tableName) {
+            if (!preg_match('/^Image::ExifTool::MIE::/', $tableName)) continue;
+            $tagTablePtr = ExifTool::GetTagTable($tableName);
+            if (!$tagTablePtr) continue;
+            // (PHP: the user-defined table may still be an array)
+            $userTable = ExifTool::$UserDefined[$tableName];
+            if (is_array($userTable)) $userTable = ExifTool::$UserDefined[$tableName] = new TagTable($userTable);
+            // copy the WRITE_GROUP from the actual table
+            $userTable['WRITE_GROUP'] = $tagTablePtr['WRITE_GROUP'];
+            // add to list of tables to process
+            $doneTable[$tableName] = 1;
+            $tables[] = [$tableName, $userTable];
+        }
+        // recursively add all user-defined groups to MIE map
+        while ($tables) {
+            [$tableName, $tagTablePtr] = array_shift($tables);
+            $parent = $tagTablePtr['WRITE_GROUP'];
+            if (!$parent) {
+                ExifTool::PerlWarn("No WRITE_GROUP for $tableName\n");
+                continue;
+            }
+            if (!(Vars::$mieMap[$parent] ?? null)) {
+                ExifTool::PerlWarn("$parent is not in MIE map\n");
+                continue;
+            }
+            foreach (ExifTool::TagTableKeys($tagTablePtr) as $tagID) {
+                $tagInfo = $tagTablePtr[$tagID];
+                if (!($tagInfo instanceof TagInfo and $tagInfo->SubDirectory)) continue;
+                $subTableName = $tagInfo->SubDirectory['TagTable'] ?? null;
+                $subTablePtr = ExifTool::GetTagTable($subTableName);
+                if (!$subTablePtr) continue;
+                // only care about MIE tables
+                if (!($subTablePtr['PROCESS_PROC'] and
+                      $subTablePtr['PROCESS_PROC'] === 'Image\ExifTool\MIE::ProcessMIE')) continue;
+                $group = $subTablePtr['WRITE_GROUP'];
+                if (!$group) {
+                    ExifTool::PerlWarn("No WRITE_GROUP for $subTableName\n");
+                    continue;
+                }
+                if ((Vars::$mieMap[$group] ?? null) and Vars::$mieMap[$group] !== $parent) {
+                    ExifTool::PerlWarn("$group already has different parent (" . Vars::$mieMap[$group] . ")\n");
+                    continue;
+                }
+                Vars::$mieMap[$group] = $parent;    // add to map
+                // process tables within this one too
+                if ($doneTable[$subTableName] ?? null) continue;
+                $doneTable[$subTableName] = 1;
+                $tables[] = [$subTableName, $subTablePtr];
+            }
+        }
+    }
+
+    //------------------------------------------------------------------------------
     // Get localized version of tagInfo hash
     // Inputs: 0) tagInfo hash ref, 1) locale code (eg. "en_CA")
     // Returns: new tagInfo hash ref, or undef if invalid
@@ -84,6 +144,16 @@ final class MIE
             }
         }
         return Vars::$hasZlib;
+    }
+
+    //------------------------------------------------------------------------------
+    // Get format code for MIE group element with current byte order
+    // Inputs: 0) [optional] true to convert result to chr()
+    // Returns: format code
+    public static function MIEGroupFormat($chr = null)
+    {
+        $format = ExifTool::GetByteOrder() === 'MM' ? 0x10 : 0x18;
+        return $chr ? chr($format) : $format;
     }
 
     //------------------------------------------------------------------------------
@@ -120,6 +190,553 @@ final class MIE
             return ExifTool::ReadValue($dataPt, $offset, $format, $count, $size, $ratPt);
         }
         return $val;
+    }
+
+    //------------------------------------------------------------------------------
+    // Rewrite a MIE directory
+    // Inputs: 0) ExifTool object reference, 1) DirInfo reference, 2) tag table ptr
+    // Returns: undef on success, otherwise error message (empty message if nothing to write)
+    public static function WriteMIEGroup(ExifTool $et, array &$dirInfo, TagTable $tagTablePtr)
+    {
+        $outfile = $dirInfo['OutFile'];
+        $dirName = $dirInfo['DirName'] ?? null;
+        $toWrite = ($dirInfo['ToWrite'] ?? null) ?: '';
+        $raf = $dirInfo['RAF'] ?? null;
+        $verbose = $et->Options('Verbose');
+        $optCompress = $et->Options('Compress');
+        $out = $et->Options('TextOut');
+        $msg = $err = $ok = $sync = $delGroup = null;
+        $tag = '';
+        $deletedTag = '';
+
+        // count each MIE directory found and make name for this specific instance
+        $isWriting = [];
+        $cnt = &$et->MIE_COUNT;
+        $grp = Perl::str($tagTablePtr['GROUPS'][1] ?? null);
+        $n = ($cnt['MIE-Main'] ?? null) ?: 0;
+        if ($grp === 'MIE-Main') {
+            $cnt[$grp] = ++$n;
+            $grp1 = preg_replace('/MIE-/', "MIE$n-", $grp, 1);
+        } else {
+            $grp1 = preg_replace('/MIE-/', "MIE$n-", $grp, 1);
+            $m = $cnt[$grp1] = (($cnt[$grp1] ?? null) ?: 0) + 1;
+            $isWriting["$grp$m"] = 1;   // eg. 'MIE-Doc2'
+            $isWriting[$grp1] = 1;      // eg. 'MIE1-Doc'
+            $grp1 .= $m;
+        }
+        unset($cnt);
+        // build lookup for all valid group names for this MIE group
+        $isWriting[$grp] = 1;           // eg. 'MIE-Doc'
+        $isWriting[$grp1] = 1;          // eg. 'MIE1-Doc2'
+        $isWriting["MIE$n"] = 1;        // eg. 'MIE1'
+
+        // determine if we are deleting this group
+        if ($et->DEL_GROUP) {
+            if (($et->DEL_GROUP['MIE'] ?? null) or
+                ($et->DEL_GROUP[$grp] ?? null) or
+                ($et->DEL_GROUP[$grp1] ?? null) or
+                ($et->DEL_GROUP["MIE$n"] ?? null)) $delGroup = 1;
+        }
+
+        // prepare lookups and lists for writing
+        $newTags = $et->GetNewTagInfoHash($tagTablePtr);
+        [$addDirs, $editDirs] = $et->GetAddDirHashList($tagTablePtr, $dirName);
+        $editTags = array_map('strval', [...array_keys($newTags), ...array_keys($editDirs)]);
+        sort($editTags, SORT_STRING);
+        if ($verbose) fwrite($out, ($raf ? 'Writing' : 'Creating') . " $grp1:\n");
+
+        // loop through elements in MIE group
+        for (;;) {      // (MieElement)
+            $format = $tagLen = $valLen = $units = $oldHdr = $buff = null;
+            $lastTag = $tag;
+            if ($raf) {
+                // read first 4 bytes of element header
+                $n = $raf->Read($oldHdr, 4);
+                if ($n != 4) {
+                    if ($n or $sync !== null) break;
+                    $raf = null;    // all done reading
+                    $ok = 1;
+                }
+            }
+            if ($raf) {
+                [$sync, $format, $tagLen, $valLen] = Perl::unpack('aC3', $oldHdr);
+                if ($sync !== '~') {
+                    $msg = 'Invalid sync byte';
+                    break;
+                }
+
+                // read tag name
+                if ($tagLen) {
+                    if ($raf->Read($tag, $tagLen) != $tagLen) break;
+                    $oldHdr .= $tag;    // add tag to element header
+                    if (strcmp($tag, $lastTag) < 0) $et->Warn("MIE tag '{$tag}' out of sequence");
+                    // separate units from tag name if they exist
+                    if (preg_match('/\((.*)\)$/', $tag, $m, PREG_OFFSET_CAPTURE)) {
+                        $units = $m[1][0];
+                        $tag = substr_replace($tag, '', $m[0][1], strlen($m[0][0]));
+                    }
+                } else {
+                    $tag = '';
+                }
+
+                // get multi-byte value length if necessary
+                if ($valLen > 252) {
+                    // calculate number of bytes in extended DataLength
+                    $n = 1 << (256 - $valLen);
+                    if ($raf->Read($buff, $n) != $n) break;
+                    $oldHdr .= $buff;   // add to old header
+                    $fmt = 'int' . ($n * 8) . 'u';
+                    $valLen = ExifTool::ReadValue($buff, 0, $fmt, 1, $n);
+                    if ($valLen > 0x7fffffff) {
+                        $msg = "Can't write $tag (DataLength > 2GB not yet supported)";
+                        break;
+                    }
+                }
+                // don't rewrite free bytes or information in deleted groups
+                if ($format == 0x80 or ($delGroup and $tagLen and ($format & 0xf0) != 0x10)) {
+                    if (!$raf->Seek($valLen, 1)) {
+                        $msg = 'Seek error';
+                        break;
+                    }
+                    if ($verbose > 1) {
+                        $free = ($format == 0x80) ? ' free' : '';
+                        fwrite($out, "    - $grp1:$tag ($valLen$free bytes)\n");
+                    }
+                    if ($delGroup) ++$et->CHANGED;
+                    continue;
+                }
+            } else {
+                // no more elements to read
+                $tagLen = $valLen = 0;
+                $tag = '';
+            }
+//
+// write necessary new tags and process directories
+//
+            while ($editTags) {
+                if ($tagLen and strcmp($editTags[0], $tag) > 0) break;
+                // we are writing the new tag now
+                $newVal = $writable = $oldVal = $newFormat = $compress = null;
+                $newTag = array_shift($editTags);
+                if (strlen($newTag) > 255) {
+                    $et->Warn('Tag name too long');     // (just to be safe)
+                    continue;
+                }
+                $newInfo = $editDirs[$newTag] ?? null;
+                if ($newInfo) {
+                    // create the new subdirectory or rewrite existing non-MIE directory
+                    $subTablePtr = ExifTool::GetTagTable($newInfo->SubDirectory['TagTable'] ?? null);
+                    if (!$subTablePtr) {
+                        $et->Warn("No tag table for $newTag {$newInfo->Name}");
+                        continue;
+                    }
+                    $subdirInfo = [];
+                    $isMieGroup = ($subTablePtr['WRITE_PROC'] and
+                                   $subTablePtr['WRITE_PROC'] === 'Image\ExifTool\MIE::ProcessMIE');
+
+                    if ($newTag === $tag) {
+                        // make sure that either both or neither old and new tags are MIE groups
+                        if ($isMieGroup xor ($format & 0xf3) == 0x10) {
+                            $et->Warn("Tag '{$tag}' not expected type");
+                            continue;   // don't write our new tag
+                        }
+                        // uncompress existing directory into $oldVal since we are editing it
+                        if ($format & 0x04) {
+                            if (!self::HasZlib($et, 'edit')) break;
+                            if ($raf->Read($oldVal, $valLen) != $valLen) break 2;
+                            // (Perl: Compress::Zlib::inflateInit() and inflate())
+                            $inflate = inflate_init(ZLIB_ENCODING_DEFLATE);
+                            $v2 = $inflate ? @inflate_add($inflate, $oldVal, ZLIB_SYNC_FLUSH) : false;
+                            if (!($inflate and $v2 !== false and inflate_get_status($inflate) == ZLIB_STREAM_END)) {
+                                $msg = "Error inflating $tag";
+                                break 2;
+                            }
+                            $oldVal = $v2;
+                            $compress = 1;
+                            $valLen = strlen($oldVal);  // uncompressed value length
+                        }
+                    } else {
+                        // don't create this directory unless necessary
+                        if (!($addDirs[$newTag] ?? null)) continue;
+                    }
+
+                    if ($isMieGroup) {
+                        $hdr = $newValPt = null;    // (PHP: $newValPt is \$newVal)
+                        if ($newTag === $tag) {
+                            // rewrite existing directory later unless it was compressed
+                            if (!$compress) break;
+                            // rewrite directory to '$newVal'
+                            $newValPt = new ScalarRef('');
+                            $subdirInfo = [
+                                'OutFile' => $newValPt,
+                                'RAF' => new RandomAccess($oldVal),
+                            ];
+                        } elseif ($optCompress and !($dirInfo['IsCompressed'] ?? null)) {
+                            // write to memory so we can compress the new MIE group
+                            $compress = 1;
+                            $newValPt = new ScalarRef(null);
+                            $subdirInfo = [
+                                'OutFile' => $newValPt,
+                            ];
+                        } else {
+                            $hdr = '~' . self::MIEGroupFormat(1) . chr(strlen($newTag)) .
+                                   "\0" . $newTag;
+                            $subdirInfo = [
+                                'OutFile' => $outfile,
+                                'ToWrite' => $toWrite . $hdr,
+                            ];
+                        }
+                        $subdirInfo['DirName'] = ($newInfo->SubDirectory['DirName'] ?? null) ?: $newTag;
+                        $subdirInfo['Parent'] = $dirName;
+                        // don't compress elements of an already compressed group
+                        $subdirInfo['IsCompressed'] = ($dirInfo['IsCompressed'] ?? null) ?: $compress;
+                        $msg = self::WriteMIEGroup($et, $subdirInfo, $subTablePtr);
+                        if ($newValPt) $newVal = $newValPt->value;
+                        if ($msg) break 2;
+                        // message is defined but empty if nothing was written
+                        if ($msg !== null) {
+                            $msg = null;    // not a problem if nothing was written
+                            continue;
+                        } elseif (!$compress) {
+                            // group was written already
+                            $toWrite = '';
+                            continue;
+                        } elseif (strlen(Perl::str($newVal)) <= 4) {   // terminator only?
+                            if ($verbose) fwrite($out, "Deleted compressed $grp1 (empty)\n");
+                            if ($newTag === $tag) continue 2;   // deleting the directory
+                            continue;   // not creating the new directory
+                        }
+                        $writable = 'undef';
+                        $newFormat = self::MIEGroupFormat();
+                    } else {
+                        if ($newTag === $tag) {
+                            if (!$compress) {
+                                // read and edit existing directory
+                                if ($raf->Read($oldVal, $valLen) != $valLen) break 2;
+                            }
+                            $subdirInfo = [
+                                'DataPt'  => $oldVal,
+                                'DataLen' => $valLen,
+                                'DirName' => $newInfo->Name,
+                                'DataPos' => ($dirInfo['IsCompressed'] ?? null) ? null : $raf->Tell() - $valLen,
+                                'DirStart'=> 0,
+                                'DirLen'  => $valLen,
+                            ];
+                            // write Compact subdirectories if we will compress the data
+                            // (Perl: eval { require Compress::Zlib })
+                            if (($compress or $optCompress or ($dirInfo['IsCompressed'] ?? null)) and
+                                function_exists('deflate_init'))
+                            {
+                                $subdirInfo['Compact'] = 1;
+                                $subdirInfo['ReadOnly'] = 1;    // because XMP is not writable in place
+                            }
+                        }
+                        $subdirInfo['Parent'] = $dirName;
+                        $writeProc = $newInfo->SubDirectory['WriteProc'] ?? null;
+                        // reset processed lookup to avoid errors in case of multiple EXIF blocks
+                        $et->PROCESSED = [];
+                        $newVal = $et->WriteDirectory($subdirInfo, $subTablePtr, $writeProc);
+                        if ($newVal !== null) {
+                            if ($newVal === '') {
+                                if ($newTag === $tag) continue 2;   // deleting the directory
+                                continue;   // not creating the new directory
+                            }
+                        } else {
+                            if ($oldVal === null) continue;
+                            $newVal = $oldVal;  // just copy over the old directory
+                        }
+                        $writable = 'undef';
+                        $newFormat = 0x00;  // all other directories are 'undef' format
+                    }
+                } else {
+
+                    // get the new tag information
+                    $newInfo = $newTags[$newTag];
+                    $nvHash = $et->GetNewValueHash($newInfo);
+                    $newVals = [];
+
+                    // write information only to specified group
+                    $writeGroup = $nvHash ? Perl::str($nvHash->WriteGroup) : '';
+                    if (!($isWriting[$writeGroup] ?? null)) break;
+
+                    // if tag existed, must decide if we want to overwrite the value
+                    if ($newTag === $tag) {
+                        $isList = $newInfo->List;
+                        if ($isList) {
+                            if ($nvHash->CreateOnly) break;
+                            $isOverwriting = -1;    // force processing list elements individually
+                        } else {
+                            $isOverwriting = $et->IsOverwriting($nvHash);
+                            if (!$isOverwriting) break;
+                        }
+                        $val = $cmpVal = null;
+                        if ($isOverwriting < 0 or $verbose > 1) {
+                            // check to be sure we can uncompress the value if necessary
+                            if ($format & 0x04 and !self::HasZlib($et, 'edit')) break;
+                            // read the old value
+                            if ($raf->Read($oldVal, $valLen) != $valLen) break 2;
+                            // uncompress if necessary
+                            if ($format & 0x04) {
+                                // must save original compressed value in case we decide
+                                // not to overwrite it later
+                                $cmpVal = $oldVal;
+                                // (Perl: Compress::Zlib::inflateInit() and inflate())
+                                $inflate = inflate_init(ZLIB_ENCODING_DEFLATE);
+                                $v2 = $inflate ? @inflate_add($inflate, $oldVal, ZLIB_SYNC_FLUSH) : false;
+                                if (!($inflate and $v2 !== false and inflate_get_status($inflate) == ZLIB_STREAM_END)) {
+                                    $msg = "Error inflating $tag";
+                                    break 2;
+                                }
+                                $oldVal = $v2;
+                                $valLen = strlen($oldVal);  // update value length
+                            }
+                            // convert according to specified format
+                            $formatStr = (Vars::$mieFormat[$format & 0xfb] ?? null) ?: 'undef';
+                            $val = self::ReadMIEValue($oldVal, 0, $formatStr, null, $valLen);
+                            if ($isOverwriting < 0 and $val !== null) {
+                                // handle list values individually
+                                if ($isList) {
+                                    if (str_ends_with($formatStr, '_list')) {
+                                        $vals = Perl::split('/\0/', $val);
+                                    } else {
+                                        $vals = [$val];
+                                    }
+                                    // keep any list items that we aren't overwriting
+                                    foreach ($vals as $v) {
+                                        if ($et->IsOverwriting($nvHash, $v)) continue;
+                                        $newVals[] = $v;
+                                    }
+                                } else {
+                                    // test to see if we really want to overwrite the value
+                                    $isOverwriting = $et->IsOverwriting($nvHash, $val);
+                                }
+                            }
+                        }
+                        if ($isOverwriting) {
+                            // skip the old value if we didn't read it already
+                            if ($oldVal === null) {
+                                if (!$raf->Seek($valLen, 1)) $msg = 'Seek error';
+                            }
+                            if ($verbose > 1) {
+                                if ($units !== null) $val = Perl::str($val) . "($units)";
+                                $et->VerboseValue("- $grp1:{$newInfo->Name}", $val);
+                            }
+                            $deletedTag = $tag;     // remember that we deleted this tag
+                            ++$et->CHANGED;     // we deleted the old value
+                        } else {
+                            if ($oldVal !== null) {
+                                // write original compressed value
+                                if ($cmpVal !== null) $oldVal = $cmpVal;
+                            } else {
+                                if ($raf->Read($oldVal, $valLen) != $valLen) break 2;
+                            }
+                            // write the old value now
+                            if (!ExifTool::Write($outfile, $toWrite, $oldHdr, $oldVal)) $err = 1;
+                            $toWrite = '';
+                            continue 2;
+                        }
+                        if (!$newVals) {
+                            // unshift the new tag info to write it later
+                            array_unshift($editTags, $newTag);
+                            continue 2;     // get next element from file
+                        }
+                    } else {
+                        // write new value if creating, or if List and list existed, or
+                        // if tag was previously deleted
+                        if (!($nvHash->IsCreating or
+                            ($newTag === $lastTag and ($newInfo->List or $deletedTag === $lastTag)))) continue;
+                    }
+                    // get the new value to write (undef to delete)
+                    array_push($newVals, ...$et->GetNewValueList($nvHash));
+                    if (!$newVals) continue;
+                    $writable = Perl::str($newInfo->Writable ?: $tagTablePtr['WRITABLE']);
+                    if ($writable === 'string') {
+                        // join multiple values into a single string
+                        $newVal = implode("\0", array_map([Perl::class, 'str'], $newVals));
+                        // write string as UTF-8,16 or 32 if value contains valid UTF-8 codes
+                        $isUTF8 = ExifTool::IsUTF8($newVal);
+                        if ($isUTF8 > 0) {
+                            $writable = 'utf8';
+                            // write UTF-16 or UTF-32 if it is more compact
+                            $to = $isUTF8 > 1 ? 'UCS4' : 'UTF16';
+                            $tmp = ExifTool::DecodeStatic(null, $newVal, 'UTF8', null, $to);
+                            if (strlen($tmp) < strlen($newVal)) {
+                                $newVal = $tmp;
+                                $writable = ($isUTF8 > 1) ? 'utf32' : 'utf16';
+                            }
+                        }
+                        // write as a list if we have multiple values
+                        if (count($newVals) > 1) $writable .= '_list';
+                    } else {
+                        // should only be one element in the list
+                        $newVal = array_shift($newVals);
+                    }
+                    $newFormat = Vars::$mieCode[$writable] ?? null;
+                    if ($newFormat === null) {
+                        $msg = "Bad format '{$writable}' for {$newInfo->Name}";
+                        continue 2;
+                    }
+                }
+
+                // write the new or edited element
+                while ($newFormat !== null) {
+                    $valPt = $newVal;   // (Perl: $valPt = \$newVal)
+                    // remove units from value and add to tag name if supported by this tag
+                    if ($newInfo->Units) {
+                        if (preg_match('/(.*)\((.*)\)$/', Perl::str($valPt), $m)) {
+                            $val2 = $m[1];
+                            $newTag .= "($m[2])";
+                        } else {
+                            $val2 = $valPt;
+                            // add default units
+                            $ustr = '(' . $newInfo->Units[0] . ')';
+                            $newTag .= $ustr;
+                            $newVal .= $ustr;   // (Perl: $$valPt .= $ustr)
+                        }
+                        $valPt = $val2;
+                    }
+                    // convert value if necessary
+                    if (!preg_match('/^(utf|string|undef)/', $writable)) {
+                        $val3 = ExifTool::WriteValue($valPt, $writable, $newInfo->Count);
+                        if ($val3 === null) {
+                            $et->Warn("Error writing $newTag");
+                            break;
+                        }
+                        $valPt = $val3;
+                    }
+                    $valPt = Perl::str($valPt);
+                    $len = strlen($valPt);
+                    // compress value before writing if required
+                    if (($compress or $optCompress) and !($dirInfo['IsCompressed'] ?? null) and
+                        self::HasZlib($et, 'write'))
+                    {
+                        // (Perl: Compress::Zlib::deflateInit(), deflate() and flush())
+                        $deflate = deflate_init(ZLIB_ENCODING_DEFLATE, ['memory' => 9]);
+                        $val4 = null;
+                        if ($deflate) {
+                            $val4 = deflate_add($deflate, $valPt, ZLIB_FINISH);
+                            if ($val4 === false) $val4 = null;
+                        }
+                        if ($val4 !== null) {
+                            $len4 = strlen($val4);
+                            $saved = $len - $len4;
+                            // only use compressed data if it is smaller
+                            if ($saved > 0) {
+                                if ($verbose) fwrite($out, "  [$newTag compression saved $saved bytes]\n");
+                                $newFormat |= 0x04; // set compressed bit
+                                $len = $len4;       // set length
+                                $valPt = $val4;     // set value pointer
+                            } elseif ($verbose) {
+                                fwrite($out, "  [$newTag compression saved $saved bytes -- written uncompressed]\n");
+                            }
+                        } else {
+                            $et->Warn("Error deflating $newTag (written uncompressed)");
+                        }
+                    }
+                    // calculate the DataLength code
+                    if ($len < 253) {
+                        $extLen = '';
+                    } elseif ($len < 65536) {
+                        $extLen = ExifTool::Set16u($len);
+                        $len = 255;
+                    } elseif ($len <= 0x7fffffff) {
+                        $extLen = ExifTool::Set32u($len);
+                        $len = 254;
+                    } else {
+                        $et->Warn("Can't write $newTag (DataLength > 2GB not yet supported)");
+                        break;  // don't write this tag
+                    }
+                    // write this element (with leading MIE group element if not done already)
+                    $hdr = $toWrite . '~' . chr($newFormat) . chr(strlen($newTag));
+                    if (!ExifTool::Write($outfile, $hdr, chr($len), $newTag, $extLen, $valPt)) $err = 1;
+                    $toWrite = '';
+                    // we changed a tag unless just editing a subdirectory
+                    if (!($editDirs[$newTag] ?? null)) {
+                        $et->VerboseValue("+ $grp1:{$newInfo->Name}", $newVal);
+                        ++$et->CHANGED;
+                    }
+                    break;  // didn't want to loop anyway
+                }
+                if ($oldVal !== null) continue 2;
+            }
+//
+// rewrite existing element or descend into uncompressed MIE group
+//
+            // all done this MIE group if we reached the terminator element
+            if (!$tagLen) {
+                // skip over existing terminator data (if any)
+                if ($valLen and !$raf->Seek($valLen, 1)) break;
+                $ok = 1;
+                // write group terminator if necessary
+                if (!$toWrite) {
+                    // write end-of-group terminator element
+                    $term = "~\0\0\0";
+                    if (!($dirInfo['Parent'] ?? null)) {
+                        // write extended terminator for file-level group
+                        $len = ExifTool::Tell($outfile);    // (length of scalar or file position)
+                        // include length of terminator itself minus original $outfile position
+                        $len += 10 - (($dirInfo['OutPos'] ?? null) ?: 0);
+                        if ($len and $len <= 0x7fffffff) {
+                            $term = "~\0\0\x06" . ExifTool::Set32u($len) . self::MIEGroupFormat(1) . "\x04";
+                        }
+                    }
+                    if (!ExifTool::Write($outfile, $term)) $err = 1;
+                }
+                break;
+            }
+
+            // descend into existing uncompressed MIE group
+            if ($format == 0x10 or $format == 0x18) {
+                // (PHP: $subDirName is Perl's inner "my $dirName", which hides the outer one)
+                $subTablePtr = $subDirName = null;
+                $tagInfo = $et->GetTagInfo($tagTablePtr, $tag);
+                if ($tagInfo and $tagInfo->SubDirectory) {
+                    $subDirName = $tagInfo->SubDirectory['DirName'] ?? null;
+                    $subTable = $tagInfo->SubDirectory['TagTable'] ?? null;
+                    $subTablePtr = $subTable ? ExifTool::GetTagTable($subTable) : $tagTablePtr;
+                } else {
+                    $subTablePtr = ExifTool::GetTagTable('Image::ExifTool::MIE::Unknown');
+                }
+                $hdr = '~' . chr($format) . chr(strlen($tag)) . "\0" . $tag;
+                $subdirInfo = [
+                    'DirName' => $subDirName ?: $tag,
+                    'RAF'     => $raf,
+                    'ToWrite' => $toWrite . $hdr,
+                    'OutFile' => $outfile,
+                    'Parent'  => $subDirName,
+                    'IsCompressed' => $dirInfo['IsCompressed'] ?? null,
+                ];
+                $oldOrder = ExifTool::GetByteOrder();
+                ExifTool::SetByteOrder($format & 0x08 ? 'II' : 'MM');
+                $msg = self::WriteMIEGroup($et, $subdirInfo, $subTablePtr);
+                ExifTool::SetByteOrder($oldOrder);
+                if ($msg) break;
+                if ($msg !== null) {
+                    $msg = null;    // no problem if nothing written
+                } else {
+                    $toWrite = '';
+                }
+                continue;
+            }
+            // just copy existing element
+            $oldVal = null;
+            if ($raf->Read($oldVal, $valLen) != $valLen) break;
+            if ($toWrite) {
+                if (!ExifTool::Write($outfile, $toWrite)) $err = 1;
+                $toWrite = '';
+            }
+            if (!ExifTool::Write($outfile, $oldHdr, $oldVal)) $err = 1;
+        }
+        // return error message
+        if ($err) {
+            $msg = 'Error writing file';
+        } elseif (!$ok and !$msg) {
+            $msg = 'Unexpected end of file';
+        } elseif (!$msg and $toWrite) {
+            $msg = '';  // flag for nothing written
+            if ($verbose) fwrite($out, "Deleted $grp1 (empty)\n");
+        }
+        return $msg;
     }
 
     //------------------------------------------------------------------------------
@@ -378,11 +995,12 @@ final class MIE
     // Inputs: 0) ExifTool object reference, 1) DirInfo reference
     // Returns: 1 on success, 0 if this wasn't a valid MIE file, or -1 on write error
     // - process as a trailer if "Trailer" flag set in dirInfo
-    public static function ProcessMIE(?ExifTool $et, array &$dirInfo)
+    public static function ProcessMIE(?ExifTool $et = null, ?array &$dirInfo = null)
     {
         if ($et === null) return 1;
         $raf = $dirInfo['RAF'];
-        $buff = $err = $msg = $pos = $end = null;
+        $outfile = $dirInfo['OutFile'] ?? null;
+        $buff = $err = $msg = $pos = $end = $isCreating = null;
         $numDocs = 0;
 //
 // process as a trailer (from end of file) if specified
@@ -417,7 +1035,7 @@ final class MIE
             // update DataPos and DirLen for ProcessTrailers()
             $dirInfo['DataPos'] = $pos;
             $dirInfo['DirLen'] = $end - $pos;
-            if (($dirInfo['OutFile'] ?? null) and ($et->DEL_GROUP['MIE'] ?? null)) {
+            if ($outfile and ($et->DEL_GROUP['MIE'] ?? null)) {
                 // delete the trailer
                 $et->VPrint(0, "  Deleting MIE trailer\n");
                 ++$et->CHANGED;
@@ -425,11 +1043,6 @@ final class MIE
             } elseif ($et->Options('Verbose') or $et->HTML_DUMP) {
                 $et->DumpTrailer($dirInfo);
             }
-        }
-        // (PHP: writing MIE is not ported yet)
-        if ($dirInfo['OutFile'] ?? null) {
-            $et->Error('Not ported: writing MIE', 1);
-            return 0;
         }
 //
 // loop through all documents in MIE file
@@ -459,12 +1072,20 @@ final class MIE
                 if (!$num) break;   // OK, all done with file
                 $msg = 'Truncated MIE element header';
             } else {
-                // (OutFile: creating a MIE file from scratch is not ported)
-                return 0;
+                if ($num or !$outfile) return 0;
+                // we have the ability to create a MIE file from scratch
+                $buff = ''; // start from nothing
+                // set byte order according to preferences
+                $et->SetPreferredByteOrder();
+                $isCreating = 1;
             }
             if ($msg) {
                 if (!empty($dirInfo['Trailer'])) break; // allow other trailers after MIE
-                $et->Warn($msg);
+                if ($outfile) {
+                    $et->Error($msg);
+                } else {
+                    $et->Warn($msg);
+                }
                 break;
             }
             // this is a new MIE document -- increment document count
@@ -483,13 +1104,40 @@ final class MIE
             $subdirInfo = [
                 'DirName' => 'MIE',
                 'RAF' => $raf,
-                'OutFile' => null,
+                'OutFile' => $outfile,
                 // don't define Parent so WriteMIEGroup() writes extended terminator
             ];
-            $msg = self::ProcessMIEGroup($et, $subdirInfo, $tagTablePtr);
-            if ($msg) {
-                $et->Warn($msg);
-                break;
+            if ($outfile) {
+                // save start position in $outfile
+                $subdirInfo['OutPos'] = ExifTool::Tell($outfile);
+                // generate lookup for MIE format codes if not done already
+                if (!Vars::$mieCode) {
+                    foreach (Vars::$mieFormat as $code => $fmt) {
+                        Vars::$mieCode[$fmt] = $code;
+                    }
+                }
+                // update %mieMap with user-defined MIE groups
+                if (!Vars::$doneMieMap) self::UpdateMieMap();
+                // initialize write directories, with MIE tags taking priority
+                // (note that this may re-initialize directories when writing trailer
+                //  to another type of image, but this is OK because we are done writing
+                //  the other format by the time we start writing the trailer)
+                $et->InitWriteDirs(Vars::$mieMap, 'MIE');
+                $subdirInfo['ToWrite'] = '~' . self::MIEGroupFormat(1) . "\x04\xfe0MIE\0\0\0\0";
+                $msg = self::WriteMIEGroup($et, $subdirInfo, $tagTablePtr);
+                if ($msg) {
+                    $et->Error($msg);
+                    $err = 1;
+                    break;
+                } elseif ($msg !== null and $isCreating) {
+                    break;
+                }
+            } else {
+                $msg = self::ProcessMIEGroup($et, $subdirInfo, $tagTablePtr);
+                if ($msg) {
+                    $et->Warn($msg);
+                    break;
+                }
             }
         }
         $et->NO_LIST = null;
