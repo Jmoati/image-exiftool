@@ -107,7 +107,12 @@ Use `Image\ExifTool\Perl` for everything whose PHP twin behaves differently:
 Write code of the tag tables (inverse conversions, WriteCheck...) runs where Perl turns any `-w`
 warning into an error for the tag (writing "abc" to a numeric tag fails instead of writing 0):
 use the warning-raising variants `Perl::numw()`, `strw()`, `hexw()`, `uv()`, `neg()`, `log()`,
-`packw()` there (see the comments in `src/Perl.php`).
+`packw()` there (see the comments in `src/Perl.php`). The library functions they call do the same
+(`Set16u`/`SetRational64u`... and `Rationalize`, `GPS::ToDMS`, `GetUnixTime` with the range checks and
+messages of Time::Local), and `Charset::Decompose` leaves the "Malformed UTF-8 character" warning of
+`unpack('C0U*')` in `$evalWarning` like Perl, so an `Encode` of a string that isn't UTF-8 fails the
+conversion. A string negated as a string by Perl ("-1/3" gives "+1/3") keeps the number of the
+original value (`Perl::neg()`).
 
 ## Byte order and binary reads
 

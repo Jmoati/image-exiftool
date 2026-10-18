@@ -67,9 +67,15 @@ final class GPS
             if ($doPrintConv and Perl::str($doPrintConv) === '1') return $val;  // avoid hiding existing tag when extracting
             return null; // avoid writing empty value
         }
+        // (PHP: $numVal is the number Perl caches in $val at its first numeric use, which warns
+        // under -w for a string that isn't a number)
         if ($ref) {
-            if (Perl::num($val) < 0) {
-                $val = -Perl::num($val);
+            $numVal = Perl::numw($val, 'numeric lt (<)', '$val');
+            if ($numVal < 0) {
+                // (a string that isn't a number is negated as a string, "-1/3" giving "+1/3", which
+                // keeps the number of the original value)
+                $val = Perl::neg($val, '$val', true);
+                if (!is_string($val)) $numVal = $val;
                 $ref = ['N' => 'S', 'E' => 'W'][$ref] ?? null;
                 $sign = '-';
                 $minus = '-';
@@ -80,10 +86,13 @@ final class GPS
             if (!($doPrintConv and Perl::str($doPrintConv) === '2')) $ref = " $ref";
         } else {
             if ($doPrintConv and Perl::str($doPrintConv) === '3') {
-                if (Perl::num($val) < 0) $neg = 1;
+                $val = Perl::numw($val, 'numeric lt (<)', '$val');
+                if ($val < 0) $neg = 1;
                 $doPrintConv = 0;
+            } else {
+                $val = Perl::numw($val, 'abs', '$val');
             }
-            $val = abs(Perl::num($val));
+            $numVal = $val = abs($val);
             $ref = '';
         }
         if ($doPrintConv) {
@@ -118,11 +127,11 @@ final class GPS
         $c = [];  // coordinates (D) or (D,M) or (D,M,S)
         $c[0] = $val;
         if ($num > 1) {
-            $c[0] = Perl::int($c[0]);
-            $c[1] = (Perl::num($val) - $c[0]) * 60;
+            $c[0] = Perl::int($numVal);
+            $c[1] = ($numVal - $c[0]) * 60;
             if ($num > 2) {
                 $c[1] = Perl::int($c[1]);
-                $c[2] = (Perl::num($val) - $c[0] - $c[1] / 60) * 3600;
+                $c[2] = ($numVal - $c[0] - $c[1] / 60) * 3600;
             }
             // handle round-off errors to ensure minutes and seconds are
             // less than 60 (eg. convert "72 59 60.00" to "73 0 0.00")

@@ -1104,22 +1104,21 @@ final class Perl
     private static function packNum(string $code, string $mods, mixed $v): string
     {
         $big = str_contains($mods, '>');
-        if (self::$packWarn) {
-            $v = self::numw($v, 'pack');
-            if (\is_float($v) && (is_nan($v) || is_infinite($v)) && !\in_array($code, ['f', 'd', 'F'], true)) {
-                throw new \RuntimeException('Cannot pack '.self::str($v)." with '$code'");
-            }
-        }
+        $arg = $v;
+        $v = self::$packWarn ? self::numw($v, 'pack') : self::num($v);
         if (\in_array($code, ['f', 'd', 'F'], true)) {
-            $f = (float) self::num($v);
+            // (a string "-0" is a negative zero for Perl's SvNV)
+            $f = 0 === $v && \is_string($arg) && preg_match('/^\s*-0+\s*$/', $arg) ? -0.0 : (float) $v;
             $s = 'f' === $code ? pack('g', $f) : pack('e', $f);
 
             return $big ? strrev($s) : $s;
         }
-        $n = self::int($v);
-        if (\is_float($n)) {
-            $n = $n >= 9.2233720368547758E18 ? (int) ($n - 1.8446744073709552E19) : (int) $n;
+        // (Perl croaks for Inf and NaN in an integer format, with or without -w)
+        if (\is_float($v) && (is_nan($v) || is_infinite($v))) {
+            throw new \RuntimeException('Cannot pack '.self::str($v)." with '$code'");
         }
+        // (a value out of range saturates like Perl's SvIV/SvUV)
+        $n = self::uv(self::int($v));
         if (self::$packWarn && ('C' === $code ? $n < 0 || $n > 255 : ('c' === $code && ($n < -128 || $n > 127)))) {
             trigger_error("Character in '$code' format wrapped in pack", E_USER_WARNING);
         }

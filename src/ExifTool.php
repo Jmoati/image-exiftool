@@ -3880,9 +3880,11 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     // Pack value
     // Inputs: 0) template, 1) value, 2) data ref (or undef), 3) offset (if data ref)
     // Returns: packed value
+    // (PHP: with the warnings of pack under -w, where Perl names the undefined argument $_[1])
     public static function DoPackStd($template, $value, &$dataPt = null, $pos = null)
     {
-        $val = Perl::pack(self::$unpackStd[$template], $value);
+        if ($value === null) trigger_error('Use of uninitialized value $_[1] in pack', E_USER_WARNING);
+        $val = Perl::packw(self::$unpackStd[$template], $value ?? 0);
         if (func_num_args() > 2 and $dataPt !== null) $dataPt = substr_replace($dataPt, $val, (int) $pos, strlen($val));
         return $val;
     }
@@ -3890,7 +3892,8 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     // same, but with reversed byte order
     public static function DoPackRev($template, $value, &$dataPt = null, $pos = null)
     {
-        $val = Perl::pack(self::UNPACK_REV[self::$unpackStd[$template]], $value);
+        if ($value === null) trigger_error('Use of uninitialized value $_[1] in pack', E_USER_WARNING);
+        $val = Perl::packw(self::UNPACK_REV[self::$unpackStd[$template]], $value ?? 0);
         if (func_num_args() > 2 and $dataPt !== null) $dataPt = substr_replace($dataPt, $val, (int) $pos, strlen($val));
         return $val;
     }
@@ -4623,7 +4626,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
         $timeStr = Perl::str($timeStr);
         if ($timeStr === '0000:00:00 00:00:00') return 0;
         if (!preg_match('/^(\d+)[-:](\d+)[-:](\d+)\s+(\d+):(\d+):(\d+)(.*)/', $timeStr, $m)) return null;
-        $tm = array_map('intval', array_slice($m, 1, 6));
+        $tm = array_slice($m, 1, 6);    // (strings, which Time::Local shows in its messages)
         [$tzStr, $tzSec] = [$m[7], 0];
         // use specified timezone offset (if given) instead of local system time
         // if we are converting a local time value
@@ -4636,7 +4639,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
                 $isLocal = null;
             }
         }
-        $tm[1] -= 1;            // convert month
+        $tm[1] = Perl::num($tm[1]) - 1;    // convert month
         $tm = array_reverse($tm);   // change to order required by timelocal()
         $val = $isLocal ? self::TimeLocal(...$tm) : self::TimeLocal_timegm(...$tm) - $tzSec;
         // handle fractional seconds
@@ -7306,16 +7309,24 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     // - these routines were a bit tricky, but fun to write!
     public static function Rationalize($val, $maxInt = null): array
     {
+        // (PHP: with the warnings of -w, an undefined $val warning at each use)
+        if ($val === null) {
+            foreach (['string eq', 'string eq', 'pattern match (m//)'] as $op) {
+                trigger_error("Use of uninitialized value \$val in $op", E_USER_WARNING);
+            }
+        }
         $str = Perl::str($val);
         if ($str === 'inf') return [1, 0];
         if ($str === 'undef') return [0, 0];
         if (preg_match('{^([-+]?\d+)/(\d+)$}', $str, $m)) return [$m[1], $m[2]]; // accept fractional values
         // Note: Just testing "if $val" doesn't work because '0.0' is true!  (ugghh!)
-        $val = Perl::num($val);
+        $val = Perl::numw($val, 'numeric eq (==)', '$val');
         if ($val == 0) return [0, 1];
         $sign = 1;
         if ($val < 0) {
-            $val = -$val;
+            // (a string that isn't a number is negated as a string, "-5x" giving "+5x", which keeps
+            // the number of the original value)
+            if (!is_string(Perl::neg($str, '$val', true))) $val = -$val;
             $sign = -1;
         }
         $num = $denom = null;
@@ -7345,27 +7356,32 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     // Utility routines to for writing binary data values
     // Inputs: 0) value, 1) data ref, 2) offset
     // Notes: prototype is (@) so values can be passed from list if desired
+    // (PHP: with the warnings of -w, an undefined value staying undefined after the comparison)
     public static function Set16s($value, &$dataPt = null, $pos = null)
     {
-        $val = Perl::num($value);
+        $val = Perl::numw($value, 'numeric lt (<)', '$val');
         if ($val < 0) $val += 0x10000;
+        elseif ($value === null) $val = null;
         return func_num_args() > 1 ? self::Set16u($val, $dataPt, $pos) : self::Set16u($val);
     }
 
     public static function Set32s($value, &$dataPt = null, $pos = null)
     {
-        $val = Perl::num($value);
+        $val = Perl::numw($value, 'numeric lt (<)', '$val');
         if ($val < 0) {
             $val += 0xffffffff;
             ++$val;
+        } elseif ($value === null) {
+            $val = null;
         }
         return func_num_args() > 1 ? self::Set32u($val, $dataPt, $pos) : self::Set32u($val);
     }
 
     public static function Set64u($value, &$dataPt = null, $pos = null)
     {
-        $val = Perl::num($value);
+        $val = Perl::numw($value, 'division (/)', '$val');
         $hi = Perl::int($val / 4294967296);
+        if ($value === null) trigger_error('Use of uninitialized value $val in subtraction (-)', E_USER_WARNING);
         $lo = self::Set32u($val - $hi * 4294967296); // NOTE: subject to round-off errors!
         $hi = self::Set32u($hi);
         $val = self::GetByteOrder() === 'MM' ? $hi . $lo : $lo . $hi;
@@ -7375,8 +7391,9 @@ GR_TAG:     foreach ($rtnTags as $tag) {
 
     public static function Set64s($value, &$dataPt = null, $pos = null)
     {
-        $val = Perl::num($value);
+        $val = Perl::numw($value, 'numeric lt (<)', '$val');
         if ($val < 0) $val += 4294967296 * 4294967296; // (temporary hack won't really work due to round-off errors)
+        elseif ($value === null) $val = null;
         return func_num_args() > 1 ? self::Set64u($val, $dataPt, $pos) : self::Set64u($val);
     }
 
@@ -7414,26 +7431,28 @@ GR_TAG:     foreach ($rtnTags as $tag) {
 
     public static function SetFixed16u($value, &$dataPt = null, $pos = null)
     {
-        $val = Perl::int(Perl::num($value) * 0x100 + 0.5);
+        $val = Perl::int(Perl::numw($value, 'multiplication (*)') * 0x100 + 0.5);
         return func_num_args() > 1 ? self::Set16u($val, $dataPt, $pos) : self::Set16u($val);
     }
 
     public static function SetFixed16s($value, &$dataPt = null, $pos = null)
     {
-        $val = Perl::num($value);
+        $val = Perl::numw($value, 'multiplication (*)', '$val');
+        if ($value === null) trigger_error('Use of uninitialized value $val in numeric lt (<)', E_USER_WARNING);
         $val = Perl::int($val * 0x100 + ($val < 0 ? -0.5 : 0.5));
         return func_num_args() > 1 ? self::Set16s($val, $dataPt, $pos) : self::Set16s($val);
     }
 
     public static function SetFixed32u($value, &$dataPt = null, $pos = null)
     {
-        $val = Perl::int(Perl::num($value) * 0x10000 + 0.5);
+        $val = Perl::int(Perl::numw($value, 'multiplication (*)') * 0x10000 + 0.5);
         return func_num_args() > 1 ? self::Set32u($val, $dataPt, $pos) : self::Set32u($val);
     }
 
     public static function SetFixed32s($value, &$dataPt = null, $pos = null)
     {
-        $val = Perl::num($value);
+        $val = Perl::numw($value, 'multiplication (*)', '$val');
+        if ($value === null) trigger_error('Use of uninitialized value $val in numeric lt (<)', E_USER_WARNING);
         $val = Perl::int($val * 0x10000 + ($val < 0 ? -0.5 : 0.5));
         return func_num_args() > 1 ? self::Set32s($val, $dataPt, $pos) : self::Set32s($val);
     }
@@ -7441,7 +7460,8 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     public static function SetFloat($value, &$dataPt = null, $pos = null)
     {
         // (PHP: pack in the current byte order instead of native order + SwapBytes)
-        $val = pack(self::GetByteOrder() === 'MM' ? 'G' : 'g', (float) Perl::num($value));
+        if ($value === null) trigger_error('Use of uninitialized value $_[0] in pack', E_USER_WARNING);
+        $val = Perl::packw(self::GetByteOrder() === 'MM' ? 'f>' : 'f<', $value ?? 0);
         if (func_num_args() > 1 and $dataPt !== null) self::PutData($dataPt, $pos, $val);
         return $val;
     }
@@ -7449,7 +7469,8 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     public static function SetDouble($value, &$dataPt = null, $pos = null)
     {
         // swap 32-bit words (ARM quirk) and bytes if necessary
-        $val = pack(self::GetByteOrder() === 'MM' ? 'E' : 'e', (float) Perl::num($value));
+        if ($value === null) trigger_error('Use of uninitialized value $_[0] in pack', E_USER_WARNING);
+        $val = Perl::packw(self::GetByteOrder() === 'MM' ? 'd>' : 'd<', $value ?? 0);
         if (func_num_args() > 1 and $dataPt !== null) self::PutData($dataPt, $pos, $val);
         return $val;
     }
@@ -7813,36 +7834,52 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     /** Time::Local::timegm (with its year interpretation and range checks) */
     public static function TimeLocal_timegm($sec, $min, $hour, $mday, $month, $year)
     {
-        [$sec, $min, $hour, $mday, $month, $year] = array_map(static fn ($v) => Perl::num($v), [$sec, $min, $hour, $mday, $month, $year]);
-        if ($year >= 1000) {
-            $year -= 1900;
-        } elseif ($year < 100 and $year >= 0) {
+        // (the arguments keep their strings, which Time::Local shows in its messages)
+        $y = Perl::num($year);
+        if ($y >= 1000) {
+            $year = $y - 1900;
+        } elseif ($y < 100 and $y >= 0) {
             // (rolling century)
             $thisYear = (int) date('Y') - 1900;
             $breakpoint = ($thisYear + 50) % 100;
             $nextCentury = $thisYear - $thisYear % 100;
             if ($breakpoint < 50) $nextCentury += 100;
             $century = $nextCentury - 100;
-            $year += ($year > $breakpoint) ? $century : $nextCentury;
+            $year = $y + (($y > $breakpoint) ? $century : $nextCentury);
         }
-        if ($month > 11 or $month < 0) throw new \RuntimeException("Month '$month' out of range 0..11");
-        $md = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][(int) $month];
-        $y = $year + 1900;
-        if ($month == 1 and !($y % 4) and ($y % 100 or !($y % 400))) ++$md;
-        if ($mday > $md or $mday < 1) throw new \RuntimeException("Day '$mday' out of range 1..$md");
-        if ($hour > 23 or $hour < 0) throw new \RuntimeException("Hour '$hour' out of range 0..23");
-        if ($min > 59 or $min < 0) throw new \RuntimeException("Minute '$min' out of range 0..59");
-        if ($sec >= 60 or $sec < 0) throw new \RuntimeException("Second '$sec' out of range 0..59");
-        return $sec + 60 * $min + 3600 * $hour + 86400 * self::DayGM($mday, $month, $year);
+        $mo = Perl::num($month);
+        if ($mo > 11 or $mo < 0) throw new \RuntimeException("Month '" . Perl::str($month) . "' out of range 0..11");
+        $md = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][(int) $mo];
+        if ($mo == 1) {
+            // (_is_leap_year)
+            $y = Perl::num($year) + 1900;
+            if (!Perl::mod($y, 4) and (Perl::mod($y, 100) or !Perl::mod($y, 400))) ++$md;
+        }
+        foreach ([[$mday, 'Day', 1, $md], [$hour, 'Hour', 0, 23], [$min, 'Minute', 0, 59]] as [$v, $what, $lo, $hi]) {
+            if (Perl::num($v) > $hi or Perl::num($v) < $lo) throw new \RuntimeException("$what '" . Perl::str($v) . "' out of range $lo..$hi");
+        }
+        if (Perl::num($sec) >= 60 or Perl::num($sec) < 0) throw new \RuntimeException("Second '" . Perl::str($sec) . "' out of range 0..59");
+        $days = self::DayGM($mday, $month, $year);
+        // ($MaxDay = 365 * 2**31: the limit of localtime())
+        if (!(abs($days) < 783831531520)) {
+            $msg = $days > 783831531520 ? 'Day too big - ' . Perl::str($days) . " > 783831531520\n" : '';
+            $year = Perl::num($year) + 1900;
+            throw new \RuntimeException($msg . 'Cannot handle date (' .
+                implode(', ', array_map(Perl::str(...), [$sec, $min, $hour, $mday, $month, $year])) . ')');
+        }
+        return Perl::num($sec) + 60 * Perl::num($min) + 3600 * Perl::num($hour) + 86400 * $days;
     }
 
     /** Time::Local::_daygm: days since the epoch (year - 1900) */
     private static function DayGM($mday, $month, $year)
     {
-        $month = ((int) $month + 10) % 12;
-        $year = (int) $year + 1900 - intdiv($month, 10);
-        return $mday + (365 * $year + intdiv($year, 4) - intdiv($year, 100) + intdiv($year, 400) +
-                        intdiv($month * 306 + 5, 10)) - 719469;
+        // (Time::Local caches the result by pack('ss', $month, $year), which croaks for Inf and NaN)
+        // ponytail: the cache itself is not emulated (it mixes up years which differ by 65536)
+        Perl::pack('ss', $month, $year);
+        $month = Perl::mod(Perl::num($month) + 10, 12);
+        $year = Perl::num($year) + 1900 - Perl::int($month / 10);
+        return Perl::num($mday) + (365 * $year + Perl::int($year / 4) - Perl::int($year / 100) + Perl::int($year / 400) +
+                                   Perl::int(($month * 306 + 5) / 10)) - 719469;
     }
 
     /** Time::Local::_timegm on a localtime list */
