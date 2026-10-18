@@ -14,7 +14,6 @@ use Image\ExifTool\ScalarRef;
 use Image\ExifTool\TagInfo;
 
 $skip = [
-    15 => 'advanced formatting expressions (comment<${make;tr{ ,.}{_};...})',
 ];
 $runAll = in_array('--all', $argv, true);
 $t = testDir();

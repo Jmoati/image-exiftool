@@ -191,7 +191,7 @@ class ExifTool
     public $BASE = 0;
     public $NUM_FOUND = 0;
     public $CHANGED = 0;
-    public $INDENT = '  ';
+    public $INDENT = '';   // (undef in Perl until ClearValues)
     public $PRIORITY_DIR = '';
     public $LOW_PRIORITY_DIR = [];
     public $TIFF_TYPE = '';
@@ -6742,14 +6742,68 @@ GR_TAG:     foreach ($rtnTags as $tag) {
             if ($val !== null) $val = str_replace(['/', '\\', '?', '*', ':', '|', '"', '<', '>', "\0"], '', Perl::str($val));
             return null;
         }
-        $val = null;
-        return "Advanced formatting expressions are not supported by the PHP port ($expr)\n";
+        // (PHP: a ';'-separated list of tr/// and s/// statements is interpreted, nothing else)
+        $stmts = self::ParseAdvancedFormat($expr);
+        if ($stmts === null) {
+            $val = null;
+            return "Advanced formatting expressions are not supported by the PHP port ($expr)\n";
+        }
+        if ($val === null) return null;
+        $v = Perl::str($val);
+        foreach ($stmts as [$op, $a, $b, $flags]) {
+            if ($op === 's') {
+                $re = '~' . str_replace('~', '\\~', $a) . '~' . (str_contains($flags, 'i') ? 'i' : '') . (str_contains($flags, 'x') ? 'x' : '');
+                $b = preg_replace('/\$(\d)|\$\{(\d)\}/', '\${$1$2}', $b);
+                $r = @preg_replace($re, $b, $v, str_contains($flags, 'g') ? -1 : 1);
+                if ($r === null) { $val = null; return "Invalid regular expression ($a)\n"; }
+                $v = $r;
+            } else {
+                $from = self::ExpandTr($a);
+                $to = self::ExpandTr($b);
+                $d = str_contains($flags, 'd');
+                if ($to === [] and !$d) $to = $from;
+                $out = '';
+                $last = null;
+                foreach (str_split($v) as $ch) {
+                    $i = array_search($ch, $from, true);
+                    if ($i === false) { $out .= $ch; $last = null; continue; }
+                    if (isset($to[$i])) $c = $to[$i];
+                    elseif ($d) continue;
+                    else $c = end($to);
+                    if (str_contains($flags, 's') and $last === $c) continue;
+                    $out .= $last = $c;
+                }
+                $v = $out;
+            }
+        }
+        $val = $v;
+        return null;
     }
 
         // (the expression added by the exiftool -geotag option)
         if ($et and $expr === '$_=$self->GetValue(\'SubSecDateTimeOriginal\',\'ValueConv\') || $_') {
             $r = $et->GetValue('SubSecDateTimeOriginal', 'ValueConv');
             if ($r) $val = $r;
+            return null;
+        }
+    // Parse "tr{a}{b}d; s/x/y/g" into [[op, a, b, flags], ...] (null if anything else)
+    private static function ParseAdvancedFormat($expr)
+    {
+        $pairs = ['{' => '}', '(' => ')', '[' => ']', '<' => '>'];
+        $stmts = [];
+        $pos = 0;
+        $len = strlen($expr);
+        $read = function ($open) use ($expr, &$pos, $len, $pairs) {
+            $close = $pairs[$open] ?? $open;
+            $depth = 1;
+            $str = '';
+            while ($pos < $len) {
+                $c = $expr[$pos++];
+                if ($c === '\\' and $pos < $len) { $str .= $c . $expr[$pos++]; continue; }
+                if ($close !== $open and $c === $open) ++$depth;
+                elseif ($c === $close and --$depth === 0) return $str;
+                $str .= $c;
+            }
             return null;
         }
     //------------------------------------------------------------------------------
@@ -6759,7 +6813,51 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     //          Addr => address to print for data start (default=DataPos+Base+Start)
     //          DataPos => position of data within block (relative to Base)
     //          Base => base offset for pointers from start of file
+        };
+        while (true) {
+            while ($pos < $len and (ctype_space($expr[$pos]) or $expr[$pos] === ';')) ++$pos;
+            if ($pos >= $len) break;
+            if (!preg_match('/\G(tr|y|s)\s*([^\w\s])/A', $expr, $m, 0, $pos)) return null;
+            $pos += strlen($m[0]);
+            $a = $read($m[2]);
+            if ($a === null) return null;
+            $open2 = $m[2];
+            if (isset($pairs[$open2])) {
+                while ($pos < $len and ctype_space($expr[$pos])) ++$pos;
+                $open2 = $expr[$pos++] ?? '';
+            }
+            $b = $read($open2);
+            if ($b === null) return null;
+            preg_match('/\G[a-z]*/A', $expr, $f, 0, $pos);
+            $pos += strlen($f[0]);
+            if ($m[1] !== 's' and str_contains($f[0], 'c')) return null;
+            $stmts[] = [$m[1] === 's' ? 's' : 'tr', $a, $b, $f[0]];
+        }
+        return $stmts ?: null;
+    }
+
+    // Expand a tr/// character list (ranges and backslash escapes) to an array of chars
+    private static function ExpandTr($str)
+    {
+        $chars = [];
+        $n = strlen($str);
+        for ($i = 0; $i < $n; ++$i) {
+            $c = $str[$i];
+            if ($c === '\\' and $i + 1 < $n) {
+                $c = $str[++$i];
+                $c = ['n' => "\n", 't' => "\t", 'r' => "\r", '0' => "\0"][$c] ?? $c;
+            }
+            if ($i + 2 < $n and $str[$i + 1] === '-') {
+                $e = $str[$i + 2];
+                for ($o = ord($c); $o <= ord($e); ++$o) $chars[] = chr($o);
+                $i += 2;
+            } else {
+                $chars[] = $c;
+            }
     //          Width => width of printout (bytes, default=16)
+        return $chars;
+    }
+
     //          Prefix => prefix to print at start of line (default='')
     //          MaxLen => maximum length to dump
     //          Out => output file reference
