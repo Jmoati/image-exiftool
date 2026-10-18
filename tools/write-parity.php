@@ -1036,24 +1036,6 @@ array_push($cases,
     ["$inputs/doc-trunc.indd", ['-XMP:Title=truncated', '-o', 'out.indd']],
     ["$inputs/doc-short.indd", ['-XMP:Title=short', '-o', 'out.indd']],
     ["$inputs/doc-seq.indd", ['-XMP:Title=second master page', '-o', 'out.indd']],
-    // PostScript (WritePS): DSC comments, XMP, Photoshop and ICC_Profile blocks, DOS EPS headers
-    ['PostScript.eps', ['-PostScript:Title=new title', '-Author=me', '-o', 'out.eps']],
-    ['PostScript.eps', ['-XMP:Title=xmp', '-o', 'out.eps']],
-    ['PostScript.eps', ['-IPTC:Keywords=kw', '-EXIF:Artist=exif', '-o', 'out.eps']],
-    ['PostScript.eps', ['-all=', '-o', 'out.eps']],
-    ['PostScript.eps', ['-XMP:all=', '-o', 'out.eps']],
-    ['PostScript.eps', ['-Photoshop:all=', '-o', 'out.eps']],
-    ['PostScript.eps', ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.eps']],
-    ['PostScript.eps', ['-PostScript:all=', '-o', 'out.eps']],
-    ['PostScript.eps', ['-v3', '-Title=v', '-XMP:Title=v', '-o', 'out.eps']],
-    ['PostScript.eps', ['-Keywords='.str_repeat('long keyword (with brackets) \\ ', 20), '-o', 'out.eps']],
-    ['PostScript.eps', ["-Copyright=tab\there\x01", '-CreateDate=2020:01:02 03:04:05', '-o', 'out.eps']],
-    ['PostScript.eps', ['-_memin', '-_memout', '-Title=memory', '-o', 'out.eps']],
-    ['PostScript.eps', ['-Title=in place']],
-    ["$inputs/doc-plain.ps", ['-Title=plain', '-Keywords=new', '-o', 'out.ps']],
-    ["$inputs/doc-plain.ps", ['-XMP:Title=plain', "-ICC_Profile<=$images/ICC_Profile.icc", '-IPTC:Keywords=k', '-o', 'out.ps']],
-    ["$inputs/doc-plain.ps", ['-Keywords=', '-Creator=', '-o', 'out.ps']],
-    ["$inputs/doc-crlf.eps", ['-XMP:Title=crlf', '-Subject=s', '-o', 'out.eps']],
     // PDF (WritePDF): incremental updates of the Info dictionary and XMP, reverted with PDF-update
     ['PDF.pdf', ['-PDF:Creator=me', '-XMP:Creator=you', '-o', 'out.pdf']],
     ['PDF.pdf', ['-AllDates=2:30', '-api', 'Shift=-1', '-o', 'out.pdf']],
@@ -1123,6 +1105,24 @@ array_push($cases,
     ["$inputs/doc-notpdf.pdf", ['-PDF:Title=nope', '-o', 'out.pdf']],
     ["$inputs/doc-future.pdf", ['-PDF:Title=future', '-o', 'out.pdf']],
     ["$inputs/doc-future.pdf", ['-m', '-PDF:Title=future', '-o', 'out.pdf']],
+    // PostScript (WritePS): DSC comments, XMP, Photoshop and ICC_Profile blocks, DOS EPS headers
+    ['PostScript.eps', ['-PostScript:Title=new title', '-Author=me', '-o', 'out.eps']],
+    ['PostScript.eps', ['-XMP:Title=xmp', '-o', 'out.eps']],
+    ['PostScript.eps', ['-IPTC:Keywords=kw', '-EXIF:Artist=exif', '-o', 'out.eps']],
+    ['PostScript.eps', ['-all=', '-o', 'out.eps']],
+    ['PostScript.eps', ['-XMP:all=', '-o', 'out.eps']],
+    ['PostScript.eps', ['-Photoshop:all=', '-o', 'out.eps']],
+    ['PostScript.eps', ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.eps']],
+    ['PostScript.eps', ['-PostScript:all=', '-o', 'out.eps']],
+    ['PostScript.eps', ['-v3', '-Title=v', '-XMP:Title=v', '-o', 'out.eps']],
+    ['PostScript.eps', ['-Keywords='.str_repeat('long keyword (with brackets) \\ ', 20), '-o', 'out.eps']],
+    ['PostScript.eps', ["-Copyright=tab\there\x01", '-CreateDate=2020:01:02 03:04:05', '-o', 'out.eps']],
+    ['PostScript.eps', ['-_memin', '-_memout', '-Title=memory', '-o', 'out.eps']],
+    ['PostScript.eps', ['-Title=in place']],
+    ["$inputs/doc-plain.ps", ['-Title=plain', '-Keywords=new', '-o', 'out.ps']],
+    ["$inputs/doc-plain.ps", ['-XMP:Title=plain', "-ICC_Profile<=$images/ICC_Profile.icc", '-IPTC:Keywords=k', '-o', 'out.ps']],
+    ["$inputs/doc-plain.ps", ['-Keywords=', '-Creator=', '-o', 'out.ps']],
+    ["$inputs/doc-crlf.eps", ['-XMP:Title=crlf', '-Subject=s', '-o', 'out.eps']],
     ["$inputs/doc-crlf.eps", ['-api', 'Compact=NoPadding', '-XMP:Title=compact', '-o', 'out.eps']],
     ["$inputs/doc-xmp.eps", ['-XMP:Title=changed size', '-o', 'out.eps']],
     ["$inputs/doc-xmp.eps", ['-XMP:all=', '-o', 'out.eps']],
@@ -1183,6 +1183,7 @@ if (isset($opt['cli'])) {
         ['Writer.jpg', ["-Comment<=$images/../README", '-o', 'out.jpg']],
         ['Writer.jpg', ['-Comment<=%d%f.txt', '-o', 'out.jpg']],
         ['Writer.jpg', ['-NoSuchTag<=%d%f.txt', '-Comment=x', '-o', 'out.jpg']],
+        ['Writer.jpg', ["-ThumbnailImage<=$images/%f.jpg", "-Comment<=$images/../%-.0f%-.0fREADME", '-o', 'out.jpg']],
         // copying tags: -tagsFromFile, redirections, expressions, exclusions
         ['Writer.jpg', ['-tagsFromFile', "$images/Canon.jpg", '-o', 'out.jpg']],
         ['Writer.jpg', ['-tagsFromFile', "$images/Canon.jpg", '-all:all', '-o', 'out.jpg']],
@@ -1208,6 +1209,8 @@ if (isset($opt['cli'])) {
         ['Writer.jpg', ['-tagsFromFile', '%d%f_nosuch.%e', '-all', '-o', 'out.jpg']],
         ['Writer.jpg', ['-tagsFromFile', "$images/BMP.bmp", '-o', 'out.jpg']],
         ['Writer.jpg', ['-tagsFromFile']],
+        ['Canon.jpg', ['-tagsFromFile', "$images/%f.jpg", '-Make', '-Model', '-Comment<ISO', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-tagsFromFile', "$images/%f.jpg", '-Make', '-tagsFromFile', "$images/%f.jpg", '-Comment<Model', '-o', 'out.jpg']],
         ['Writer.jpg', ['-srcfile', '%d%f.jpg', '-Comment=src', '-o', 'out.jpg']],
         ['Writer.jpg', ['-srcfile', '%d%f_nosuch.jpg', '-srcfile', '@', '-v', '-Comment=src', '-o', 'out.jpg']],
         // output file names
@@ -1240,7 +1243,6 @@ if (isset($opt['cli'])) {
         ['Writer.jpg', ['-overwrite_original_in_place', '-Comment=x']],
         ['Writer.jpg', ['-P', '-Comment=x']],
         ['Writer.jpg', ['-P', '-overwrite_original_in_place', '-Comment=x']],
-        ['Writer.jpg', ["-ThumbnailImage<=$images/%f.jpg", "-Comment<=$images/../%-.0f%-.0fREADME", '-o', 'out.jpg']],
         ['Writer.jpg', ['-P', '-Comment=x', '-o', 'out.jpg']],
         ['Writer.jpg', ['-P', '-FileModifyDate=2005:06:07 08:09:10', '-Comment=x']],
         ['Writer.jpg', ['-Comment=x', '-execute', '-Comment=y', '-common_args']],
@@ -1266,8 +1268,6 @@ if (isset($opt['cli'])) {
         ['Writer.jpg', ["-csv=$inputs/import.csv", '-XMP:all', '--XMP:Title', '-o', 'out.jpg']],
         ['Writer.jpg', ["-csv=$inputs/import.csv", '-XMP-dc:Subject', '-o', 'out.jpg']],
         ['Writer.jpg', ["-csv=$inputs/import.csv", '-x', 'XMP:Rights', '-x', 'Artist', '-o', 'out.jpg']],
-        ['Canon.jpg', ['-tagsFromFile', "$images/%f.jpg", '-Make', '-Model', '-Comment<ISO', '-o', 'out.jpg']],
-        ['Canon.jpg', ['-tagsFromFile', "$images/%f.jpg", '-Make', '-tagsFromFile', "$images/%f.jpg", '-Comment<Model', '-o', 'out.jpg']],
         ['Writer.jpg', ["-csv=$inputs/import.csv", '-Comment=after', '-o', 'out.jpg']],
         ['Writer.jpg', ['-Comment=before', "-csv=$inputs/import.csv", '-o', 'out.jpg']],
         ['Writer.jpg', ['-XMP:Subject=s0', "-csv+=$inputs/import.csv", '-o', 'out.jpg']],
@@ -1296,6 +1296,7 @@ if (isset($opt['cli'])) {
         ['Canon.jpg', ['-csv', '-w', 'out.csv', '-Make', '-Model']],
         ['Canon.jpg', ['-csv', '-w+', 'out.csv', '-Make']],
         ['Canon.jpg', ['-v', '-w', 'txt', '-Make']],
+        ['Writer.jpg', ['-v', '-w', 'txt', '-Comment=verbose to file', '-o', 'out.jpg']],
         ['Canon.jpg', ['-w', 'txt', '-NoSuchTag']],
         ['Canon.jpg', ['-w', '', '-Make']],
         ['Canon.jpg', ['-W', '%f_%t%-c.%s', '-Make', '-Model', '-ISO']],
@@ -1359,10 +1360,11 @@ if (isset($opt['cli'])) {
         ['Unknown.jpg', ['-Comment=x']],
         ['Writer.jpg', ['-Comment=x', '-o']],
         ['Writer.jpg', ['-Comment=x', '-tagsFromFile=']],
-        ['Writer.jpg', ['-v', '-w', 'txt', '-Comment=verbose to file', '-o', 'out.jpg']],
         ['Writer.jpg', ['-Comment=x', '-efile']],
         ['Writer.jpg', ['-Comment=x', '-srcfile']],
         ['Writer.jpg', ['-Comment=x', '-x']],
+        ['Writer.jpg', ['-CompositeImageExposureTimes=1 2 3 4 5 6 7 8 inf 10', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-CompositeImageExposureTimes=1 2 3 4 5 6 7 8 inf 10']],
     );
 }
 if (isset($opt['sweep'])) {
@@ -1404,8 +1406,6 @@ foreach ($cases as $i => [$src, $args]) {
     ++$total;
     $caseDir = sprintf('%s/%03d', $work, $i);
     $results = [];
-        ['Writer.jpg', ['-CompositeImageExposureTimes=1 2 3 4 5 6 7 8 inf 10', '-o', 'out.jpg']],
-        ['Writer.jpg', ['-CompositeImageExposureTimes=1 2 3 4 5 6 7 8 inf 10']],
     foreach ($tools as $tool => $cmd) {
         $dir = "$caseDir/$tool";
         EmptyDir($dir);
@@ -1418,6 +1418,7 @@ foreach ($cases as $i => [$src, $args]) {
         }
         [$status, $out] = Run([...$cmd, ...$args, ...$file], $dir, 'perl' === $tool ? $perlEnv : []);
         $out = str_replace($dir, '<workdir>', $out);    // (absolute paths printed by the tools)
+        $out = preg_replace('/ at \S+ line \d+(, <\w+> \w+ \d+)?\.$/m', ' at <source line>.', $out);  // (die)
         $results[$tool] = ['status' => $status, 'out' => $out, 'files' => ListFiles($dir)];
     }
     [$msgDiffs, $fileDiffs] = Compare($results, "$caseDir/perl", "$caseDir/php", $args, $etDir, $perlEnv);
@@ -1459,7 +1460,6 @@ function Compare(array $results, string $perlDir, string $phpDir, array $args, s
     if ($perl['out'] !== $php['out']) {
         $a = explode("\n", rtrim($perl['out']));
         $b = explode("\n", rtrim($php['out']));
-        $out = preg_replace('/ at \S+ line \d+(, <\w+> \w+ \d+)?\.$/m', ' at <source line>.', $out);  // (die)
         foreach (array_diff($a, $b) as $line) {
             $msgs[] = "perl: $line";
         }
@@ -1740,24 +1740,6 @@ function DocumentInputs(string $etDir, string $inputs): void
     $files['doc-dos.eps'] = $dos($eps, 0, strlen($tiff)).$eps.$tiff;
     $files['doc-dosw.eps'] = $dos($eps, 16, 0).$eps.str_repeat("\x01", 16);
     $files['doc-dosbad.eps'] = substr_replace($dos($eps, 0, 0), pack('V', 31), 4, 4).$eps;
-    foreach ($files as $name => $data) {
-        file_put_contents("$inputs/$name", $data);
-    }
-    // written by Perl: EPS with XMP (whose size is in the PostScript code, or not)
-    Run(['perl', "$etDir/exiftool", '-q', '-XMP:Title=old xmp', '-o', "$inputs/doc-xmp.eps", "$inputs/doc-crlf.eps"], $inputs);
-    $files = ['doc-xmpfixed.eps' => str_replace('%begin_xml_packet: ', '%begin_xml_packet: x', (string) @file_get_contents("$inputs/doc-xmp.eps"))];
-    foreach ($files as $name => $data) {
-        file_put_contents("$inputs/$name", $data);
-    }
-}
-
-/**
- * QuickTime inputs (t/images has no HEIC with EXIF/XMP items, and its MOV/MP4 have empty chunk
- * offset tables): files written by Perl ExifTool, and variants of QuickTime.mov built here with
- * stco/co64 tables pointing into a non-empty mdat (moov first or mdat first, 64-bit or zero
- * mdat size, two mdat atoms), a 'wide' atom, a udta terminator and trailers.
- */
-function QuickTimeInputs(string $etDir, string $inputs): void
     // PDF: files written by Perl ExifTool (chains of incremental updates: the second and later
     // edits find a previous update; a deleted Info), PDFs built here: cross-reference stream,
     // RC4 and AES encryption, CR/LF newlines, a PDF 2.1 header
@@ -1904,13 +1886,31 @@ function QuickTimeInputs(string $etDir, string $inputs): void
     $files['doc-rc4.pdf'] = $mkEnc('', false);
     $files['doc-rc4pw.pdf'] = $mkEnc('secret', false);
     $files['doc-aes.pdf'] = $mkEnc('', true);
-{
-    $images = "$etDir/t/images";
-    foreach ([
+    foreach ($files as $name => $data) {
+        file_put_contents("$inputs/$name", $data);
+    }
     // written by Perl: updates of a cross-reference stream PDF and of an encrypted PDF
     $pdfRun("$inputs/doc-xrefstm.pdf", 'doc-xsupd1.pdf', ['-PDF:Title=first', '-XMP:Title=first']);
     $pdfRun("$inputs/doc-xsupd1.pdf", 'doc-xsupd2.pdf', ['-PDF:Author=second', '-XMP:Title=second']);
     $pdfRun("$inputs/doc-rc4.pdf", 'doc-rc4upd.pdf', ['-PDF:Title=second', '-XMP:Title=second']);
+    // written by Perl: EPS with XMP (whose size is in the PostScript code, or not)
+    Run(['perl', "$etDir/exiftool", '-q', '-XMP:Title=old xmp', '-o', "$inputs/doc-xmp.eps", "$inputs/doc-crlf.eps"], $inputs);
+    $files = ['doc-xmpfixed.eps' => str_replace('%begin_xml_packet: ', '%begin_xml_packet: x', (string) @file_get_contents("$inputs/doc-xmp.eps"))];
+    foreach ($files as $name => $data) {
+        file_put_contents("$inputs/$name", $data);
+    }
+}
+
+/**
+ * QuickTime inputs (t/images has no HEIC with EXIF/XMP items, and its MOV/MP4 have empty chunk
+ * offset tables): files written by Perl ExifTool, and variants of QuickTime.mov built here with
+ * stco/co64 tables pointing into a non-empty mdat (moov first or mdat first, 64-bit or zero
+ * mdat size, two mdat atoms), a 'wide' atom, a udta terminator and trailers.
+ */
+function QuickTimeInputs(string $etDir, string $inputs): void
+{
+    $images = "$etDir/t/images";
+    foreach ([
         'meta.heic' => ['QuickTime.heic', '-XMP:Title=a title', '-EXIF:Artist=an artist'],
         'deflate.heic' => ['QuickTime.heic', '-api', 'Compress', '-XMP:Title=compressed', '-EXIF:Artist=x'],
         'lang.mov' => ['QuickTime.mov', '-Keys:Title-eng-ca=keys ca', '-ItemList:Title-eng-ca=il ca',

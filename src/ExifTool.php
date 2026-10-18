@@ -6746,6 +6746,12 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     //  expression) is supported, any other expression is refused and the value is dropped)
     private static function EvalAdvancedFormat($expr, &$val, ?self $et = null)
     {
+        // (the expression added by the exiftool -geotag option)
+        if ($et and $expr === '$_=$self->GetValue(\'SubSecDateTimeOriginal\',\'ValueConv\') || $_') {
+            $r = $et->GetValue('SubSecDateTimeOriginal', 'ValueConv');
+            if ($r) $val = $r;
+            return null;
+        }
         if ($expr === 'tr(/\\\\?*:|"<>\\0)()d') {
             if ($val !== null) $val = str_replace(['/', '\\', '?', '*', ':', '|', '"', '<', '>', "\0"], '', Perl::str($val));
             return null;
@@ -6788,12 +6794,6 @@ GR_TAG:     foreach ($rtnTags as $tag) {
         return null;
     }
 
-        // (the expression added by the exiftool -geotag option)
-        if ($et and $expr === '$_=$self->GetValue(\'SubSecDateTimeOriginal\',\'ValueConv\') || $_') {
-            $r = $et->GetValue('SubSecDateTimeOriginal', 'ValueConv');
-            if ($r) $val = $r;
-            return null;
-        }
     // Parse "tr{a}{b}d; s/x/y/g" into [[op, a, b, flags], ...] (null if anything else)
     private static function ParseAdvancedFormat($expr)
     {
@@ -6813,14 +6813,6 @@ GR_TAG:     foreach ($rtnTags as $tag) {
                 $str .= $c;
             }
             return null;
-        }
-    //------------------------------------------------------------------------------
-    // Dump data in hex and ASCII to console
-    // Inputs: 0) data reference, 1) length or undef, 2-N) Options:
-    // Options: Start => offset to start of data (default=0)
-    //          Addr => address to print for data start (default=DataPos+Base+Start)
-    //          DataPos => position of data within block (relative to Base)
-    //          Base => base offset for pointers from start of file
         };
         while (true) {
             while ($pos < $len and (ctype_space($expr[$pos]) or $expr[$pos] === ';')) ++$pos;
@@ -6862,10 +6854,18 @@ GR_TAG:     foreach ($rtnTags as $tag) {
             } else {
                 $chars[] = $c;
             }
-    //          Width => width of printout (bytes, default=16)
+        }
         return $chars;
     }
 
+    //------------------------------------------------------------------------------
+    // Dump data in hex and ASCII to console
+    // Inputs: 0) data reference, 1) length or undef, 2-N) Options:
+    // Options: Start => offset to start of data (default=0)
+    //          Addr => address to print for data start (default=DataPos+Base+Start)
+    //          DataPos => position of data within block (relative to Base)
+    //          Base => base offset for pointers from start of file
+    //          Width => width of printout (bytes, default=16)
     //          Prefix => prefix to print at start of line (default='')
     //          MaxLen => maximum length to dump
     //          Out => output file reference
