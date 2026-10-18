@@ -19,15 +19,16 @@
  *   --exiftool=DIR  Perl ExifTool (default ~/exiftool)
  *   -v              print the output of the runners
  *
- * A case is a source file of ~/exiftool/t/images and a list of exiftool arguments (see $cases
+ * A case is a source file of ~/exiftool/t/images (or the absolute path of an input generated in
+ * var/write-parity-inputs) and a list of exiftool arguments (see $cases
  * below: add cases there, in the section of their format). For each tool the source is copied
  * into an empty work directory (var/write-parity/<case>/perl or /php) and the tool runs there
  * with the arguments followed by the name of the copy: `-o NAME` writes a new file, no -o
  * edits the copy in place (FileName, Directory... then rename or move it).
  *
  * The API runners (Runner() below and its Perl twin tools/write-parity.pl) understand the
- * exiftool arguments -TAG[+-^]=[VALUE], -TAG<=DATAFILE, -o FILE, -m, -n, -v[NUM], -api OPT[=VAL] and
- * -overwrite_original, and set the new values like the exiftool script does. They also take
+ * exiftool arguments -TAG[+-^]=[VALUE], -TAG<=DATAFILE, -o FILE, -m, -n, -v[NUM], -api OPT[=VAL],
+ * -use MWG and -overwrite_original, and set the new values like the exiftool script does. They also take
  * -_memin, -_memout, -_handle, -_handleout and -_raf, to pass the files to WriteInfo as data in
  * memory, as file handles or as a RandomAccess object (API-only cases, skipped with --cli). A case
  * with a null source creates its output from scratch.
@@ -54,6 +55,10 @@ file_put_contents("$inputs/big.exif", file_get_contents("$images/ExifTool.tif").
 file_put_contents("$inputs/big.icc", file_get_contents("$images/ICC_Profile.icc").str_repeat("\0", 150000));
 file_put_contents("$inputs/big.xmp", str_replace('</x:xmpmeta>', str_repeat(' ', 70000).'</x:xmpmeta>',
     file_get_contents("$images/XMP.xmp")));
+// a JPEG with an APP12 Ducky segment (none in t/images): Quality, Comment and Copyright blocks
+$utf16 = static fn (string $s) => pack('N', strlen($s)).implode('', array_map(static fn ($c) => "\0$c", str_split($s)));
+$ducky = 'Ducky'.pack('nnN', 1, 4, 75).pack('nn', 2, 30).$utf16('Ducky comment').pack('nn', 3, 20).$utf16('(c) Phil')."\0\0";
+file_put_contents("$inputs/ducky.jpg", "\xff\xd8\xff\xec".pack('n', strlen($ducky) + 2).$ducky.substr(file_get_contents("$images/Writer.jpg"), 2));
 
 // cases: [source file in ~/exiftool/t/images, [exiftool arguments]]
 $cases = [
@@ -163,6 +168,63 @@ $cases = [
     ['Unknown.jpg', ['-Comment=x', '-o', 'out.jpg']],
     ['Writer.jpg', ['-Comment=x', '-o', 'out.tif']],
     ['PNG.png', ['-Comment=x', '-o', 'out.png']],
+    // IPTC (WriteIPTC)
+    ['Writer.jpg', ['-IPTC:Keywords=one', '-IPTC:Keywords=two', '-IPTC:By-line=Phil', '-o', 'out.jpg']],
+    ['IPTC.jpg', ['-IPTC:Keywords+=added', '-IPTC:Headline=New headline', '-o', 'out.jpg']],
+    ['IPTC.jpg', ['-IPTC:Keywords-=Test', '-IPTC:Keywords+=One', '-IPTC:Keywords+=Two', '-o', 'out.jpg']],
+    ['IPTC.jpg', ['-IPTC:Keywords=', '-IPTC:Caption-Abstract=', '-o', 'out.jpg']],
+    ['IPTC.jpg', ['-IPTC:all=', '-o', 'out.jpg']],
+    ['IPTC.jpg', ['-IPTC:all=', '-IPTC:Keywords=only', '-o', 'out.jpg']],
+    ['IPTC.jpg', ['-v2', ...array_map(static fn ($t) => "-IPTC:$t=", ['Caption-Abstract', 'Writer-Editor', 'Headline',
+        'SpecialInstructions', 'By-line', 'By-lineTitle', 'Credit', 'ObjectName', 'DateCreated', 'City', 'Province-State',
+        'Country-PrimaryLocationName', 'OriginalTransmissionReference', 'Category', 'SupplementalCategories', 'Keywords',
+        'CopyrightNotice', 'Urgency', 'Source']), '-o', 'out.jpg']],     // (deleting all but mandatory tags)
+    ['IPTC.jpg', ['-IPTC:ApplicationRecordVersion=', '-o', 'out.jpg']],
+    ['IPTC.jpg', ['-v3', '-IPTC:CodedCharacterSet=UTF8', "-IPTC:City=Z\xc3\xbcrich", '-o', 'out.jpg']],
+    ['Writer.jpg', ['-api', 'CharsetIPTC=Cyrillic', "-IPTC:City=\xd0\x9c\xd0\xbe\xd1\x81\xd0\xba\xd0\xb2\xd0\xb0", '-o', 'out.jpg']],
+    ['Writer.jpg', ['-IPTC:Headline='.str_repeat('x', 300), '-o', 'out.jpg']],
+    ['Writer.jpg', ['-m', '-IPTC:Headline='.str_repeat('x', 300), '-o', 'out.jpg']],
+    ['Writer.jpg', ['-IPTC:DateCreated=2024:01:02', '-IPTC:TimeCreated=12:34:56+02:00', '-IPTC:DigitalCreationTime=10:20:30', '-o', 'out.jpg']],
+    ['Writer.jpg', ['-IPTC:Urgency=3', '-IPTC:ObjectPreviewFileFormat=1', '-IPTC:ProgramVersion=1.0', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-IPTC:ObjectPreviewData<=$inputs/big.exif", '-o', 'out.jpg']],
+    ['IPTC.jpg', ['-IPTC:Keywords=x', '-Photoshop:IPTCDigest=new', '-o', 'out.jpg']],
+    ['IPTC.jpg', ['-IPTC:Keywords=x', '-Photoshop:IPTCDigest-=old', '-Photoshop:IPTCDigest=new', '-o', 'out.jpg']],
+    ['GPS.jpg', ['-IPTC:Keywords+=more', '-o', 'out.jpg']],
+    ['AFCP.jpg', ['-IPTC:Keywords+=afcp', '-o', 'out.jpg']],
+    ['FotoStation.jpg', ['-IPTC:Keywords=fs', '-IPTC:Caption-Abstract=', '-o', 'out.jpg']],
+    ['PhotoMechanic.jpg', ['-IPTC:Keywords+=x', '-o', 'out.jpg']],
+    ['PhotoMechanic.jpg', ['-PhotoMechanic:Rotation=90', '-PhotoMechanic:ColorClass=3', '-o', 'out.jpg']],
+    ['ExifTool.tif', ['-IPTC:Keywords=tiff', '-o', 'out.tif']],
+    // Photoshop resources (WritePhotoshop)
+    ['IPTC.jpg', ['-Photoshop:XResolution=300', '-Photoshop:DisplayedUnitsY=cm', '-o', 'out.jpg']],
+    ['IPTC.jpg', ['-Photoshop:CopyrightFlag=True', '-Photoshop:URL=https://exiftool.org/', '-o', 'out.jpg']],
+    ['Writer.jpg', ['-Photoshop:CopyrightFlag=True', '-Photoshop:XResolution=72', '-o', 'out.jpg']],
+    ['IPTC.jpg', ['-Photoshop:IPTCDigest=new', '-o', 'out.jpg']],
+    ['IPTC.jpg', ['-Photoshop:IPTCDigest=', '-o', 'out.jpg']],
+    ['IPTC.jpg', ['-v3', '-Photoshop:PhotoshopQuality=10', '-o', 'out.jpg']],
+    ['IPTC.jpg', ["-Photoshop:PhotoshopThumbnail<=$images/Writer.jpg", '-o', 'out.jpg']],
+    // PSD (ProcessPSD)
+    ['Photoshop.psd', ['-Photoshop:XResolution=150', '-o', 'out.psd']],
+    ['Photoshop.psd', ['-Photoshop:CopyrightFlag=True', '-IPTC:Keywords+=psd', '-o', 'out.psd']],
+    ['Photoshop.psd', ['-IPTC:all=', '-o', 'out.psd']],
+    ['Photoshop.psd', ['-Photoshop:all=', '-o', 'out.psd']],
+    ['Photoshop.psd', ['-v3', '-IPTC:By-line=Phil', '-o', 'out.psd']],
+    // Ducky (WriteDucky)
+    ['Writer.jpg', ['-Ducky:Quality=80', '-Ducky:Comment=new comment', '-o', 'out.jpg']],
+    ["$inputs/ducky.jpg", ['-Ducky:Quality=90', '-o', 'out.jpg']],
+    ["$inputs/ducky.jpg", ['-Ducky:Comment=', '-Ducky:Copyright=(c) Someone', '-o', 'out.jpg']],
+    ["$inputs/ducky.jpg", ['-Ducky:all=', '-o', 'out.jpg']],
+    ["$inputs/ducky.jpg", ['-v3', '-Ducky:Quality=10', '-o', 'out.jpg']],
+    // ICC_Profile files (WriteICC)
+    ['ICC_Profile.icc', ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.icc']],
+    [null, ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.icc']],
+    ['ICC_Profile.icc', ['-ICC_Profile=', '-o', 'out.icc']],
+    ['ICC_Profile.icc', ['-ProfileDescription=x', '-o', 'out.icc']],
+    ['Writer.jpg', ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.icc']],
+    // MWG composite tags (also need the EXIF and XMP writers)
+    ['IPTC.jpg', ['-use', 'MWG', '-MWG:Keywords+=mwg', '-o', 'out.jpg']],
+    ['MWG.jpg', ['-MWG:Creator=Creator One', '-MWG:City=Some city', '-o', 'out.jpg']],
+    ['Writer.jpg', ['-MWG:DateTimeOriginal=2009:10:25 15:13:44.567-04:00', '-o', 'out.jpg']],
 ];
 if (isset($opt['sweep'])) {
     $exts = array_map('strtolower', explode(',', $opt['ext'] ?? 'jpg'));
@@ -209,7 +271,7 @@ foreach ($cases as $i => [$src, $args]) {
         $file = [];
         if (null !== $src) {
             $file = [basename($src)];
-            copy("$etDir/t/images/$src", "$dir/$file[0]");
+            copy(str_starts_with($src, '/') ? $src : "$etDir/t/images/$src", "$dir/$file[0]");
             chmod("$dir/$file[0]", 0644);
             touch("$dir/$file[0]", 1_000_000_000);  // (fixed time: FileModifyDate shifts)
         }
@@ -391,12 +453,21 @@ function Runner(array $argv): int
             $et->Options($parts[0], $parts[1] ?? 1);
         } elseif ('-overwrite_original' === $arg) {
             // (the API never keeps a backup)
+        } elseif ('-use' === $arg) {
+            $useMWG = 'mwg' === strtolower((string) array_shift($argv));
         } elseif (preg_match('/^-_(memin|memout|handle|handleout|raf)$/', $arg, $m)) {
             $api[$m[1]] = 1;    // (not exiftool options: how the files are passed to WriteInfo)
         } elseif (preg_match('/^-(.*=.*)$/s', $arg, $m)) {
             $newValues[] = $m[1];
         } else {
             $files[] = $arg;
+        }
+    }
+    // load the MWG module if used (-use MWG or MWG: tags), like the exiftool script
+    if (($useMWG ?? false) || preg_grep('/^([-_0-9A-Z]+:)*1?mwg:/i', $newValues)) {
+        Image\ExifTool\MWG::Load();
+        if (null === $et->Options('CharsetEXIF')) {
+            $et->Options('CharsetEXIF', 'UTF8');
         }
     }
     // set the new values like the exiftool script does

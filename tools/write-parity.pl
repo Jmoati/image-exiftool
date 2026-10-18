@@ -6,7 +6,7 @@
 #
 #   perl tools/write-parity.pl EXIFTOOL_LIB [OPTIONS] [-TAG[+-^]=[VALUE]...] [-TAG<=DATAFILE] FILE
 #
-# OPTIONS: -o OUTFILE, -m, -n, -v[NUM], -api OPT[=VAL], -overwrite_original (no -o: edit FILE
+# OPTIONS: -o OUTFILE, -m, -n, -v[NUM], -api OPT[=VAL], -use MWG, -overwrite_original (no -o: edit FILE
 # in place), and how FILE and OUTFILE are passed to WriteInfo: -_memin (data in memory, a scalar
 # reference), -_memout (to a scalar reference, then saved), -_handle (a file handle),
 # -_handleout (OUTFILE as a file handle), -_raf (a File::RandomAccess object)
@@ -20,7 +20,7 @@ unshift @INC, $lib;
 require Image::ExifTool;
 
 my $et = Image::ExifTool->new;
-my ($outfile, @files, @newValues, %api);
+my ($outfile, @files, @newValues, %api, $useMWG);
 while (@ARGV) {
     my $arg = shift @ARGV;
     if ($arg eq '-o') {
@@ -36,6 +36,8 @@ while (@ARGV) {
         $et->Options($opt => defined $val ? $val : 1);
     } elsif ($arg eq '-overwrite_original') {
         # (the API never keeps a backup)
+    } elsif ($arg eq '-use') {
+        $useMWG = (lc(shift @ARGV) eq 'mwg');
     } elsif ($arg =~ /^-_(memin|memout|handle|handleout|raf)$/) {
         $api{$1} = 1;   # (not exiftool options: how the files are passed to WriteInfo)
     } elsif ($arg =~ /^-(.*=.*)$/s) {
@@ -43,6 +45,12 @@ while (@ARGV) {
     } else {
         push @files, $arg;
     }
+}
+# load the MWG module if used (-use MWG or MWG: tags), like the exiftool script
+if ($useMWG or grep /^([-_0-9A-Z]+:)*1?mwg:/i, @newValues) {
+    require Image::ExifTool::MWG;
+    Image::ExifTool::MWG::Load();
+    $et->Options(CharsetEXIF => 'UTF8') unless defined $et->Options('CharsetEXIF');
 }
 # set the new values like the exiftool script does
 my %addDelOpt = ( '+' => 'AddValue', '-' => 'DelValue', "\xe2\x88\x92" => 'DelValue' );
