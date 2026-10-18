@@ -33,7 +33,9 @@ final class TagTable implements \ArrayAccess, \IteratorAggregate, \Countable
     {
         foreach ($data as $key => $value) {
             if (\is_array($value) && !isset(self::SPECIAL[$key])) {
-                $value = array_is_list($value)
+                // (an empty array is Perl's { }, a tag without attributes, not an empty list of
+                // conditional tags)
+                $value = [] !== $value && array_is_list($value)
                     ? array_map(static fn ($v) => \is_array($v) ? new TagInfo($v) : $v, $value)
                     : new TagInfo($value);
             }
