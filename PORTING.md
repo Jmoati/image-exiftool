@@ -265,10 +265,10 @@ Code in the tag tables (translated in `translations/<Module>.txt`, see above) ha
 |---|---|
 | `PrintConvInv`, `ValueConvInv` string | `static function ($val, ExifTool $self, $wantGroup)` |
 | `RawConvInv` string | `static function ($val, ExifTool $self, ?TagInfo $tagInfo)` |
-| `WriteCheck` | `static function (ExifTool $self, TagInfo $tagInfo, $val)` |
-| `DelCheck` | `static function (ExifTool $self, TagInfo $tagInfo, $wantGroup)` |
+| `WriteCheck` | `static function (ExifTool $self, TagInfo $tagInfo, $val)` (called with `$val` by reference: declare `&$val` if the expression changes it) |
+| `DelCheck` | `static function (ExifTool $self, TagInfo $tagInfo, $wantGroup)` (called with SetNewValue's `$val` by reference as 4th argument: add `&$val = null` if the expression sets it) |
 | `WriteCondition` | `static function (ExifTool $self)` |
-| `WriteAlso` (each value of the hash) | `static function ($val, array $opts)` |
+| `WriteAlso` (each value of the hash) | `static function ($val, array $opts)` (called with `$opts` by reference, then `$self`: declare `array &$opts` if the expression changes `%opts`, add `?ExifTool $self = null` if it uses `$self`) |
 | anonymous `sub` used as an inverse conversion | `static function ($val, $et)`, called as `$conv($val, $self)` |
 
 A Perl expression that warns or dies in these contexts is reported by the caller (`$evalWarning`):
@@ -277,6 +277,31 @@ warning) makes the tag be ignored without error: keep that behaviour.
 
 `WRITE_PROC`, `CHECK_PROC` (tables), `WriteProc`, `CheckProc` (SubDirectory) and `WriteHook` are
 generated as callables: the module port must provide the static method they name.
+
+New values (`src/ExifTool/NewValues.php`):
+
+- wantarray-dependent subs give their scalar-context value; the list-context twins are
+  `SetNewValueList()` (`[numSet, error]`), `GetNewValueList()`, `CountNewValuesList()`
+  (`[num, pseudo]`), `ReverseLookupList()` (`[value, multi]`), `EncodeBitsList()` (`[value, error]`).
+  `TagLookup::FindTagInfo()` gives the list (all callers use it).
+- SetNewValue options are named arguments (`$et->SetNewValue('XMP:Title', 'x', Replace: 1)`, or
+  `...$opts` for a hash); the internal `CreateGroups` and `SetTags` options are `\ArrayObject`s
+  shared and filled in place like the Perl hash refs, so `$nvHash->CreateGroups` is one too
+  (`$nvHash->CreateGroups[$grp] ?? null` works). A structure value is an associative array, a
+  list of values a list, binary data a `ScalarRef`.
+- Perl's dummy call `&$writeProc()` (to autoload a write package) is `ExifTool::DummyWriteCall()`:
+  it returns what the write proc returns when called without arguments, so a write proc must
+  accept a call without arguments (`?ExifTool $et = null, ?array &$dirInfo = null...`, then
+  `if (!$et) return 1;` like Perl's `$et or return 1`); one not ported yet, or whose signature
+  requires the arguments, counts as 1 (all Perl write procs give 1 except `WriteKodakIFD`).
+- A `CHECK_PROC` is called as `$checkProc($self, $tagInfo, $val, $convType)` with `$val` by
+  reference: `static function CheckXxx(ExifTool $et, TagInfo $tagInfo, &$valPtr, $convType = null)`.
+- Until everything is ported, a closure not translated, a CHECK_PROC or named code ref not
+  ported, or a translated sub calling a method not ported yet, gives a "not ported (...)" error
+  for the tag (like a failed eval) instead of stopping SetNewValue.
+- `tests/new-values.php` compares the new values with Perl (`tests/new-values.pl`): results,
+  warnings, verbose output and the new value hashes left in the object; `--images` also copies
+  all the tags of every test image.
 
 ### Verifying the writing
 
