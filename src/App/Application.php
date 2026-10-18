@@ -3,21 +3,26 @@
 namespace Image\ExifTool\App;
 
 use Image\ExifTool\ExifTool;
+use Image\ExifTool\File\RandomAccess;
 use Image\ExifTool\Geolocation;
+use Image\ExifTool\Import;
+use Image\ExifTool\MWG;
 use Image\ExifTool\Perl;
 use Image\ExifTool\ScalarRef;
 use Image\ExifTool\Vars\ExifTool as ExifToolVars;
 use Image\ExifTool\XMP;
 
 /**
- * Port of the `exiftool` command-line script (exiftool 13.59), reading only.
+ * Port of the `exiftool` command-line script (exiftool 13.59), reading and writing.
  *
  * File-scope variables of the script are properties, its subs are methods with the same names,
- * and the main script is run(). Not ported (the command stops with an error): writing
- * (TAG=VALUE, -tagsFromFile, -o, -csv=/-j= import, -geotag...), -X, -h, -htmlDump, -listx,
- * -diff, -plot, -w/-W, -efile, -fileNUM, -fileOrder, -srcfile, -use, -z and -config
- * files. -if and -p evaluate Perl code: -if supports a subset of Perl expressions (see
- * CompileCondition()), and -p advanced formatting expressions (${TAG;EXPR}) are not supported.
+ * and the main script is run(). Not ported (the command stops with an error): -geotag, and
+ * writing Geotag, Geotime or Geosync (Geotag.pm is not ported yet), -X, -h, -htmlDump, -listx,
+ * -diff, -plot, -fileNUM, -fileOrder, -z, -use of modules other than those of ExifTool, and
+ * -config files. -if and -p evaluate Perl code: -if supports a subset of Perl expressions (see
+ * CompileCondition()), and advanced formatting expressions (${TAG;EXPR}) are not supported in
+ * -p or in tag copies (-TAG<STR). The writers not ported yet (MIE, PNG...) give an error for
+ * the file.
  *
  * From PHP: Application::json(['-g', $file]) returns what `exiftool -j -g FILE` prints, as an
  * array; Application::capture($args) returns [exit status, stdout, stderr] of any command.
@@ -31,6 +36,8 @@ final class Application
 
     // lookup for C-style escape sequences
     private const array ESC_C = ["\n" => '\n', "\r" => '\r', "\t" => '\t', '\\' => '\\\\'];
+    private const array UNESC_C = ['a' => "\x07", 'b' => "\x08", 'f' => "\f", 'n' => "\n", 'r' => "\r",
+                                   't' => "\t", '0' => "\0", '\\' => '\\'];
 
     // options requiring additional arguments
     // (used only to skip over these arguments when reading -stay_open ARGFILE)
@@ -90,18 +97,36 @@ final class Application
 
     // declare all static file-scope variables
     private array $commonArgs = [];     // arguments common to all commands
+    private array $csvExclude = [];     // list of tags excluded from CSV import
     private array $csvFiles = [];       // list of files when reading with CSV option (in ExifTool Charset)
     private array $csvTagList = [];     // @csvTags: order of tags for first file with CSV option (lower case)
+    private array $delFiles = [];       // list of files to delete
+    private array $dynamicFiles = [];   // list of -tagsFromFile files with dynamic names and -TAG<=FMT pairs
     private array $echo3 = [];          // stdout echo after processing is complete
     private array $echo4 = [];          // stderr echo after processing is complete
+    private array $efile = [];          // files for writing list of error/fail/same file names
     private array $exclude = [];        // list of excluded tags
     private array $files = [];          // list of files and directories to scan
     private array $moreArgs = [];       // more arguments to process after -stay_open -@
+    private array $newValues = [];      // list of new tag values to set
+    private array $srcFmt = [];         // source file name format strings
     private array $tags = [];           // list of tags to extract
+    private array $appended = [];       // list of files appended to
+    private array $countLink = [];      // count hard and symbolic links made
+    private array $created = [];        // list of files we created
     private array $csvTags = [];        // %csvTags: lookup for all found tags with CSV option (lower case keys)
     private array $database = [];       // CSV information for each file (keyed by file name)
     private array $filterExt = [];      // lookup for filtered extensions
     private array $ignore = [];         // directory names to ignore
+    private array $outComma = [];       // flag that output text file needs a comma
+    private array $outTrailer = [];     // trailer for output text file
+    private array $preserveTimes = [];  // %preserveTime: preserved timestamps for files
+    private array $seqFileDirs = [];    // %seqFileDir: file sequence number in each directory
+    private array $setTags = [];        // hash of list references for tags to set from files
+    private array $setTagsList = [];    // list of other tag lists for multiple -tagsFromFile from the same file
+    private array $usedFileName = [];   // lookup for file names we already used in TestName feature
+    private array $wext = [];           // -W extensions to write
+    private array $wroteHEAD = [];      // list of output txt files to which we wrote HEAD
     private array $condition = [];      // conditional processing of files
     private array $printFmt = [];       // the contents of the print format file
     private array $requestTags = [];    // tags to request (for -p or -if option arguments)
@@ -114,13 +139,25 @@ final class Application
     private $binSep;                    // separator used for list items in binary output
     private $binTerm;                   // terminator used for binary output
     private $comma;                     // flag set if we need a comma in JSON output
-    private $count = 0;                 // count of files scanned
+    private $count = 0;                 // count of files scanned when reading or deleting originals
     private $countBad = 0;              // count of files with errors
+    private $countBadCr = 0;            // count files not created due to errors
+    private $countBadWr = 0;            // count write errors
+    private $countCopyWr = 0;           // count of files copied without being changed
     private $countDir = 0;              // count of directories scanned
     private $countFailed = 0;           // count files that failed condition
-    private $csv;                       // flag for CSV option (set to "CSV")
+    private $countGoodCr = 0;           // count files created OK
+    private $countGoodWr = 0;           // count files written OK
+    private $countNewDir = 0;           // count of directories created
+    private $countSameWr = 0;           // count files written OK but not changed
+    private $critical;                  // flag for critical operations (disable CTRL-C)
+    private $csv;                       // flag for CSV option (set to "CSV", or maybe "JSON" when writing)
     private $csvDelim = ',';            // delimiter for CSV files
+    private $dbAdd;                     // flag to add CSV/JSON information to existing lists
+    private $dbSaveCount = 0;           // save counter for last CSV/JSON file loaded
+    private $deleteOrig;                // 0=restore original files, 1=delete originals, 2=delete w/o asking
     private $disableOutput;             // flag to disable normal output
+    private $doSetFileName;             // flag set if FileName may be written
     private $escapeC;                   // C-style escape
     private $escapeHTML;                // flag to escape printed values for html
     private $executeID;                 // -execute ID number
@@ -135,7 +172,9 @@ final class Application
     private $geoOnly;                   // flag to extract Geolocation tags only
     private $helped;                    // flag to avoid printing help if no tags specified
     private $ignoreHidden;              // flag to ignore hidden files
+    private $interrupted;               // flag set if CTRL-C is pressed during a critical process
     private $isBinary;                  // true if value is a SCALAR ref
+    private $isWriting = 0;             // flag set if we are writing tags
     private $joinLists;                 // flag set to join list values into a single string
     private $json = 0;                  // flag for JSON/PHP output format (1=JSON, 2=PHP)
     private $langOpt;                   // language option
@@ -146,7 +185,10 @@ final class Application
     private $multiFile;                 // non-zero if we are scanning multiple files
     private $noBinary;                  // flag set to ignore binary tags
     private $outFormat = 0;             // -1=Canon format, 0=same-line, 1=tag names, 2=values only
+    private $outOpt;                    // output file or directory name
+    private $overwriteOrig = 0;         // flag to overwrite original file (1=overwrite, 2=in place)
     private $pause;                     // pause before returning
+    private $preserveTime;              // flag to preserve times of updated files (2=preserve FileCreateDate only)
     private $progress;                  // flag to calculate total files to process (0=calculate but don't display)
     private $progressCount;             // count of files processed
     private $progressIncr;              // increment for progress counter
@@ -155,12 +197,16 @@ final class Application
     private $progStr = '';              // progress message string
     private $purge;                     // flag to purge memory
     private $quiet = 0;                 // flag to disable printing of informational messages / warnings
+    private $rafStdin;                  // File::RandomAccess for stdin (if necessary to rewind)
     private $recurse;                   // recurse into subdirectories (2=also hidden directories)
     private $rtnVal;                    // command return value (0=success)
     private $rtnValPrev;                // previous command return value (0=success)
+    private $saveCount = 0;             // count the number of times we will/did call SaveNewValues()
+    private $scanWritable;              // flag to process only writable file types
     private $sectHeader;                // current section header for -p option
     private $sectTrailer = '';          // section trailer for -p option
-    private $stdinData;                 // (PHP) STDIN buffered for -if (Perl $rafStdin)
+    private $seqFileDir = 0;            // sequential file number used for %-C
+    private $seqFileNum = 0;            // sequential file number used for %C
     private $setCharset;                // character set setting ('default' if not set and -csv -b used)
     private $showGroup;                 // number of group to show (may be zero or '')
     private $showTagID;                 // non-zero to show tag ID's
@@ -169,6 +215,12 @@ final class Application
     private $stayOpenFp;                // STAYOPEN file handle
     private $structOpt;                 // output structured XMP information (JSON output only)
     private $tabFormat = 0;             // non-zero for tab output format
+    private $tagOut;                    // flag for separate text output file for each tag
+    private $textOut;                   // extension for text output file (or undef for no output)
+    private $textOut2;                  // complete file name for single text output file
+    private $textOverwrite;             // flag to overwrite existing text output file (2=append, 3=over+append)
+    private $tmpFile;                   // temporary file to delete on exit
+    private $tmpText;                   // temporary text file
     private $validFile;                 // flag indicating we processed a valid file
     private $verbose;                   // verbose setting
     /** @var resource */
@@ -210,8 +262,13 @@ final class Application
                 fwrite(\STDERR, "Warning: Config files are not supported by the PHP port - $config\n");
             }
         }
+        $app = new self();
+        if (\function_exists('pcntl_async_signals')) {
+            pcntl_async_signals(true);
+            pcntl_signal(\SIGINT, static fn () => $app->SigInt());   // do cleanup on Ctrl-C
+        }
 
-        return (new self())->run($argv);
+        return $app->run($argv);
     }
 
     /**
@@ -291,6 +348,9 @@ final class Application
                 fwrite($this->stderr, $str);
             }
 
+            // (Perl closes $rafStdin here: the PHP port keeps $this->stdin open for "-@ -")
+            $this->rafStdin = null;
+
             // save our previous return codes
             $this->rtnValPrev = $this->rtnVal;
             if ($this->rtnVal) {
@@ -319,42 +379,67 @@ final class Application
             }
 
             // initialize necessary static file-scope variables
-            // (not done: @commonArgs, @moreArgs, $binaryStdout, $helped, $mt, $pause,
-            //  $rtnValApp, $rtnValPrev, $stayOpen, $stayOpenBuff, $stayOpenFile)
-            $this->csvFiles = $this->csvTagList = $this->echo3 = $this->echo4 = $this->exclude = [];
-            $this->files = $this->tags = $this->csvTags = $this->database = $this->filterExt = $this->ignore = [];
-            $this->condition = $this->printFmt = $this->requestTags = $this->compiledCond = [];
-            $this->failCondition = $this->fastCondition = $this->sectHeader = $this->stdinData = null;
-            $this->countFailed = 0;
-            $this->sectTrailer = '';
+            // (not done: @commonArgs, @moreArgs, $critical, $binaryStdout, $helped,
+            //  $interrupted, $mt, $pause, $rtnValApp, $rtnValPrev, $stayOpen, $stayOpenBuff, $stayOpenFile)
+            $this->condition = $this->csvExclude = $this->csvFiles = $this->csvTagList = $this->delFiles = [];
+            $this->dynamicFiles = $this->echo3 = $this->echo4 = $this->efile = $this->exclude = $this->files = [];
+            $this->newValues = $this->requestTags = $this->srcFmt = $this->tags = $this->appended = [];
+            $this->countLink = $this->created = $this->csvTags = $this->database = $this->filterExt = [];
+            $this->ignore = $this->outComma = $this->outTrailer = $this->preserveTimes = $this->printFmt = [];
+            $this->seqFileDirs = $this->setTags = $this->setTagsList = $this->usedFileName = $this->wext = [];
+            $this->wroteHEAD = $this->compiledCond = [];
             $this->allGroup = $this->altEnc = $this->argFormat = $this->binaryOutput = $this->binSep = null;
-            $this->binTerm = $this->comma = $this->csv = $this->disableOutput = $this->escapeC = null;
-            $this->escapeHTML = $this->executeID = $this->fileHeader = $this->filtered = $this->fixLen = null;
-            $this->forcePrint = $this->geoOnly = $this->ignoreHidden = $this->isBinary = $this->joinLists = $this->langOpt = null;
-            $this->listDir = $this->listItem = $this->multiFile = $this->noBinary = $this->progress = null;
+            $this->binTerm = $this->comma = $this->csv = $this->dbAdd = $this->deleteOrig = null;
+            $this->disableOutput = $this->doSetFileName = $this->escapeC = $this->escapeHTML = null;
+            $this->executeID = $this->failCondition = $this->fastCondition = $this->fileHeader = null;
+            $this->filtered = $this->fixLen = $this->forcePrint = $this->geoOnly = $this->ignoreHidden = null;
+            $this->isBinary = $this->joinLists = $this->langOpt = $this->listDir = $this->listItem = null;
+            $this->multiFile = $this->noBinary = $this->outOpt = $this->preserveTime = $this->progress = null;
             $this->progressCount = $this->progressIncr = $this->progressMax = $this->progressNext = null;
-            $this->purge = $this->recurse = $this->setCharset = $this->showGroup = $this->showTagID = null;
-            $this->structOpt = $this->validFile = $this->verbose = null;
+            $this->purge = $this->recurse = $this->scanWritable = $this->sectHeader = $this->setCharset = null;
+            $this->showGroup = $this->showTagID = $this->structOpt = $this->tagOut = $this->textOut = null;
+            $this->textOut2 = $this->textOverwrite = $this->tmpFile = $this->tmpText = $this->validFile = null;
+            $this->verbose = null;
 
             $this->count = 0;
             $this->countBad = 0;
+            $this->countBadCr = 0;
+            $this->countBadWr = 0;
+            $this->countCopyWr = 0;
             $this->countDir = 0;
+            $this->countFailed = 0;
+            $this->countGoodCr = 0;
+            $this->countGoodWr = 0;
+            $this->countNewDir = 0;
+            $this->countSameWr = 0;
             $this->csvDelim = ',';
+            $this->dbSaveCount = 0;
             $this->fileTrailer = '';
             $this->filterFlag = 0;
+            $this->isWriting = 0;
             $this->json = 0;
             $this->listSep = ', ';
             $this->outFormat = 0;
+            $this->overwriteOrig = 0;
             $this->progStr = '';
             $this->quiet = 0;
             $this->rtnVal = 0;
+            $this->saveCount = 0;
+            $this->sectTrailer = '';
+            $this->seqFileDir = 0;
+            $this->seqFileNum = 0;
             $this->tabFormat = 0;
             $this->vout = $this->stdout;
 
             // define local variables used only in this command loop
-            $endOfOpts = null;  // flag set if "--" option encountered
-            $escapeXML = null;  // flag to escape printed values for xml
-            $sortOpt = null;    // sort option is used
+            $addGeotime = null;     // automatically added geotime argument
+            $endOfOpts = null;      // flag set if "--" option encountered
+            $escapeXML = null;      // flag to escape printed values for xml
+            $setTagsFile = null;    // filename for last TagsFromFile option
+            $sortOpt = null;        // sort option is used
+            $srcStdin = null;       // one of the source files is STDIN
+            $tagsFrom = '';         // tags on command line come from 'CSV' or 'File'
+            $useMWG = null;         // flag set if we are using any MWG tag
 
             $argsLeft = null;
             $nextPass = [];
@@ -423,7 +508,15 @@ final class Application
                                 array_shift($this->moreArgs);
                             }
                         }
-                        // (MWG module not loaded: -use MWG and "mwg:" tags are not supported)
+                        // require MWG module if used in any argument
+                        // (note: doesn't cover the -p option because these tags will be parsed on the 2nd pass)
+                        if (!$useMWG && preg_grep('/^([--_0-9A-Z]+:)*1?mwg:/i', [...$this->tags, ...$this->requestTags])) {
+                            $useMWG = 1;
+                        }
+                        if ($useMWG) {
+                            ExifTool::RequireModule('Image::ExifTool::MWG');
+                            MWG::Load();
+                        }
                         // update necessary variables for 2nd pass
                         if (null !== $this->forcePrint) {
                             if (null === $mt->Options('MissingTagValue')) {
@@ -471,7 +564,9 @@ final class Application
                             $group = null;
                             if ($this->ARGV && preg_match('/^(-|\xe2\x88\x92)(.+):(all|\*)$/i', (string) $this->ARGV[0], $mm)) {
                                 if (0 == $pass) {
-                                    // (MWG module not loaded)
+                                    if ('mwg' === strtolower($mm[2])) {
+                                        $useMWG = 1;
+                                    }
                                     $nextPass[] = array_shift($this->ARGV);
                                     continue;
                                 }
@@ -591,8 +686,16 @@ final class Application
                         $this->helped = 1;
                         continue;
                     }
-                    if (preg_match('/^(all|add)?tagsfromfile(=.*)?$/i', $arg)) {
-                        $badCmd = $this->NotPorted($arg);
+                    if (preg_match('/^(all|add)?tagsfromfile(=.*)?$/i', $arg, $m)) {
+                        $setTagsFile = !empty($m[2]) ? substr($m[2], 1) : ($this->ARGV ? array_shift($this->ARGV) : '');
+                        if ('' === $setTagsFile) {
+                            $this->Error("File must be specified for -tagsFromFile option\n");
+                            $badCmd = true;
+                            continue;
+                        }
+                        // create necessary lists, etc for this new -tagsFromFile file
+                        $this->AddSetTagsFile($setTagsFile, ['Replace' => (!empty($m[1]) && 'add' === strtolower($m[1])) ? 0 : 1]);
+                        $tagsFrom = 'File';
                         continue;
                     }
                     if ('@' === $a) {
@@ -762,8 +865,45 @@ final class Application
                             }
                             continue;
                         }
-                        // (importing a CSV/JSON database is writing)
-                        $badCmd = $this->NotPorted($arg);
+                        // must process on 2nd pass so -f and -charset options are available
+                        if (!$pass) {
+                            if ($this->tags) {
+                                $this->Warn("Tag arguments should come after the -$m[1]= option\n");
+                            }
+                            $nextPass[] = "-$arg";
+                            $this->newValues[] = ['SaveCount' => ++$this->saveCount]; // marker to save new values now
+                            $this->dbSaveCount = $this->saveCount;
+                            $tagsFrom = 'CSV';
+                            continue;
+                        }
+                        preg_match('/^(\+?=)/', $dbFile, $mm);
+                        $dbFile = substr($dbFile, \strlen($mm[1]));
+                        if ('+=' === $mm[1]) {
+                            $this->dbAdd = 2;
+                        }
+                        if ($srcStdin) {
+                            $this->vout = $this->stderr;
+                        }
+                        if ($this->verbose) {
+                            fwrite($this->vout, "Reading $dbType file $dbFile\n");
+                        }
+                        $fh = null;
+                        if ($mt->Open($fh, $dbFile)) {
+                            if ('CSV' === $dbType) {
+                                $msg = Import::ReadCSV($fh, $this->database, $this->forcePrint, $this->csvDelim);
+                            } else {
+                                $chset = $mt->Options('Charset');
+                                $msg = Import::ReadJSON($fh, $this->database, $this->forcePrint, $chset);
+                            }
+                            fclose($fh);
+                        } else {
+                            $msg = "Error opening $dbType file '{$dbFile}'";
+                        }
+                        if ($msg) {
+                            $this->Warn("$msg\n");
+                        }
+                        $this->isWriting = 1;
+                        $this->csv = $dbType;
                         continue;
                     }
                     if (preg_match('/^csvdelim$/i', $arg)) {
@@ -797,8 +937,12 @@ final class Application
                         $this->showTagID = 'D';
                         continue;
                     }
-                    if (preg_match('/^diff$/i', $arg) || preg_match('/^delete_original(!?)$/i', $arg)) {
+                    if (preg_match('/^diff$/i', $arg)) {
                         $badCmd = $this->NotPorted($arg);
+                        continue;
+                    }
+                    if (preg_match('/^delete_original(!?)$/i', $arg, $m)) {
+                        $this->deleteOrig = $m[1] ? 2 : 1;
                         continue;
                     }
                     if (preg_match('/^list_dir$/i', $arg)) {
@@ -853,8 +997,32 @@ final class Application
                         $mt->Options('Duplicates', 1);
                         continue;
                     }
-                    if (preg_match('/^efile(\d+)?(!)?$/i', $arg)) {
-                        $badCmd = $this->NotPorted($arg);
+                    if (preg_match('/^efile(\d+)?(!)?$/i', $arg, $m)) {
+                        $earg = array_shift($this->ARGV);
+                        if (null === $earg) {
+                            $this->Error("Expecting file name for -$arg option\n");
+                            $badCmd = true;
+                            continue;
+                        }
+                        $n = $m[1] ?? '';
+                        if (!$n || (int) $n & 0x01) {
+                            $this->efile[0] = $earg;    // error
+                        }
+                        if ($n && (int) $n & 0x02) {
+                            $this->efile[1] = $earg;    // unchanged
+                        }
+                        if ($n && (int) $n & 0x04) {
+                            $this->efile[2] = $earg;    // failed -if condition
+                        }
+                        if ($n && (int) $n & 0x08) {
+                            $this->efile[3] = $earg;    // updated
+                        }
+                        if ($n && (int) $n & 0x016) {
+                            $this->efile[4] = $earg;    // created
+                        }
+                        if (!empty($m[2])) {
+                            @unlink($earg);
+                        }
                         continue;
                     }
                     // (-execute handled at top of loop)
@@ -902,7 +1070,40 @@ final class Application
                         }
                         continue;
                     }
-                    if ('geotag' === $a || 'h' === $arg || 'htmlformat' === $a) {
+                    if ('geotag' === $a) {
+                        $trkfile = array_shift($this->ARGV);
+                        if (!$pass) {
+                            // defer to next pass so the filename charset is available
+                            array_push($nextPass, '-geotag', $trkfile);
+                            continue;
+                        }
+                        if (!self::GeotagPorted()) {
+                            $badCmd = $this->NotPorted($arg);
+                            continue;
+                        }
+                        if (!$trkfile) {
+                            $this->Error("Expecting file name for -geotag option\n");
+                            $badCmd = true;
+                            continue;
+                        }
+                        // allow wildcards in filename
+                        if (self::HasWildcards($trkfile)) {
+                            // (PHP glob() for File::Glob::bsd_glob)
+                            $trks = glob($trkfile) ?: [];
+                            if (!$trks) {
+                                $this->Error("No matching file found for -geotag option\n");
+                                $badCmd = true;
+                                continue;
+                            }
+                            while (\count($trks) > 1) {
+                                $this->newValues[] = 'geotag=' . array_shift($trks);
+                            }
+                            $trkfile = array_pop($trks);
+                        }
+                        $arg = "geotag=$trkfile";
+                        // (fall through!)
+                    }
+                    if ('h' === $arg || 'htmlformat' === $a) {
                         $badCmd = $this->NotPorted($arg);
                         continue;
                     }
@@ -1028,8 +1229,27 @@ final class Application
                         $this->helped = 1;  // (undocumented) no operation, added in 11.25
                         continue;
                     }
-                    if (preg_match('/^o(ut)?$/i', $arg) || 'overwrite_original' === $a || 'overwrite_original_in_place' === $a
-                        || 'plot' === $a) {
+                    if (preg_match('/^o(ut)?$/i', $arg)) {
+                        $this->outOpt = array_shift($this->ARGV);
+                        if (null === $this->outOpt) {
+                            $this->Error("Expected output file or directory name for -o option\n");
+                            $badCmd = true;
+                            continue;
+                        }
+                        self::CleanFilename($this->outOpt);
+                        // verbose messages go to STDERR of output is to console
+                        // (Perl tests $vout here, a GLOB reference which never matches /^-(\.\w+)?$/)
+                        continue;
+                    }
+                    if ('overwrite_original' === $a) {
+                        $this->overwriteOrig = 1;
+                        continue;
+                    }
+                    if ('overwrite_original_in_place' === $a) {
+                        $this->overwriteOrig = 2;
+                        continue;
+                    }
+                    if ('plot' === $a) {
                         $badCmd = $this->NotPorted($arg);
                         continue;
                     }
@@ -1046,7 +1266,8 @@ final class Application
                         continue;
                     }
                     if ('P' === $arg || 'preserve' === $a) {
-                        continue;   // (preserves the date/time of written files only)
+                        $this->preserveTime = 1;
+                        continue;
                     }
                     if ('password' === $a) {
                         $mt->Options('Password', array_shift($this->ARGV));
@@ -1091,7 +1312,7 @@ final class Application
                         continue;
                     }
                     if ('restore_original' === $a) {
-                        $badCmd = $this->NotPorted($arg);
+                        $this->deleteOrig = 0;
                         continue;
                     }
                     if ('S' === $arg || 'veryshort' === $a) {
@@ -1122,7 +1343,15 @@ final class Application
                         }
                         $mt->Options('ListSep', $this->listSep);
                         $this->joinLists = 1;
-                        // (ListSplit is only used when writing)
+                        // also split when writing values
+                        $listSplit = preg_replace('/[^A-Za-z0-9_]/', '\\\\$0', $this->listSep);  // (quotemeta)
+                        // a space in the string matches zero or more whitespace characters
+                        $listSplit = preg_replace('/(\\\\ )+/', '\\s*', $listSplit);
+                        // but a single space alone matches one or more whitespace characters
+                        if ('\\s*' === $listSplit) {
+                            $listSplit = '\\s+';
+                        }
+                        $mt->Options('ListSplit', $listSplit);
                         continue;
                     }
                     if (preg_match('/^(-)?sort$/i', $arg, $m)) {
@@ -1130,7 +1359,11 @@ final class Application
                         continue;
                     }
                     if ('srcfile' === $a) {
-                        $badCmd = $this->NotPorted($arg);
+                        if (!$this->ARGV) {
+                            $this->Warn("Expecting FMT for -srcfile option\n");
+                            continue;
+                        }
+                        $this->srcFmt[] = array_shift($this->ARGV);
                         continue;
                     }
                     if ('stay_open' === $a) {
@@ -1182,7 +1415,26 @@ final class Application
                         continue;
                     }
                     if ('use' === $a) {
-                        $badCmd = $this->NotPorted($arg);
+                        $module = array_shift($this->ARGV);
+                        if (!$module) {
+                            $this->Error("Expecting module name for -use option\n");
+                            $badCmd = true;
+                            continue;
+                        }
+                        if ('mwg' === strtolower($module)) {
+                            $useMWG = 1;
+                            continue;
+                        }
+                        if (preg_match('/[^\w:]/', $module)) {
+                            $this->Error("Invalid module name: $module\n");
+                            $badCmd = true;
+                            continue;
+                        }
+                        // (only the modules of ExifTool can be loaded: no Perl modules or files)
+                        if (!ExifTool::RequireModule(str_starts_with($module, 'Image::ExifTool::') ? $module : "Image::ExifTool::$module")) {
+                            $this->Error("Error using module $module\n");
+                            $badCmd = true;
+                        }
                         continue;
                     }
                     if ('userparam' === $a) {
@@ -1202,9 +1454,60 @@ final class Application
                         $this->verbose = '' === $m[2] ? ($this->verbose ?: 0) + 1 : $m[2];
                         continue;
                     }
-                    if (preg_match('/^(w|textout|tagout)([!+]*)$/i', $arg) || preg_match('/^(-?)(wext|tagoutext)$/i', $arg)
-                        || 'wm' === $a || 'writemode' === $a) {
-                        $badCmd = $this->NotPorted($arg);
+                    if (preg_match('/^(w|textout|tagout)([!+]*)$/i', $arg, $m)) {
+                        // (note: all logic ignores $textOut of 0 or '')
+                        $this->textOut = array_shift($this->ARGV);
+                        if (!$this->textOut) {
+                            // (Perl: $textOut = shift || Warn(...), and Warn returns '')
+                            $this->Warn("Expecting argument for -$arg option\n");
+                            $this->textOut = '';
+                        }
+                        [, $t1, $t2] = $m;
+                        $this->textOverwrite = 0;
+                        if (str_contains($t2, '!')) {
+                            $this->textOverwrite += 1;  // overwrite
+                        }
+                        if (str_contains($t2, '+')) {
+                            $this->textOverwrite += 2;  // append
+                        }
+                        if ('W' !== $t1 && 'tagout' !== strtolower($t1)) {
+                            $this->tagOut = null;
+                        } elseif ($this->textOverwrite >= 2 && !preg_match('/%[-+]?\d*[.:]?\d*[lu]?[tgso]/', $this->textOut)) {
+                            $this->tagOut = 0;  // append tags to one file
+                        } else {
+                            $this->tagOut = 1;  // separate file for each tag
+                        }
+                        continue;
+                    }
+                    if (preg_match('/^(-?)(wext|tagoutext)$/i', $arg, $m)) {
+                        $ext = array_shift($this->ARGV);
+                        if (null === $ext) {
+                            $this->Error("Expecting extension for -wext option\n");
+                            $badCmd = true;
+                            continue;
+                        }
+                        $flag = 1;
+                        if ($m[1]) {
+                            $this->wext['*'] = 1;
+                            $flag = -1;
+                        }
+                        $ext = preg_replace('/^\./', '', $ext);
+                        $this->wext[strtolower($ext)] = $flag;
+                        continue;
+                    }
+                    if ('wm' === $a || 'writemode' === $a) {
+                        $wm = array_shift($this->ARGV);
+                        if (null === $wm) {
+                            $this->Error("Expecting argument for -$arg option\n");
+                            $badCmd = true;
+                            continue;
+                        }
+                        if (!preg_match('/^[wcg]*$/i', $wm)) {
+                            $this->Error("Invalid argument for -$arg option\n");
+                            $badCmd = true;
+                            continue;
+                        }
+                        $mt->Options('WriteMode', $wm);
                         continue;
                     }
                     if ('x' === $arg || 'exclude' === $a) {
@@ -1215,7 +1518,13 @@ final class Application
                             continue;
                         }
                         $tag = preg_replace('/\ball\b/i', '*', $tag);   // replace 'all' with '*' in tag names
-                        $this->exclude[] = $tag;
+                        if (!$tagsFrom) {
+                            $this->exclude[] = $tag;
+                        } elseif ('CSV' === $tagsFrom) {
+                            $this->csvExclude[] = $tag;
+                        } else {
+                            $this->setTags[$setTagsFile][] = "-$tag";
+                        }
                         continue;
                     }
                     if ('X' === $arg || 'xmlformat' === $a) {
@@ -1233,6 +1542,7 @@ final class Application
                     }
                     if ('' === $arg) {
                         $this->files[] = '-';   // read STDIN
+                        $srcStdin = 1;
                         continue;
                     }
                     if (1 == \strlen($arg) && '*' !== $arg) {
@@ -1240,23 +1550,91 @@ final class Application
                         $badCmd = true;
                         continue;
                     }
-                    if (preg_match('/^[^<]+(<?)=(.*)/s', $arg) || preg_match('/(<|>)/', $arg)) {
-                        // (assigning or copying tag values)
-                        $this->Error("Sorry, writing is not supported by the PHP port of exiftool (-$arg)\n");
-                        $badCmd = true;
-                        continue;
-                    }
-                    $isExclude = str_starts_with($arg, '-');
-                    if ($isExclude) {
-                        $arg = substr($arg, 1);
-                    }
-                    if (!preg_match('/^([-_0-9A-Z*]+:)*([-_0-9A-Z*?]+)#?$/i', $arg)) {
-                        $this->Warn("Invalid TAG name: \"$arg\"\n");
-                    }
-                    if ($isExclude) {
-                        $this->exclude[] = $arg;    // (push everything for backward compatibility)
+                    if (preg_match('/^[^<]+(<?)=(.*)/s', $arg, $m)) {
+                        $val = $m[2];
+                        if ($m[1] && \strlen($val) && ('@' === $val || null === $this->FilenameSPrintf($val))) {
+                            // save count of new values before a dynamic value
+                            $this->newValues[] = ['SaveCount' => ++$this->saveCount];
+                        }
+                        $this->newValues[] = $arg;
+                        if (preg_match('/^([-_0-9A-Z]+:)*1?mwg:/i', $arg)) {
+                            $useMWG = 1;
+                        } elseif (preg_match('/^([-_0-9A-Z]+:)*(filename|directory|testname)\b/i', $arg)) {
+                            $this->doSetFileName = 1;
+                        } elseif (preg_match('/^([-_0-9A-Z]+:)*(geotag|geotime|geosync|geolocate)\b/i', $arg, $m)) {
+                            if ('geolocate' !== strtolower($m[2]) && !self::GeotagPorted()) {
+                                $badCmd = $this->NotPorted($arg);
+                                continue;
+                            }
+                            if ('geotime' === strtolower($m[2])) {
+                                $addGeotime = '';
+                            } else {
+                                // add geotag/geosync/geolocate commands first
+                                array_unshift($this->newValues, array_pop($this->newValues));
+                                if ('geotag' === strtolower($m[2]) && (null === $addGeotime || $addGeotime) && \strlen($val)) {
+                                    $addGeotime = ($m[1] ?: '') . 'Geotime<${DateTimeOriginal#;$_=$self->GetValue(\'SubSecDateTimeOriginal\',\'ValueConv\') || $_}';
+                                }
+                            }
+                        }
                     } else {
-                        $this->tags[] = $arg;
+                        // (Perl tests $1 below: the dash of this option, unless set by this /(<|>)/ match)
+                        $redir = '-';
+                        // assume '-tagsFromFile @' if tags are being redirected
+                        // and not from CSV and -tagsFromFile hasn't already been specified
+                        if (!$setTagsFile && 'CSV' !== $tagsFrom && preg_match('/(<|>)/', $arg, $m)) {
+                            $redir = $m[1];
+                            $this->AddSetTagsFile($setTagsFile = '@');
+                            $tagsFrom = 'File';
+                        }
+                        if ('CSV' === $tagsFrom) {
+                            if (str_starts_with($arg, '-')) {
+                                $this->csvExclude[] = substr($arg, 1);
+                            } else {
+                                $this->tags[] = $arg;
+                            }
+                        } elseif ($setTagsFile) {
+                            $this->setTags[$setTagsFile][] = $arg;
+                            if ('>' === $redir) {
+                                if (preg_match('/^(.*>\s*)?([-_0-9A-Z]+:)*1?mwg:/si', $arg)) {
+                                    $useMWG = 1;
+                                }
+                                if (preg_match('/\b(filename|directory|testname)#?$/i', $arg)) {
+                                    $this->doSetFileName = 1;
+                                } elseif (preg_match('/\bgeotime#?$/i', $arg)) {
+                                    if (!self::GeotagPorted()) {
+                                        $badCmd = $this->NotPorted($arg);
+                                        continue;
+                                    }
+                                    $addGeotime = '';
+                                }
+                            } else {
+                                if (preg_match('/^([^<]+<\s*(.*\$\{?)?)?([-_0-9A-Z]+:)*1?mwg:/si', $arg)) {
+                                    $useMWG = 1;
+                                }
+                                if (preg_match('/^([-_0-9A-Z]+:)*(filename|directory|testname)\b/i', $arg)) {
+                                    $this->doSetFileName = 1;
+                                } elseif (preg_match('/^([-_0-9A-Z]+:)*geotime\b/i', $arg)) {
+                                    if (!self::GeotagPorted()) {
+                                        $badCmd = $this->NotPorted($arg);
+                                        continue;
+                                    }
+                                    $addGeotime = '';
+                                }
+                            }
+                        } else {
+                            $isExclude = str_starts_with($arg, '-');
+                            if ($isExclude) {
+                                $arg = substr($arg, 1);
+                            }
+                            if (!preg_match('/^([-_0-9A-Z*]+:)*([-_0-9A-Z*?]+)#?$/i', $arg)) {
+                                $this->Warn("Invalid TAG name: \"$arg\"\n");
+                            }
+                            if ($isExclude) {
+                                $this->exclude[] = $arg;    // (push everything for backward compatibility)
+                            } else {
+                                $this->tags[] = $arg;
+                            }
+                        }
                     }
                 } else {
                     if (!$pass) {
@@ -1266,14 +1644,30 @@ final class Application
                     }
                     // (no wildcard expansion: the shell does it, except on Windows)
                     $this->files[] = $arg;
+                    if ('-' === $arg) {
+                        $srcStdin = 1;
+                    }
                 }
             }
 
             // set "OK" UserParam based on result of last command
             $mt->Options('UserParam', 'OK=' . ($this->rtnValPrev ? '' : '1'));
 
+            // set verbose output to STDERR if output could be to console
+            if ($srcStdin && ($this->isWriting || $this->newValues)) {
+                $this->vout = $this->stderr;
+            }
+            if ($this->vout === $this->stderr) {
+                $mt->Options('TextOut', $this->vout);
+            }
+
+            // change default EXIF string encoding if MWG used
+            if ($useMWG && null === $mt->Options('CharsetEXIF')) {
+                $mt->Options('CharsetEXIF', 'UTF8');
+            }
+
             // allow geolocation without input file if set to a position
-            if (!$this->files) {    // (-o and writing are not ported)
+            if (!$this->files && !$this->outOpt && !$this->newValues) {
                 $loc = $mt->Options('Geolocation');
                 // use undocumented feature to input JSON file directly from command line
                 if ($loc && '1' !== Perl::str($loc)) {
@@ -1283,7 +1677,12 @@ final class Application
             }
 
             // print help
-            if (!($this->tags || $this->files)) {
+            if (!(($this->tags && !$this->outOpt) || $this->files || $this->newValues || $this->geoOnly)) {
+                // (no "No matching files" error: the shell expands the wildcards)
+                if ($this->outOpt) {
+                    $this->Error("Nothing to write\n");
+                    continue;
+                }
                 if (!$this->helped) {
                     // (no perldoc: show the short syntax message)
                     fwrite($this->stdout, "Syntax:  exiftool [OPTIONS] FILE\n\n");
@@ -1292,8 +1691,37 @@ final class Application
                 continue;
             }
 
-            if ($this->csv && 'CSV' === $this->csv) {
+            // do sanity check on -delete_original and -restore_original
+            if (null !== $this->deleteOrig && ($this->newValues || $this->tags)) {
+                if (!$this->newValues) {
+                    $verb = $this->deleteOrig ? 'deleting' : 'restoring from';
+                    $this->Error("Can't specify tags when $verb originals\n");
+                } elseif ($this->deleteOrig) {
+                    $this->Error("Can't use -delete_original when writing.\n");
+                    $this->Error("Maybe you meant -overwrite_original ?\n");
+                } else {
+                    $this->Error("It makes no sense to use -restore_original when writing\n");
+                }
+                continue;
+            }
+
+            if ($this->overwriteOrig > 1 && $this->outOpt) {
+                $this->Error("Can't overwrite in place when -o option is used\n");
+                continue;
+            }
+
+            // (-diff, -htmlDump, -X and -plot are not ported)
+            if ($this->tagOut && ($this->csv || $this->json || $this->printFmt || $this->tabFormat)) {
+                $this->Error("Sorry, -W may not be combined with -csv, -htmlDump, -j, -p, -t or -X\n");
+                continue;
+            }
+
+            if ($this->csv && 'CSV' === $this->csv && !$this->isWriting) {
                 $this->json = 0;  // (not compatible)
+                if ($this->textOut) {
+                    $this->textOut2 = $this->textOut;
+                    $this->textOut = null;
+                }
                 if ($this->binaryOutput) {
                     $this->binaryOutput = 0;
                     if (null === $this->setCharset) {
@@ -1303,6 +1731,29 @@ final class Application
                 if ($this->printFmt) {
                     $this->Warn("The -csv option has no effect when -p is used\n");
                     $this->csv = null;
+                }
+            }
+            if ($this->textOut2) {
+                if ($this->textOverwrite > 1) {
+                    $this->Error("Can not append to multi-file output format\n");
+                    $this->textOut2 = null;
+                    continue;
+                }
+                if (!$this->textOverwrite && $mt->Exists($this->textOut2, 1)) {
+                    $this->Error("Output file {$this->textOut2} already exists\n");
+                    $this->textOut2 = null;
+                    continue;
+                }
+                // make sure we can write the output text file before processing all input files
+                $this->CreateDirectory($this->textOut2);  // create directory if necessary
+                $fh = null;
+                if ($mt->Open($fh, $this->textOut2, '>')) {
+                    fclose($fh);
+                    unlink($this->textOut2);    // (this was just a test)
+                } else {
+                    $this->Error("Error creating {$this->textOut2}\n");
+                    $this->textOut2 = null;
+                    continue;
                 }
             }
 
@@ -1371,22 +1822,175 @@ final class Application
 
             // can't do anything if no file specified
             if (!$this->files) {
-                $this->Error("No file specified\n");
-                continue;
+                if (!$this->outOpt) {
+                    $this->Error("No file specified\n");
+                    continue;
+                }
+                $this->files[] = '';    // create file from nothing
             }
 
             // set Verbose option
             if ($this->verbose) {
-                if (!($this->tags || $this->exclude)) {
+                if (!($this->tags || $this->exclude || $this->tagOut)) {
                     $this->disableOutput = 1;
                 }
-                $this->binaryOutput = null;    // disable conflicting option
-                $mt->Options('Verbose', $this->verbose);
+                if (!$this->tagOut) {
+                    $this->binaryOutput = null;    // disable conflicting option
+                    $mt->Options('Verbose', $this->verbose);
+                }
             } // (-v0 auto-flushes the output in Perl: PHP streams aren't buffered)
 
-            if (\in_array('*', $this->exclude, true) || \in_array('*:*', $this->exclude, true)) {
+            // validate all tags we're writing
+            $needSave = 1;
+            if ($this->newValues) {
+                // assume -geotime value if -geotag specified without -geotime
+                if ($addGeotime) {
+                    if (!($setTagsFile && '@' === $setTagsFile)) {
+                        $this->AddSetTagsFile($setTagsFile = '@');
+                    }
+                    $this->setTags[$setTagsFile][] = $addGeotime;
+                    if ($this->verbose) {
+                        fwrite($this->vout, "Using default \"-$addGeotime\"\n");
+                    }
+                }
+                $setTagsIndex = [];
+                // add/delete option lookup
+                $addDelOpt = ['+' => 'AddValue', '-' => 'DelValue', "\xe2\x88\x92" => 'DelValue'];
+                $this->saveCount = 0;
+                foreach ($this->newValues as $nv) {
+                    if (\is_array($nv)) {
+                        // save new values now if we stored a "SaveCount" marker
+                        if ($nv['SaveCount']) {
+                            $this->saveCount = $mt->SaveNewValues();
+                            $needSave = 0;
+                            // insert marker to load values from CSV file now if this was the CSV file
+                            if ($nv['SaveCount'] == $this->dbSaveCount) {
+                                $this->dynamicFiles[] = new ScalarRef(null);   // (Perl \$csv)
+                            }
+                        }
+                        continue;
+                    }
+                    if (!preg_match('/(.*?)=(.*)/s', $nv, $m)) {
+                        continue;
+                    }
+                    [, $tag, $newVal] = $m;
+                    $tag = preg_replace('/\ball\b/i', '*', $tag);    // replace 'all' with '*' in tag names
+                    $tag = preg_replace('/\^([-+]*)$/', '$1', $tag, 1, $n);
+                    if (!$n && '' === $newVal) {
+                        $newVal = null;     // undefined to delete tag
+                    }
+                    if (preg_match('/^(All)?TagsFromFile$/i', $tag)) {
+                        if (null === $newVal) {
+                            $this->Error("Need file name for -tagsFromFile\n");
+                            continue 2;
+                        }
+                        ++$this->isWriting;
+                        if ('@' === $newVal || null === $this->FilenameSPrintf($newVal)
+                            // can't set tags yet if we are using tags from other files with the -fileNUM option
+                            || preg_grep('/\bfile\d+:/i', array_filter($this->setTags[$newVal] ?? [], 'is_string')))
+                        {
+                            $this->dynamicFiles[] = $newVal;
+                            continue;   // set tags from dynamic file later
+                        }
+                        if (!($mt->Exists($newVal) || '-' === $newVal)) {
+                            $this->Error("File '{$newVal}' does not exist for -tagsFromFile option\n");
+                            continue 2;
+                        }
+                        $setTags = $this->setTags[$newVal] ?? [];
+                        // do we have multiple -tagsFromFile options with this file?
+                        if (!empty($this->setTagsList[$newVal])) {
+                            // use the tags set in the i-th occurrence
+                            $i = $setTagsIndex[$newVal] ?? 0;
+                            $setTagsIndex[$newVal] = $i + 1;
+                            if (!empty($this->setTagsList[$newVal][$i])) {
+                                $setTags = $this->setTagsList[$newVal][$i];
+                            }
+                        }
+                        // set specified tags from this file
+                        if (!$this->DoSetFromFile($mt, $newVal, $setTags)) {
+                            $this->rtnVal = 1;
+                            continue 2;
+                        }
+                        $needSave = 1;
+                        continue;
+                    }
+                    $opts = ['Shift' => 0];  // shift values if possible instead of adding/deleting
+                    // allow writing of 'Unsafe' tags unless specified by wildcard
+                    if (!preg_match('/[?*]/', $tag)) {
+                        $opts['Protected'] = 1;
+                    }
+
+                    $tag = preg_replace('/</', '', $tag, 1, $n);
+                    if ($n && null !== $newVal) {
+                        if (null !== $this->FilenameSPrintf($newVal)) {
+                            if (!$this->SlurpFile($newVal, $newVal)) {
+                                continue;   // read file data into $newVal
+                            }
+                        } else {
+                            if (preg_match('/([-+]|\xe2\x88\x92)$/', $tag, $mm)) {
+                                $tag = substr($tag, 0, -\strlen($mm[1]));
+                                $opts[$addDelOpt[$mm[1]]] = 1;
+                            }
+                            // verify that this tag can be written
+                            $result = ExifTool::IsWritable($tag);
+                            if ($result) {
+                                $opts['ProtectSaved'] = $this->saveCount;   // protect new values set after this
+                                // add to list of dynamic tag values
+                                $this->dynamicFiles[] = [$tag, $newVal, $opts];
+                                ++$this->isWriting;
+                            } elseif (null !== $result) {
+                                $this->Warn("Tag '{$tag}' is not writable\n");
+                            } else {
+                                $this->Warn("Tag '{$tag}' does not exist\n");
+                            }
+                            continue;
+                        }
+                    }
+                    if (preg_match('/([-+]|\xe2\x88\x92)$/', $tag, $mm)) {
+                        $tag = substr($tag, 0, -\strlen($mm[1]));
+                        $opts[$addDelOpt[$mm[1]]] = 1;  // set AddValue or DelValue option
+                        // set $newVal to '' if deleting nothing
+                        if ('-' === $mm[1] && null === $newVal) {
+                            $newVal = '';
+                        }
+                    }
+                    if ($this->escapeC && null !== $newVal) {
+                        $newVal = preg_replace_callback('/\\\\(x([0-9a-fA-F]{2})|.)/s',
+                            static fn ($m) => ($m[2] ?? '') !== '' ? \chr(hexdec($m[2])) : (self::UNESC_C[$m[1]] ?? $m[1]), $newVal);
+                    }
+                    [$rtn, $wrn] = $mt->SetNewValueList($tag, $newVal, ...$opts) + [0, null];
+                    $needSave = 1;
+                    if ($rtn) {
+                        ++$this->isWriting;
+                    }
+                    if ($wrn) {
+                        $this->Warning($mt, $wrn);
+                    }
+                }
+                // exclude specified tags
+                foreach ($this->exclude as $ex) {
+                    $mt->SetNewValue($ex, null, Replace: 2);
+                    $needSave = 1;
+                }
+                if (!($this->isWriting || $this->outOpt || $this->tags)) {
+                    $this->Error("Nothing to do.\n");
+                    continue;
+                }
+            } elseif (preg_grep('/^(\*:)?\*$/', $this->exclude)) {
                 $this->Error("All tags excluded -- nothing to do.\n");
                 continue;
+            }
+            if ($this->isWriting) {
+                // (-diff and -plot are not ported)
+                if ($this->tags && !$this->outOpt && !$this->csv) {
+                    [$tg, $s] = \count($this->tags) > 1 ? ["{$this->tags[0]} ...", 's'] : [$this->tags[0], ''];
+                    $this->Warn("Ignored superfluous tag name$s or invalid option$s: -$tg\n");
+                }
+            }
+            // save current state of new values if setting values from target file
+            // or if we may be translating to a different format
+            if ($this->outOpt || ($this->dynamicFiles && $needSave)) {
+                $mt->SaveNewValues();
             }
 
             if (\count($this->files) > 1) {
@@ -1399,7 +2003,7 @@ final class Application
             if ($this->binaryOutput) {
                 $this->outFormat = 99;    // shortest possible output format
                 $mt->Options('PrintConv', 0);
-                if (!$this->binaryStdout) {
+                if (!($this->textOut || $this->binaryStdout)) {
                     $this->binaryStdout = 1;
                     $mt->Options('TextOut', $this->vout = $this->stderr);
                 }
@@ -1410,6 +2014,38 @@ final class Application
             // sort by groups to look nicer depending on options
             if (null !== $this->showGroup && !($this->tags && ($this->allGroup || $this->csv)) && ($sortOpt || null === $sortOpt)) {
                 $mt->Options('Sort', "Group{$this->showGroup}");
+            }
+
+            if ($this->textOut) {
+                self::CleanFilename($this->textOut);  // make all forward slashes
+                // add '.' before output extension if necessary
+                if (!preg_match('/[.%]/', $this->textOut) && null === $this->tagOut) {
+                    $this->textOut = ".{$this->textOut}";
+                }
+            }
+
+            // determine if we should scan for only writable files
+            if ($this->outOpt) {
+                $type = ExifTool::GetFileType($this->outOpt);
+                if ($type) {
+                    // (must test original file name because we can write .webp but not other RIFF types)
+                    $canWrite = ExifTool::CanWrite($this->outOpt);
+                    if (!$canWrite) {
+                        if ('' === $canWrite) {
+                            $type = ExifTool::GetFileExtension($this->outOpt) ?? strtoupper($this->outOpt);
+                        }
+                        $this->Error("Can't write $type files\n");
+                        continue;
+                    }
+                    if (!ExifTool::CanCreate($type)) {
+                        $this->scanWritable = $type;
+                    }
+                } else {
+                    $this->scanWritable = 1;
+                }
+                $this->isWriting = 1;     // set writing flag
+            } elseif ($this->isWriting || null !== $this->deleteOrig) {
+                $this->scanWritable = 1;
             }
 
             // initialize alternate encoding flag
@@ -1424,6 +2060,7 @@ final class Application
                 $this->fixLen = 1;
             }
 
+            // (-fileOrder is not ported)
             if (null !== $this->progress) {
                 // expand FILE argument to count the number of files to process
                 $allFiles = [];
@@ -1435,6 +2072,34 @@ final class Application
                 $this->progressMax = \count($this->files);
             }
 
+            // store duplicate database information under absolute path and with standardized case
+            $dbKeys = array_map('strval', array_keys($this->database));
+            foreach ($dbKeys as $key) {
+                $db = $this->database[$key];
+                if (str_contains($key, '\\')) {
+                    $key = str_replace('\\', '/', $key);    // allow for backslashes in SourceFile
+                    $this->database[$key] = $db;
+                }
+                if (empty($this->database[strtolower($key)])) {
+                    $this->database[strtolower($key)] = $db;    // duplicate entry with lower case
+                }
+                // (punt on using ConvertFileName here, so $absPath may be a mix of encodings)
+                $absPath = self::AbsPath($key);
+                if (null !== $absPath) {
+                    if (empty($this->database[$absPath])) {
+                        $this->database[$absPath] = $db;
+                    }
+                    if ($this->verbose && $this->verbose > 1) {
+                        fwrite($this->vout, "Imported entry for '{$key}' (full path: '{$absPath}')\n");
+                    }
+                    if (empty($this->database[strtolower($absPath)])) {
+                        $this->database[strtolower($absPath)] = $db;
+                    }
+                } elseif ($this->verbose && $this->verbose > 1) {
+                    fwrite($this->vout, "Imported entry for '{$key}' (no full path)\n");
+                }
+            }
+
             // process all specified files
             $this->ProcessFiles($mt);
 
@@ -1442,75 +2107,227 @@ final class Application
                 $this->Error("No file with specified extension\n");
             }
 
-            // print file trailer if necessary
-            if ($this->sectTrailer) {
-                fwrite($this->stdout, $this->sectTrailer);
-            }
-            if ($this->fileTrailer && !$this->fileHeader) {
-                fwrite($this->stdout, $this->fileTrailer);
-            }
-            // print CSV output file if necessary
-            if ($this->csv) {
-                $this->PrintCSV();
+            // print folder/file trailer if necessary
+            if ($this->textOut) {
+                foreach ($this->outTrailer as $file => $trailer) {
+                    if (!$trailer) {
+                        continue;
+                    }
+                    $fh = null;
+                    if ($mt->Open($fh, $file, '>>')) {
+                        fwrite($fh, $trailer);
+                        fclose($fh);
+                    } else {
+                        $this->Error("Error appending to $file\n");
+                    }
+                }
+            } else {
+                if ($this->sectTrailer) {
+                    fwrite($this->stdout, $this->sectTrailer);
+                }
+                if ($this->fileTrailer && !$this->fileHeader) {
+                    fwrite($this->stdout, $this->fileTrailer);
+                }
+                // print CSV output file if necessary (-plot is not ported)
+                $fp = $err = null;
+                if ($this->textOut2) {
+                    if (!$mt->Open($fp, $this->textOut2, '>')) {
+                        $this->Error("Error creating {$this->textOut2}\n");
+                        $err = 1;
+                    }
+                }
+                if (!$err && $this->csv && !$this->isWriting) {
+                    $this->PrintCSV($fp);
+                }
+                if ($fp) {
+                    if (!fclose($fp)) {
+                        $err = 1;
+                    }
+                    if ($err) {
+                        $mt->Unlink($this->textOut2);
+                    } else {
+                        $this->created[$this->textOut2] = 1;
+                    }
+                }
             }
 
-            if ((!$this->binaryStdout || $this->verbose) && !$this->quiet) {
+            $totWr = $this->countGoodWr + $this->countBadWr + $this->countSameWr + $this->countCopyWr +
+                     $this->countGoodCr + $this->countBadCr;
+
+            if (null !== $this->deleteOrig) {
+
+                // print summary and delete requested files
+                if (!$this->quiet) {
+                    if ($this->countDir) {
+                        fwrite($this->stdout, Perl::sprintf("%5d directories scanned\n", $this->countDir));
+                    }
+                    if ($this->countNewDir) {
+                        fwrite($this->stdout, Perl::sprintf("%5d directories created\n", $this->countNewDir));
+                    }
+                    if ($this->countFailed) {
+                        fwrite($this->stdout, Perl::sprintf("%5d files failed condition\n", $this->countFailed));
+                    }
+                    fwrite($this->stdout, Perl::sprintf("%5d image files found\n", $this->count));
+                }
+                if ($this->delFiles) {
+                    // verify deletion unless "-delete_original!" was specified
+                    if (1 == $this->deleteOrig) {
+                        fwrite($this->stdout, Perl::sprintf('%5d originals will be deleted!  Are you sure [y/n]? ', \count($this->delFiles)));
+                        $response = fgets($this->stdin);
+                        if (!preg_match('/^(y|yes)\s*$/i', (string) $response)) {
+                            $this->Warn("Originals not deleted.\n");
+                            continue;
+                        }
+                    }
+                    $this->countGoodWr = $mt->Unlink(...$this->delFiles);
+                    $this->countBad = \count($this->delFiles) - $this->countGoodWr;
+                }
+                if ($this->quiet) {
+                    // no more messages
+                } elseif ($this->count && !$this->countGoodWr && !$this->countBad) {
+                    fwrite($this->stdout, Perl::sprintf("%5d original files found\n", $this->countGoodWr)); // (this will be 0)
+                } elseif ($this->deleteOrig) {
+                    if ($this->count) {
+                        fwrite($this->stdout, Perl::sprintf("%5d original files deleted\n", $this->countGoodWr));
+                    }
+                    if ($this->countBad) {
+                        fwrite($this->stdout, Perl::sprintf("%5d originals not deleted due to errors\n", $this->countBad));
+                    }
+                } else {
+                    if ($this->count) {
+                        fwrite($this->stdout, Perl::sprintf("%5d image files restored from original\n", $this->countGoodWr));
+                    }
+                    if ($this->countBad) {
+                        fwrite($this->stdout, Perl::sprintf("%5d files not restored due to errors\n", $this->countBad));
+                    }
+                }
+
+            } elseif ((!$this->binaryStdout || $this->verbose) && !$this->quiet) {
+
                 // print summary
                 $tot = $this->count + $this->countBad;
-                if ($this->countDir || $this->countFailed || $tot > 1) {
-                    $o = ($this->json || $this->printFmt || $this->csv) ? $this->stderr : $this->vout;
+                if ($this->countDir || $totWr || $this->countFailed || $tot > 1 || $this->textOut || $this->countLink) {
+                    $o = (($this->json || $this->printFmt || $this->csv) && !$this->textOut) ? $this->stderr : $this->vout;
                     if ($this->countDir) {
                         fwrite($o, Perl::sprintf("%5d directories scanned\n", $this->countDir));
+                    }
+                    if ($this->countNewDir) {
+                        fwrite($o, Perl::sprintf("%5d directories created\n", $this->countNewDir));
                     }
                     if ($this->countFailed) {
                         fwrite($o, Perl::sprintf("%5d files failed condition\n", $this->countFailed));
                     }
-                    if ($tot + $this->countFailed > 1 || $this->countDir) {
+                    if ($this->countGoodCr) {
+                        fwrite($o, Perl::sprintf("%5d image files created\n", $this->countGoodCr));
+                    }
+                    if ($totWr - $this->countGoodCr - $this->countBadCr - $this->countCopyWr) {
+                        fwrite($o, Perl::sprintf("%5d image files updated\n", $this->countGoodWr));
+                    }
+                    if ($this->countSameWr) {
+                        fwrite($o, Perl::sprintf("%5d image files unchanged\n", $this->countSameWr));
+                    }
+                    if ($this->countCopyWr) {
+                        fwrite($o, Perl::sprintf("%5d image files %s\n", $this->countCopyWr, $this->overwriteOrig ? 'moved' : 'copied'));
+                    }
+                    if ($this->countBadWr) {
+                        fwrite($o, Perl::sprintf("%5d files weren't updated due to errors\n", $this->countBadWr));
+                    }
+                    if ($this->countBadCr) {
+                        fwrite($o, Perl::sprintf("%5d files weren't created due to errors\n", $this->countBadCr));
+                    }
+                    if (($tot + $this->countFailed) > 1 || ($this->countDir && !$totWr)) {
                         fwrite($o, Perl::sprintf("%5d image files read\n", $this->count));
                     }
                     if ($this->countBad) {
                         fwrite($o, Perl::sprintf("%5d files could not be read\n", $this->countBad));
                     }
+                    if ($this->textOut || $this->textOut2) {
+                        fwrite($o, Perl::sprintf("%5d output files created\n", \count($this->created)));
+                    }
+                    if ($this->appended) {
+                        fwrite($o, Perl::sprintf("%5d output files appended\n", \count($this->appended)));
+                    }
+                    if (!empty($this->countLink['Hard']) || !empty($this->countLink['BadHard'])) {
+                        fwrite($o, Perl::sprintf("%5d hard links created\n", $this->countLink['Hard'] ?? 0));
+                    }
+                    if (!empty($this->countLink['BadHard'])) {
+                        fwrite($o, Perl::sprintf("%5d hard links could not be created\n", $this->countLink['BadHard']));
+                    }
+                    if (!empty($this->countLink['Sym']) || !empty($this->countLink['BadSym'])) {
+                        fwrite($o, Perl::sprintf("%5d symbolic links created\n", $this->countLink['Sym'] ?? 0));
+                    }
+                    if (!empty($this->countLink['BadSym'])) {
+                        fwrite($o, Perl::sprintf("%5d symbolic links could not be created\n", $this->countLink['BadSym']));
+                    }
                 }
             }
 
             // set error status if we had any errors or if all files failed the "-if" condition
-            if ($this->countBad) {
+            if ($this->countBadWr || $this->countBadCr || $this->countBad) {
                 $this->rtnVal = 1;
-            } elseif ($this->countFailed && !$this->count && !$this->rtnVal) {
+            } elseif ($this->countFailed && !($this->count || $totWr) && !$this->rtnVal) {
                 $this->rtnVal = 2;
             }
 
             if ($this->purge) {
                 ExifTool::Purge(0);   // do final purging
             }
+
+            // clean up after each command
+            $this->Cleanup();
         } // end "Command" loop ........................................................
 
         if ($this->stayOpen >= 2) {
             $this->CloseStayOpen();
         }
 
+        $this->Cleanup();   // (Perl END block)
+
         return $this->Exit($this->rtnValApp);   // all done
     }
 
     //------------------------------------------------------------------------------
-    // Get image information from EXIF data in file
+    // Get image information from EXIF data in file (or write file if writing)
     // Inputs: 0) ExifTool object reference, 1) file name
     private function GetImageInfo(ExifTool $et, $orig): void
     {
-        $info = null;
+        $foundTags = [];
+        $info = $file = null;
 
-        if (!\strlen($orig)) {
+        // (-progress:TITLE: the console window title is not set by the PHP port)
+        if (!(\strlen($orig) || $this->outOpt)) {
             $this->Warn("Error: Zero-length file name - \"\"\n");
             ++$this->countBad;
 
             return;
         }
-        // (-srcfile, -fileNUM and -z are not ported)
-        $file = $orig;
-        $pipe = $file;
-        $foundTags = [];
+        // determine the name of the source file based on the original input file name
+        if ($this->srcFmt) {
+            $first = null;
+            foreach ($this->srcFmt as $fmt) {
+                $file = '@' === $fmt ? $orig : $this->FilenameSPrintf($fmt, $orig);
+                // use this file if it exists
+                if (null !== $file && $et->Exists($file)) {
+                    $first = null;
+                    break;
+                }
+                if ($this->verbose) {
+                    fwrite($this->vout, "Source file $file does not exist\n");
+                }
+                $first ??= $file;
+            }
+            if (null !== $first) {
+                $file = $first;
+            }
+            [$d, $f] = ExifTool::SplitFileName($orig);
+            $et->Options('UserParam', "OriginalDirectory#=$d");
+            $et->Options('UserParam', "OriginalFileName#=$f");
+        } else {
+            $file = $orig;
+        }
+        // (-fileNUM and -z are not ported)
 
+        $pipe = $file;
         // evaluate -if expression for conditional processing
         if ($this->condition) {
             $result = $evalWarning = null;
@@ -1526,8 +2343,7 @@ final class Application
                 if ($this->tags) {
                     $foundTags = ['*', ...$this->tags];
                 }
-                // (STDIN is not buffered: like Perl's Infile() when reading)
-                $info = $et->ImageInfo($pipe, $foundTags, $opts);
+                $info = $et->ImageInfo($this->Infile($pipe, $this->isWriting), $foundTags, $opts);
                 $foundTags = $et->IO_TAG_LIST;
                 foreach ($this->condition as $condition) {
                     $cond = $et->InsertTagValues($condition, $foundTags, $condInfo);
@@ -1548,7 +2364,7 @@ final class Application
                         break;
                     }
                 }
-                if (null !== $this->fastCondition) {
+                if ($this->fastCondition) {
                     $foundTags = [];    // ignore if we didn't get all tags
                 }
             }
@@ -1561,13 +2377,15 @@ final class Application
                 if ($this->verbose) {
                     $this->Progress($this->vout, "-------- $file (failed condition)");
                 }
+                $this->EFile($file, 2);
                 ++$this->countFailed;
 
                 return;
             }
             // can't make use of $info if verbose because we must reprocess
             // the file anyway to generate the verbose output
-            if ($this->verbose || null !== $this->fastCondition) {
+            // (also if writing just to avoid double-incrementing FileSequence)
+            if ($this->isWriting || $this->verbose || null !== $this->fastCondition) {
                 $info = null;
                 --$et->FILE_SEQUENCE;
             }
@@ -1585,19 +2403,100 @@ final class Application
                 $file = ' ';
             }
         }
+        if (null !== $this->deleteOrig) {
+            if (null !== $this->verbose) {
+                $this->Progress($this->vout, "======== $file");
+            }
+            ++$this->count;
+            $original = "{$file}_original";
+            if (!$et->Exists($original)) {
+                return;
+            }
+            if ($this->deleteOrig) {
+                if ($this->verbose) {
+                    fwrite($this->vout, "Scheduled for deletion: $original\n");
+                }
+                $this->delFiles[] = $original;
+            } elseif ($et->Rename($original, $file)) {
+                if ($this->verbose) {
+                    fwrite($this->vout, "Restored from $original\n");
+                }
+                $this->EFile($file, 3);
+                ++$this->countGoodWr;
+            } else {
+                $this->Warn("Error renaming $original\n");
+                $this->EFile($file);
+                ++$this->countBad;
+            }
+
+            return;
+        }
+        ++$this->seqFileNum;    // increment our file counter
+        [$dir] = ExifTool::SplitFileName($orig);
+        $this->seqFileDir = $this->seqFileDirs[$dir] = ($this->seqFileDirs[$dir] ?? 0) + 1;
+
+        $lineCount = 0;
+        $fp = $outfile = $append = null;
+        // (-diff and -plot are not ported)
+        if ($this->textOut && ($this->verbose || $et->Options('PrintCSV')) && !$this->tagOut) {
+            [$fp, $outfile, $append] = $this->OpenOutputFile($orig) + [null, null, null];
+            if (!$fp) {
+                $this->EFile($file);
+                ++$this->countBad;
+
+                return;
+            }
+            // delete file if we exit prematurely (unless appending)
+            if (!$append) {
+                $this->tmpText = $outfile;
+            }
+            $et->Options('TextOut', $fp);
+        }
+
+        if ($this->isWriting) {
+            if (null !== $this->verbose) {
+                $this->Progress($this->vout, "======== $file");
+            }
+            $this->SetImageInfo($et, $file, $orig);
+            $info = $et->GetInfo('Warning', 'Error');
+            $this->PrintErrors($et, $info, $file);
+            // close output text file if necessary
+            if (null !== $outfile) {
+                $this->tmpText = null;
+                fclose($fp);
+                $et->Options('TextOut', $this->vout);
+                if (!empty($info['Error'])) {
+                    $et->Unlink($outfile);  // erase bad file
+                } elseif ($append) {
+                    if (empty($this->created[$outfile])) {
+                        $this->appended[$outfile] = 1;
+                    }
+                } else {
+                    $this->created[$outfile] = 1;
+                }
+            }
+
+            return;
+        }
 
         // extract information from this file
         // (Perl $info is a hash ref: true even when empty)
         if (!('-' === $file || $et->Exists($file) || null !== $info)) {
             $this->Warn("Error: File not found - $file\n");
             $this->FileNotFound($file);
+            if (null !== $outfile) {
+                fclose($fp);
+                $this->tmpText = null;
+                $et->Unlink($outfile);
+            }
+            $this->EFile($file);
             ++$this->countBad;
 
             return;
         }
         // print file/progress message
         $o = null;
-        if (!($this->binaryOutput || $this->printFmt || $this->csv)) {
+        if (!($this->binaryOutput || $this->textOut || $this->printFmt || $this->csv)) {
             if (!$this->json) {
                 if (($this->multiFile && !$this->quiet) || $this->progress) {
                     $o = $this->stdout;
@@ -1628,10 +2527,30 @@ final class Application
                 $foundTags = $this->tags;
             }
             // extract the information
-            // (STDIN is only buffered by Perl's Infile() for -tagsFromFile, not ported)
-            $info = $et->ImageInfo($pipe, $foundTags);
+            $info = $et->ImageInfo($this->Infile($pipe), $foundTags);
             $foundTags = $et->IO_TAG_LIST;  // (Perl updates \@foundTags in place)
             $et->Options('Duplicates', $oldDups);
+        }
+
+        // all done now if we already wrote output text file (eg. verbose option)
+        if ($fp) {
+            if (null !== $outfile) {
+                $et->Options('TextOut', $this->stdout);
+                $this->tmpText = null;
+                if (!empty($info['Error'])) {
+                    fclose($fp);
+                    $et->Unlink($outfile);  // erase bad file
+                } else {
+                    ++$lineCount;   // output text file (likely) is not empty
+                }
+            }
+            if (!empty($info['Error'])) {
+                $this->Warn('Error: ' . Perl::str($info['Error']) . " - $file\n");
+                $this->EFile($file);
+                ++$this->countBad;
+
+                return;
+            }
         }
 
         // print warnings to stderr if using binary output
@@ -1640,14 +2559,32 @@ final class Application
         if ($this->binaryOutput || !$info) {
             $errs = $et->GetInfo('Warning', 'Error');
             if ($this->PrintErrors($et, $errs, $file)) {
+                $this->EFile($file);
                 $this->rtnVal = 1;
             }
         } elseif ($et->GetValue('Error') || ($et->Validate && $et->GetValue('Warning'))) {
             $this->rtnVal = 1;
         }
 
-        // (no -w output files: everything goes to stdout)
-        $fp = $this->stdout;
+        // open output file (or stdout if no output file) if not done already
+        if (!(null !== $outfile || $this->tagOut)) {
+            [$fp, $outfile, $append] = $this->OpenOutputFile($orig) + [null, null, null];
+            if (!$fp) {
+                $this->EFile($file);
+                ++$this->countBad;
+
+                return;
+            }
+            if (null !== $outfile && !$append) {
+                $this->tmpText = $outfile;
+            }
+        }
+
+        // (-diff is not ported)
+        // restore state of comma flag for this file if appending
+        if ($append && ($this->textOverwrite & 0x02)) {
+            $this->comma = $this->outComma[$outfile] ?? null;
+        }
 
         // print the results for this file
         if ($this->printFmt) {
@@ -1671,6 +2608,12 @@ final class Application
                     $prf = $this->printFmt[$type] ?? null;
                     if (!$prf) {
                         continue;
+                    }
+                    if ('HEAD' === $type && null !== $outfile) {
+                        if (!empty($this->wroteHEAD[$outfile])) {
+                            continue;
+                        }
+                        $this->wroteHEAD[$outfile] = 1;
                     }
                     if ('BODY' === $type && $skipBody) {
                         continue;
@@ -1702,6 +2645,7 @@ final class Application
                             $lines[] = $line;
                         }
                     }
+                    $lineCount += \count($lines);
                     if ('SECT' === $type) {
                         $thisHeader = implode('', $lines);
                         if ($this->sectHeader && $this->sectHeader !== $thisHeader) {
@@ -1735,9 +2679,13 @@ final class Application
                     ++$doc[\count($doc) - 1];
                 }
             }
-            unset($this->printFmt['HEAD']);  // print header only once per output file
+            if (null === $outfile) {
+                unset($this->printFmt['HEAD']);  // print header only once per output file
+            }
             $errs = $et->GetInfo('Warning', 'Error');
-            $this->PrintErrors($et, $errs, $file);
+            if ($this->PrintErrors($et, $errs, $file)) {
+                $this->EFile($file);
+            }
         } elseif (!$this->disableOutput) {
             $line = null;
             $noDups = [];
@@ -1747,8 +2695,12 @@ final class Application
             if ($fp) {
                 // print file header (only once)
                 if ($this->fileHeader) {
-                    fwrite($fp, $this->fileHeader);
-                    $this->fileHeader = null;
+                    if (!(null !== $outfile && (!empty($this->created[$outfile]) || !empty($this->appended[$outfile])))) {
+                        fwrite($fp, $this->fileHeader);
+                    }
+                    if (!$this->textOut) {
+                        $this->fileHeader = null;
+                    }
                 }
                 if ($this->json) {
                     // set delimiters for JSON or PHP output
@@ -1775,7 +2727,7 @@ final class Application
             foreach ($foundTags as $tag) { // TAG:
                 ++$i;   // keep track on index in @foundTags
                 $tagName = ExifTool::GetTagName($tag);
-                $group = null;
+                $group = $valList = null;
                 // get the value for this tag
                 $val = $info[$tag] ?? null;
                 // set flag if this is binary data
@@ -1805,7 +2757,12 @@ final class Application
                             $val = $val[$li < 0 ? \count($val) + $li : $li] ?? null;
                         // join arrays of simple values (with newlines for binary output)
                         } elseif ($this->binaryOutput) {
-                            $val = self::join($this->binSep ?? "\n", $val);
+                            if ($this->tagOut) {
+                                $valList = $val;
+                                $val = array_shift($valList);
+                            } else {
+                                $val = self::join($this->binSep ?? "\n", $val);
+                            }
                         } elseif ($this->joinLists) {
                             $val = self::join($this->listSep, $val);
                         }
@@ -1864,13 +2821,63 @@ final class Application
                     }
                 }
 
-                // write binary output (-W is not ported)
-                if ($this->binaryOutput) {
-                    fwrite($fp, Perl::str($val));
-                    if (null !== $this->binTerm) {
-                        fwrite($fp, $this->binTerm);
+                ++$lineCount;   // we are printing something meaningful
+
+                // loop through list values when -b -W used
+                for (;;) {
+                    if ($this->tagOut) {
+                        // determine suggested extension for output file
+                        $ext = $this->SuggestedExtension($et, $val, $tagName);
+                        if ($this->wext && (($this->wext[$ext] ?? null) ?: ($this->wext['*'] ?? null) ?: -1) < 0) {
+                            if ($this->verbose && $this->verbose > 1) {
+                                fwrite($this->vout, "Not writing $ext output file for $tagName\n");
+                            }
+                            continue 2;
+                        }
+                        $groups = $et->GetGroup($tag);
+                        if (null !== $outfile) {
+                            fclose($fp);    // (shouldn't happen)
+                            $this->tmpText = null;
+                        }
+                        $org = $et->GetValue('OriginalRawFileName') ?: $et->GetValue('OriginalFileName');
+                        [$fp, $outfile, $append] = $this->OpenOutputFile($orig, $tagName, $groups, $ext, $org) + [null, null, null];
+                        if (!$fp) {
+                            ++$this->countBad;
+                            continue 2;
+                        }
+                        if (!$append) {
+                            $this->tmpText = $outfile;
+                        }
                     }
-                    continue;
+                    // write binary output
+                    if ($this->binaryOutput) {
+                        fwrite($fp, Perl::str($val));
+                        if (null !== $this->binTerm) {
+                            fwrite($fp, $this->binTerm);
+                        }
+                        if ($this->tagOut) {
+                            if ($append) {
+                                if (empty($this->created[$outfile])) {
+                                    $this->appended[$outfile] = 1;
+                                }
+                            } else {
+                                $this->created[$outfile] = 1;
+                            }
+                            fclose($fp);
+                            $this->tmpText = null;
+                            if ($this->verbose) {
+                                fwrite($this->vout, "Wrote $tagName to $outfile\n");
+                            }
+                            $outfile = $fp = null;
+                            if (!$valList) {
+                                continue 2;
+                            }
+                            $val = array_shift($valList);
+                            continue;   // loop over values of List tag
+                        }
+                        continue 2;
+                    }
+                    break;
                 }
                 // save information for CSV output
                 if ($this->csv) {
@@ -2076,6 +3083,21 @@ final class Application
                     $buff .= "$val\n";
                 }
                 fwrite($fp, $buff);
+                if ($this->tagOut) {
+                    if ($append) {
+                        if (empty($this->created[$outfile])) {
+                            $this->appended[$outfile] = 1;
+                        }
+                    } else {
+                        $this->created[$outfile] = 1;
+                    }
+                    fclose($fp);
+                    $this->tmpText = null;
+                    if ($this->verbose) {
+                        fwrite($this->vout, "Wrote $tagName to $outfile\n");
+                    }
+                    $outfile = $fp = null;
+                }
             }
             if (null !== $csvFile) {
                 $this->database[$csvFile] = $csvInfo;
@@ -2094,7 +3116,744 @@ final class Application
                 }
             }
         }
+        if (null !== $outfile) {
+            if ($this->textOverwrite & 0x02) {
+                // save state of this file if we may be appending
+                $this->outComma[$outfile] = $this->comma;
+                $this->outTrailer[$outfile] = '';
+                if ($this->sectTrailer) {
+                    $this->outTrailer[$outfile] .= $this->sectTrailer;
+                    $this->sectTrailer = '';
+                }
+                if ($this->fileTrailer) {
+                    $this->outTrailer[$outfile] .= $this->fileTrailer;
+                }
+            } else {
+                // write section and file trailers before closing the file
+                if ($this->sectTrailer) {
+                    fwrite($fp, $this->sectTrailer);
+                    $this->sectTrailer = '';
+                }
+                if ($this->fileTrailer) {
+                    fwrite($fp, $this->fileTrailer);
+                }
+            }
+            fclose($fp);
+            $this->tmpText = null;
+            if ($lineCount) {
+                if ($append) {
+                    if (empty($this->created[$outfile])) {
+                        $this->appended[$outfile] = 1;
+                    }
+                } else {
+                    $this->created[$outfile] = 1;
+                }
+            } elseif (!$append) {
+                $et->Unlink($outfile);  // don't keep empty output files
+            }
+            $this->comma = null;
+        }
         ++$this->count;
+    }
+
+    //------------------------------------------------------------------------------
+    // Set information in file
+    // Inputs: 0) ExifTool object reference, 1) source file name
+    //         2) original source file name ('' to create from scratch)
+    // Returns: true on success
+    private function SetImageInfo(ExifTool $et, $file, $orig)
+    {
+        $outfile = $restored = $isTemporary = $isStdout = $outType = $tagsFromSrc = null;
+        $hardLink = $symLink = $testName = $sameFile = null;
+        $infile = $file;    // save infile in case we change it again
+
+        // clean up old temporary file if necessary
+        if (null !== $this->tmpFile) {
+            $et->Unlink($this->tmpFile);
+            $this->tmpFile = null;
+        }
+        // clear any existing errors or warnings since we check these on return
+        unset($et->VALUE['Error'], $et->VALUE['Warning']);
+
+        // first, try to determine our output file name so we can return quickly
+        // if it already exists (note: this test must be delayed until after we
+        // set tags from dynamic files if writing FileName or Directory)
+        if (null !== $this->outOpt) {
+            if (preg_match('/^-(\.\w+)?$/', $this->outOpt, $m)) {
+                // allow output file type to be specified with "-o -.EXT"
+                if (isset($m[1])) {
+                    $outType = ExifTool::GetFileType($this->outOpt);
+                }
+                $outfile = '-';
+                $isStdout = 1;
+            } else {
+                $outfile = $this->FilenameSPrintf($this->outOpt, $orig);
+                if ('' === $outfile) {
+                    $this->Warn("Error: Can't create file with zero-length name from $orig\n");
+                    $this->EFile($infile);
+                    ++$this->countBadCr;
+
+                    return 0;
+                }
+            }
+            if (!$isStdout && (($et->IsDirectory($outfile) && !$this->listDir) || str_ends_with((string) $outfile, '/'))) {
+                if (!str_ends_with($outfile, '/')) {
+                    $outfile .= '/';
+                }
+                $name = preg_replace('{^.*/}s', '', $file);    // remove directory name
+                $outfile .= $name;
+            } else {
+                $srcType = ExifTool::GetFileType($file) ?: '';
+                $outType ??= ExifTool::GetFileType($outfile);
+                if ($outType && ($srcType !== $outType || 'ICC' === $outType) && '-' !== $file) {
+                    if (!ExifTool::CanCreate($outType)) {
+                        $what = $srcType ? 'other types' : 'scratch';
+                        $this->WarnOnce("Error: Can't create $outType files from $what\n");
+                        $this->EFile($infile);
+                        ++$this->countBadCr;
+
+                        return 0;
+                    }
+                    if ('' !== $file) {
+                        // restore previous new values unless done already
+                        if (!$restored) {
+                            $et->RestoreNewValues();
+                        }
+                        $restored = 1;
+                        // translate to this type by setting specified tags from file
+                        $setTags = $this->tags;
+                        foreach ($this->exclude as $ex) {
+                            $setTags[] = "-$ex";
+                        }
+                        // force some tags to be copied for certain file types
+                        $forceCopy = ['ICC' => 'ICC_Profile', 'VRD' => 'CanonVRD', 'DR4' => 'CanonDR4'];
+                        if (isset($forceCopy[$outType])) {
+                            $setTags[] = $forceCopy[$outType];
+                        }
+                        // assume "-tagsFromFile @" unless -tagsFromFile already specified
+                        // (%setTags won't be empty if -tagsFromFile used)
+                        if (!$this->setTags || ($setTags && !isset($this->setTags['@']))) {
+                            if (!$this->DoSetFromFile($et, $file, $setTags)) {
+                                return 0;
+                            }
+                        } elseif ($setTags) {
+                            // add orphaned tags to existing "-tagsFromFile @" for this file only
+                            array_push($setTags, ...$this->setTags['@']);
+                            $tagsFromSrc = $setTags;
+                        }
+                        // all done with source file -- create from meta information alone
+                        $file = '';
+                    }
+                }
+            }
+            if (!$isStdout) {
+                $outfile = $this->NextUnusedFilename($outfile);
+                if ($et->Exists($outfile, 1) && !$this->doSetFileName) {
+                    $this->Warn("Error: '{$outfile}' already exists - $infile\n");
+                    $this->EFile($infile);
+                    ++$this->countBadWr;
+
+                    return 0;
+                }
+            }
+        } elseif ('-' === $file) {
+            $isStdout = 1;
+        }
+        // set tags from destination file if required
+        if ($this->dynamicFiles) {
+            // restore previous values if necessary
+            if (!$restored) {
+                $et->RestoreNewValues();
+            }
+            $setTagsIndex = [];
+            foreach ($this->dynamicFiles as $dyFile) {
+                if (\is_string($dyFile)) {
+                    if ('@' === $dyFile) {
+                        $fromFile = $orig;
+                        $setTags = $tagsFromSrc ?? $this->setTags[$dyFile] ?? [];
+                    } else {
+                        $fromFile = $this->FilenameSPrintf($dyFile, $orig);
+                        if (null === $fromFile) {
+                            $this->EFile($infile);
+                            ++$this->countBadWr;
+
+                            return 0;
+                        }
+                        $setTags = $this->setTags[$dyFile] ?? [];
+                    }
+                    // do we have multiple -tagsFromFile options with this file?
+                    if (!empty($this->setTagsList[$dyFile])) {
+                        // use the tags set in the i-th occurrence
+                        $i = $setTagsIndex[$dyFile] ?? 0;
+                        $setTagsIndex[$dyFile] = $i + 1;
+                        if (!empty($this->setTagsList[$dyFile][$i])) {
+                            $setTags = $this->setTagsList[$dyFile][$i];
+                        }
+                    }
+                    // set new values values from file
+                    if (!$this->DoSetFromFile($et, $fromFile, $setTags)) {
+                        return 0;
+                    }
+                } elseif (\is_array($dyFile)) {
+                    // a dynamic file containing a simple tag value
+                    $fname = $this->FilenameSPrintf($dyFile[1], $orig);
+                    $buff = $rtn = $wrn = null;
+                    $opts = $dyFile[2];
+                    if (null !== $fname && $this->SlurpFile($fname, $buff)) {
+                        if ($this->verbose) {
+                            fwrite($this->vout, "Reading $dyFile[0] from $fname\n");
+                        }
+                        [$rtn, $wrn] = $et->SetNewValueList($dyFile[0], $buff, ...$opts) + [0, null];
+                        if ($wrn) {
+                            $this->Warn("$wrn\n");
+                        }
+                    }
+                    // remove this tag if we couldn't set it properly
+                    if (!$rtn) {
+                        $et->SetNewValue($dyFile[0], null, Replace: 2, ProtectSaved: $opts['ProtectSaved'] ?? null);
+                    }
+                    continue;
+                } else {
+                    // set new values from CSV or JSON database
+                    $found = $csvEtPrt = $csvEtVal = null;
+                    // force UTF-8 if the database was JSON
+                    $old = $et->Options('Charset');
+                    if ('JSON' === $this->csv) {
+                        $et->Options('Charset', 'UTF8');
+                    }
+                    // read tags for SourceFile '*' plus the specific file
+                    foreach (['*', $this->MyConvertFileName($et, $file)] as $f) {
+                        $csvInfo = $this->database[$f] ?? null;
+                        if (!$csvInfo) {
+                            if ('*' === $f) {
+                                continue;
+                            }
+                            // check absolute path and case-insensitive name
+                            // (punt on using ConvertFileName here, so $absPath may be a mix of encodings)
+                            $absPath = self::AbsPath($f);
+                            if (null !== $absPath && !empty($this->database[$absPath])) {
+                                $csvInfo = $this->database[$absPath];
+                            } elseif (!empty($this->database[strtolower($f)])) {
+                                $csvInfo = $this->database[strtolower($f)];
+                            } elseif (null !== $absPath && !empty($this->database[strtolower($absPath)])) {
+                                $csvInfo = $this->database[strtolower($absPath)];
+                            } else {
+                                continue;
+                            }
+                        }
+                        $found = 1;
+                        if ($this->verbose) {
+                            fwrite($this->vout, "Setting new values from {$this->csv} database\n");
+                            if ($this->tags) {
+                                fwrite($this->vout, 'Including tags: ' . implode(' ', $this->tags) . "\n");
+                            }
+                            if ($this->csvExclude) {
+                                fwrite($this->vout, 'Excluding tags: ' . implode(' ', $this->csvExclude) . "\n");
+                            }
+                        }
+                        if ($this->tags) {
+                            // prepare a dummy ExifTool object to hold appropriate tags from the database
+                            $csvEtPrt ??= new ExifTool();
+                            foreach (ExifTool::OrderedKeys($csvInfo) as $csvTag) {
+                                if (preg_match('/^([-_0-9A-Z]+:)*(SourceFile|Directory|FileName)$/i', $csvTag)) {
+                                    continue;
+                                }
+                                $grps = explode(':', $csvTag);
+                                $name = array_pop($grps);
+                                while (\count($grps) < 2) {
+                                    array_unshift($grps, 'All');
+                                }
+                                if (str_ends_with($name, '#')) {
+                                    $name = substr($name, 0, -1);
+                                    // handle ValueConv tags separately
+                                    $csvEtVal ??= new ExifTool();
+                                    $csvEtVal->FoundTag($name, $csvInfo[$csvTag], ...$grps);
+                                } else {
+                                    $csvEtPrt->FoundTag($name, $csvInfo[$csvTag], ...$grps);
+                                }
+                            }
+                            continue;
+                        }
+                        $exclTags = [];
+                        foreach ($this->csvExclude as $ex) {
+                            $ex = preg_replace('/[^-0-9a-zA-Z_:#?*]/', '', $ex);    // remove illegal characters
+                            $ex = preg_replace('/(^|:)(all:)+/i', '$1', $ex);       // remove 'all' group names
+                            $ex = preg_replace('/(^|:)all(#?)$/i', '$1*$2', $ex);   // convert 'all' tag name to '*'
+                            $ex = str_replace(['?', '*'], ['.', '.*'], $ex);        // convert wildcards for regex
+                            $exclTags[] = $ex;
+                        }
+                        // run through tags in database order
+                        foreach (ExifTool::OrderedKeys($csvInfo) as $csvTag) {
+                            // don't write SourceFile, Directory or FileName
+                            if (preg_match('/^([-_0-9A-Z]+:)*(SourceFile|Directory|FileName)$/i', $csvTag)) {
+                                continue;
+                            }
+                            if ($exclTags) {
+                                $excluded = null;
+                                foreach ($exclTags as $exclTag) { // ExclMatch:
+                                    if (str_contains($exclTag, ':')) {
+                                        if (!str_contains($csvTag, ':')) {
+                                            continue;   // db entry must also specify group
+                                        }
+                                        $csvGrps = explode(':', $csvTag);
+                                        $exclGrps = explode(':', $exclTag);
+                                        $exclName = array_pop($exclGrps);
+                                        if (!preg_match("/^$exclName$/i", array_pop($csvGrps))) {
+                                            continue;   // tag name must match
+                                        }
+                                        foreach ($exclGrps as $exclGrp) {
+                                            // each specified group name must match db entry
+                                            if (!preg_grep("/^$exclGrp$/i", $csvGrps)) {
+                                                continue 2;
+                                            }
+                                        }
+                                        $excluded = 1;
+                                        break;
+                                    }
+                                    // no group specified, so match by tag name only
+                                    if (preg_match("/^([-_0-9A-Z]+:)*$exclTag$/i", $csvTag)) {
+                                        $excluded = 1;
+                                        break;
+                                    }
+                                }
+                                if ($excluded) {
+                                    continue;
+                                }
+                            }
+                            [, $wrn] = $et->SetNewValueList($csvTag, $csvInfo[$csvTag],
+                                Protected: 1, AddValue: $this->dbAdd, ProtectSaved: $this->dbSaveCount) + [0, null];
+                            if ($wrn && $this->verbose) {
+                                $this->Warn("$wrn\n");
+                            }
+                        }
+                    }
+                    // set specified tags now
+                    if ($csvEtPrt) {
+                        $excl = array_map(static fn ($t) => "-$t", $this->csvExclude);  // add back leading dashes
+                        $opts = ['AddValue' => $this->dbAdd, 'Replace' => 0];
+                        $et->SetNewValuesFromFile($csvEtPrt, $opts, ...$this->tags, ...$excl);
+                        if ($csvEtVal) {
+                            $opts['Type'] = 'ValueConv';
+                            $et->SetNewValuesFromFile($csvEtVal, $opts, ...$this->tags, ...$excl);
+                        }
+                    }
+                    if ('JSON' === $this->csv) {
+                        $et->Options('Charset', $old);
+                    }
+                    if (!$found) {
+                        $this->Warn("No SourceFile '{$file}' in imported {$this->csv} database\n");
+                        $absPath = self::AbsPath($file);
+                        if (null !== $absPath && $absPath !== $file) {
+                            $this->Warn("(full path: '{$absPath}')\n");
+                        }
+
+                        return 0;
+                    }
+                }
+            }
+        }
+        if ($isStdout) {
+            // write to STDOUT
+            $outfile = $this->stdout;
+            if (!$this->binaryStdout) {
+                $this->binaryStdout = 1;
+            }
+        } else {
+            // get name of hard link if we are creating one
+            $hardLink = $et->GetNewValues('HardLink');
+            $symLink = $et->GetNewValues('SymLink');
+            $testName = $et->GetNewValues('TestName');
+            if (null !== $hardLink) {
+                $hardLink = $this->FilenameSPrintf($hardLink, $orig);
+            }
+            if (null !== $symLink) {
+                $symLink = $this->FilenameSPrintf($symLink, $orig);
+            }
+            // determine what our output file name should be
+            $newFileName = $et->GetNewValues('FileName');
+            $newDir = $et->GetNewValues('Directory');
+            if (null !== $newFileName && !\strlen($newFileName)) {
+                $this->Warning($et, "New file name is empty - $infile");
+                $newFileName = null;
+            }
+            if (null !== $testName) {
+                $err = null;
+                if (null !== $newFileName || null !== $newDir) {
+                    $err = "You shouldn't write FileName or Directory with TestFile";
+                }
+                if (null !== $outfile) {
+                    $err = "The -o option shouldn't be used with TestFile";
+                }
+                if ($err) {
+                    $this->Warn("Error: $err - $infile\n");
+                    $this->EFile($infile);
+                    ++$this->countBadWr;
+
+                    return 0;
+                }
+                $testName = $this->FilenameSPrintf($testName, $orig);
+                if ('' !== $file) {
+                    $testName = ExifTool::GetNewFileName($file, $testName);
+                }
+            }
+            if (null !== $newFileName || null !== $newDir || ($this->doSetFileName && null !== $outfile)) {
+                if ($newFileName) {
+                    $newFileName = $this->FilenameSPrintf($newFileName, $orig);
+                    if (null !== $outfile) {
+                        if ('' !== $file) {
+                            $outfile = ExifTool::GetNewFileName($file, $outfile);
+                        }
+                        $outfile = ExifTool::GetNewFileName($outfile, $newFileName);
+                    } elseif ('' !== $file) {
+                        $outfile = ExifTool::GetNewFileName($file, $newFileName);
+                    }
+                }
+                if ($newDir) {
+                    $newDir = $this->FilenameSPrintf($newDir, $orig);
+                    $outfile = ExifTool::GetNewFileName($outfile ?? $file, $newDir);
+                }
+                $outfile = $this->NextUnusedFilename($outfile, $infile);
+                if ($et->Exists($outfile, 1)) {
+                    if ($infile === $outfile) {
+                        $outfile = null;    // not changing the file name after all
+                    // (allow for case-insensitive filesystems)
+                    } elseif ($et->IsSameFile($infile, $outfile)) {
+                        $sameFile = $outfile;   // same file, but the name has a different case
+                    } else {
+                        $this->Warn("Error: '{$outfile}' already exists - $infile\n");
+                        $this->EFile($infile);
+                        ++$this->countBadWr;
+
+                        return 0;
+                    }
+                }
+            }
+            if (null !== $outfile) {
+                if (null !== $this->verbose) {
+                    fwrite($this->vout, "'{$infile}' --> '{$outfile}'\n");
+                }
+                // create output directory if necessary
+                $this->CreateDirectory($outfile);
+                // set temporary file (automatically erased on abnormal exit)
+                if (null !== $this->outOpt) {
+                    $this->tmpFile = $outfile;
+                }
+            }
+            if (null === $this->tmpFile) {
+                // count the number of tags and pseudo-tags we are writing
+                [$numSet, $numPseudo] = $et->CountNewValuesList();
+                if ($numSet != $numPseudo && $et->IsDirectory($file)) {
+                    if (null !== $this->verbose) {
+                        fwrite($this->vout, "Can't write real tags to a directory - $infile\n");
+                    }
+                    $numSet = $numPseudo;
+                }
+                if ($et->Exists($file)) {
+                    if (!$numSet) {
+                        // no need to write if no tags set
+                        if (null !== $this->verbose) {
+                            fwrite($this->vout, "Nothing changed in $file\n");
+                        }
+                        $this->EFile($infile, 1);
+                        ++$this->countSameWr;
+
+                        return 1;
+                    }
+                } elseif (ExifTool::CanCreate($file)) {
+                    if ($numSet == $numPseudo) {
+                        // no need to write if no real tags
+                        $this->Warn("Error: Nothing to write - $file\n");
+                        $this->EFile($infile, 1);
+                        ++$this->countBadWr;
+
+                        return 0;
+                    }
+                    if (null === $outfile) {
+                        // create file from scratch
+                        $outfile = $file;
+                        $file = '';
+                    }
+                } else {
+                    // file doesn't exist, and we can't create it
+                    $this->Warn("Error: File not found - $file\n");
+                    $this->EFile($infile);
+                    $this->FileNotFound($file);
+                    ++$this->countBadWr;
+
+                    return 0;
+                }
+                // quickly rename file and/or set file date if this is all we are doing
+                if ($numSet == $numPseudo) {
+                    [$r0, $r1, $r2, $r3] = [0, 0, 0, 0];
+                    if (null !== $outfile) {
+                        $r0 = $et->SetFileName($file, $outfile);
+                        if ($r0 > 0) {
+                            $file = $et->NewName;   // continue with new name if changed
+                        }
+                    }
+                    if (!($r0 < 0)) {
+                        $r1 = $et->SetFileModifyDate($file, null, 'FileCreateDate');
+                        $r2 = $et->SetFileModifyDate($file);
+                        $r3 = $et->SetSystemTags($file);
+                    }
+                    if ($r0 > 0 || $r1 > 0 || $r2 > 0 || $r3 > 0) {
+                        $this->EFile($infile, 3);
+                        ++$this->countGoodWr;
+                    } elseif ($r0 < 0 || $r1 < 0 || $r2 < 0 || $r3 < 0) {
+                        $this->EFile($infile);
+                        ++$this->countBadWr;
+
+                        return 0;
+                    } else {
+                        $this->EFile($infile, 1);
+                        ++$this->countSameWr;
+                    }
+                    if (null !== $hardLink || null !== $symLink || null !== $testName) {
+                        $this->DoHardLink($et, $file, $hardLink, $symLink, $testName);
+                    }
+
+                    return 1;
+                }
+                if (null === $outfile || null !== $sameFile) {
+                    // write to a truly temporary file
+                    $outfile = "{$file}_exiftool_tmp";
+                    if ($et->Exists($outfile)) {
+                        $this->Warn("Error: Temporary file already exists: $outfile\n");
+                        $this->EFile($infile);
+                        ++$this->countBadWr;
+
+                        return 0;
+                    }
+                    $isTemporary = 1;
+                }
+                // new output file is temporary until we know it has been written properly
+                $this->tmpFile = $outfile;
+            }
+        }
+        // rewrite the file
+        $success = $et->WriteInfo($this->Infile($file), $outfile, $outType);
+
+        // create hard link if specified
+        if ($success && (null !== $hardLink || null !== $symLink || null !== $testName)) {
+            $src = $outfile ?? $file;
+            $this->DoHardLink($et, $src, $hardLink, $symLink, $testName);
+        }
+
+        // get file time if preserving it
+        $aTime = $mTime = $cTime = $doPreserve = null;
+        if ('' !== $file) {
+            $doPreserve = $this->preserveTime;
+        }
+        if ($doPreserve && $success) {
+            [$aTime, $mTime, $cTime] = $et->GetFileTime($file) + [null, null, null];
+            // don't override date/time values written by the user
+            if (!empty($et->WRITTEN['FileCreateDate'])) {
+                $cTime = null;
+            }
+            if (!empty($et->WRITTEN['FileModifyDate']) || 2 == $doPreserve) {
+                if (null !== $cTime) {
+                    $aTime = $mTime = null;     // only preserve FileCreateDate
+                } else {
+                    $doPreserve = null;         // (nothing to preserve)
+                }
+            }
+        }
+
+        if (1 == $success) {
+            // preserve the original file times
+            if (null !== $this->tmpFile) {
+                if ($et->Exists($file)) {
+                    if ($doPreserve) {
+                        $et->SetFileTime($this->tmpFile, $aTime, $mTime, $cTime);
+                    }
+                    if ($isTemporary) {
+                        // preserve original file attributes if possible
+                        $et->CopyFileAttrs($file, $outfile);
+                        // move original out of the way
+                        $original = "{$file}_original";
+                        if (!$this->overwriteOrig && !$et->Exists($original)) {
+                            // rename the file and check again to be sure the file doesn't exist
+                            // (in case, say, the filesystem truncated the file extension)
+                            if (!$et->Rename($file, $original) || $et->Exists($file)) {
+                                $this->Error("Error renaming $file\n");
+
+                                return 0;
+                            }
+                        }
+                        $dstFile = $sameFile ?? $file;
+                        if ($this->overwriteOrig > 1) {
+                            // copy temporary file over top of original to preserve attributes
+                            $err = null;
+                            $newFile = $this->tmpFile;
+                            $newFh = $origFh = null;
+                            if (!$et->Open($newFh, $newFile)) {
+                                $this->Error("Error opening $newFile\n");
+
+                                return 0;
+                            }
+
+                            //..........................................................
+                            // temporarily disable CTRL-C during this critical operation
+                            $this->critical = 1;
+                            $this->tmpFile = null;  // handle deletion of temporary file ourself
+                            if ($et->Open($origFh, $file, '+<')) {
+                                while ('' !== ($buff = (string) fread($newFh, 65536))) {
+                                    if (false === fwrite($origFh, $buff)) {
+                                        $err = 1;
+                                    }
+                                }
+                                fclose($newFh);
+                                // Handle files being shorter than the original
+                                if (!ftruncate($origFh, (int) ftell($origFh))) {
+                                    $err = 1;
+                                }
+                                if (!fclose($origFh)) {
+                                    $err = 1;
+                                }
+                                if ($err) {
+                                    $this->Warn("Couldn't overwrite in place - $file\n");
+                                    if (!($et->Rename($newFile, $file) || ($et->Unlink($file) && $et->Rename($newFile, $file)))) {
+                                        $this->Error("Error renaming $newFile to $file\n");
+                                        $this->critical = null;
+                                        if ($this->interrupted) {
+                                            $this->SigInt();
+                                        }
+
+                                        return 0;
+                                    }
+                                } else {
+                                    $et->SetFileModifyDate($file, $cTime, 'FileCreateDate', 1);
+                                    $et->SetFileModifyDate($file, $mTime, 'FileModifyDate', 1);
+                                    $et->Unlink($newFile);
+                                    if ($doPreserve) {
+                                        $et->SetFileTime($file, $aTime, $mTime, $cTime);
+                                        // save time to set it later again to patch OS X 10.6 bug
+                                        $this->preserveTimes[$file] = [$aTime, $mTime, $cTime];
+                                    }
+                                }
+                                $this->EFile($infile, 3);
+                                ++$this->countGoodWr;
+                            } else {
+                                fclose($newFh);
+                                $this->Warn("Error opening $file for writing\n");
+                                $this->EFile($infile);
+                                $et->Unlink($newFile);
+                                ++$this->countBadWr;
+                            }
+                            $this->critical = null;         // end critical section
+                            if ($this->interrupted) {
+                                $this->SigInt();            // issue delayed SIGINT if necessary
+                            }
+                            //..........................................................
+
+                        // simply rename temporary file to replace original
+                        // (if we didn't already rename it to add "_original")
+                        } elseif ($et->Rename($this->tmpFile, $dstFile)) {
+                            $this->EFile($infile, 3);
+                            ++$this->countGoodWr;
+                        } else {
+                            $newFile = $this->tmpFile;
+                            $this->tmpFile = null;  // (avoid deleting file if we get interrupted)
+                            // unlink may fail if already renamed or no permission
+                            if (!$et->Unlink($file)) {
+                                $this->Warn("Error renaming temporary file to $dstFile\n");
+                                $this->EFile($infile);
+                                $et->Unlink($newFile);
+                                ++$this->countBadWr;
+                            // try renaming again now that the target has been deleted
+                            } elseif (!$et->Rename($newFile, $dstFile)) {
+                                $this->Warn("Error renaming temporary file to $dstFile\n");
+                                $this->EFile($infile);
+                                // (don't delete tmp file now because it is all we have left)
+                                ++$this->countBadWr;
+                            } else {
+                                $this->EFile($infile, 3);
+                                ++$this->countGoodWr;
+                            }
+                        }
+                    } elseif ($this->overwriteOrig) {
+                        // erase original file
+                        $this->EFile($infile, 3);
+                        if (!$et->Unlink($file)) {
+                            $this->Warn("Error erasing original $file\n");
+                        }
+                        ++$this->countGoodWr;
+                    } else {
+                        $this->EFile($infile, 4);
+                        ++$this->countGoodCr;
+                    }
+                } else {
+                    // this file was created from scratch, not edited
+                    $this->EFile($infile, 4);
+                    ++$this->countGoodCr;
+                }
+            } else {
+                $this->EFile($infile, 3);
+                ++$this->countGoodWr;
+            }
+        } elseif ($success) {
+            $this->EFile($infile, 1);
+            if ($isTemporary) {
+                // just erase the temporary file since no changes were made
+                $et->Unlink($this->tmpFile);
+                ++$this->countSameWr;
+            } else {
+                if ($doPreserve) {
+                    $et->SetFileTime($outfile, $aTime, $mTime, $cTime);
+                }
+                if ($this->overwriteOrig) {
+                    if (!$et->Unlink($file)) {
+                        $this->Warn("Error erasing original $file\n");
+                    }
+                }
+                ++$this->countCopyWr;
+            }
+            if (null !== $this->verbose) {
+                fwrite($this->vout, "Nothing changed in $file\n");
+            }
+        } else {
+            $this->EFile($infile);
+            if (null !== $this->tmpFile) {
+                $et->Unlink($this->tmpFile);
+            }
+            ++$this->countBadWr;
+        }
+        $this->tmpFile = null;
+
+        return $success;
+    }
+
+    //------------------------------------------------------------------------------
+    // Make hard link and handle TestName if specified
+    // Inputs: 0) ExifTool ref, 1) source file name, 2) HardLink name,
+    //         3) SymLink name, 4) TestFile name
+    private function DoHardLink(ExifTool $et, $src, $hardLink, $symLink, $testName): void
+    {
+        if (null !== $hardLink) {
+            $hardLink = $this->NextUnusedFilename($hardLink);
+            if ($et->SetFileName($src, $hardLink, 'Link') > 0) {
+                $this->countLink['Hard'] = ($this->countLink['Hard'] ?? 0) + 1;
+            } else {
+                $this->countLink['BadHard'] = ($this->countLink['BadHard'] ?? 0) + 1;
+            }
+        }
+        if (null !== $symLink) {
+            $symLink = $this->NextUnusedFilename($symLink);
+            if ($et->SetFileName($src, $symLink, 'SymLink') > 0) {
+                $this->countLink['Sym'] = ($this->countLink['Sym'] ?? 0) + 1;
+            } else {
+                $this->countLink['BadSym'] = ($this->countLink['BadSym'] ?? 0) + 1;
+            }
+        }
+        if (null !== $testName) {
+            $testName = $this->NextUnusedFilename($testName, $src);
+            if (!empty($this->usedFileName[$testName])) {
+                $et->Warn("File '{$testName}' would exist");
+            } elseif (1 == $et->SetFileName($src, $testName, 'Test', $this->usedFileName[$testName] ?? null)) {
+                $this->usedFileName[$testName] = 1;
+                $this->usedFileName[$src] = 0;
+            }
+        }
     }
 
     //------------------------------------------------------------------------------
@@ -2351,6 +4110,130 @@ final class Application
     }
 
     //------------------------------------------------------------------------------
+    // Add tag list for copying tags from specified file
+    // Inputs: 0) set tags file name (or FMT), 1) options for SetNewValuesFromFile()
+    // Returns: nothing
+    // Notes: Uses global variables: %setTags, %setTagsList, @newValues, $saveCount
+    private function AddSetTagsFile($setFile, ?array $opts = null): void
+    {
+        if (isset($this->setTags[$setFile])) {
+            // move these tags aside and make a new list for the next invocation of this file
+            $this->setTagsList[$setFile][] = $this->setTags[$setFile];
+        }
+        $this->setTags[$setFile] = [];  // create list for tags to copy from this file
+        // insert marker to save new values now (necessary even if this is not a dynamic
+        // file in case the same file is source'd multiple times in a single command)
+        $this->newValues[] = ['SaveCount' => ++$this->saveCount];
+        $this->newValues[] = "TagsFromFile=$setFile";
+        // add option to protect the tags which are assigned after this
+        // (this is the mechanism by which the command-line order-of-operations is preserved)
+        $opts ??= [];
+        $opts['ProtectSaved'] = $this->saveCount;
+        $this->setTags[$setFile][] = $opts;
+    }
+
+    //------------------------------------------------------------------------------
+    // Get input file name or reference for calls to the ExifTool API
+    // Inputs: 0) file name ('-' for STDIN), 1) flag to buffer STDIN
+    // Returns: file name, or RAF reference for buffering STDIN
+    private function Infile($file, $bufferStdin = null)
+    {
+        if ('-' === $file && ($bufferStdin || $this->rafStdin)) {
+            if ($this->rafStdin) {
+                $this->rafStdin->Seek(0);   // rewind
+            } else {
+                $this->rafStdin = new RandomAccess($this->stdin);
+                $this->rafStdin->BinMode();
+            }
+
+            return $this->rafStdin;
+        }
+
+        return $file;
+    }
+
+    //------------------------------------------------------------------------------
+    // Issue warning to stderr, adding leading "Warning: " and trailing newline
+    // if the warning isn't suppressed by the API NoWarning option
+    // Inputs: 0) ExifTool ref, 1) warning string
+    private function Warning(ExifTool $et, $str): void
+    {
+        $noWarn = $et->Options('NoWarning');
+        if (null === $noWarn || !@preg_match(ExifTool::Rx($noWarn), Perl::str($str))) {
+            $this->Warn("Warning: $str\n");
+        }
+    }
+
+    //------------------------------------------------------------------------------
+    // Set new values from file
+    // Inputs: 0) ExifTool ref, 1) filename, 2) reference to list of values to set
+    // Returns: 0 on error (and increments $countBadWr)
+    private function DoSetFromFile(ExifTool $et, $file, array $setTags)
+    {
+        if ($this->verbose) {
+            fwrite($this->vout, "Setting new values from $file\n");
+        }
+        $info = $et->SetNewValuesFromFile($this->Infile($file, 1), ...$setTags);
+        $numSet = \count($info);
+        if (!empty($info['Error'])) {
+            // delete all error and warning tags
+            $warns = preg_grep('/^(Error|Warning)\b/', array_map('strval', array_keys($info)));
+            $numSet -= \count($warns);
+            // issue a warning only for the main error
+            $err = $info['Error'];
+            foreach ($warns as $w) {
+                unset($info[$w]);
+            }
+            $noWarn = $et->Options('NoWarning');
+            if (!(null !== $noWarn && @preg_match(ExifTool::Rx($noWarn), Perl::str($err)))) {
+                $info['Warning'] = $err;
+            }
+        } elseif (!empty($info['Warning'])) {
+            $warns = 1;
+            while (!empty($info["Warning ($warns)"])) {
+                ++$warns;
+            }
+            $numSet -= $warns;
+        }
+        if ($this->PrintErrors($et, $info, $file)) {
+            $this->EFile($file);
+            ++$this->countBadWr;
+
+            return 0;
+        }
+        if (!$numSet) {
+            $this->Warning($et, "No writable tags set from $file");
+        }
+
+        return 1;
+    }
+
+    //------------------------------------------------------------------------------
+    // Translate backslashes to forward slashes in filename if necessary
+    // Inputs: 0) Filename
+    // Returns: nothing, but changes filename if necessary
+    private static function CleanFilename(&$file): void
+    {
+        if (ExifTool::IsPC()) {
+            $file = str_replace('\\', '/', $file);
+        }
+    }
+
+    //------------------------------------------------------------------------------
+    // Does path name contain wildcards
+    // Inputs: 0) path name
+    // Returns: true if path contains wildcards
+    private static function HasWildcards($path): bool
+    {
+        // if this is a Windows path with the long path prefix, then wildcards are not supported
+        if (\PHP_OS_FAMILY === 'Windows' && preg_match('{^[\\\\/]{2}\?[\\\\/]}', $path)) {
+            return false;
+        }
+
+        return (bool) preg_match('/[*?]/', $path);
+    }
+
+    //------------------------------------------------------------------------------
     // Process files in our @files list
     // Inputs: 0) ExifTool ref, 1) list ref to just return full file names
     private function ProcessFiles(ExifTool $et, ?array &$list = null): void
@@ -2462,9 +4345,20 @@ final class Application
                 $accepted &= 0x01;
             }
             if (!$accepted) {
-                // read this file if it is a supported type
-                if (!ExifTool::GetFileType($file)) {
-                    continue;
+                // read/write this file if it is a supported type
+                if ($this->scanWritable) {
+                    if ('1' === Perl::str($this->scanWritable)) {
+                        if (!ExifTool::CanWrite($file)) {
+                            continue;
+                        }
+                    } else {
+                        $type = ExifTool::GetFileType($file);
+                        if (!(null !== $type && $type === $this->scanWritable)) {
+                            continue;
+                        }
+                    }
+                } elseif (!ExifTool::GetFileType($file)) {
+                    continue;   // (-z is not ported)
                 }
             }
             if (null !== $list) {
@@ -2489,6 +4383,43 @@ final class Application
             $type = ['DIR' => 'directory', 'FILE' => 'file'][$file];
             $this->Warn("You were meant to enter any valid $type name, not \"$file\" literally.\n");
         }
+    }
+
+    //------------------------------------------------------------------------------
+    // Patch for OS X 10.6 to preserve file modify date
+    // (this probably isn't a 100% fix, but it may solve a majority of the cases)
+    private function PreserveTime(): void
+    {
+        foreach ($this->preserveTimes as $file => $times) {
+            $this->mt->SetFileTime((string) $file, ...$times);
+        }
+        $this->preserveTimes = [];
+    }
+
+    //------------------------------------------------------------------------------
+    // Return absolute path for a file
+    // Inputs: 0) file name
+    // Returns: absolute path string, or undef if path could not be determined
+    // Note: Warnings should be suppressed when calling this routine
+    private static function AbsPath($file)
+    {
+        $path = null;
+        if (null !== $file) {
+            if ('*' === $file) {
+                return null;    // (CSV SourceFile may be '*' -- no absolute path for that)
+            }
+            // (Cwd::abs_path: like realpath(), but the last path component may not exist)
+            $path = realpath($file);
+            if (false === $path) {
+                $dir = realpath(\dirname($file));
+                $path = false === $dir ? null : rtrim($dir, '/') . '/' . basename($file);
+            }
+            if (null !== $path) {
+                self::CleanFilename($path);    // use forward slashes
+            }
+        }
+
+        return $path;
     }
 
     //------------------------------------------------------------------------------
@@ -2519,6 +4450,30 @@ final class Application
         }
 
         return 2;   // accept by default
+    }
+
+    //------------------------------------------------------------------------------
+    // Slurp file into buffer
+    // Inputs: 0) file name, 1) buffer reference
+    // Returns: 1 on success
+    private function SlurpFile($file, &$buffPt)
+    {
+        $fh = null;
+        if (!$this->mt->Open($fh, $file)) {
+            $this->Warn("Error opening file $file\n");
+
+            return 0;
+        }
+        $buffPt = stream_get_contents($fh);
+        fclose($fh);
+        if (false === $buffPt) {
+            $buffPt = null;
+            $this->Warn("Error reading $file\n");
+
+            return 0;
+        }
+
+        return 1;
     }
 
     //------------------------------------------------------------------------------
@@ -2635,6 +4590,36 @@ final class Application
     }
 
     //------------------------------------------------------------------------------
+    // Add new entry to -efile output file
+    // Inputs: 0) file name, 1) -efile option number (0=error, 1=same, 2=failed, 3=updated, 4=created)
+    private function EFile($entry, $num = 0): void
+    {
+        $efile = $this->efile[$num ?: 0] ?? null;
+        if (null !== $efile && \strlen($entry) && '-' !== $entry) {
+            $err = null;
+            $this->CreateDirectory($efile);
+            $fh = null;
+            if ($this->mt->Open($fh, $efile, '>>')) {
+                if (false === fwrite($fh, "$entry\n")) {
+                    $this->Warn("Error writing to $efile\n");
+                    $err = 1;
+                }
+                fclose($fh);
+            } else {
+                $this->Warn("Error opening '{$efile}' for append\n");
+                $err = 1;
+            }
+            if ($err) {
+                foreach ($this->efile as $k => $e) {
+                    if (null !== $e && $e === $efile) {
+                        $this->efile[$k] = null;
+                    }
+                }
+            }
+        }
+    }
+
+    //------------------------------------------------------------------------------
     // Print progress message if it is time for it
     // Inputs: 0) file ref, 1) message
     private function Progress($file, $msg): void
@@ -2669,6 +4654,67 @@ final class Application
     }
 
     //------------------------------------------------------------------------------
+    // Get suggested file extension based on tag value for binary output
+    // Inputs: 0) ExifTool ref, 1) data ref, 2) tag name
+    // Returns: file extension (lower case), or 'dat' if unknown
+    private function SuggestedExtension(ExifTool $et, $valPt, $tag): string
+    {
+        $valPt = Perl::str($valPt);
+        if (!$this->binaryOutput) {
+            $ext = 'txt';
+        } elseif (preg_match('/^\xff\xd8\xff/', $valPt)) {
+            $ext = 'jpg';
+        } elseif (preg_match('/^(\0\0\0\x0cjP(  |\x1a\x1a)\x0d\x0a\x87\x0a|\xff\x4f\xff\x51\0)/', $valPt)) {
+            $ext = 'jp2';
+        } elseif (preg_match('/^(\x89P|\x8aM|\x8bJ)NG\r\n\x1a\n/', $valPt)) {
+            $ext = 'png';
+        } elseif (preg_match('/^GIF8[79]a/', $valPt)) {
+            $ext = 'gif';
+        } elseif (preg_match('/^<\?xpacket/', $valPt) || 'XMP' === $tag) {
+            $ext = 'xmp';
+        } elseif (preg_match('/^<\?xml/', $valPt) || 'XML' === $tag) {
+            $ext = 'xml';
+        } elseif (preg_match('/^RIFF....WAVE/s', $valPt)) {
+            $ext = 'wav';
+        } elseif ('OriginalRawImage' === $tag && null !== ($ext = $et->GetValue('OriginalRawFileName'))) {
+            $ext = preg_replace('/^.*\./s', '', Perl::str($ext), 1);
+            $ext = $ext ? strtolower($ext) : 'raw';
+        } elseif ('EXIF' === $tag) {
+            $ext = 'exif';
+        } elseif ('ICC_Profile' === $tag) {
+            $ext = 'icc';
+        } elseif (preg_match('/^(MM\0\x2a|II\x2a\0)/', $valPt)) {
+            $ext = 'tiff';
+        } elseif (preg_match('/^.{4}ftyp(3gp|mp4|f4v|qt  )/s', $valPt, $m)) {
+            $ext = ['qt  ' => 'mov'][$m[1]] ?? $m[1];
+        } elseif (preg_match('/^<(!DOCTYPE )?html/i', $valPt)) {
+            $ext = 'html';
+        } elseif (preg_match('/^[\n\r]*\{[\n\r]*\\\\rtf/', $valPt)) {
+            $ext = 'rtf';
+        } elseif (!preg_match('/^.{0,4096}\0/s', $valPt)) {
+            $ext = 'txt';
+        } elseif (preg_match('/^BM.{15}\0/s', $valPt)) {
+            $ext = 'bmp';
+        } elseif (preg_match('/^CANON OPTIONAL DATA\0/', $valPt)) {
+            $ext = 'vrd';
+        } elseif (preg_match('/^IIII\x04\0\x04\0/', $valPt)) {
+            $ext = 'dr4';
+        } elseif (preg_match('/^(.{10}|.{522})(\x11\x01|\x00\x11)/s', $valPt)) {
+            $ext = 'pict';
+        } elseif (preg_match('/^\xff\x0a|\0\0\0\x0cJXL \x0d\x0a......ftypjxl/s', $valPt)) {
+            $ext = 'jxl';
+        } elseif (preg_match('/^.{4}jumb\0.{3}jumdc2pa/s', $valPt)) {
+            $ext = 'c2pa';
+        } elseif ('JUMBF' === $tag) {
+            $ext = 'jumbf';
+        } else {
+            $ext = 'dat';
+        }
+
+        return $ext;
+    }
+
+    //------------------------------------------------------------------------------
     // Load print format file
     // Inputs: 0) file name, 1) flag to avoid adding newline to input argument
     // - saves lines of file to %printFmt list
@@ -2688,6 +4734,259 @@ final class Application
             }
             $this->AddPrintFormat($arg);
         }
+    }
+
+    //------------------------------------------------------------------------------
+    // A sort of sprintf for filenames
+    // Inputs: 0) format string (%d=dir, %f=file name, %e=ext),
+    //         1) source filename or undef to test format string
+    //         2-4) [%t %g %s %o only] tag name, ref to array of group names,
+    //              suggested extension, original raw file name
+    // Returns: new filename or undef on error (or if no file and fmt contains token)
+    private function FilenameSPrintf($fmt, $file = null, ...$extra)
+    {
+        $fmt = Perl::str($fmt);
+        // return format string straight away if no tokens
+        if (!preg_match('/%[-+]?\d*[.:]?\d*[lu]?[dDfFeEtgso]/', $fmt)) {
+            return $fmt;
+        }
+        if (null === $file) {
+            return null;
+        }
+        self::CleanFilename($file);     // make sure we are using forward slashes
+        // split filename into directory, file, extension
+        if (!preg_match('/^(.*?)([^\/]*?)(\.[^.\/]*)?$/', $file, $m)) {
+            $this->Warn("Error: Bad pattern match for file $file\n");
+
+            return null;
+        }
+        $part = ['d' => $m[1], 'f' => $m[2], 'E' => $m[3] ?? ''];
+        if ('' !== $part['E']) {
+            $part['e'] = substr($part['E'], 1);
+        } else {
+            $part['e'] = $part['E'] = '';
+        }
+        $part['F'] = $part['f'] . $part['E'];
+        $part['D'] = preg_replace('{/+$}', '', $part['d']);
+        [$part['t'], $part['g'], $part['s'], $part['o']] = $extra + [null, null, null, null];
+        if ($part['o']) {
+            $part['o'] = preg_replace('{^.*[/\\\\]}s', '', $part['o']);    // remove directory if it exists
+        }
+        [$filename, $pos] = ['', 0];
+        // (Perl: while ($fmt =~ /.../g), the %g code below moving pos($fmt))
+        while (preg_match('/(%([-+]?)(\d*)([.:]?)(\d*)([lu]?)([dDfFeEtgso]))/', $fmt, $mm, \PREG_OFFSET_CAPTURE, $pos)) {
+            $end = $mm[0][1] + \strlen($mm[0][0]);
+            $filename .= substr($fmt, $pos, $end - $pos - \strlen($mm[1][0]));
+            $pos = $end;
+            [$sign, $wid, $dot, $skip, $mod, $code] = [$mm[2][0], $mm[3][0], $mm[4][0], (int) $mm[5][0], $mm[6][0], $mm[7][0]];
+            $path = [];
+            if ('d' === strtolower($code) && ':' === $dot) {
+                // field width applies to directory levels instead of characters
+                $path = Perl::split('{/}', $part[$code]);
+                $len = \count($path);
+            } else {
+                if ('g' === $code) {
+                    $groups = $part['g'] ?: [];
+                    if (!\is_array($groups)) {
+                        // (a second %g: Perl dies here)
+                        throw new \RuntimeException("Can't use string (\"$groups\") as an ARRAY ref while \"strict refs\" in use");
+                    }
+                    preg_match('/\G(\d?)/', $fmt, $gm, 0, $pos);    // look for %g1, %g2, etc
+                    $part['g'] = $groups[$gm[1] ?: 0] ?? null;
+                    $pos += \strlen($gm[0]);
+                }
+                $part[$code] ??= '';
+                $len = \strlen($part[$code]);
+            }
+            if (!($skip < $len)) {
+                continue;
+            }
+            if ('' === $wid || $wid + $skip > $len) {
+                $wid = $len - $skip;
+            }
+            if ('-' === $sign) {
+                $skip = $len - $wid - $skip;
+            }
+            if ($path) {
+                $p = implode('/', \array_slice($path, $skip, (int) $wid));
+                if ('D' !== $code) {
+                    $p .= '/';
+                }
+            } else {
+                $p = substr($part[$code], $skip, (int) $wid);
+            }
+            if ($mod) {
+                $p = 'u' === $mod ? strtoupper($p) : strtolower($p);
+            }
+            $filename .= $p;
+        }
+        $filename .= substr($fmt, $pos);    // add rest of file name
+        // remove double slashes (except at beginning to allow Windows UNC paths)
+        return preg_replace('{(?!^)//}', '/', $filename);
+    }
+
+    //------------------------------------------------------------------------------
+    // Convert number to alphabetical index: a, b, c, ... z, aa, ab ...
+    // Inputs: 0) number
+    // Returns: alphabetical index string
+    private static function Num2Alpha($num): string
+    {
+        $alpha = \chr(97 + ($num % 26));
+        while ($num >= 26) {
+            $num = (int) ($num / 26) - 1;
+            $alpha = \chr(97 + ($num % 26)) . $alpha;
+        }
+
+        return $alpha;
+    }
+
+    //------------------------------------------------------------------------------
+    // Expand '%c' and '%C' codes if filename to get next unused file name
+    // Inputs: 0) file name format string, 1) filename ok to use even if it exists
+    // Returns: new file name
+    private function NextUnusedFilename($fmt, $okfile = null)
+    {
+        if (!preg_match('/%[-+]?\d*[.:]?\d*[lun]?[cC]/', (string) $fmt)) {
+            return $fmt;
+        }
+        $sep = ['-' => '-', '+' => '_'];
+        [$copy, $alpha] = [0, 'a'];
+        $lastFile = null;
+        for (;;) {
+            [$filename, $pos] = ['', 0];
+            while (preg_match('/(%([-+]?)(\d*)([.:]?)(\d*)([lun]?)([cC]))/', $fmt, $mm, \PREG_OFFSET_CAPTURE, $pos)) {
+                $end = $mm[0][1] + \strlen($mm[0][0]);
+                $filename .= substr($fmt, $pos, $end - $pos - \strlen($mm[1][0]));
+                $pos = $end;
+                [$sign, $wid, $dec, $wid2, $mod, $tok] = [$mm[2][0], (int) $mm[3][0], $mm[4][0], (int) $mm[5][0], $mm[6][0], $mm[7][0]];
+                $seq = null;
+                if ('C' === $tok) {
+                    // increment sequence number for %C on collision if ':' is used
+                    if ($copy && ':' === $dec) {
+                        '-' === $sign ? ++$this->seqFileDir : ++$this->seqFileNum;
+                    }
+                    $seq = $wid + ('-' === $sign ? $this->seqFileDir : $this->seqFileNum) - 1;
+                    $wid = $wid2;
+                } else {
+                    if (!($dec || $copy)) {
+                        continue;
+                    }
+                    if ($wid < $wid2) {
+                        $wid = $wid2;
+                    }
+                    // add dash or underline separator if '-' or '+' specified
+                    if ($sign) {
+                        $filename .= $sep[$sign];
+                    }
+                }
+                if ($mod && 'n' !== $mod) {
+                    $a = 'C' === $tok ? self::Num2Alpha($seq) : $alpha;
+                    $str = ($wid && $wid > \strlen($a)) ? str_repeat('a', $wid - \strlen($a)) : '';
+                    $str .= $a;
+                    if ('u' === $mod) {
+                        $str = strtoupper($str);
+                    }
+                    $filename .= $str;
+                } else {
+                    $c = 'C' === $tok ? $seq : $copy;
+                    $num = $c + ($mod ? 1 : 0);
+                    $filename .= $wid ? Perl::sprintf("%.{$wid}d", $num) : $num;
+                }
+            }
+            $filename .= substr($fmt, $pos);    // add rest of file name
+            // return now with filename unless file exists
+            if (!(($this->mt->Exists($filename, 1) && !isset($this->usedFileName[$filename])) || !empty($this->usedFileName[$filename]))) {
+                return $filename;
+            }
+            if (null !== $okfile) {
+                if ($filename === $okfile) {
+                    return $filename;
+                }
+                [$fn, $ok] = [self::AbsPath($filename), self::AbsPath($okfile)];
+                if (null !== $fn && null !== $ok && $fn === $ok) {
+                    return $okfile;
+                }
+            }
+            if (null !== $lastFile && $lastFile === $filename) {
+                return $filename;
+            }
+            $lastFile = $filename;
+            ++$copy;
+            $alpha = str_increment($alpha);
+        }
+    }
+
+    //------------------------------------------------------------------------------
+    // Create directory for specified file
+    // Inputs: 0) complete file name including path
+    // Returns: true if a directory was created
+    private function CreateDirectory($file)
+    {
+        $err = $this->mt->CreateDirectory($file);
+        if (null !== $err) {
+            if ($err) {
+                $this->Error("$err\n");
+
+                return 0;
+            }
+            if ($this->verbose) {
+                $dir = preg_replace('{/[^/]*$}', '', $file, 1);
+                fwrite($this->vout, "Created directory $dir\n");
+            }
+            ++$this->countNewDir;
+
+            return 1;
+        }
+
+        return 0;
+    }
+
+    //------------------------------------------------------------------------------
+    // Open output text file
+    // Inputs: 0) file name format string, 1-N) extra arguments for FilenameSPrintf
+    // Returns: 0) file reference (or undef on error), 1) file name if opened, 2) append flag
+    // Notes: returns reference to STDOUT and no file name if no textOut file needed
+    private function OpenOutputFile($file, ...$args): array
+    {
+        $fp = $outfile = $append = null;
+        if ($this->textOut) {
+            $outfile = $file;
+            self::CleanFilename($outfile);
+            if (preg_match('/%[-+]?\d*[.:]?\d*[lun]?[dDfFeEtgsocC]/', $this->textOut) || null !== $this->tagOut) {
+                // make filename from printf-like $textOut
+                $outfile = $this->FilenameSPrintf($this->textOut, $file, ...$args);
+                if (null === $outfile) {
+                    return [];
+                }
+                $outfile = $this->NextUnusedFilename($outfile);
+                $this->CreateDirectory($outfile);  // create directory if necessary
+            } else {
+                $outfile = preg_replace('/\.[^.\/]*$/', '', $outfile, 1);  // remove extension if it exists
+                $outfile .= $this->textOut;
+            }
+            $mode = '>';
+            if ($this->mt->Exists($outfile, 1)) {
+                if (!$this->textOverwrite) {
+                    $this->Warn("Output file $outfile already exists for $file\n");
+
+                    return [];
+                }
+                if (2 == $this->textOverwrite || (3 == $this->textOverwrite && !empty($this->created[$outfile]))) {
+                    $mode = '>>';
+                    $append = 1;
+                }
+            }
+            if (!$this->mt->Open($fp, $outfile, $mode)) {
+                $what = '>' === $mode ? 'creating' : 'appending to';
+                $this->Error("Error $what $outfile\n");
+
+                return [];
+            }
+        } else {
+            $fp = $this->stdout;
+        }
+
+        return [$fp, $outfile, $append];
     }
 
     //------------------------------------------------------------------------------
@@ -3051,6 +5350,40 @@ final class Application
         $this->rtnVal = 1;
     }
 
+    // (Perl's Warn() returns false unless a __WARN__ handler is set, which is never the case
+    //  where WarnOnce() is used, so %warnedOnce stays empty and the warning is issued every time)
+    private function WarnOnce($msg): void
+    {
+        $this->Warn($msg);
+    }
+
+    // define signal handlers and cleanup routine
+    private function SigInt(): void
+    {
+        if ($this->critical) {
+            $this->interrupted = 1;
+
+            return;
+        }
+        $this->Cleanup();
+        exit(1);
+    }
+
+    private function Cleanup(): void
+    {
+        if (null !== $this->tmpFile) {
+            $this->mt?->Unlink($this->tmpFile);
+        }
+        if (null !== $this->tmpText) {
+            $this->mt?->Unlink($this->tmpText);
+        }
+        $this->tmpFile = $this->tmpText = null;
+        if ($this->preserveTimes) {
+            $this->PreserveTime();
+        }
+        // (no console window title to reset)
+    }
+
     // exit routine
     private function Exit($status): int
     {
@@ -3071,6 +5404,12 @@ final class Application
         $this->Error("Sorry, the -$opt option is not supported by the PHP port of exiftool\n");
 
         return true;
+    }
+
+    /** Geotag.pm is not ported yet: -geotag, -geosync and -geotime are refused until it is */
+    private static function GeotagPorted(): bool
+    {
+        return class_exists('Image\ExifTool\Geotag');
     }
 
     /** Perl: open ARGFILE ("-" is STDIN) */
