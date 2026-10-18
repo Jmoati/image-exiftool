@@ -26,6 +26,7 @@ $skip = [
     13 => 'EXIF, CanonRaw writers',
     14 => 'EXIF writer (deleting MakerNotes)',
     15 => 'EXIF writer',
+    18 => 'EXIF writer (*:XResolution)',
     19 => 'EXIF writer',
     22 => 'EXIF writer (Shift)',
     25 => 'EXIF writer',
@@ -50,6 +51,8 @@ $skip = [
     48 => 'EXIF writer',
     49 => 'relies on test 48',
     51 => 'MIE and CanonVRD writers (trailers of ExifTool.jpg)',
+    53 => 'EXIF writer',
+    54 => 'EXIF writer',
     55 => 'EXIF writer',
     56 => 'relies on test 55',
 ];
