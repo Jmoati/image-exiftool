@@ -10,8 +10,8 @@ use Image\ExifTool\Vars\ExifTool as Vars;
 
 /**
  * Format processors of ExifTool.pm (ProcessJPEG, DoProcessTIFF, trailers...), mixed into
- * Image\ExifTool\ExifTool. Port of lib/Image/ExifTool.pm lines 6984-8921 (reading only:
- * the branches that only matter when writing are left out).
+ * Image\ExifTool\ExifTool. Port of lib/Image/ExifTool.pm lines 6984-8921, with the writing
+ * branches of ProcessTrailers and DoProcessTIFF (OutFile set).
  */
 trait Formats
 {
