@@ -9,16 +9,7 @@ require __DIR__.'/TestLib.php';
 
 use Image\ExifTool\ExifTool;
 
-$skip = [
-    5 => 'CanonRaw (CIFF in APP0) and MIE writers (ExifTool.jpg)',
-    6 => 'CanonRaw writer (WriteCR2)',
-    7 => 'CanonRaw writer (WriteCRW)',
-    9 => 'CanonRaw (CIFF in APP0) and MIE writers (ExifTool.jpg)',
-    16 => 'CanonRaw (CIFF in APP0) and MIE writers (ExifTool.jpg)',
-    17 => 'CanonRaw writer (WriteCR2)',
-    18 => 'CanonRaw writer (WriteCRW)',
-    23 => 'relies on test 17',
-];
+$skip = [];
 $t = testDir();
 $testname = 'CanonVRD';
 

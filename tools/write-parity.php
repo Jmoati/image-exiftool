@@ -30,8 +30,9 @@
  * exiftool arguments -TAG[+-^]=[VALUE], -TAG<=DATAFILE, -o FILE, -m, -n, -v[NUM], -api OPT[=VAL],
  * -use MWG and -overwrite_original, and set the new values like the exiftool script does. They also take
  * -_memin, -_memout, -_handle, -_handleout and -_raf, to pass the files to WriteInfo as data in
- * memory, as file handles or as a RandomAccess object (API-only cases, skipped with --cli). A case
- * with a null source creates its output from scratch.
+ * memory, as file handles or as a RandomAccess object, and -_tagsFromFile SRCFILE, which copies
+ * the tags of SRCFILE with SetNewValuesFromFile before the -TAG= values (API-only cases, skipped
+ * with --cli). A case with a null source creates its output from scratch.
  * Each case prints "ok" (identical), "MSG" (same files, but the output of the runners differs:
  * results of SetNewValue/WriteInfo, warnings, errors) or "DIFF" (the files differ).
  * Exit status: 0 when every case gives the same result.
@@ -563,6 +564,74 @@ $cases = [
     ["$inputs/mie.tif", ['-MIE:Title=trailer of a TIFF', '-o', 'out.tif']],
     ["$inputs/mie.tif", ['-MIE:all=', '-o', 'out.tif']],
     ["$inputs/mie.tif", ['-Artist=only EXIF', '-o', 'out.tif']],
+    // CanonRaw: CRW (WriteCRW, WriteCanonRaw), CIFF in JPEG, CR2 (WriteCR2)
+    ['CanonRaw.crw', ['-OwnerName=new owner', '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-ROMOperationMode=CDN', '-SerialNumber=1234', '-FocalPlaneXSize=35 mm', '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-CanonFileDescription=a description', '-UserComment=a comment', '-TargetImageType=1', '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-WhiteBalance=Daylight', '-Contrast=-1', '-ColorTemperature=6000', '-MeasuredEV=3.5', '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-OwnerName=this owner name is much too long for the 32 bytes', '-CanonImageType=x', '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-m', '-JpgFromRaw=not a real image', '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-JpgFromRaw=not a real image', '-o', 'out.crw']],
+    ['CanonRaw.crw', ["-ThumbnailImage<=$images/Writer.jpg", "-JpgFromRaw<=$images/Canon.jpg", '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-JpgFromRaw=', '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-XMP:Title=XMP in CRW', '-XMP:Subject=one', '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-CanonVRD:CropLeft=10', '-o', 'out.crw']],
+    ['CanonRaw.crw', ["-CanonVRD<=$images/CanonVRD.vrd", '-o', 'out.crw']],
+    ['CanonRaw.crw', ["-CanonDR4<=$images/CanonVRD.dr4", '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-CanonVRD:all=', '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-trailer:all=', '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-MakerNotes:all=', '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-all=', '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-EXIF:Artist=no EXIF in CRW', '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-v3', '-OwnerName=verbose', '-JpgFromRaw=', '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-OwnerName=in place']],
+    ["$inputs/novrd.crw", ['-XMP:Title=new VRD in CRW', '-o', 'out.crw']],
+    ["$inputs/novrd.crw", ['-CanonVRD:CropTop=5', '-o', 'out.crw']],
+    ["$inputs/novrd.crw", ['-OwnerName=no trailer', '-o', 'out.crw']],
+    ['ExifTool.jpg', ['-CIFF:OwnerName=CIFF in JPEG', '-o', 'out.jpg']],
+    ['ExifTool.jpg', ['-CIFF:all=', '-o', 'out.jpg']],
+    ['ExifTool.jpg', ['-MakerNotes:all=', '-o', 'out.jpg']],
+    ['ExifTool.jpg', ['-v3', '-CIFF:OwnerName=verbose', '-o', 'out.jpg']],
+    ['CanonRaw.cr2', ['-Artist=CR2 artist', '-o', 'out.cr2']],
+    ['CanonRaw.cr2', ['-Keywords=CR2 test', '-OwnerName=Phil Harvey', '-FocalPlaneXSize=35mm', '-o', 'out.cr2']],
+    ['CanonRaw.cr2', ['-XMP:Title=XMP in CR2', '-GPSLatitude=10', '-o', 'out.cr2']],
+    ['CanonRaw.cr2', ['-Canon:OwnerName=maker notes', '-Canon:FileNumber=100-1234', '-o', 'out.cr2']],
+    ['CanonRaw.cr2', ["-PreviewImage<=$images/Writer.jpg", '-o', 'out.cr2']],
+    ['CanonRaw.cr2', ['-PreviewImage=', '-ThumbnailImage=', '-o', 'out.cr2']],
+    ['CanonRaw.cr2', ['-all=', '-o', 'out.cr2']],
+    ['CanonRaw.cr2', ['-EXIF:all=', '-o', 'out.cr2']],
+    ['CanonRaw.cr2', ['-MakerNotes:all=', '-o', 'out.cr2']],
+    ['CanonRaw.cr2', ['-IFD0:all=', '-o', 'out.cr2']],
+    ['CanonRaw.cr2', ["-CanonVRD<=$images/CanonVRD.vrd", '-o', 'out.cr2']],
+    ['CanonRaw.cr2', ['-trailer:all=', '-o', 'out.cr2']],
+    ['CanonRaw.cr2', ['-v3', '-Artist=verbose', '-o', 'out.cr2']],
+    ['CanonRaw.cr2', ['-Artist=in place']],
+    ["$inputs/cr3sig.cr2", ['-Artist=unsupported', '-o', 'out.cr2']],
+    ["$inputs/cr3sig.cr2", ['-m', '-Artist=unsupported', '-o', 'out.cr2']],
+    ["$inputs/1d.cr2", ['-Artist=1D', '-o', 'out.cr2']],
+    // copying all tags (SetNewValuesFromFile): maker notes built from CRW and CR2 information,
+    // MIE files created from other files
+    ['Writer.jpg', ['-_tagsFromFile', "$images/CanonRaw.crw", '-o', 'out.jpg']],
+    ['Writer.jpg', ['-_tagsFromFile', "$images/CanonRaw.cr2", '-o', 'out.jpg']],
+    ['CanonRaw.crw', ['-_tagsFromFile', "$images/Canon.jpg", '-m', '-SerialNumber=1234', '-o', 'out.crw']],
+    ['CanonRaw.cr2', ['-_tagsFromFile', "$images/CanonRaw.crw", '-o', 'out.cr2']],
+    ['MIE.mie', ['-_tagsFromFile', "$images/Nikon.jpg", '-m', '-MIE:FNumber=11', '-o', 'out.mie']],
+    [null, ['-_tagsFromFile', "$images/MIE.mie", '-m', '-o', 'out.mie']],
+    [null, ['-_tagsFromFile', "$images/CanonRaw.crw", '-o', 'out.mie']],
+    [null, ['-_tagsFromFile', "$images/ExifTool.jpg", '-api', 'Compress', '-o', 'out.mie']],
+    // MinoltaRaw: MRW (ProcessMRW)
+    ['Minolta.mrw', ['-FocusMode=MF', '-LastFileNumber=123', '-o', 'out.mrw']],
+    ['Minolta.mrw', ['-Artist=MRW artist', '-ISOSetting=100', '-WBMode=Daylight', '-o', 'out.mrw']],
+    ['Minolta.mrw', ['-MinoltaRaw:Saturation=2', '-MinoltaRaw:ColorMode=Vivid color', '-o', 'out.mrw']],
+    ['Minolta.mrw', ['-XMP:Title=no XMP in MRW', '-Comment=x', '-o', 'out.mrw']],
+    ['Minolta.mrw', ['-all=', '-o', 'out.mrw']],
+    ['Minolta.mrw', ['-MakerNotes:all=', '-o', 'out.mrw']],
+    ['Minolta.mrw', ['-ExifIFD:all=', '-GPSLatitude=1', '-o', 'out.mrw']],
+    ['Minolta.mrw', ['-v3', '-Artist=verbose', '-o', 'out.mrw']],
+    ['Minolta.mrw', ['-Artist=in place']],
+    ['Minolta.mrw', ['-_tagsFromFile', "$images/Minolta.jpg", '-o', 'out.mrw']],
+    ["$inputs/bad.mrw", ['-Artist=format error', '-o', 'out.mrw']],
+    ["$inputs/bad.mrw", ['-m', '-Artist=format error', '-o', 'out.mrw']],
     // QuickTime: HEIC with EXIF and XMP items (written by Perl), plain and deflated
     ["$inputs/meta.heic", ['-XMP:Title=a longer title than before', '-o', 'out.heic']],
     ["$inputs/meta.heic", ['-EXIF:Artist=changed', '-EXIF:Copyright=new', '-o', 'out.heic']],
@@ -844,6 +913,7 @@ function QuickTimeInputs(string $etDir, string $inputs): void
         // (a null source: created from scratch)
         'z.mie' => [null, '-z', '-tagsFromFile', "$images/MIE.mie", '-all:all'],
         'trailer.mie' => [null, '-MIE:TrailerSignature=1', '-MIE:Title=MIE trailer', '-MIE:Comment-fr_FR=bonjour'],
+        'novrd.crw' => ['CanonRaw.crw', '-trailer:all='],
     ] as $out => $args) {
         $src = array_shift($args);
         @unlink("$inputs/$out");
@@ -852,6 +922,12 @@ function QuickTimeInputs(string $etDir, string $inputs): void
     }
     // a TIFF with a MIE trailer
     file_put_contents("$inputs/mie.tif", file_get_contents("$images/ExifTool.tif").file_get_contents("$inputs/trailer.mie"));
+    // CR2 images with other signatures (unsupported version, 1D RAW)
+    file_put_contents("$inputs/cr3sig.cr2", substr_replace(file_get_contents("$images/CanonRaw.cr2"), "CR\x03\0", 8, 4));
+    file_put_contents("$inputs/1d.cr2", substr_replace(file_get_contents("$images/CanonRaw.cr2"), "\xba\xb0\xac\xbb", 8, 4));
+    // a MRW with a wrong data offset (MRW format error)
+    $mrw = file_get_contents("$images/Minolta.mrw");
+    file_put_contents("$inputs/bad.mrw", substr_replace($mrw, pack('N', unpack('N', $mrw, 4)[1] + 1), 4, 4));
     // QuickTime.mov rebuilt with real chunk offsets
     $parse = static function (string $d) use (&$parse): array {
         $atoms = [];
@@ -997,7 +1073,7 @@ function Runner(array $argv): int
 {
     $et = new Image\ExifTool\ExifTool();
     $outfile = null;
-    $files = $newValues = $api = [];
+    $files = $newValues = $api = $srcFiles = [];
     while ($argv) {
         $arg = array_shift($argv);
         if ('-o' === $arg) {
@@ -1017,6 +1093,8 @@ function Runner(array $argv): int
             $useMWG = 'mwg' === strtolower((string) array_shift($argv));
         } elseif (preg_match('/^-_(memin|memout|handle|handleout|raf)$/', $arg, $m)) {
             $api[$m[1]] = 1;    // (not exiftool options: how the files are passed to WriteInfo)
+        } elseif ('-_tagsFromFile' === $arg) {
+            $srcFiles[] = array_shift($argv);   // (API only: SetNewValuesFromFile, before the -TAG=)
         } elseif (preg_match('/^-(.*=.*)$/s', $arg, $m)) {
             $newValues[] = $m[1];
         } else {
@@ -1029,6 +1107,9 @@ function Runner(array $argv): int
         if (null === $et->Options('CharsetEXIF')) {
             $et->Options('CharsetEXIF', 'UTF8');
         }
+    }
+    foreach ($srcFiles as $srcFile) {
+        echo 'SetNewValuesFromFile: ', count($et->SetNewValuesFromFile($srcFile)), " tags\n";
     }
     // set the new values like the exiftool script does
     $addDelOpt = ['+' => 'AddValue', '-' => 'DelValue', "\xe2\x88\x92" => 'DelValue'];

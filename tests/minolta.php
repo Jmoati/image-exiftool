@@ -8,9 +8,7 @@ require __DIR__.'/TestLib.php';
 
 use Image\ExifTool\ExifTool;
 
-$skip = [
-    4 => 'MinoltaRaw writer (MRW)',
-];
+$skip = [];
 $t = testDir();
 $testname = 'Minolta';
 
