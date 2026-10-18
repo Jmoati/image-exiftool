@@ -231,6 +231,8 @@ $c('from bad', ['from', "$img/Canon.jpg", 'Comment<Foo Bar', 'Foo$<Make', '-Make
 $c('from missing', ['from', "$img/NoSuchFile.jpg", 'Artist'], ['from', "$img/NoSuchFile.jpg"]);
 $c('from nikon', ['from', "$img/Nikon.jpg", 'MakerNotes:all'], ['count']);
 $c('from xmp jpg', ['from', "$img/XMP.jpg"], ['count']);
+$c('from object', ['fromet', "$img/Canon.jpg", 'Make', 'XMP:Title<Model', 'EXIF:*'], ['count'], ['get', 'XMP:Title']);
+$c('from object all', ['fromet', "$img/ExifTool.jpg"], ['count']);
 $c('from verbose', ['opt', 'Verbose', 3], ['from', "$img/Canon.jpg", 'Make', 'XMP:Title<Model', '-Model']);
 $c('from alt file', ['alt', 'File1', "$img/Nikon.jpg"], ['from', "$img/Canon.jpg", 'File1:Make>Artist', 'Model', 'File1:Model>XMP:Title'],
     ['get', 'Artist'], ['get', 'Model'], ['get', 'XMP:Title']);
@@ -458,7 +460,7 @@ function residual(array $r, array $reasons, array $ops, array $tags = []): array
     $r['warn'] = array_filter($r['warn'] ?? [], $np);
     $r['stderr'] = implode("\n", array_filter(explode('\x0a', $r['stderr'] ?? ''), $np));
     foreach ($ops as $n => $op) {
-        if (in_array($op[0], ['set', 'sset', 'from', 'count'], true)) {
+        if (in_array($op[0], ['set', 'sset', 'from', 'fromet', 'count'], true)) {
             unset($r['res'][$n]);
         } elseif (in_array($op[0], ['get', 'over', 'shift'], true) and isset($names[strtolower(preg_replace('/.*:/', '', $op[1]))])) {
             unset($r['res'][$n]);
@@ -773,6 +775,10 @@ function runOp(ExifTool $et, array $op)
             $et->GetNewValue($a[0], $nvHash);
             $err = $et->ApplyShift($a[1], $a[2], $a[3], $nvHash);
             return [$err, $et->GetNewValueList($nvHash)];
+        case 'fromet':  // (from an ExifTool object which read the file)
+            $src = new ExifTool();
+            $src->ImageInfo($a[0]);
+            return $et->SetNewValuesFromFile($src, ...val(array_slice($a, 1)));
         case 'require':
             ExifTool::RequireModule($a[0]);
             return 1;

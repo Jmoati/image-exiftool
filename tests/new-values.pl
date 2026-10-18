@@ -157,6 +157,10 @@ foreach my $case (@$cases) {
             $et->GetNewValue($a[0], \$nvHash);
             my $err = $et->ApplyShift($a[1], $a[2], $a[3], $nvHash);
             $r = [ $err, [ $et->GetNewValue($nvHash) ] ];
+        } elsif ($what eq 'fromet') {
+            my $src = Image::ExifTool->new;
+            $src->ImageInfo($a[0]);
+            $r = $et->SetNewValuesFromFile($src, @{Val([ @a[1..$#a] ])});
         } elsif ($what eq 'require') {
             eval "require $a[0]";
             $r = 1;
