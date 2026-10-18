@@ -9,9 +9,9 @@
 //
 // References:   1) http://www.metadataworkinggroup.org/
 //
-// PHP port of Image::ExifTool::MWG 1.24 (reading only). See PORTING.md.
+// PHP port of Image::ExifTool::MWG 1.24. See PORTING.md.
 // The tag tables (MWG Composite tags, Regions, Keywords, Collections) are generated
-// into tables/MWG.php. Not ported (writing): ReconcileIPTCDigest.
+// into tables/MWG.php.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -110,7 +110,7 @@ class MWG
     // Inputs: 0) ExifTool ref, 1) new value hash ref,
     //         2) old string value (or undef if it didn't exist), 3) new value ref
     // Returns: 1 and sets the new value for the tag
-    public static function OverwriteStringList(ExifTool $et, array $nvHash, $val, &$newValuePt)
+    public static function OverwriteStringList(ExifTool $et, NewValue $nvHash, $val, &$newValuePt)
     {
         $new = [];
         $delIndex = null;
@@ -122,13 +122,13 @@ class MWG
                 if (!preg_match('/c/i', $writeMode)) return 0;
             }
         }
-        if (isset($nvHash['DelValue']) and $val !== null) {
+        if ($nvHash->DelValue !== null and $val !== null) {
             // preserve specified old values
             $old = self::StringToList($val, $et);
             $oldList = is_array($old) ? $old : [$old];
-            if ($nvHash['DelValue']) {
+            if ($nvHash->DelValue) {
                 $del = [];
-                foreach ($nvHash['DelValue'] as $d) $del[Perl::str($d)] = 1;
+                foreach ($nvHash->DelValue as $d) $del[Perl::str($d)] = 1;
                 foreach ($oldList as $o) {
                     if (empty($del[Perl::str($o)])) {
                         $new[] = $o;
@@ -141,11 +141,11 @@ class MWG
             }
         }
         // add new values (at location of deleted values, if any)
-        if (!empty($nvHash['Value'])) {
+        if ($nvHash->Value !== null) {
             if ($delIndex !== null) {
-                array_splice($new, $delIndex, 0, $nvHash['Value']);
+                array_splice($new, $delIndex, 0, $nvHash->Value);
             } else {
-                array_push($new, ...$nvHash['Value']);
+                array_push($new, ...$nvHash->Value);
             }
         }
         if ($new) {
@@ -155,6 +155,24 @@ class MWG
             $newValuePt = null;     // delete the tag
         }
         return 1;
+    }
+
+    //------------------------------------------------------------------------------
+    // Reconcile IPTC digest after writing an MWG tag
+    // Inputs: 0) ExifTool object ref
+    // Returns: empty string
+    public static function ReconcileIPTCDigest(ExifTool $et)
+    {
+        // set new value for IPTCDigest if not done already
+        $iptcDigestInfo = Photoshop::IptcDigestInfo();
+        if (!($iptcDigestInfo and ($et->NEW_VALUE[spl_object_id($iptcDigestInfo)] ?? null))) {
+            // write new IPTCDigest only if it doesn't exist or
+            // is the same as the digest of the original IPTC
+            $a = null;  // (capture warning messages)
+            $a = $et->SetNewValueList('Photoshop:IPTCDigest', 'old', Protected: 1, DelValue: 1);
+            $a = $et->SetNewValueList('Photoshop:IPTCDigest', 'new', Protected: 1);
+        }
+        return '';
     }
 
     //------------------------------------------------------------------------------

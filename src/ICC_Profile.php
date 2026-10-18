@@ -20,8 +20,8 @@
 //               structure. This makes things a bit more complex because I need
 //               an extra level of logic to decode the variable-format tags.
 //
-// PHP port of Image::ExifTool::ICC_Profile 1.42 (reading only). Tag tables are
-// generated into tables/ICC_Profile.php.
+// PHP port of Image::ExifTool::ICC_Profile 1.42. Tag tables are generated into
+// tables/ICC_Profile.php.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -191,6 +191,47 @@ final class ICC_Profile
             $et->HandleTag($tagTablePtr, $tag, $val);
         }
         return 1;
+    }
+
+    //------------------------------------------------------------------------------
+    // Write ICC profile file
+    // Inputs: 0) ExifTool object reference, 1) Reference to directory information
+    // Returns: 1 on success, 0 if this wasn't a valid ICC file,
+    //          or -1 if a write error occurred
+    public static function WriteICC(ExifTool $et, array &$dirInfo)
+    {
+        // first make sure this is a valid ICC file (or no file at all)
+        $raf = $dirInfo['RAF'];
+        $buff = null;
+        if ($raf->Read($buff, 24) and self::ValidateICC($buff)) return 0;
+        // now write the new ICC
+        $buff = self::WriteICC_Profile($et, $dirInfo);
+        if ($buff !== null and strlen($buff)) {
+            if (!ExifTool::Write($dirInfo['OutFile'], $buff)) return -1;
+        } else {
+            $et->Error('No ICC information to write');
+        }
+        return 1;
+    }
+
+    //------------------------------------------------------------------------------
+    // Write ICC data as a block
+    // Inputs: 0) ExifTool object reference, 1) source dirInfo reference,
+    //         2) tag table reference
+    // Returns: ICC data block (may be empty if no ICC data)
+    // Notes: Increments ExifTool CHANGED flag if changed
+    public static function WriteICC_Profile(?ExifTool $et = null, ?array &$dirInfo = null, ?TagTable $tagTablePtr = null)
+    {
+        if (!$et) return 1;     // allow dummy access
+        $dirName = ($dirInfo['DirName'] ?? null) ?: 'ICC_Profile';
+        // (don't write AsShotICCProfile or CurrentICCProfile here)
+        if ($dirName !== 'ICC_Profile') return null;
+        $nvHash = $et->GetNewValueHash(ExifTool::GetTagTable('Image::ExifTool::Extra')[$dirName]);
+        $val = $et->GetNewValue($nvHash);
+        if ($val === null) $val = '';
+        if (!$et->IsOverwriting($nvHash, $val)) return null;
+        ++$et->CHANGED;
+        return $val;
     }
 
     //------------------------------------------------------------------------------

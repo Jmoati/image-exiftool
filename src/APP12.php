@@ -9,8 +9,8 @@
 //
 // References:   1) Heinrich Giesen private communication
 //
-// PHP port of Image::ExifTool::APP12 1.15 (reading only). Tag tables are generated
-// into tables/APP12.php.
+// PHP port of Image::ExifTool::APP12 1.15. Tag tables are generated into
+// tables/APP12.php.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -18,6 +18,75 @@ namespace Image\ExifTool;
 final class APP12
 {
     public static $VERSION = '1.15';
+
+    //------------------------------------------------------------------------------
+    // Write APP12 Ducky segment
+    // Inputs: 0) ExifTool object ref, 1) dirInfo ref, 2) tag table ref
+    // Returns: New directory data or undefined on error
+    public static function WriteDucky(?ExifTool $et = null, ?array &$dirInfo = null, ?TagTable $tagTablePtr = null)
+    {
+        if (!$et) return 1;     // allow dummy access to autoload this package
+        $dataPt = $dirInfo['DataPt'] ?? null;
+        if ($dataPt instanceof ScalarRef) $dataPt = $dataPt->value;
+        $pos = $dirInfo['DirStart'] ?? null;
+        $newTags = $et->GetNewTagInfoHash($tagTablePtr);
+        $addTags = array_keys($newTags);
+        sort($addTags, SORT_NUMERIC);
+        $dirEnd = null;
+        $doneTags = [];
+        if ($dataPt !== null) {
+            $dirEnd = $pos + $dirInfo['DirLen'];
+        } else {
+            $tmp = '';
+            $dataPt = $tmp;
+            $pos = $dirEnd = 0;
+        }
+        $newData = '';
+        ExifTool::SetByteOrder('MM');
+        // process all data blocks in Ducky segment
+        for (;;) {
+            $tag = $len = $val = null;
+            if ($pos + 4 <= $dirEnd) {
+                $tag = ExifTool::Get16u($dataPt, $pos);
+                $len = ExifTool::Get16u($dataPt, $pos + 2);
+                $pos += 4;
+                if ($pos + $len > $dirEnd) {
+                    $et->Warn('Invalid Ducky block length');
+                    return null;
+                }
+                $val = substr($dataPt, $pos, $len);
+                $pos += $len;
+            } else {
+                if (!$addTags) break;
+                $tag = array_pop($addTags);
+                if (!empty($doneTags[$tag])) continue;
+            }
+            $doneTags[$tag] = 1;
+            $tagInfo = $newTags[$tag] ?? null;
+            if ($tagInfo) {
+                $nvHash = $et->GetNewValueHash($tagInfo);
+                $isNew = null;
+                if ($val !== null) {
+                    if ($et->IsOverwriting($nvHash, $val)) {
+                        $et->VerboseValue("- Ducky:{$tagInfo->Name}", $val);
+                        $isNew = 1;
+                    }
+                } else {
+                    if (!$nvHash->IsCreating) continue;
+                    $isNew = 1;
+                }
+                if ($isNew) {
+                    $val = $et->GetNewValue($nvHash);
+                    ++$et->CHANGED;
+                    if ($val === null) continue;    // next if tag is being deleted
+                    $et->VerboseValue("+ Ducky:{$tagInfo->Name}", $val);
+                }
+            }
+            $newData .= pack('nn', $tag, strlen(Perl::str($val))) . $val;
+        }
+        if (strlen($newData)) $newData .= "\0\0";
+        return $newData;
+    }
 
     //------------------------------------------------------------------------------
     // Process APP12 Ducky segment (ref PH)

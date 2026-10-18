@@ -23,8 +23,8 @@
 //               6) http://libpsd.graphest.com/files/Photoshop%20File%20Formats.pdf
 //               7) http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/
 //
-// PHP port of Image::ExifTool::Photoshop 1.73 (reading only). Tag tables are
-// generated into tables/Photoshop.php.
+// PHP port of Image::ExifTool::Photoshop 1.73. Tag tables are generated into
+// tables/Photoshop.php; WritePhotoshop.pl is the trait src/Photoshop/WritePhotoshop.php.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -33,7 +33,18 @@ use Image\ExifTool\File\RandomAccess;
 
 final class Photoshop
 {
+    use Photoshop\WritePhotoshop;
+
     public static $VERSION = '1.73';
+
+    /**
+     * $Image::ExifTool::Photoshop::iptcDigestInfo: the IPTCDigest tagInfo
+     * ($Image::ExifTool::Photoshop::Main{0x0425}), set when the module is loaded
+     */
+    public static function IptcDigestInfo(): ?TagInfo
+    {
+        return ExifTool::PackageTable('Image::ExifTool::Photoshop::Main')[0x0425];
+    }
 
     //------------------------------------------------------------------------------
     // Convert pascal string(s) to something we can use
@@ -438,6 +449,7 @@ final class Photoshop
     public static function ProcessPSD(ExifTool $et, array &$dirInfo)
     {
         $raf = $dirInfo['RAF'];
+        $outfile = $dirInfo['OutFile'] ?? null;
         $data = $err = $tagTablePtr = null;
 
         if ($raf->Read($data, 30) != 30) return 0;
@@ -451,12 +463,19 @@ final class Photoshop
             'DirName' => 'Photoshop',
         ];
         $len = ExifTool::Get32u($data, 26);
-        // (writing not ported)
-        // process the header
-        $tagTablePtr = ExifTool::GetTagTable('Image::ExifTool::Photoshop::Header');
-        $psdInfo['DirLen'] = 30;
-        $et->ProcessDirectory($psdInfo, $tagTablePtr);
-        if (!$raf->Seek($len, 1)) $err = 1;     // skip over color mode data
+        if ($outfile) {
+            if (!ExifTool::Write($outfile, $data)) $err = 1;
+            if ($raf->Read($data, (int) $len) != $len) return -1;
+            if (!ExifTool::Write($outfile, $data)) $err = 1;    // write color mode data
+            // initialize map of where things are written
+            $et->InitWriteDirs(Vars\Photoshop::$psdMap);
+        } else {
+            // process the header
+            $tagTablePtr = ExifTool::GetTagTable('Image::ExifTool::Photoshop::Header');
+            $psdInfo['DirLen'] = 30;
+            $et->ProcessDirectory($psdInfo, $tagTablePtr);
+            if (!$raf->Seek($len, 1)) $err = 1;     // skip over color mode data
+        }
         // read image resource section
         if ($raf->Read($data, 4) != 4) $err = 1;
         $len = ExifTool::Get32u($data, 0);
@@ -464,7 +483,49 @@ final class Photoshop
         $tagTablePtr = ExifTool::GetTagTable('Image::ExifTool::Photoshop::Main');
         $psdInfo['DirLen'] = $len;
         $rtnVal = 1;
-        if ($err) {
+        if ($outfile) {
+            // rewrite IRB resources
+            $data = self::WritePhotoshop($et, $psdInfo, $tagTablePtr);
+            if ($data) {
+                $len = ExifTool::Set32u(strlen($data));
+                if (!ExifTool::Write($outfile, $len, $data)) $err = 1;
+                // look for trailer and edit if necessary
+                $trailInfo = $et->IdentifyTrailer($raf);
+                if ($trailInfo) {
+                    $tbuf = new ScalarRef('');
+                    $trailInfo['OutFile'] = $tbuf;  // rewrite trailer(s)
+                    // rewrite all trailers to buffer
+                    if ($et->ProcessTrailers($trailInfo)) {
+                        $copyBytes = $trailInfo['DataPos'] - $raf->Tell();
+                        if ($copyBytes >= 0) {
+                            // copy remaining PSD file up to start of trailer
+                            while ($copyBytes) {
+                                $n = ($copyBytes > 65536) ? 65536 : $copyBytes;
+                                if ($raf->Read($data, $n) != $n) $err = 1;
+                                if (!ExifTool::Write($outfile, $data)) $err = 1;
+                                $copyBytes -= $n;
+                            }
+                            // write the trailer (or not)
+                            if (!$et->WriteTrailerBuffer($trailInfo, $outfile)) $err = 1;
+                        } else {
+                            $et->Warn('Overlapping trailer');
+                            $trailInfo = null;
+                        }
+                    } else {
+                        $trailInfo = null;
+                    }
+                }
+                if (!$trailInfo) {
+                    // copy over the rest of the file
+                    while ($raf->Read($data, 65536)) {
+                        if (!ExifTool::Write($outfile, $data)) $err = 1;
+                    }
+                }
+            } else {
+                $err = 1;
+            }
+            if ($err) $rtnVal = -1;
+        } elseif ($err) {
             $et->Warn('File format error');
         } else {
             // read IRB resources
