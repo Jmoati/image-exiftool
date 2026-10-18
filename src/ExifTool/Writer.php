@@ -2329,9 +2329,7 @@ trait Writer
                             'OutFile' => $newData,
                         ];
                         self::RequireModule('Image::ExifTool::CanonRaw');
-                        if (!method_exists(\Image\ExifTool\CanonRaw::class, 'WriteCRW')) {
-                            $this->Error('Not ported: Image\ExifTool\CanonRaw::WriteCRW');
-                        } elseif (\Image\ExifTool\CanonRaw::WriteCRW($this, $subdirInfo) > 0) {
+                        if (\Image\ExifTool\CanonRaw::WriteCRW($this, $subdirInfo) > 0) {
                             if (strlen($newData->value)) {
                                 $segDataPt = $newData->value;
                             } else {

@@ -14,59 +14,21 @@
 //               3) http://xyrion.org/ciff/CIFFspecV1R04.pdf
 //               4) Dave Nicholson private communication (PowerShot S30)
 //
-// PHP port of Image::ExifTool::CanonRaw 1.62 (reading only). Tag tables are generated into
-// tables/CanonRaw.php, %crwTagFormat into Vars\CanonRaw. From WriteCanonRaw.pl, only the
-// subs which build MakerNoteCanon for the MakerNotes option are ported (InitMakerNotes,
-// BuildMakerNotes, SaveMakerNotes), and the CHECK_PROC used when setting new values
-// (CheckCanonRaw). Not ported: WriteCRW, WriteCR2, WriteCanonRaw.
+// PHP port of Image::ExifTool::CanonRaw 1.62. Tag tables are generated into
+// tables/CanonRaw.php, %crwTagFormat into Vars\CanonRaw. WriteCanonRaw.pl is the trait
+// CanonRaw\WriteCanonRaw.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
 
 final class CanonRaw
 {
+    use CanonRaw\WriteCanonRaw;
+
     public static $VERSION = '1.62';
 
     /** Perl RawConv '\$val' (one closure for the process: the core caches closure kinds by object id) */
     private static ?\Closure $binaryRawConv = null;
-
-    // mappings to from RAW tagID to MakerNotes tagID
-    // (Note: upper two bits of RawTagID are zero)
-    // (WriteCanonRaw.pl file lexical %mapRawTag)
-    private const array MAP_RAW_TAG = [
-      // RawTagID => Canon TagID
-        0x080b => 0x07, // CanonFirmwareVersion
-        0x0810 => 0x09, // OwnerName
-        0x0815 => 0x06, // CanonImageType
-        0x1028 => 0x03, // (unknown if no tag name specified)
-        0x1029 => 0x02, // FocalLength
-        0x102a => 0x04, // CanonShotInfo
-        0x102d => 0x01, // CanonCameraSettings
-        0x1033 => 0x0f, // CanonCustomFunctions (only verified for 10D)
-        0x1038 => 0x12, // CanonAFInfo
-        0x1039 => 0x13,
-        0x1093 => 0x93,
-        0x10a8 => 0xa8,
-        0x10a9 => 0xa9, // WhiteBalanceTable
-        0x10aa => 0xaa,
-        0x10ae => 0xae, // ColorTemperature
-        0x10b4 => 0xb4, // ColorSpace
-        0x10b5 => 0xb5,
-        0x10c0 => 0xc0,
-        0x10c1 => 0xc1,
-        0x180b => 0x0c, // SerialNumber
-        0x1817 => 0x08, // FileNumber
-        0x1834 => 0x10,
-        0x183b => 0x15,
-    ];
-    // translation from Rotation to Orientation values
-    // (WriteCanonRaw.pl file lexical %mapRotation)
-    private const array MAP_ROTATION = [
-        0 => 1,
-        90 => 6,
-        180 => 3,
-        270 => 8,
-    ];
 
     //------------------------------------------------------------------------------
     // Process Raw file directory
@@ -319,135 +281,5 @@ final class CanonRaw
         }
 
         return 1;
-    }
-    //==============================================================================
-    // Routines of WriteCanonRaw.pl used when reading (MakerNotes option), and its
-    // CHECK_PROC used when setting new values
-
-    //------------------------------------------------------------------------------
-    // Check CanonRaw information
-    // Inputs: 0) ExifTool object reference, 1) tagInfo hash reference,
-    //         2) raw value reference
-    // Returns: error string or undef (and may change value) on success
-    public static function CheckCanonRaw(ExifTool $et, TagInfo $tagInfo, &$valPtr, $convType = null)
-    {
-        $tagName = $tagInfo->Name;
-        if ($tagName === 'JpgFromRaw' or $tagName === 'ThumbnailImage') {
-            if (!(str_starts_with(Perl::str($valPtr), "\xff\xd8") or $et->Options('IgnoreMinorErrors'))) {
-                return '[Minor] Not a valid image';
-            }
-        } else {
-            $format = $tagInfo->Format;
-            $count = $tagInfo->Count;
-            if (!$format) {
-                $tagType = (Perl::int($tagInfo->TagID) >> 8) & 0x38;
-                $format = Vars\CanonRaw::$crwTagFormat[$tagType] ?? null;
-            }
-            if ($format) return ExifTool::CheckValue($valPtr, $format, $count);
-        }
-        return null;
-    }
-
-    //------------------------------------------------------------------------------
-    // Initialize buffers for building MakerNotes from RAW data
-    // Inputs: 0) ExifTool object reference
-    public static function InitMakerNotes(ExifTool $et)
-    {
-        $et->MAKER_NOTE_INFO = [
-            'Entries' => [],            // directory entries keyed by tagID
-            'ValBuff' => "\0\0\0\0",    // value data buffer (start with zero nextIFD pointer)
-            'FixupTags' => [],          // flags for tags with data in value buffer
-        ];
-    }
-
-    //------------------------------------------------------------------------------
-    // Build maker notes from CanonRaw information
-    // Inputs: 0) ExifTool object reference, 1) raw tag ID, 2) reference to tagInfo
-    //         3) reference to value, 4) format name, 5) count
-    // Notes: This will build the directory in the order the tags are found in the CRW
-    // file, which isn't sequential (but Canon's version isn't sequential either...)
-    public static function BuildMakerNotes(ExifTool $et, $rawTag, $tagInfo, $valuePt, $formName, $count)
-    {
-        $tagID = self::MAP_RAW_TAG[$rawTag] ?? null;
-        if (!$tagID) return;
-        if (!$formName) {
-            ExifTool::PerlWarn(Perl::sprintf("No format for tag 0x%x!\n", $rawTag));
-            return;
-        }
-        // special case: ignore user comment because it gets saved in EXIF
-        // (and has the same raw tagID as CanonFileDescription)
-        if ($tagInfo and $tagInfo->Name === 'UserComment') return;
-        $format = Vars\Exif::$formatNumber[$formName];
-        $fsiz = Vars\Exif::$formatSize[$format];
-        $valuePt = Perl::str($valuePt);
-        $size = strlen($valuePt);
-        if ($count and $size != $count * $fsiz) {
-            if ($size < $count * $fsiz) {
-                ExifTool::PerlWarn(Perl::sprintf("Value too short for raw tag 0x%x\n", $rawTag));
-                return;
-            }
-            // shorten value appropriately
-            $size = $count * $fsiz;
-            $value = substr($valuePt, 0, $size);
-        } else {
-            $count = $size / $fsiz;
-            $value = $valuePt;
-        }
-        if ($size > 4) {
-            $len = strlen($et->MAKER_NOTE_INFO['ValBuff']);
-            $offsetVal = ExifTool::Set32u($len);
-            $et->MAKER_NOTE_INFO['ValBuff'] .= $value;
-            // pad to an even number of bytes
-            if ($size & 0x01) $et->MAKER_NOTE_INFO['ValBuff'] .= "\0";
-            // set flag indicating that this tag needs a fixup
-            $et->MAKER_NOTE_INFO['FixupTags'][$tagID] = 1;
-        } else {
-            $offsetVal = $value;
-            if ($size < 4) $offsetVal .= str_repeat("\0", 4 - $size);
-        }
-        $et->MAKER_NOTE_INFO['Entries'][$tagID] = ExifTool::Set16u($tagID) . ExifTool::Set16u($format) .
-                                                  ExifTool::Set32u($count) . $offsetVal;
-    }
-
-    //------------------------------------------------------------------------------
-    // Finish building and save MakerNotes
-    // Inputs: 0) ExifTool object reference
-    public static function SaveMakerNotes(ExifTool $et)
-    {
-        // save maker notes
-        $makerInfo = $et->MAKER_NOTE_INFO;
-        $et->MAKER_NOTE_INFO = null;
-        $dirEntries = $makerInfo['Entries'];
-        $numEntries = count($dirEntries);
-        $fixup = new Fixup();
-        if (!$numEntries) return;
-        // build the MakerNotes directory
-        $makerNotes = ExifTool::Set16u($numEntries);
-        // write the entries in proper tag order (even though Canon doesn't do this...)
-        $tagIDs = array_keys($dirEntries);
-        sort($tagIDs);
-        foreach ($tagIDs as $tagID) {
-            $makerNotes .= $dirEntries[$tagID];
-            if (!($makerInfo['FixupTags'][$tagID] ?? null)) continue;
-            // add fixup for this pointer
-            $fixup->AddFixup(strlen($makerNotes) - 4);
-        }
-        // save position of maker notes for pointer fixups
-        $fixup->Shift += strlen($makerNotes);
-        $et->MAKER_NOTE_BYTE_ORDER = ExifTool::GetByteOrder();
-        // add value data
-        $makerNotes .= $makerInfo['ValBuff'];
-        // get MakerNotes tag info
-        $tagTablePtr = ExifTool::GetTagTable('Image::ExifTool::Exif::Main');
-        $tagInfo = $et->GetTagInfo($tagTablePtr, 0x927c, $makerNotes);
-        // save the MakerNotes
-        $key = $et->FoundTag($tagInfo, $makerNotes);
-        $et->TAG_EXTRA[$key]['Fixup'] = $fixup;
-        // also generate Orientation tag since Rotation isn't transferred from RAW info
-        $rotation = $et->GetValue('Rotation', 'ValueConv');
-        if ($rotation !== null and isset(self::MAP_ROTATION[Perl::str($rotation)])) {
-            $tagInfo = $et->GetTagInfo($tagTablePtr, 0x112);
-            $et->FoundTag($tagInfo, self::MAP_ROTATION[Perl::str($rotation)]);
-        }
     }
 }

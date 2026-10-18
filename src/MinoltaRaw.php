@@ -11,8 +11,8 @@
 //               2) http://www.chauveau-central.net/mrw-format/
 //               3) Igal Milchtaich private communication (A100)
 //
-// PHP port of Image::ExifTool::MinoltaRaw 1.20 (reading only). Tag tables are generated into
-// tables/MinoltaRaw.php. Not ported (writing): WriteMRW and the OutFile branches of ProcessMRW.
+// PHP port of Image::ExifTool::MinoltaRaw 1.20. Tag tables are generated into
+// tables/MinoltaRaw.php.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -48,6 +48,19 @@ final class MinoltaRaw
     }
 
     //------------------------------------------------------------------------------
+    // Write MRW directory (eg. in ARW images)
+    // Inputs: 0) ExifTool object ref, 1) dirInfo ref, 2) optional tag table ref
+    // Returns: new MRW data or undef on error
+    public static function WriteMRW(?ExifTool $et = null, ?array &$dirInfo = null, $tagTablePtr = null)
+    {
+        if (!$et) return 1;     // allow dummy access
+        $buff = new ScalarRef('');
+        $dirInfo['OutFile'] = $buff;
+        if (!(self::ProcessMRW($et, $dirInfo, $tagTablePtr) > 0)) $buff->value = null;
+        return $buff->value;
+    }
+
+    //------------------------------------------------------------------------------
     // Read or write Minolta MRW file
     // Inputs: 0) ExifTool object ref, 1) dirInfo ref, 2) optional tag table ref
     // Returns: 1 on success, 0 if this wasn't a valid MRW file, or -1 on write error
@@ -55,9 +68,10 @@ final class MinoltaRaw
     public static function ProcessMRW(ExifTool $et, array &$dirInfo, $tagTablePtr = null)
     {
         $raf = $dirInfo['RAF'] ?? null;
+        $outfile = $dirInfo['OutFile'] ?? null;
         $verbose = $et->Options('Verbose');
         $out = $et->Options('TextOut');
-        $data = $err = null;
+        $data = $err = $outBuff = null;
 
         if (isset($dirInfo['DataPt'])) {
             // make a RAF object for MRW information extracted from other file types
@@ -69,10 +83,14 @@ final class MinoltaRaw
         // "\0MRM" for big-endian (MRW images), and
         // "\0MRI" for little-endian (MRWInfo in ARW images)
         if (!preg_match('/^\0MR([MI])/', $data, $m)) return 0;
+        $hdr = "\0MR$m[1]";
         ExifTool::SetByteOrder($m[1] . $m[1]);
         $et->SetFileType();
         $tagTablePtr = ExifTool::GetTagTable('Image::ExifTool::MinoltaRaw::Main');
-        // (OutFile: writing not ported)
+        if ($outfile) {
+            $et->InitWriteDirs('TIFF'); // use same write dirs as TIFF
+            $outBuff = '';
+        }
         $pos = $raf->Tell();
         $offset = ExifTool::Get32u($data, 4) + $pos;
         $rtnVal = 1;
@@ -116,8 +134,28 @@ final class MinoltaRaw
                     'Parent' => 'MRW',
                     'NoTiffEnd' => 1, // no end-of-TIFF check
                 ];
-                $processProc = $tagInfo->SubDirectory['ProcessProc'] ?? null;
-                $et->ProcessDirectory($subdirInfo, $subTable, $processProc);
+                if ($outfile) {
+                    $writeProc = $tagInfo->SubDirectory['WriteProc'] ?? null;
+                    $val = $et->WriteDirectory($subdirInfo, $subTable, $writeProc);
+                    if ($val !== null and strlen($val)) {
+                        // pad to an even 4 bytes (can't hurt, and it seems to be the standard)
+                        if (strlen($val) & 0x03) $val .= str_repeat("\0", 4 - (strlen($val) & 0x03));
+                        $outBuff .= $tag . ExifTool::Set32u(strlen($val)) . $val;
+                    } elseif ($val === null) {
+                        $outBuff .= $data . $buff;  // copy over original information
+                    }
+                } else {
+                    $processProc = $tagInfo->SubDirectory['ProcessProc'] ?? null;
+                    $et->ProcessDirectory($subdirInfo, $subTable, $processProc);
+                }
+            } elseif ($outfile) {
+                // add this segment to the output buffer
+                $buff = null;
+                if ($raf->Read($buff, $len) != $len) {
+                    $err = 1;
+                    break;
+                }
+                $outBuff .= $data . $buff;
             } else {
                 // skip this segment
                 if (!$raf->Seek($pos + $len, 0)) {
@@ -129,8 +167,20 @@ final class MinoltaRaw
         }
         if ($pos != $offset) $err = 1;    // meta information length check
 
-        if ($err) $et->Warn('MRW format error');
-        if (!$et->A100DataOffset) $et->ImageDataHash($raf, null, 'raw');
+        if ($outfile) {
+            // write the file header then the buffered meta information
+            if (!ExifTool::Write($outfile, $hdr, ExifTool::Set32u(strlen($outBuff)), $outBuff)) $rtnVal = -1;
+            // copy over image data
+            while ($raf->Read($outBuff, 65536)) {
+                if (!ExifTool::Write($outfile, $outBuff)) $rtnVal = -1;
+            }
+            // Sony IDC utility corrupts MRWInfo when writing ARW images,
+            // so make this a minor error for these images
+            if ($err) $et->Error('MRW format error', $et->TIFF_TYPE === 'ARW');
+        } else {
+            if ($err) $et->Warn('MRW format error');
+            if (!$et->A100DataOffset) $et->ImageDataHash($raf, null, 'raw');
+        }
         return $rtnVal;
     }
 }

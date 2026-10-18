@@ -2003,12 +2003,7 @@ trait Formats
             // and possibly trailers added by the Canon utilities and/or PhotoMechanic
             $dirInfo['OutFile'] = $outfile;
             self::RequireModule('Image::ExifTool::CanonRaw');
-            if (!method_exists(\Image\ExifTool\CanonRaw::class, 'WriteCR2')) {
-                $self->Error('Not ported: Image\ExifTool\CanonRaw::WriteCR2');
-                $err = 1;
-            } elseif (!\Image\ExifTool\CanonRaw::WriteCR2($self, $dirInfo, $tagTablePtr)) {
-                $err = 1;
-            }
+            if (!\Image\ExifTool\CanonRaw::WriteCR2($self, $dirInfo, $tagTablePtr)) $err = 1;
         } else {
             // write TIFF header (8 bytes [plus optional signature] followed by IFD)
             if ($fileType === 'EXIF') {
