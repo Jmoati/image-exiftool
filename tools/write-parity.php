@@ -883,6 +883,13 @@ $cases = [
     ["$inputs/raw-crw.dng", ['-CanonRaw:CanonFileDescription=description', '-MinoltaRaw:ColorMode=Vivid color', '-o', 'out.dng']],
     ["$inputs/raw-crw.dng", ['-MinoltaRaw:all=', '-o', 'out.dng']],
     ["$inputs/raw-crw.dng", ['-v3', '-Artist=nothing in the Adobe data', '-o', 'out.dng']],
+    // Sigma X3F (WriteX3F): the EXIF of the embedded JpgFromRaw; Sigma.x3f has none (SD9/SD10 warning)
+    ['SigmaDP2.x3f', ['-Artist=me', '-XMP:Title=t', '-o', 'out.x3f']],
+    ['SigmaDP2.x3f', ['-Artist=', '-o', 'out.x3f']],
+    ['SigmaDP2.x3f', ['-v3', '-Comment=x', '-Keywords=a', '-o', 'out.x3f']],
+    ['SigmaDP2.x3f', ['-EXIF:all=', '-o', 'out.x3f']],
+    ['SigmaDP2.x3f', ['-Artist=in place']],
+    ['Sigma.x3f', ['-Artist=me', '-o', 'out.x3f']],
 ];
 // RIFF, PDF, PostScript and InDesign writers (inputs made by DocumentInputs(), see below)
 array_push($cases,
