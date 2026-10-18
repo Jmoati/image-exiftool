@@ -9,11 +9,9 @@
 //
 // References:   (see Sony.pm)
 //
-// PHP port of Image::ExifTool::Sony 3.87 (reading only). Tag tables are generated into
+// PHP port of Image::ExifTool::Sony 3.87. Tag tables are generated into
 // tables/Sony.php, %sonyLensTypes (already filled in from the Minolta LensType's, which is
 // what SortLensTypes was for), %sonyLensTypes2 and @lensFeatures into Vars\Sony.
-// Not ported (writing): FinishARW, WriteEnciphered,
-// WriteSR2 and the IsWriting/OutFile branches of ProcessMoreInfo and ProcessSR2.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -239,7 +237,8 @@ final class Sony
         $dataPt = Perl::str($dirInfo['DataPt']);
         $start = ($dirInfo['DirStart'] ?? null) ?: 0;
         $dirLen = ($dirInfo['DirLen'] ?? null) ?: strlen($dataPt);
-        $rtnVal = 0;    // (IsWriting: writing not ported)
+        $isWriting = $dirInfo['IsWriting'] ?? null;
+        $rtnVal = $isWriting ? null : 0;
         if ($dirLen < 4) return $rtnVal;
 
         $num = ExifTool::Get16u($dataPt, $start);      // number of entries
@@ -254,7 +253,7 @@ final class Sony
             return $rtnVal;
         }
 
-        $et->VerboseDir('MoreInfo', $num, $len);
+        if (!$isWriting) $et->VerboseDir('MoreInfo', $num, $len);
 
         if ($len > $dirLen) {
             $et->Warn('MoreInfo data length too large', 1);
@@ -290,12 +289,32 @@ final class Sony
             if (!isset($blockSize[$off])) $blockSize[$off] = $size;
         }
         // initialize successful return value
-        $rtnVal = 1;
+        $rtnVal = $isWriting ? substr($dataPt, $start, $dirLen) : 1;
         // now process each block
         $unknown = $et->OPTIONS['Unknown'];
         for ($i = 0; $i < $num; ++$i) {
             if ($offset[$i] > $dirLen) continue;    // ignore bad offsets
             $tag = $tagID[$i];
+            if ($isWriting) {
+                // write new tags
+                $tagInfo = $tagTablePtr[$tag];
+                if (!($tagInfo instanceof TagInfo and $tagInfo->SubDirectory)) continue;
+                $off = $offset[$i];     // (Perl: my $offset)
+                $size = $blockSize[$off];
+                if (!$size) continue;   // ignore zero-length blocks
+                $subdirInfo = [
+                    'DirName'  => $tagInfo->Name,
+                    'Parent'   => $dirInfo['DirName'] ?? null,
+                    'DataPt'   => $rtnVal,
+                    'DirStart' => $off,
+                    'DirLen'   => $size,
+                ];
+                $subTable = ExifTool::GetTagTable($tagInfo->SubDirectory['TagTable']);
+                $val = $et->WriteDirectory($subdirInfo, $subTable);
+                // update this block in the returned MoreInfo data
+                if ($val !== null) $rtnVal = substr_replace($rtnVal, $val, $off, $size);
+                continue;
+            }
             // generate binary tables for unknown tags if -U option used
             if (!isset($tagTablePtr[$tag]) and $unknown > 1) {
                 $name = Perl::sprintf('MoreInfo%.4x', $tag);
@@ -385,6 +404,78 @@ final class Sony
     }
 
     //------------------------------------------------------------------------------
+    // Finish writing ARW image, patching necessary Sony quirks, etc
+    // Inputs: 0) ExifTool ref, 1) dirInfo ref, 2) EXIF data ref, 3) image data reference
+    // Returns: undef on success, error string otherwise
+    // Notes: (it turns that all of this is for the A100 only)
+    public static function FinishARW(ExifTool $et, array &$dirInfo, &$dataPt, $imageData)
+    {
+        // pre-scan IFD0 to get IFD entry offsets for each tag
+        $dataLen = strlen($dataPt);
+        if ($dataLen < 2) return 'Truncated IFD0';
+        $n = ExifTool::Get16u($dataPt, 0);
+        if ($dataLen < 2 + 12 * $n) return 'Truncated IFD0';
+        $entry = [];
+        $pad = $dataOffset = null;
+        for ($i = 0; $i < $n; ++$i) {
+            $e = 2 + $i * 12;
+            $entry[ExifTool::Get16u($dataPt, $e)] = $e;
+        }
+        // fix up SR2Private offset and A100DataOffset (A100 only)
+        if (($entry[0xc634] ?? null) and $et->MRWDirData) {
+            if ($et->Model !== 'DSLR-A100') return 'Unexpected MRW block';
+            if (!(($entry[0x14a] ?? null) and $et->A100DataOffset)) return 'Missing A100DataOffset';
+            // account for total length of image data
+            $totalLen = 8 + $dataLen;
+            if (is_array($imageData)) {
+                foreach ($imageData as $dataBlock) {
+                    [$pos, $size, $blockPad] = $dataBlock;
+                    $totalLen += $size + $blockPad;
+                }
+            }
+            // align MRW block on an even 4-byte boundary
+            $remain = $totalLen & 0x03;
+            if ($remain) {
+                $pad = 4 - $remain;
+                $totalLen += $pad;
+            }
+            // set offset for the MRW directory data
+            ExifTool::Set32u($totalLen, $dataPt, $entry[0xc634] + 8);
+            // also pad MRWDirData data to an even 4 bytes (just to be safe)
+            $remain = strlen($et->MRWDirData) & 0x03;
+            if ($remain) $et->MRWDirData .= str_repeat("\0", 4 - $remain);
+            $totalLen += strlen($et->MRWDirData);
+            // fix up A100DataOffset
+            $dataOffset = $et->A100DataOffset;
+            ExifTool::Set32u($totalLen, $dataPt, $entry[0x14a] + 8);
+        }
+        // patch double-referenced and incorrectly-sized A100 PreviewImage
+        if (($entry[0x201] ?? null) and $et->A100PreviewStart and
+            ($entry[0x202] ?? null) and $et->A100PreviewLength)
+        {
+            ExifTool::Set32u($et->A100PreviewStart, $dataPt, $entry[0x201] + 8);
+            ExifTool::Set32u($et->A100PreviewLength, $dataPt, $entry[0x202] + 8);
+        }
+        // write TIFF IFD structure
+        $outfile = $dirInfo['OutFile'];
+        $header = ExifTool::GetByteOrder() . ExifTool::Set16u(0x2a) . ExifTool::Set32u(8);
+        if (!ExifTool::Write($outfile, $header, $dataPt)) return 'Error writing';
+        // copy over image data
+        if (is_array($imageData)) {
+            if (!$et->CopyImageData($imageData, $outfile)) return 'Error copying image data';
+        }
+        // write MRW data if necessary
+        if ($et->MRWDirData) {
+            if ($pad) ExifTool::Write($outfile, str_repeat("\0", $pad));   // write padding if necessary
+            ExifTool::Write($outfile, $et->MRWDirData);
+            unset($et->MRWDirData);
+            // set TIFF_END to copy over the MRW image data
+            if ($dataOffset) $et->TIFF_END = $dataOffset;
+        }
+        return null;
+    }
+
+    //------------------------------------------------------------------------------
     // Decrypt/Encrypt Sony data (ref 1) (reversible encryption)
     // Inputs: 0) data reference, 1) start offset, 2) data length, 3) decryption key
     // Returns: nothing (original data buffer is updated with decrypted data)
@@ -466,6 +557,41 @@ final class Sony
             );
         }
         return $et->ProcessBinaryData($subdirInfo, $tagTablePtr);
+    }
+
+    //------------------------------------------------------------------------------
+    // Write Sony 0x94xx cipherdata directory
+    // Inputs: 0) ExifTool object ref, 1) source dirInfo ref, 2) tag table ref
+    // Returns: cipherdata block or undefined on error
+    public static function WriteEnciphered(?ExifTool $et = null, ?array &$dirInfo = null, ?TagTable $tagTablePtr = null)
+    {
+        if (!$et) return 1;
+        $dataPt = Perl::str($dirInfo['DataPt']);
+        $dirStart = ($dirInfo['DirStart'] ?? null) ?: 0;
+        $dirLen = ($dirInfo['DirLen'] ?? null) ?: (strlen($dataPt) - $dirStart);
+        $data = substr($dataPt, $dirStart, $dirLen);
+        $changed = $et->CHANGED;
+        self::Decipher($data);
+        // fix double-enciphered data (due to bug in ExifTool 9.04-9.10)
+        if ($et->DoubleCipher) {
+            self::Decipher($data);
+            ++$et->CHANGED;
+            $et->Warn('Fixed double-enciphered Sony metadata', 1);
+        }
+        $subdirInfo = [
+            ...$dirInfo,
+            'DataPt' => $data,
+            'DataPos' => ($dirInfo['DataPos'] ?? 0) + $dirStart,
+            'DirStart' => 0,
+        ];
+        $data = ExifTool::WriteBinaryData($et, $subdirInfo, $tagTablePtr);
+        if ($changed == $et->CHANGED) {
+            // nothing changed, so recover original data
+            $data = substr($dataPt, $dirStart, $dirLen);
+        } elseif ($data !== null) {
+            self::Decipher($data, 1);     // re-encipher
+        }
+        return $data;
     }
 
     //------------------------------------------------------------------------------
@@ -583,17 +709,29 @@ final class Sony
     }
 
     //------------------------------------------------------------------------------
+    // Write SR2 IFD and its encrypted subdirectories
+    // Inputs: 0) ExifTool object ref, 1) source dirInfo ref, 2) tag table ref
+    // Returns: SR2 directory or undef on error
+    public static function WriteSR2(?ExifTool $et = null, ?array &$dirInfo = null, ?TagTable $tagTablePtr = null)
+    {
+        if (!$et) return 1;      // allow dummy access
+        $buff = new ScalarRef('');
+        $dirInfo['OutFile'] = $buff;
+        return self::ProcessSR2($et, $dirInfo, $tagTablePtr);
+    }
+
+    //------------------------------------------------------------------------------
     // Read/Write SR2 IFD and its encrypted subdirectories
     // Inputs: 0) ExifTool object ref, 1) dirInfo ref, 2) tag table ref
     // Returns: 1 on success when reading, or SR2 directory or undef when writing
-    public static function ProcessSR2(ExifTool $et, array &$dirInfo, TagTable $tagTablePtr)
+    public static function ProcessSR2(?ExifTool $et, ?array &$dirInfo, ?TagTable $tagTablePtr)
     {
         $raf = $dirInfo['RAF'] ?? null;
         $dataPt = $dirInfo['DataPt'] ?? null;
         $dataPos = ($dirInfo['DataPos'] ?? null) ?: 0;
         $dataLen = ($dirInfo['DataLen'] ?? null) ?: strlen(Perl::str($dataPt));
         $base = ($dirInfo['Base'] ?? null) ?: 0;
-        // (OutFile: writing not ported)
+        $outfile = $dirInfo['OutFile'] ?? null;
 
         // clear SR2 member variables to be safe
         unset($et->SR2SubIFDOffset, $et->SR2SubIFDLength, $et->SR2SubIFDKey);
@@ -628,28 +766,49 @@ final class Sony
                 }
             }
             if ($err) {
+                if ($outfile) {
+                    $et->Error($err);
+                    return null;
+                }
                 $et->Warn($err);
                 return 0;
             }
             $mrwDirInfo = ['DataPt' => $buff];  // (Perl: my %dirInfo)
             ExifTool::RequireModule('Image::ExifTool::MinoltaRaw');
-            if ($et->HTML_DUMP) {
-                $et->HDump($srfPos, $srfLen, '[A100 SRF Data]');
+            if ($outfile) {
+                // save MRW data to be written last
+                $et->MRWDirData = MinoltaRaw::WriteMRW($et, $mrwDirInfo);
+                return $et->MRWDirData ? "\0\0\0\0\0\0" : null;
+            } else {
+                if ($et->HTML_DUMP) {
+                    $et->HDump($srfPos, $srfLen, '[A100 SRF Data]');
+                }
+                return MinoltaRaw::ProcessMRW($et, $mrwDirInfo);
             }
-            return MinoltaRaw::ProcessMRW($et, $mrwDirInfo);
         } elseif ($et->A100DataOffset) {
             $err = 'Unexpected A100DataOffset tag';
+            if ($outfile) {
+                $et->Error($err);
+                return null;
+            }
             $et->Warn($err);
             return 0;
         }
         $verbose = $et->Options('Verbose');
-        $result = Exif::ProcessExif($et, $dirInfo, $tagTablePtr);
+        if ($outfile) {
+            $result = Exif::WriteExif($et, $dirInfo, $tagTablePtr);
+            if (!$result) return null;
+            $outfile->value .= $result;
+        } else {
+            $result = Exif::ProcessExif($et, $dirInfo, $tagTablePtr);
+        }
         if (!($result and $et->SR2SubIFDOffset)) return $result;
         // only take first offset value if more than one!
         $offsets = Perl::split(' ', $et->SR2SubIFDOffset);
         $offset = Perl::num(array_shift($offsets));
         $length = Perl::num($et->SR2SubIFDLength);
         $key = $et->SR2SubIFDKey;
+        $subifdPos = [];
         if ($offset and $length and $key !== null) {
             $buff = null;
             // read encrypted SR2SubIFD from file
@@ -661,7 +820,7 @@ final class Sony
             {
                 self::Decrypt($buff, 0, $length, $key);
                 // display decrypted data in verbose mode
-                if ($verbose > 2) {
+                if ($verbose > 2 and !$outfile) {
                     $et->VerboseDir('Decrypted SR2SubIFD', 0, $length);
                     $et->VerboseDump($buff, Addr: $offset + $base);
                 }
@@ -677,7 +836,20 @@ final class Sony
                         'DataPos' => $dPos,
                     ];
                     $subTable = ExifTool::GetTagTable('Image::ExifTool::Sony::SR2SubIFD');
-                    $result = $et->ProcessDirectory($subdirInfo, $subTable);
+                    if ($outfile) {
+                        $fixup = new Fixup();
+                        $subdirInfo['Fixup'] = $fixup;
+                        $result = $et->WriteDirectory($subdirInfo, $subTable);
+                        if (!$result) return null;
+                        // save position of this SubIFD
+                        $subifdPos[] = strlen($outfile->value);
+                        // add this directory to the returned data
+                        $fixup->Start += strlen($outfile->value);
+                        $outfile->value .= $result;
+                        $dirInfo['Fixup']->AddFixup($fixup);
+                    } else {
+                        $result = $et->ProcessDirectory($subdirInfo, $subTable);
+                    }
                     if (!$offsets) break;
                     $offset = Perl::num(array_shift($offsets));
                     $num = ($num ?: 1) + 1;
@@ -687,6 +859,50 @@ final class Sony
                 $et->Warn('Error reading SR2 data');
             }
         }
-        return $result;
+        if ($outfile and $subifdPos) {
+            // the SR2SubIFD must be padded to a multiple of 4 bytes for the encryption
+            $sr2Len = strlen($outfile->value) - $subifdPos[0];
+            if ($sr2Len & 0x03) {
+                $pad = 4 - ($sr2Len & 0x03);
+                $sr2Len += $pad;
+                $outfile->value .= str_repeat(' ', $pad);
+            }
+            // save the new SR2SubIFD Length and Key to be used later for encryption
+            $et->SR2SubIFDLength = $sr2Len;
+            $newKey = $et->VALUE['SR2SubIFDKey'] ?? null;
+            if ($newKey !== null) $et->SR2SubIFDKey = $newKey;
+            // update SubIFD pointers manually and add to fixup, and set SR2SubIFDLength
+            $n = ExifTool::Get16u($outfile->value, 0);
+            $found = [];
+            for ($i = 0; $i < $n; ++$i) {
+                $entry = 2 + 12 * $i;
+                $tagID = ExifTool::Get16u($outfile->value, $entry);
+                // only interested in SR2SubIFDOffset (0x7200) and SR2SubIFDLength (0x7201)
+                if ($tagID != 0x7200 and $tagID != 0x7201) continue;
+                $found[$tagID] = 1;
+                $fmt = ExifTool::Get16u($outfile->value, $entry + 2);
+                if ($fmt != 0x04) { // must be int32u
+                    $et->Error("Unexpected format ($fmt) for SR2SubIFD tag");
+                    return null;
+                }
+                if ($tagID == 0x7201) { // SR2SubIFDLength
+                    ExifTool::Set32u($sr2Len, $outfile->value, $entry + 8);
+                    continue;
+                }
+                $tag = 'SR2SubIFDOffset';
+                $valuePtr = count($subifdPos) < 2 ? $entry + 8 : ExifTool::Get32u($outfile->value, $entry + 8);
+                foreach ($subifdPos as $pos) {
+                    ExifTool::Set32u($pos, $outfile->value, $valuePtr);
+                    $dirInfo['Fixup']->AddFixup($valuePtr, $tag);
+                    $tag = null;
+                    $valuePtr += 4;
+                }
+            }
+            if (!(($found[0x7200] ?? null) and ($found[0x7201] ?? null))) {
+                $et->Error('Missing SR2SubIFD tag');
+                return null;
+            }
+        }
+        return $outfile ? $outfile->value : $result;
     }
 }

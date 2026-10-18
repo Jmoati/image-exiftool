@@ -930,7 +930,55 @@ $cases = [
     ["$inputs/stmn.jpg", ['-MakerNotes:all=', '-o', 'out.jpg']],
     ["$inputs/stmn.jpg", ['-v3', '-Samsung:MakerNoteVersion=STMN200', '-o', 'out.jpg']],
     ["$inputs/stmn-nopreview.jpg", ['-Samsung:MakerNoteVersion=STMN200', '-o', 'out.jpg']],
+    // Sony enciphered maker notes (WriteEnciphered)
+    ["$inputs/sony-9400.jpg", ['-Sony:SequenceImageNumber=77', '-Sony:ReleaseMode2=Single Frame', '-o', 'out.jpg']],
+    ["$inputs/sony-9400.jpg", ['-Sony:SequenceFileNumber=1', '-o', 'out.jpg']],
+    ["$inputs/sony-9400.jpg", ['-Sony:Tag9400a:all=', '-o', 'out.jpg']],
+    ["$inputs/sony-9400.jpg", ['-v3', '-Sony:ShotNumberSincePowerUp=5', '-o', 'out.jpg']],
+    ["$inputs/sony-9400-double.jpg", ['-Sony:SequenceImageNumber=77', '-o', 'out.jpg']],
+    ["$inputs/sony-9400-double.jpg", ['-Artist=me', '-o', 'out.jpg']],
+    // Sony ARW with an encrypted SR2SubIFD (WriteSR2, FinishARW)
+    ["$inputs/sony-sr2.arw", ['-SR2SubIFD:BlackLevel=1 2 3 4', '-o', 'out.arw']],
+    ["$inputs/sony-sr2.arw", ['-Artist=me', '-o', 'out.arw']],
+    ["$inputs/sony-sr2.arw", ['-SR2:all=', '-o', 'out.arw']],
+    ["$inputs/sony-sr2.arw", ['-SR2SubIFD:all=', '-o', 'out.arw']],
+    ["$inputs/sony-sr2.arw", ['-v3', '-Model=ILCE-9', '-BlackLevel=9 9 9 9', '-o', 'out.arw']],
+    ["$inputs/sony-sr2.arw", ['-Artist=in place']],
 ];
+// Geotag (Geotag.pm): track logs of t/images with Geotime/Geosync
+array_push($cases,
+    ['Writer.jpg', ["-Geotag=$images/Geotag.gpx", '-Geotime=2003:05:24 17:09:31Z', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.gpx", '-Geotime=2003:05:24 17:09:31Z', '-Geosync=1:30', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.gpx", '-Geotime=2003:05:24 17:09:31Z', '-Geosync=-5.5', '-n', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.gpx", '-Geotime=2003:05:24 17:09:31Z', '-GeoMaxIntSecs=1', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.gpx", '-Geotime=2003:05:24 17:09:31Z', '-api', 'GeoMaxHDOP=1', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.gpx", '-Geotime=2003:05:24 17:09:31Z', '-api', 'GeoSpeedRef=K', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.gpx", '-Geotime=2003:05:24 23:59:59Z', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.gpx", '-Geotime=2003:05:24 17:09:31Z', '-xmp:Geotag=', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.log", '-XMP:Geotime=2009:04:03 06:11:30-05:00', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.log", '-Geotime=2009:04:03 08:00:00-05:00', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.log", '-Geotime=2009:04:03 06:11:30-05:00', '-api', 'GeoMaxHDOP=1.5', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.log", '-Geotime=2009:04:03 06:11:30-05:00', '-api', 'GeoMinSats=5', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.xml", '-Geosync=1:30', '-Geotime=2003:05:24 17:09:31+02:00', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.xml", '-Geotime=2008:12:20 10:00:00Z', '-api', 'GeoMaxExtSecs=100000', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.igc", '-Geosync=2010:01:05 07:00:00Z@2001:08:01 12:00:00-02:00',
+        '-Geosync=2010:01:05 09:01:00Z@2001:08:01 14:00:00-02:00', '-Geotime=2001:08:01 13:00:00-02:00', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag2.log", '-Geotime=2010:04:24 06:27:30-05:00', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.kml", '-Geotime=2013:11:13 09:04:31Z', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag3.log", '-Geotime=2014:04:21 07:06:42Z', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag_DJI_2020-12-02_[07-50-31].csv", '-Geotime=2020:12:02 07:50:35.3', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Garmin.fit", '-Geotime=2026:04:01 10:00:44.5-04:00', '-o', 'out.jpg']],
+    ['Writer.jpg', ['-Geotag=DATETIMEONLY', '-Geosync=2009:01:01 01:00:00Z@2009:01:01 01:00:00Z',
+        '-Geosync=2011:01:01 02:00:00Z@2011:01:01 01:00:00Z', '-Geotime=2010:01:01 01:00:00Z', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.gpx", '-Geotime=1999:01:01 00:00:00Z', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.gpx", '-Geotime=garbage', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-Geotag=$images/Geotag.gpx", '-Geotime=2003:05:24 17:09:31Z', '-XMP:Geotime=2003:05:24 17:10:00Z', '-o', 'out.jpg']],
+    ['GPS.jpg', ["-Geotag=$images/Geotag.gpx", '-Geotime=2003:05:24 17:09:31Z', '-o', 'out.jpg']],
+    ['GPS.jpg', ['-Geotime=', '-o', 'out.jpg']],
+    ['QuickTime.mov', ["-Geotag=$images/Geotag.gpx", '-Geotime=2003:05:24 17:09:31Z', '-o', 'out.mov']],
+    ['QuickTime.mov', ["-Geotag=$images/Geotag.gpx", '-Keys:Geotime=2003:05:24 17:09:31Z', '-o', 'out.mov']],
+    ['ExifTool.tif', ["-Geotag=$images/Geotag.kml", '-Geotime=2013:11:13 09:04:31Z', '-o', 'out.tif']],
+);
 // RIFF, PDF, PostScript and InDesign writers (inputs made by DocumentInputs(), see below)
 array_push($cases,
     // RIFF (WriteRIFF): EXIF, XMP, ICCP and C2PA chunks of WebP images (VP8X chunk added,
@@ -2248,4 +2296,49 @@ function RawInputs(string $etDir, string $inputs): void
         $exif .= strlen($exif) & 1 ? "\0" : '';
         file_put_contents("$inputs/$name.jpg", "\xff\xd8\xff\xe1".pack('n', strlen($exif) + 8)."Exif\0\0".$exif.substr($preview, 2));
     }
+    require_once dirname(__DIR__).'/vendor/autoload.php';   // (to encipher with Sony::Decipher)
+    // JPEG with Sony maker notes holding an enciphered Tag9400a block (normal, then double-enciphered
+    // as ExifTool 9.04-9.10 could write it): WriteEnciphered
+    $sonyJpeg = static function (bool $double) use ($preview): string {
+        $plain = str_repeat("\0", 128);
+        $plain = substr_replace($plain, pack('V', 1234), 8, 4);
+        $plain = substr_replace($plain, "\x05", 0x10, 1);
+        $dec = static function (string $d, bool $enc): string {
+            Image\ExifTool\ExifTool::RequireModule('Image::ExifTool::Sony');
+            Image\ExifTool\Sony::Decipher($d, $enc);
+
+            return $d;
+        };
+        // first plain byte so that the enciphered block starts with 0x07 (or 0x5e when double-enciphered)
+        $plain[0] = $double ? $dec($dec("\x5e", false), false)[0] : $dec("\x07", false)[0];
+        $block = $dec($plain, true);
+        if ($double) {
+            $block = $dec($block, true);
+        }
+        $mn = "SONY DSC \0\0\0".pack('v', 1).pack('vvVV', 0x9400, 7, 128, 114).pack('V', 0).$block;
+        $exif = 'II*'."\0".pack('V', 8).pack('v', 3).
+            pack('vvVV', 0x010f, 2, 5, 68).pack('vvVV', 0x0110, 2, 9, 73).pack('vvVV', 0x8769, 4, 1, 50).pack('V', 0).
+            pack('v', 1).pack('vvVV', 0x927c, 7, strlen($mn), 84).pack('V', 0)."SONY\0"."ILCE-7M3\0\0\0".$mn;
+        $exif .= strlen($exif) & 1 ? "\0" : '';
+
+        return "\xff\xd8\xff\xe1".pack('n', strlen($exif) + 8)."Exif\0\0".$exif.substr($preview, 2);
+    };
+    file_put_contents("$inputs/sony-9400.jpg", $sonyJpeg(false));
+    file_put_contents("$inputs/sony-9400-double.jpg", $sonyJpeg(true));
+    // ARW (TIFF) with an SR2Private IFD and its encrypted SR2SubIFD (key 0x12345678), then the same
+    // as SR2 (FileFormat tag of the SR2 IFD is not needed: the ARW type is kept)
+    $arw = static function () {
+        $sr2Sub = pack('v', 1).pack('vvVV', 0x7310, 3, 4, 154).pack('V', 0).pack('v4', 512, 513, 514, 515)."\0\0";
+        Image\ExifTool\ExifTool::RequireModule('Image::ExifTool::Sony');
+        Image\ExifTool\Sony::Decrypt($sr2Sub, 0, strlen($sr2Sub), 0x12345678);
+        $d = 'II*'."\0".pack('V', 8).pack('v', 4).
+            pack('vvVV', 0x010f, 2, 5, 62).pack('vvVV', 0x0110, 2, 9, 67).pack('vvVV', 0x014a, 4, 1, 76).pack('vvVV', 0xc634, 4, 1, 94).pack('V', 0).
+            "SONY\0"."ILCE-7M3\0".
+            pack('v', 1).pack('vvVV', 0x0100, 3, 1, 100).pack('V', 0).
+            pack('v', 3).pack('vvVV', 0x7200, 4, 1, 136).pack('vvVV', 0x7201, 4, 1, strlen($sr2Sub)).pack('vvVV', 0x7221, 4, 1, 0x12345678).pack('V', 0).
+            $sr2Sub;
+
+        return $d;
+    };
+    file_put_contents("$inputs/sony-sr2.arw", $arw());
 }
