@@ -8,8 +8,7 @@
 // Revisions:    2017/03/01 - P. Harvey Created
 //               2020/10/13 - PH Added ability to read MacOS "._" files
 //
-// PHP port of Image::ExifTool::MacOS 1.15 (reading only: System() and SetMacOSTags() are
-// write-only). Tag tables and file lexicals (%mdDateInfo, %delXAttr) are generated into
+// PHP port of Image::ExifTool::MacOS 1.15 (reading and writing). Tag tables and file lexicals (%mdDateInfo, %delXAttr) are generated into
 // tables/MacOS.php.
 //------------------------------------------------------------------------------
 
@@ -33,6 +32,109 @@ final class MacOS
             if ($time) $val = ExifTool::ConvertUnixTime($time, 1);
         }
         return $val;
+    }
+
+    //------------------------------------------------------------------------------
+    // Call system command, redirecting all I/O to /dev/null
+    // Inputs: system arguments (list)
+    // Returns: system return code (Perl $?: exit status << 8)
+    public static function System(...$args)
+    {
+        $proc = @proc_open($args, [0 => ['file', '/dev/null', 'r'], 1 => ['file', '/dev/null', 'w'],
+            2 => ['file', '/dev/null', 'w']], $pipes);
+        if (!is_resource($proc)) return -1;
+        $code = proc_close($proc);
+        return $code < 0 ? -1 : $code << 8;
+    }
+
+    //------------------------------------------------------------------------------
+    // Set MacOS MDItem and XAttr tags from new tag values
+    // Inputs: 0) ExifTool ref, 1) file name, 2) list of tags to set
+    // Returns: 1=something was set OK, 0=didn't try, -1=error (and warning set)
+    // Notes: There may be errors even if 1 is returned
+    public static function SetMacOSTags(ExifTool $et, $file, $setTags)
+    {
+        $delXAttr = Vars\MacOS::$delXAttr;
+        $result = 0;
+
+        foreach ($setTags as $tag) {
+            $nvHash = null;
+            $cmd = [];
+            $err = $silentErr = null;
+            $val = $et->GetNewValue($tag, $nvHash);
+            if (!$nvHash) continue;
+            $overwrite = $et->IsOverwriting($nvHash);
+            if (!$nvHash->TagInfo->List) {
+                if (!$overwrite) continue;
+                if ($overwrite < 0) {
+                    $operation = $nvHash->Shift ? 'Shifting' : 'Conditional replacement';
+                    $et->Warn("$operation of MacOS $tag not yet supported");
+                    continue;
+                }
+            }
+            if ($tag === 'MDItemFSCreationDate' or $tag === 'FileCreateDate') {
+                // convert to local time if value has a time zone
+                if (preg_match('/[-+Z]/', $val)) {
+                    $time = ExifTool::GetUnixTime($val, 1);
+                    if ($time) $val = ExifTool::ConvertUnixTime($time, 1);
+                    $val = preg_replace('/[-+].*/s', '', $val);  // remove time zone
+                }
+                // reformat for setfile
+                $val = preg_replace('{(\d{4}):(\d{2}):(\d{2})}', '$2/$3/$1', $val, 1);
+                array_push($cmd, '/usr/bin/setfile', '-d', $val, $file);
+            } elseif ($tag === 'MDItemUserTags') {
+                // (tested with "tag" version 0.9.0)
+                $vals = $et->GetNewValueList($nvHash);
+                if ($overwrite < 0 and $nvHash->DelValue) {
+                    // delete specified tags
+                    $dels = $nvHash->DelValue;
+                    $del = implode(',', $dels);
+                    $err = self::System('/usr/local/bin/tag', '-r', $del, $file);
+                    if (!$err) {
+                        $et->VerboseValue("- $tag", $del);
+                        $result = 1;
+                        if ($vals) $err = null;     // more to do if there are tags to add
+                    }
+                }
+                if ($err === null) {
+                    // add new tags, or overwrite or delete existing tags
+                    $opt = $overwrite > 0 ? '-s' : '-a';
+                    $val = $vals ? implode(',', $vals) : '';
+                    array_push($cmd, '/usr/local/bin/tag', $opt, $val, $file);
+                    if ($overwrite > 0) $et->VPrint(1, "    - $tag = (all)\n");
+                    if ($val === '') $val = null;
+                }
+            } elseif (!empty($delXAttr[$tag])) {
+                array_push($cmd, '/usr/bin/xattr', '-d', $delXAttr[$tag], $file);
+                $silentErr = 256;   // (will get this error if attribute doesn't exist)
+            } else {
+                $f = preg_replace('/([\\\\"])/', '\\\\$1', $file);  // escape backslashes and quotes for AppleScript
+                if ($tag === 'MDItemFinderComment') {
+                    // (write finder comment using osascript instead of xattr
+                    // because it is more work to construct the necessary bplist)
+                    $val ??= '';    // set to empty string instead of deleting
+                    $v = $et->Encode($val, 'UTF8');
+                    $v = preg_replace('/([\\\\"])/', '\\\\$1', $v);
+                    $attr = 'comment';
+                } else { // $tag eq 'MDItemFSLabel'
+                    $v = $val ? 8 - $val : 0;   // convert from label to label index (0 for no label)
+                    $attr = 'label index';
+                }
+                array_push($cmd, '/usr/bin/osascript', '-e', "set fp to POSIX file \"$f\" as alias",
+                    '-e', "tell application \"Finder\" to set $attr of file fp to \"$v\"");
+            }
+            if ($cmd) $err = self::System(...$cmd);
+            if (!$err) {
+                if ($val !== null) $et->VerboseValue("+ $tag", $val);
+                $result = 1;
+            } elseif (!$silentErr or $err != $silentErr) {
+                $c = ($cmd[0] ?? '') ?: 'tag';
+                $c = preg_replace('{.*/}', '', $c);
+                $et->Warn("Error $err running \"$c\" to set $tag");
+                if (!$result) $result = -1;
+            }
+        }
+        return $result;
     }
 
     //------------------------------------------------------------------------------
