@@ -270,6 +270,9 @@ final class Application
         try {
             return $app->run($argv);
         } catch (\Throwable $e) {
+            if (getenv('EXIFTOOL_DEBUG')) {
+                throw $e;   // (with the PHP stack trace)
+            }
             // (Perl die: the message is printed, the END block cleans up, and the exit status is 255)
             $msg = $e->getMessage();
             fwrite($app->stderr, str_ends_with($msg, "\n") ? $msg : "$msg at {$e->getFile()} line {$e->getLine()}.\n");
