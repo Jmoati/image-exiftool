@@ -296,7 +296,7 @@ static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?Ta
 
 ==== be11737435 code:OTHER
 static function ($val, $inv, $conv) {
-    $v = Perl::int($val) & 4278190079;
+    $v = Perl::uv($val, 'bitwise and (&)', '$val') & 4278190079;
     return ($conv[$v] ?? null) ? $conv[$v].' 64-bit' : 'Unknown ('.Perl::str($val).')';
 }
 
@@ -304,7 +304,7 @@ static function ($val, $inv, $conv) {
 # Perl @v (list) and $v (scalar) are distinct variables: @v is $va here
 static function ($val, $inv, $conv) {
     $va = Perl::split(' ', $val, 0);
-    $v = (Perl::int($va[0] ?? null) & 4278190079).' '.(Perl::int($va[1] ?? null) & 2147483647);
+    $v = (Perl::uv($va[0] ?? null, 'bitwise and (&)', '$v[0]') & 4278190079).' '.(Perl::uv($va[1] ?? null, 'bitwise and (&)', '$v[1]') & 2147483647);
     return ($conv[$v] ?? null) ? $conv[$v].' 64-bit' : 'Unknown ('.Perl::str($val).')';
 }
 

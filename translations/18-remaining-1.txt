@@ -177,13 +177,13 @@ static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?Ta
 ==== 8d04bbb28e code:OTHER
 # H264::Camera2 0x0001 ImageStabilization/OTHER
 static function ($val, $inv, $conv) {
-    return Perl::sprintf('%s (0x%.2x)', (Perl::int($val) & 16) ? 'On' : 'Off', $val);
+    return Perl::sprintf('%s (0x%.2x)', (Perl::uv($val, 'bitwise and (&)', '$val') & 16) ? 'On' : 'Off', Perl::num($val));
 }
 
 ==== e81fcb4818 code:OTHER
 # H264::Camera1 0x0000 ApertureSetting/OTHER
 static function ($val, $inv, $conv) {
-    return Perl::sprintf('%.1f', 2.0 ** ((Perl::int($val) & 63) / 8));
+    return Perl::sprintf('%.1f', 2.0 ** ((Perl::uv($val, 'bitwise and (&)', '$_[0]') & 63) / 8));
 }
 
 ==== bf6d7ed630 RawConv
@@ -1105,7 +1105,8 @@ static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?Ta
 ==== 07f7d50d9d code:OTHER
 # LNK::Main 0x0040 HotKey/OTHER
 static function ($val, $inv, $conv) {
-    $ch = Perl::int($val) & 255;
+    // (when writing, $val is the PrintConv value: Perl warns that it isn't numeric)
+    $ch = Perl::uv($val, 'bitwise and (&)', '$val') & 255;
     // Perl parses "chr $ch =~ /^[A-Z0-9]$/" as chr($ch =~ /^[A-Z0-9]$/): "\x01" or "\0", always true
     if (Perl::chr(preg_match('/^[A-Z0-9]$/', Perl::str($ch)) ? 1 : 0)) {
         $ch = Perl::chr($ch);
@@ -1118,9 +1119,9 @@ static function ($val, $inv, $conv) {
     } else {
         $ch = Perl::sprintf('Unknown (0x%x)', $ch);
     }
-    if (Perl::int($val) & 1024) $ch = 'Alt-' . $ch;
-    if (Perl::int($val) & 512) $ch = 'Control-' . $ch;
-    if (Perl::int($val) & 256) $ch = 'Shift-' . $ch;
+    if (Perl::uv(Perl::num($val)) & 1024) $ch = 'Alt-' . $ch;
+    if (Perl::uv(Perl::num($val)) & 512) $ch = 'Control-' . $ch;
+    if (Perl::uv(Perl::num($val)) & 256) $ch = 'Shift-' . $ch;
     return $ch;
 }
 

@@ -257,7 +257,8 @@ $f_90a48123a2 = static function ($val, ExifTool $self, array &$vals, array $prt,
     return $val ?: '(none)';
 };
 $f_07f7d50d9d = static function ($val, $inv, $conv) {
-    $ch = Perl::int($val) & 255;
+    // (when writing, $val is the PrintConv value: Perl warns that it isn't numeric)
+    $ch = Perl::uv($val, 'bitwise and (&)', '$val') & 255;
     // Perl parses "chr $ch =~ /^[A-Z0-9]$/" as chr($ch =~ /^[A-Z0-9]$/): "\x01" or "\0", always true
     if (Perl::chr(preg_match('/^[A-Z0-9]$/', Perl::str($ch)) ? 1 : 0)) {
         $ch = Perl::chr($ch);
@@ -270,9 +271,9 @@ $f_07f7d50d9d = static function ($val, $inv, $conv) {
     } else {
         $ch = Perl::sprintf('Unknown (0x%x)', $ch);
     }
-    if (Perl::int($val) & 1024) $ch = 'Alt-' . $ch;
-    if (Perl::int($val) & 512) $ch = 'Control-' . $ch;
-    if (Perl::int($val) & 256) $ch = 'Shift-' . $ch;
+    if (Perl::uv(Perl::num($val)) & 1024) $ch = 'Alt-' . $ch;
+    if (Perl::uv(Perl::num($val)) & 512) $ch = 'Control-' . $ch;
+    if (Perl::uv(Perl::num($val)) & 256) $ch = 'Shift-' . $ch;
     return $ch;
 };
 $f_195427670e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {

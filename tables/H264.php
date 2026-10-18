@@ -5,7 +5,7 @@
 namespace Image\ExifTool;
 
 $f_e81fcb4818 = static function ($val, $inv, $conv) {
-    return Perl::sprintf('%.1f', 2.0 ** ((Perl::int($val) & 63) / 8));
+    return Perl::sprintf('%.1f', 2.0 ** ((Perl::uv($val, 'bitwise and (&)', '$_[0]') & 63) / 8));
 };
 $f_5a26fb72a0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) == 42 ? 'Out of range' : Perl::str($val) . ' dB';
@@ -30,7 +30,7 @@ $f_97379c267a = static function ($val, ExifTool $self, array &$vals, array $prt,
     return Perl::sprintf('0x%.2x', $val);
 };
 $f_8d04bbb28e = static function ($val, $inv, $conv) {
-    return Perl::sprintf('%s (0x%.2x)', (Perl::int($val) & 16) ? 'On' : 'Off', $val);
+    return Perl::sprintf('%s (0x%.2x)', (Perl::uv($val, 'bitwise and (&)', '$val') & 16) ? 'On' : 'Off', Perl::num($val));
 };
 $f_99ff857c52 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.2x:%.2x:%.2x:%.2x', ...array_reverse(Perl::unpack('C*', $val)));

@@ -10,18 +10,19 @@ $f_d1af7138dd = static function ($val, $flag, $conv) {
         return $conv[$val];
     }
     $v = Perl::split(' ', $val);
-    $prt = Vars\Panasonic::$shootingMode[Perl::str($v[0] ?? null)] ?? null;
+    $prt = Vars\Panasonic::$shootingMode[Perl::strw($v[0] ?? null, 'hash element', '$v[0]')] ?? null;
     if ($prt) {
-        if (Perl::num($v[1] ?? null) == 1) {
+        // (an undef $v[1] warns each time: Perl doesn't cache it)
+        if (Perl::numw($v[1] ?? null, 'numeric eq (==)', '$v[1]') == 1) {
             return $prt;
         }
-        if (Perl::num($v[1] ?? null) == 5) {
+        if (Perl::numw($v[1] ?? null, 'numeric eq (==)', '$v[1]') == 5) {
             return $prt . ' (intelligent auto)';
         }
-        if (Perl::num($v[1] ?? null) == 7) {
+        if (Perl::numw($v[1] ?? null, 'numeric eq (==)', '$v[1]') == 7) {
             return $prt . ' (intelligent auto plus)';
         }
-        return $prt . ' (' . Perl::str($v[1] ?? null) . ')';
+        return $prt . ' (' . Perl::strw($v[1] ?? null, 'concatenation (.) or string') . ')';
     }
     return 'Unknown (' . $val . ')';
 };

@@ -273,18 +273,21 @@ $f_423d194042 = static function ($val, ExifTool $self, array &$vals, array $prt,
     return Perl::sprintf('%.3g s', $val);
 };
 $f_74c5103544 = static function ($val, $inv, $conv) {
+    // (the tests are Perl truth values of the strings, "== 1" numifies them with a warning)
     $vals = Perl::split(' ', $val);
     $rtn = [];
-    if (Perl::num($vals[0] ?? 0)) $rtn[] = Perl::sprintf('%d Error%s', $vals[0], Perl::num($vals[0]) == 1 ? '' : 's');
-    if (Perl::num($vals[1] ?? 0)) $rtn[] = Perl::sprintf('%d Warning%s', $vals[1], Perl::num($vals[1]) == 1 ? '' : 's');
-    if (Perl::num($vals[2] ?? 0)) {
-        $str = Perl::num($vals[1] ?? 0) == Perl::num($vals[2]) ? (Perl::num($vals[1] ?? 0) == 1 ? '' : 'all ') : $vals[2] . ' ';
+    if ($vals[0] ?? null) $rtn[] = Perl::sprintf('%d Error%s', $vals[0], Perl::numw($vals[0], 'numeric eq (==)', '$val[0]') == 1 ? '' : 's');
+    if ($vals[1] ?? null) $rtn[] = Perl::sprintf('%d Warning%s', $vals[1], Perl::numw($vals[1], 'numeric eq (==)', '$val[1]') == 1 ? '' : 's');
+    if ($vals[2] ?? null) {
+        // (== numifies its right operand first; $val[1] is cached if it was numified above)
+        $r = Perl::numw($vals[2], 'numeric eq (==)', '$val[2]');
+        $l = ($vals[1] ?? null) ? Perl::num($vals[1]) : Perl::numw($vals[1] ?? null, 'numeric eq (==)', '$val[1]');
+        $str = $l == $r ? ($l == 1 ? '' : 'all ') : $vals[2] . ' ';
         $last = array_key_last($rtn);
         if (null === $last) {
-            $rtn[-1] = ' (' . $str . 'minor)';
-        } else {
-            $rtn[$last] .= ' (' . $str . 'minor)';
+            throw new \RuntimeException('Modification of non-creatable array value attempted, subscript -1');
         }
+        $rtn[$last] .= ' (' . $str . 'minor)';
     }
     return implode(' and ', $rtn);
 };

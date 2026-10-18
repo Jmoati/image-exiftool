@@ -6,7 +6,7 @@ namespace Image\ExifTool;
 
 $f_9ca29b9695 = static function ($val, $inv, $conv) {
     if ($inv) {
-        return preg_match('/(0x\w+)/', Perl::str($val), $m) ? Perl::hex($m[1]) : null;
+        return preg_match('/(0x\w+)/', Perl::str($val), $m) ? Perl::hexw($m[1], '$1') : null;
     }
     return Perl::sprintf('Set 6 (custom 0x%.3x)', $val);
 };
@@ -81,10 +81,11 @@ $f_057a988663 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     return Perl::num($val) == 0x100 ? null : $val;
 };
 $f_29b332a80d = static function ($val, $inv, $conv) {
+    // (-$val negates a string that isn't a number as a string, numified with a warning)
     if ($inv) {
-        return Perl::int(-Perl::num($val) * 16);
+        return Perl::int(Perl::numw(Perl::neg($val, '$val'), 'multiplication (*)') * 16);
     } else {
-        return -Perl::num($val) / 16;
+        return Perl::numw(Perl::neg($val, '$val'), 'division (/)') / 16;
     }
 };
 $f_854a53c15e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {

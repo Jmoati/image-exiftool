@@ -14,12 +14,12 @@ $f_4335b20969 = static function ($val, ExifTool $self, array &$vals, array $prt,
     return Perl::sprintf('%.4X', $val);
 };
 $f_be11737435 = static function ($val, $inv, $conv) {
-    $v = Perl::int($val) & 4278190079;
+    $v = Perl::uv($val, 'bitwise and (&)', '$val') & 4278190079;
     return ($conv[$v] ?? null) ? $conv[$v].' 64-bit' : 'Unknown ('.Perl::str($val).')';
 };
 $f_cad318fd07 = static function ($val, $inv, $conv) {
     $va = Perl::split(' ', $val, 0);
-    $v = (Perl::int($va[0] ?? null) & 4278190079).' '.(Perl::int($va[1] ?? null) & 2147483647);
+    $v = (Perl::uv($va[0] ?? null, 'bitwise and (&)', '$v[0]') & 4278190079).' '.(Perl::uv($va[1] ?? null, 'bitwise and (&)', '$v[1]') & 2147483647);
     return ($conv[$v] ?? null) ? $conv[$v].' 64-bit' : 'Unknown ('.Perl::str($val).')';
 };
 $f_357da195ec = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {

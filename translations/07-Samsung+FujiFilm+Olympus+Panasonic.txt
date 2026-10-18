@@ -375,10 +375,11 @@ static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?Ta
 
 ==== 29b332a80d code:OTHER
 static function ($val, $inv, $conv) {
+    // (-$val negates a string that isn't a number as a string, numified with a warning)
     if ($inv) {
-        return Perl::int(-Perl::num($val) * 16);
+        return Perl::int(Perl::numw(Perl::neg($val, '$val'), 'multiplication (*)') * 16);
     } else {
-        return -Perl::num($val) / 16;
+        return Perl::numw(Perl::neg($val, '$val'), 'division (/)') / 16;
     }
 }
 
@@ -390,7 +391,7 @@ static function ($val, $inv, $conv) {
 ==== 9ca29b9695 code:OTHER
 static function ($val, $inv, $conv) {
     if ($inv) {
-        return preg_match('/(0x\w+)/', Perl::str($val), $m) ? Perl::hex($m[1]) : null;
+        return preg_match('/(0x\w+)/', Perl::str($val), $m) ? Perl::hexw($m[1], '$1') : null;
     }
     return Perl::sprintf('Set 6 (custom 0x%.3x)', $val);
 }
@@ -1320,18 +1321,19 @@ static function ($val, $flag, $conv) {
         return $conv[$val];
     }
     $v = Perl::split(' ', $val);
-    $prt = Vars\Panasonic::$shootingMode[Perl::str($v[0] ?? null)] ?? null;
+    $prt = Vars\Panasonic::$shootingMode[Perl::strw($v[0] ?? null, 'hash element', '$v[0]')] ?? null;
     if ($prt) {
-        if (Perl::num($v[1] ?? null) == 1) {
+        // (an undef $v[1] warns each time: Perl doesn't cache it)
+        if (Perl::numw($v[1] ?? null, 'numeric eq (==)', '$v[1]') == 1) {
             return $prt;
         }
-        if (Perl::num($v[1] ?? null) == 5) {
+        if (Perl::numw($v[1] ?? null, 'numeric eq (==)', '$v[1]') == 5) {
             return $prt . ' (intelligent auto)';
         }
-        if (Perl::num($v[1] ?? null) == 7) {
+        if (Perl::numw($v[1] ?? null, 'numeric eq (==)', '$v[1]') == 7) {
             return $prt . ' (intelligent auto plus)';
         }
-        return $prt . ' (' . Perl::str($v[1] ?? null) . ')';
+        return $prt . ' (' . Perl::strw($v[1] ?? null, 'concatenation (.) or string') . ')';
     }
     return 'Unknown (' . $val . ')';
 }
