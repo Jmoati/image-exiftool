@@ -2837,6 +2837,67 @@ COMPOSITE_TAG:
     }
 
     //------------------------------------------------------------------------------
+    // Create directory for specified file
+    // Inputs: 0) ExifTool ref, 1) complete file name including path
+    // Returns: '' = directory created, undef = nothing done, otherwise error string
+    // (PHP: no Windows wide-character routines, see EncodeFileName)
+    public function CreateDirectory($file)
+    {
+        $err = null;
+        $dir = preg_replace('{[^/]*$}', '', (string) $file, 1);   // remove filename from path specification
+        if ($dir and !$this->IsDirectory($dir)) {
+            $parts = Perl::split('{/}', $dir);
+            $dir = '';
+            foreach ($parts as $part) {
+                $dir .= $part;
+                if (strlen($part) and !$this->IsDirectory($dir) and
+                    // don't try to create a network drive root directory
+                    !(self::IsPC() and preg_match('{^//[^/]*$}', $dir)))
+                {
+                    // create directory since it doesn't exist
+                    $d2 = $dir; // (must make a copy in case EncodeFileName recodes it)
+                    $this->EncodeFileName($d2);
+                    $success = @mkdir($d2, 0777);
+                    if (!$success) {
+                        $err = "Error creating directory $dir";
+                        break;
+                    }
+                    $err = '';
+                }
+                $dir .= '/';
+            }
+        }
+        return $err;
+    }
+
+    //------------------------------------------------------------------------------
+    // Get file times (Unix seconds since the epoch)
+    // Inputs: 0) ExifTool ref, 1) file name or ref
+    // Returns: 0) access time, 1) modification time, 2) creation time (or undefs on error)
+    //          (PHP: a list, empty on error)
+    public function GetFileTime($file): array
+    {
+        // open file by name if necessary
+        if (!is_resource($file) and !is_object($file)) {
+            $fh = null;
+            if (!$this->Open($fh, $file)) {
+                if ($this->IsDirectory($file)) {
+                    clearstatcache(true, (string) $file);
+                    $stat = @stat($file);
+                    if ($stat) return [$stat[8], $stat[9], $stat[10]];
+                }
+                $this->Warn("GetFileTime error for '$file'");
+                return [];
+            }
+            $file = $fh;    // (closed when $fh goes out of scope)
+        }
+        // (PHP: the Win32::API branch for Windows file times doesn't apply)
+        // other os (or Windows fallback)
+        $stat = is_resource($file) ? @fstat($file) : false;
+        return $stat ? [$stat[8], $stat[9], $stat[10]] : [];
+    }
+
+    //------------------------------------------------------------------------------
     // Parse function arguments and set member variables accordingly
     // Inputs: Same as ImageInfo()
     // - sets REQUESTED_TAGS, REQ_TAG_LOOKUP, IO_TAG_LIST, FILENAME, RAF, OPTIONS
@@ -4702,6 +4763,10 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     }
 
     //------------------------------------------------------------------------------
+    // (write proc of the tables which have nothing to write, called as a callable)
+    public static function DummyWriteProc() { return 1; }
+
+    //------------------------------------------------------------------------------
     // GetTagTable
     // Inputs: 0) table name
     // Returns: tag table reference, or undefined if not found
@@ -4751,7 +4816,8 @@ GR_TAG:     foreach ($rtnTags as $tag) {
                     XMP::RegisterNamespace($table); // register all table namespaces
                 }
                 // set default write/check procs
-                // (WRITE_PROC and CHECK_PROC: writing only)
+                if (!$table['WRITE_PROC']) $table['WRITE_PROC'] = 'Image\ExifTool\XMP::WriteXMP';
+                if (!$table['CHECK_PROC']) $table['CHECK_PROC'] = 'Image\ExifTool\XMP::CheckXMP';
                 if (!$table['LANG_INFO']) $table['LANG_INFO'] = 'Image\ExifTool\XMP::GetLangInfo';
             }
             // generate a tag prefix for unknown tags if necessary
@@ -6962,9 +7028,17 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     }
 
     //------------------------------------------------------------------------------
-    // Print verbose value while writing (not ported)
+    // Print verbose value while writing
+    // Inputs: 0) ExifTool object ref, 1) heading "eg. '+ IPTC:Keywords',
+    //         2) value, 3) [optional] extra text after value
     public function VerboseValue($str, $val, $xtra = null): void
     {
+        if (!($this->OPTIONS['Verbose'] > 1)) return;
+        $out = $this->OPTIONS['TextOut'];
+        if (!$xtra) $xtra = '';
+        $maxLen = 81 - strlen($str) - strlen($xtra);
+        $val = $this->Printable($val, $maxLen);
+        fwrite($out, "    $str = '$val'$xtra\n");
     }
 
     //------------------------------------------------------------------------------

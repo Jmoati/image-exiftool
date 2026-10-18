@@ -7,8 +7,8 @@
 //
 // Revisions:    10/28/2006 - P. Harvey Created
 //
-// PHP port of Image::ExifTool::PhotoMechanic 1.08 (reading only). Tag tables are
-// generated into tables/PhotoMechanic.php.
+// PHP port of Image::ExifTool::PhotoMechanic 1.08. Tag tables are generated into
+// tables/PhotoMechanic.php.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -27,7 +27,9 @@ final class PhotoMechanic
     {
         $raf = $dirInfo['RAF'];
         $offset = ($dirInfo['Offset'] ?? null) ?: 0;
+        $outfile = $dirInfo['OutFile'] ?? null;
         $verbose = $et->Options('Verbose');
+        $out = $et->Options('TextOut');
         $rtnVal = 0;
         $buff = $footer = null;
 
@@ -59,10 +61,32 @@ final class PhotoMechanic
                 'Parent' => 'PhotoMechanic',
             ];
             $tagTablePtr = ExifTool::GetTagTable('Image::ExifTool::PhotoMechanic::Main');
-            // extract trailer information
-            if ($verbose or $et->HTML_DUMP) $et->DumpTrailer($dirInfo);
-            $et->ProcessDirectory($subdirInfo, $tagTablePtr);
-            // (writing not ported)
+            if (!$outfile) {
+                // extract trailer information
+                if ($verbose or $et->HTML_DUMP) $et->DumpTrailer($dirInfo);
+                $et->ProcessDirectory($subdirInfo, $tagTablePtr);
+            } elseif ($et->DEL_GROUP['PhotoMechanic'] ?? null) {
+                // delete the trailer
+                if ($verbose) fwrite($out, "  Deleting PhotoMechanic trailer\n");
+                ++$et->CHANGED;
+            } else {
+                // rewrite the trailer
+                $newBuff = $et->WriteDirectory($subdirInfo, $tagTablePtr);
+                if ($newBuff !== null) {
+                    $pad = 0x800 - strlen($newBuff);
+                    if ($pad > 0 and !($et->OPTIONS['Compact']['NoPadding'] ?? null)) {
+                        // pad out to 2kB like PhotoMechanic does
+                        $newBuff .= str_repeat("\0", $pad);
+                    }
+                    $newPt = $newBuff;  // write out the modified trailer
+                    // generate new footer
+                    $footer = pack('N', strlen($newPt)) . 'cbipcbbl';
+                } else {
+                    $newPt = $buff;     // just copy existing trailer
+                }
+                // write out the trailer
+                if (!ExifTool::Write($outfile, $newPt, $footer)) $rtnVal = -1;
+            }
             break;
         }
         return $rtnVal;

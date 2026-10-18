@@ -384,10 +384,19 @@ final class MIE
             // update DataPos and DirLen for ProcessTrailers()
             $dirInfo['DataPos'] = $pos;
             $dirInfo['DirLen'] = $end - $pos;
-            // (OutFile: deleting the trailer is not ported)
-            if ($et->Options('Verbose') or $et->HTML_DUMP) {
+            if (($dirInfo['OutFile'] ?? null) and ($et->DEL_GROUP['MIE'] ?? null)) {
+                // delete the trailer
+                $et->VPrint(0, "  Deleting MIE trailer\n");
+                ++$et->CHANGED;
+                return 1;
+            } elseif ($et->Options('Verbose') or $et->HTML_DUMP) {
                 $et->DumpTrailer($dirInfo);
             }
+        }
+        // (PHP: writing MIE is not ported yet)
+        if ($dirInfo['OutFile'] ?? null) {
+            $et->Error('Not ported: writing MIE', 1);
+            return 0;
         }
 //
 // loop through all documents in MIE file

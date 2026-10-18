@@ -341,7 +341,18 @@ final class Nikon
         if ($dirInfo) {
             $dirInfo['DirLen'] = $trailerLen;
             $dirInfo['DataPos'] = $fileEnd - $trailerLen;
-            // (OutFile: writing not ported)
+            if ($dirInfo['OutFile'] ?? null) {
+                if ($et->DEL_GROUP['NikonApp'] ?? null) {
+                    $et->VPrint(0, "  Deleting NikonApp trailer ($trailerLen bytes)\n");
+                    ++$et->CHANGED;
+                // just copy the trailer when writing (read directly into output buffer)
+                } elseif ($trailerLen > $fileEnd or !$raf->Seek($dirInfo['DataPos'], 0) or
+                         $raf->Read($dirInfo['OutFile']->value, $trailerLen) != $trailerLen)
+                {
+                    return 0;
+                }
+                return 1;
+            }
             if ($verbose or $et->HTML_DUMP) $et->DumpTrailer($dirInfo);
         }
         if (!($trailerLen >= 0x40 and $raf->Seek($fileEnd - $trailerLen, 0) and

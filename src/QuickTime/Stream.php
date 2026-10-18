@@ -2524,7 +2524,19 @@ trait Stream
         if ($dirInfo) {
             $dirInfo['DirLen'] = $trailerLen;
             $dirInfo['DataPos'] = $trailEnd - $trailerLen;
-            // (OutFile: writing is not ported)
+            if ($dirInfo['OutFile'] ?? null) {
+                if ($et->DEL_GROUP['Insta360'] ?? null) {
+                    ++$et->CHANGED;
+                    return 1;
+                // just copy the trailer when writing
+                } elseif ($trailerLen > $trailEnd or !$raf->Seek($dirInfo['DataPos'], 0) or
+                         $raf->Read($dirInfo['OutFile']->value, $trailerLen) != $trailerLen)
+                {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }
             if ($verbose or $et->HTML_DUMP) $et->DumpTrailer($dirInfo);
         }
         if (!$et->Options('ExtractEmbedded')) {

@@ -82,6 +82,7 @@ trait Formats
     {
         $self = $this;
         $dirName = $dirInfo['DirName'];
+        $outfile = $dirInfo['OutFile'] ?? null;
         $offset = ($dirInfo['Offset'] ?? null) ?: 0;
         $fixup = $dirInfo['Fixup'] ?? null;
         $raf = $dirInfo['RAF'];
@@ -96,6 +97,7 @@ trait Formats
 
         for (;;) { // loop through all trailers
             $raf->Seek($pos);
+            $outBuff = null;
             // trailer-processing procs residing in modules of a different name
             $module = ([
                 'Insta360' => 'QuickTimeStream.pl',
@@ -107,7 +109,17 @@ trait Formats
             $module = preg_replace('/(Stream)?\..*/', '', $module);   // remove extension and change QuickTimeStream to QuickTime
             self::RequireModule("Image::ExifTool::$module");
             $proc = "Image\\ExifTool\\{$module}::Process$dirName";
-            // (writing not ported)
+            if ($outfile) {
+                // write to local buffer so we can add trailer in proper order later
+                // (PHP: OutFile is a ScalarRef)
+                if ($outfile->value) {
+                    $outBuff = new ScalarRef('');
+                    $dirInfo['OutFile'] = $outBuff;
+                }
+                // must generate new fixup if necessary so we can shift
+                // the old fixup separately after we prepend this trailer
+                unset($dirInfo['Fixup']);
+            }
             unset($dirInfo['DirLen']);       // reset trailer length
             $dirInfo['Offset'] = $offset;    // set offset from end of file
             $dirInfo['Trailer'] = 1;         // set Trailer flag in case proc cares
@@ -146,7 +158,49 @@ trait Formats
 
             $dataPos = $dirInfo['DataPos'] ?? null;
             $dirLen = $dirInfo['DirLen'] ?? null;
-            if ($result < 0) {
+            if ($outfile) {
+                if ($result < 0) {
+                    // copy or delete the trailer ourself
+                    $result = 1;
+                    if ($self->TrailerStart) {
+                        if (!$dataPos) $dataPos = $self->TrailerStart;
+                        if (!$dirLen) $dirLen = $self->FileEnd - $offset - $dataPos;
+                    }
+                    if (($self->DEL_GROUP['Trailer'] ?? null) or ($self->DEL_GROUP[$dirName] ?? null)) {
+                        $bytes = $dirLen ? " ($dirLen bytes)" : '';
+                        $self->VPrint(0, "Deleting $dirName trailer$bytes\n");
+                        ++$self->CHANGED;
+                    } elseif ($dataPos and $dirLen) {
+                        $self->VPrint(0, "Copying $dirName trailer ($dirLen bytes)\n");
+                        if (!($raf->Seek($dataPos) and
+                            $raf->Read($dirInfo['OutFile']->value, $dirLen) == $dirLen)) $result = 0;
+                    } else {
+                        $result = 0;
+                    }
+                }
+                if ($result > 0) {
+                    if ($outBuff and $outBuff->value) {
+                        // write trailers to OutFile in original order
+                        $outfile->value = $outBuff->value . $outfile->value;
+                        // must adjust old fixup start if it exists
+                        if ($fixup) $fixup->Start += strlen($outBuff->value);
+                        $outBuff->value = '';   // free memory
+                    }
+                    if ($dirInfo['Fixup'] ?? null) {
+                        if ($fixup) {
+                            // add fixup for subsequent trailers to the fixup for this trailer
+                            // (but first we must adjust for the new start position)
+                            $fixup->Shift += $dirInfo['Fixup']->Start;
+                            $fixup->Start -= $dirInfo['Fixup']->Start;
+                            $dirInfo['Fixup']->AddFixup($fixup);
+                        }
+                        $fixup = $dirInfo['Fixup'];   // save fixup
+                    }
+                } else {
+                    if ($self->Error("Error rewriting $dirName trailer", 2)) $success = 0;
+                    break;
+                }
+            } elseif ($result < 0) {
                 // can't continue if we must scan for this trailer
                 $success = 0;
                 break;
@@ -171,6 +225,7 @@ trait Formats
         }
         self::SetByteOrder($byteOrder);   // restore original byte order
         $raf->Seek($pos);                 // restore original file position
+        $dirInfo['OutFile'] = $outfile;   // restore original outfile
         $dirInfo['Offset'] = $offset;     // return offset from EOF to start of first trailer
         $dirInfo['Fixup'] = $fixup;       // return fixup information
         return $success;
@@ -1668,19 +1723,29 @@ trait Formats
         $fileType = ($dirInfo['Parent'] ?? null) ?: '';
         $raf = $dirInfo['RAF'] ?? null;
         $base = ($dirInfo['Base'] ?? null) ?: 0;
+        $outfile = $dirInfo['OutFile'] ?? null;
         $err = $sig = $canonSig = $otherSig = null;
 
         // attempt to read TIFF header
         if ($raf) {
             $self->EXIF_DATA = '';
-            if (!$raf->Seek($base, 0)) {
-                return 0;
+            if ($outfile) {
+                if (!$raf->Seek(0, 0)) return 0;
+                if ($base) {
+                    if ($raf->Read($dataPt, $base) != $base) return 0;
+                    if (!self::Write($outfile, $dataPt)) $err = 1;
+                }
+            } else {
+                if (!$raf->Seek($base, 0)) return 0;
             }
             // extract full EXIF block (for block copy) from EXIF file
             $amount = $fileType === 'EXIF' ? 65536 * 8 : 8;
             $n = $raf->Read($self->EXIF_DATA, $amount);
             if ($n < 8) {
-                return 0;   // (creating an EXIF file from scratch is for writing only)
+                if ($n or !$outfile or $fileType !== 'EXIF') return 0;
+                // create EXIF file from scratch
+                $self->EXIF_DATA = null;
+                $raf = null;
             }
             if ($n > 8) {
                 $raf->Seek(8, 0);
@@ -1693,11 +1758,17 @@ trait Formats
             // save a copy of the EXIF data
             $dirStart = ($dirInfo['DirStart'] ?? null) ?: 0;
             $dirLen = ($dirInfo['DirLen'] ?? null) ?: (strlen($dataPt) - $dirStart);
-            // (Perl substr gives undef when starting beyond the end of the string)
-            $self->EXIF_DATA = $dirStart > strlen($dataPt) ? null : substr($dataPt, $dirStart, $dirLen);
+            if ($dirLen > 0 or !$outfile) {
+                // (Perl substr gives undef when starting beyond the end of the string)
+                $self->EXIF_DATA = $dirStart > strlen($dataPt) ? null : substr($dataPt, $dirStart, $dirLen);
+            } else {
+                $self->EXIF_DATA = null;    // create from scratch;
+            }
             if ($self->OPTIONS['Verbose'] and strlen($self->INDENT) > 2) {
                 $self->VerboseDir('TIFF');
             }
+        } elseif ($outfile) {
+            $self->EXIF_DATA = null;    // create from scratch
         } else {
             $self->EXIF_DATA = '';
         }
@@ -1825,14 +1896,14 @@ trait Formats
                 $self->SetFileType($t);
             }
             // don't process file if FastScan > 2
-            if ($self->OPTIONS['FastScan'] and $self->OPTIONS['FastScan'] > 2) {
+            if (!$outfile and $self->OPTIONS['FastScan'] and $self->OPTIONS['FastScan'] > 2) {
                 return 1;
             }
         }
         // (accommodate CR3 images which have a TIFF directory with ExifIFD at the top level)
         $ifdName = (($dirInfo['DirName'] ?? null) and preg_match('/^(ExifIFD|GPS)$/', $dirInfo['DirName'], $m)) ? $m[1] : 'IFD0';
         if (!$tagTablePtr or $tagTablePtr['GROUPS'][0] === 'EXIF') {
-            $self->FoundTag('ExifByteOrder', $byteOrder);
+            if (!$outfile) $self->FoundTag('ExifByteOrder', $byteOrder);
             $self->ExifByteOrder = $byteOrder;
         } elseif ($tagTablePtr['GROUPS'][0] === 'MakerNotes') { // (for writing CR3 maker notes)
             $ifdName = $tagTablePtr['GROUPS'][0];
@@ -1851,8 +1922,9 @@ trait Formats
         $tagTablePtr or $tagTablePtr = self::GetTagTable('Image::ExifTool::Exif::Main');
 
         // build directory information hash
-        // (%dirInfo is a new hash, not the caller's $dirInfo)
+        // (%dirInfo is a new hash, not the caller's $dirInfo, which is $parentDirInfo below)
         $multi = $dirInfo['Multi'] ?? null;
+        $parentDirInfo = &$dirInfo;
         unset($dirInfo);
         $dirInfo = [
             'Base'     => $base,
@@ -1869,53 +1941,219 @@ trait Formats
         ];
 
         // extract information from the image
-        // process the directory
-        $self->ProcessDirectory($dirInfo, $tagTablePtr);
-        // process GeoTiff information if available
-        if ($self->VALUE['GeoTiffDirectory'] ?? null) {
-            self::RequireModule('Image::ExifTool::GeoTiff');
-            \Image\ExifTool\GeoTiff::ProcessGeoTiff($self);
-        }
-        // process information in recognized trailers
-        if ($raf) {
-            $trailInfo = $self->IdentifyTrailer($raf);
-            if ($trailInfo) {
-                // scan to find AFCP if necessary (Note: we are scanning
-                // from a random file position in the TIFF)
-                $trailInfo['ScanForTrailer'] = 1;
-                $self->ProcessTrailers($trailInfo);
+        if (!$outfile) {
+            // process the directory
+            $self->ProcessDirectory($dirInfo, $tagTablePtr);
+            // process GeoTiff information if available
+            if ($self->VALUE['GeoTiffDirectory'] ?? null) {
+                self::RequireModule('Image::ExifTool::GeoTiff');
+                \Image\ExifTool\GeoTiff::ProcessGeoTiff($self);
             }
-            // dump any other known trailer (eg. A100 RAW Data)
-            if ($self->HTML_DUMP and $self->KnownTrailer) {
-                $known = $self->KnownTrailer;
-                $raf->Seek(0, 2);
-                $len = $raf->Tell() - $known['Start'];
+            // process information in recognized trailers
+            if ($raf) {
+                $trailInfo = $self->IdentifyTrailer($raf);
                 if ($trailInfo) {
-                    $len -= $trailInfo['Offset'];   // account for other trailers
+                    // scan to find AFCP if necessary (Note: we are scanning
+                    // from a random file position in the TIFF)
+                    $trailInfo['ScanForTrailer'] = 1;
+                    $self->ProcessTrailers($trailInfo);
                 }
-                if ($len > 0) {
-                    $self->HDump($known['Start'], $len, "[{$known['Name']}]");
+                // dump any other known trailer (eg. A100 RAW Data)
+                if ($self->HTML_DUMP and $self->KnownTrailer) {
+                    $known = $self->KnownTrailer;
+                    $raf->Seek(0, 2);
+                    $len = $raf->Tell() - $known['Start'];
+                    if ($trailInfo) {
+                        $len -= $trailInfo['Offset'];   // account for other trailers
+                    }
+                    if ($len > 0) {
+                        $self->HDump($known['Start'], $len, "[{$known['Name']}]");
+                    }
                 }
             }
-        }
-        // update FileType if necessary now that we know more about the file
-        if ($self->DNGVersion and $self->FILE_TYPE === 'TIFF' and !preg_match('/^(DNG|GPR)$/', (string) $self->FileType)) {
-            // override whatever FileType we set since we now know it is DNG
-            $self->OverrideFileType($self->TIFF_TYPE = 'DNG');
-        }
-        if ($self->TIFF_TYPE === 'TIFF') {
-            if ($self->MultiPage) {
-                $self->FoundTag('PageCount', $self->PageCount);
+            // update FileType if necessary now that we know more about the file
+            if ($self->DNGVersion and $self->FILE_TYPE === 'TIFF' and !preg_match('/^(DNG|GPR)$/', (string) $self->FileType)) {
+                // override whatever FileType we set since we now know it is DNG
+                $self->OverrideFileType($self->TIFF_TYPE = 'DNG');
             }
-        } elseif ($self->TIFF_TYPE === 'NRW' and ($self->VALUE['NEFLinearizationTable'] ?? null)) {
-            // fix NEF type if misidentified as NRW
-            $self->OverrideFileType($self->TIFF_TYPE = 'NEF');
+            if ($self->TIFF_TYPE === 'TIFF') {
+                if ($self->MultiPage) {
+                    $self->FoundTag('PageCount', $self->PageCount);
+                }
+            } elseif ($self->TIFF_TYPE === 'NRW' and ($self->VALUE['NEFLinearizationTable'] ?? null)) {
+                // fix NEF type if misidentified as NRW
+                $self->OverrideFileType($self->TIFF_TYPE = 'NEF');
+            }
+            if ($self->ImageDataHash and $self->A100DataOffset and $raf->Seek($self->A100DataOffset, 0)) {
+                $self->ImageDataHash($raf, null, 'A100');
+            }
+            return 1;
         }
-        if ($self->ImageDataHash and $self->A100DataOffset and $raf->Seek($self->A100DataOffset, 0)) {
-            $self->ImageDataHash($raf, null, 'A100');
+        //
+        // rewrite the image
+        //
+        if ($parentDirInfo['NoTiffEnd'] ?? null) {
+            $self->TIFF_END = null;
+        } else {
+            // initialize TIFF_END so it will be updated by WriteExif()
+            $self->TIFF_END = 0;
         }
-        return 1;
-        // (rewriting the image is not ported)
+        if ($canonSig) {
+            // write Canon CR2 specially because it has a header we want to preserve,
+            // and possibly trailers added by the Canon utilities and/or PhotoMechanic
+            $dirInfo['OutFile'] = $outfile;
+            self::RequireModule('Image::ExifTool::CanonRaw');
+            if (!method_exists(\Image\ExifTool\CanonRaw::class, 'WriteCR2')) {
+                $self->Error('Not ported: Image\ExifTool\CanonRaw::WriteCR2');
+                $err = 1;
+            } elseif (!\Image\ExifTool\CanonRaw::WriteCR2($self, $dirInfo, $tagTablePtr)) {
+                $err = 1;
+            }
+        } else {
+            // write TIFF header (8 bytes [plus optional signature] followed by IFD)
+            if ($fileType === 'EXIF') {
+                $otherSig = 'ExifMeta'; // force this signature for all EXIF files
+            } elseif ($otherSig === null) {
+                $otherSig = '';
+            }
+            $offset = 8 + strlen($otherSig);
+            // construct tiff header
+            // (PHP: HeaderPtr is a ScalarRef)
+            $header = new ScalarRef(substr($dataPt, 0, 4) . self::Set32u($offset) . $otherSig);
+            $dirInfo['NewDataPos'] = $offset;
+            $dirInfo['HeaderPtr'] = $header;
+            // preserve padding between image data blocks in ORF images
+            // (otherwise dcraw has problems because it assumes fixed block spacing)
+            if ($fileType === 'ORF' or $identifier != 0x2a) $dirInfo['PreserveImagePadding'] = 1;
+            $newData = $self->WriteDirectory($dirInfo, $tagTablePtr);
+            if ($newData === null) {
+                $err = 1;
+            } elseif (strlen($newData)) {
+                // update header length in case more was added
+                $hdrLen = strlen($header->value);
+                if ($hdrLen != 8) {
+                    self::Set32u($hdrLen, $header->value, 4);
+                    // also update preview fixup if necessary
+                    if ($self->PREVIEW_INFO and ($self->PREVIEW_INFO['Fixup'] ?? null)) {
+                        $self->PREVIEW_INFO['Fixup']->Start += $hdrLen - 8;
+                    }
+                }
+                if ($self->TIFF_TYPE === 'ARW' and !$err) {
+                    // write any required ARW trailer and patch other ARW quirks
+                    self::RequireModule('Image::ExifTool::Sony');
+                    if (!method_exists(\Image\ExifTool\Sony::class, 'FinishARW')) {
+                        $errStr = 'Not ported: Image\ExifTool\Sony::FinishARW';
+                    } else {
+                        $errStr = \Image\ExifTool\Sony::FinishARW($self, $parentDirInfo, $newData,
+                                                                    $dirInfo['ImageData']);
+                    }
+                    if ($errStr) $self->Error($errStr);
+                    unset($dirInfo['ImageData']);   // (was copied by FinishARW)
+                } else {
+                    if (!self::Write($outfile, $header->value, $newData)) $err = 1;
+                }
+                $newData = null;    // free memory
+            }
+            // copy over image data now if necessary
+            if (is_array($dirInfo['ImageData'] ?? null) and !$err) {
+                if (!$self->CopyImageData($dirInfo['ImageData'], $outfile)) $err = 1;
+                unset($dirInfo['ImageData']);
+            }
+        }
+        // make local copy of TIFF_END now (it may be reset when processing trailers)
+        $tiffEnd = $self->TIFF_END;
+        $self->TIFF_END = null;
+
+        // rewrite trailers if they exist
+        if ($raf and $tiffEnd and !$err) {
+            $buf = $trailInfo = null;
+            if (!$raf->Seek(0, 2)) $err = 1;
+            $extra = $raf->Tell() - $tiffEnd;
+            // check for trailer and process if possible
+            for (;;) {
+                if (!($extra > 12)) break;
+                $raf->Seek($tiffEnd);   // seek back to end of image
+                $trailInfo = $self->IdentifyTrailer($raf);
+                if (!$trailInfo) break;
+                $trailInfo['OutFile'] = new ScalarRef('');  // rewrite trailer(s)
+                $trailInfo['ScanForTrailer'] = 1;   // scan for AFCP if necessary
+                $self->TrailerStart = $tiffEnd;
+                // rewrite all trailers to buffer
+                if (!$self->ProcessTrailers($trailInfo)) {
+                    $trailInfo = null;
+                    $err = 1;
+                    break;
+                }
+                // calculate unused bytes before trailer
+                $extra = $trailInfo['DataPos'] - $tiffEnd;
+                break; // yes, the 'for' loop was just a cheap 'goto'
+            }
+            // ignore a single zero byte if used for padding
+            if ($extra > 0 and $tiffEnd & 0x01) {
+                if (!$raf->Seek($tiffEnd, 0)) $err = 1;
+                if (!$raf->Read($buf, 1)) $err = 1;
+                if ($buf !== null and $buf === "\0") {
+                    --$extra;
+                    ++$tiffEnd;
+                }
+            }
+            if ($extra > 0) {
+                $known = $self->KnownTrailer;
+                if (($self->DEL_GROUP['Trailer'] ?? null) and !$known) {
+                    $self->VPrint(0, "  Deleting unknown trailer ($extra bytes)\n");
+                    ++$self->CHANGED;
+                } elseif ($known) {
+                    $self->VPrint(0, "  Copying {$known['Name']} ($extra bytes)\n");
+                    if (!$raf->Seek($tiffEnd, 0)) $err = 1;
+                    if (!self::CopyBlock($raf, $outfile, $extra)) $err = 1;
+                } else {
+                    if (!$raf->Seek($tiffEnd, 0)) $err = 1;
+                    // preserve unknown trailer only if it contains non-null data
+                    // (Photoshop CS adds a trailer with 2 null bytes)
+                    $size = $extra;
+                    for (;;) {
+                        $n = $size > 65536 ? 65536 : $size;
+                        if ($raf->Read($buf, $n) != $n) {
+                            $err = 1;
+                            break;
+                        }
+                        if (preg_match('/[^\0]/', $buf)) {
+                            $self->VPrint(0, "  Preserving unknown trailer ($extra bytes)\n");
+                            // copy the trailer since it contains non-null data
+                            if ($size != $extra and !self::Write($outfile, str_repeat("\0", $extra - $size))) {
+                                $err = 1;
+                                break;
+                            }
+                            if (!self::Write($outfile, $buf)) {
+                                $err = 1;
+                                break;
+                            }
+                            if ($size > $n and !self::CopyBlock($raf, $outfile, $size - $n)) $err = 1;
+                            break;
+                        }
+                        $size -= $n;
+                        if ($size > 0) continue;
+                        $self->VPrint(0, "  Deleting blank trailer ($extra bytes)\n");
+                        break;
+                    }
+                }
+            }
+            // write trailer buffer if necessary
+            if ($trailInfo and !$self->WriteTrailerBuffer($trailInfo, $outfile)) $err = 1;
+            // add any new trailers we are creating
+            $trailPt = $self->AddNewTrailers();
+            if ($trailPt and !self::Write($outfile, $trailPt->value)) $err = 1;
+        }
+        // check DNG version
+        if ($self->DNGVersion) {
+            $ver = $self->DNGVersion;
+            // currently support up to DNG version 1.7
+            if (!(preg_match('/^(\d+) (\d+)/', $ver, $m) and Perl::num("$m[1].$m[2]") <= 1.7)) {
+                $ver = strtr($ver, ' ', '.');
+                $self->Error("DNG Version $ver not yet tested", 1);
+            }
+        }
+        return $err ? -1 : 1;
     }
 
     //------------------------------------------------------------------------------
@@ -1928,12 +2166,12 @@ trait Formats
     //  3) default byte order passed to this routine
     //  4) makenote byte order from last file read
     //  5) big endian
-    // (from Writer.pl: only needed by DoProcessTIFF when reading; there are no new values
-    //  when reading, so GetNewValue('ExifByteOrder') is always undef)
+    // (from Writer.pl, kept here with the TIFF code)
     public function SetPreferredByteOrder($default = null)
     {
         $self = $this;
         $byteOrder = $self->Options('ByteOrder') ?:
+                     $self->GetNewValue('ExifByteOrder') ?:
                      $default ?: $self->MAKER_NOTE_BYTE_ORDER ?: 'MM';
         if (!self::SetByteOrder($byteOrder)) {
             if ($self->Options('Verbose')) {

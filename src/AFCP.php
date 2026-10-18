@@ -9,8 +9,7 @@
 //
 // Notes:        Plays reasonably well with FotoStation trailers
 //
-// PHP port of Image::ExifTool::AFCP 1.10 (reading only). Tag tables are generated
-// into tables/AFCP.php.
+// PHP port of Image::ExifTool::AFCP 1.10. Tag tables are generated into tables/AFCP.php.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -37,7 +36,7 @@ final class AFCP
 
         // (Perl "last NoAFCP" is a "break 2" from the inner loops)
         for (;;) {
-            $buff = $fix = null;
+            $buff = $fix = $dirBuff = $valBuff = $fixup = $vers = null;
             // look for AXS trailer
             if (!($raf->Seek(-12 - $offset, 2) and
                   $raf->Read($buff, 12) == 12 and
@@ -86,8 +85,21 @@ final class AFCP
             $rtnVal = 1;
             $verbose = $et->Options('Verbose');
             $out = $et->Options('TextOut');
-            // (writing not ported)
-            if ($verbose or $et->HTML_DUMP) $et->DumpTrailer($dirInfo);
+            $outfile = $dirInfo['OutFile'] ?? null;
+            if ($outfile) {
+                // allow all AFCP information to be deleted
+                if ($et->DEL_GROUP['AFCP'] ?? null) {
+                    if ($verbose) fwrite($out, "  Deleting AFCP\n");
+                    ++$et->CHANGED;
+                    break;
+                }
+                $dirBuff = $valBuff = '';
+                $fixup = $dirInfo['Fixup'] ?? null;
+                if (!$fixup) $fixup = $dirInfo['Fixup'] = new Fixup();
+                $vers = substr($buff, 4, 2);    // get version number
+            } else {
+                if ($verbose or $et->HTML_DUMP) $et->DumpTrailer($dirInfo);
+            }
             // read AFCP directory data
             $numEntries = ExifTool::Get16u($buff, 6);
             $dir = null;
@@ -95,7 +107,7 @@ final class AFCP
                 $et->Error('Error reading AFCP directory', 1);
                 break;
             }
-            if ($verbose > 2) {
+            if ($verbose > 2 and !$outfile) {
                 $dat = $buff . $dir;
                 fwrite($out, "  AFCP Directory:\n");
                 $et->VerboseDump($dat, Addr: $dirInfo['DataPos'], Width: 12);
@@ -114,17 +126,55 @@ final class AFCP
                     $raf->Seek($offset + $fix, 0) and
                     $raf->Read($buff, $size) == $size)
                 {
-                    // extract information
-                    $et->HandleTag($tagTablePtr, $tag, $buff,
-                        DataPt: $buff,
-                        Size: $size,
-                        Index: $index,
-                        DataPos: $offset + $fix,
-                    );
+                    if ($outfile) {
+                        // rewrite this information
+                        $tagInfo = $et->GetTagInfo($tagTablePtr, $tag);
+                        if ($tagInfo and $tagInfo->SubDirectory) {
+                            $subdirInfo = [
+                                'DataPt' => $buff,
+                                'DirStart' => 0,
+                                'DirLen' => $size,
+                                'DataPos' => $offset + $fix,
+                                'Parent' => 'AFCP',
+                            ];
+                            $subTable = ExifTool::GetTagTable($tagInfo->SubDirectory['TagTable']);
+                            $newDir = $et->WriteDirectory($subdirInfo, $subTable);
+                            if ($newDir !== null) {
+                                $size = strlen($newDir);
+                                $buff = $newDir;
+                            }
+                        }
+                        $fixup->AddFixup(strlen($dirBuff) + 8);
+                        $dirBuff .= $tag . ExifTool::Set32u($size) . ExifTool::Set32u(strlen($valBuff));
+                        $valBuff .= $buff;
+                    } else {
+                        // extract information
+                        $et->HandleTag($tagTablePtr, $tag, $buff,
+                            DataPt: $buff,
+                            Size: $size,
+                            Index: $index,
+                            DataPos: $offset + $fix,
+                        );
+                    }
                 } else {
                     $et->Warn('Bad AFCP directory');
+                    if ($outfile) $rtnVal = -1;
                     break;
                 }
+            }
+            if ($outfile and strlen($dirBuff)) {
+                $outPos = ExifTool::Tell($outfile);  // get current outfile position
+                // apply fixup to directory pointers
+                $valPos = $outPos + 12;     // start of value data
+                $fixup->Shift += $valPos + strlen($dirBuff);
+                $fixup->ApplyFixup($dirBuff);
+                // write the AFCP header, directory, value data and EOF record (with zero checksums)
+                if (!ExifTool::Write($outfile, $hdr, $vers, ExifTool::Set16u(strlen($dirBuff) / 12), ExifTool::Set32u(0),
+                      $dirBuff, $valBuff, $hdr, ExifTool::Set32u($outPos), ExifTool::Set32u(0))) $rtnVal = -1;
+                // complete fixup so the calling routine can apply further shifts
+                $fixup->AddFixup(strlen($dirBuff) + strlen($valBuff) + 4);
+                $fixup->Start += $valPos;
+                $fixup->Shift -= $valPos;
             }
             break;
         }

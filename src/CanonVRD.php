@@ -406,6 +406,42 @@ final class CanonVRD
         }
         $vrdType = 'VRD';
 
+        $outfile = $dirInfo['OutFile'] ?? null;
+        if ($outfile) {
+            if ($verbose) fwrite($out, "  Rewriting CanonVRD trailer\n");
+            // exit quickly if writing and no CanonVRD tags are being edited
+            // (PHP: the data is written, Perl may read it directly into an empty output buffer)
+            if (!array_key_exists('CanonVRD', $et->EDIT_DIRS ?? [])) {
+                if ($verbose) fwrite($out, "{$et->INDENT}  [nothing changed in CanonVRD]\n");
+                return ExifTool::Write($outfile, $dataPt) ? 1 : -1;
+            }
+            // delete CanonVRD information if specified
+            $doDel = $et->DEL_GROUP['CanonVRD'] ?? null;
+            if (!$doDel) {
+                if (($et->DEL_GROUP['Trailer'] ?? null) and $et->FILE_TYPE !== 'VRD') $doDel = 1;
+                if (!$doDel) {
+                    $extra = ExifTool::GetTagTable('Image::ExifTool::Extra');
+                    // also delete if writing as a block (will get added back again later)
+                    if ($et->NEW_VALUE[spl_object_id($extra['CanonVRD'])] ?? null) {
+                        // delete if this isn't version 4
+                        if (!preg_match('/^.{28}\xff\xff\0\xf7/s', $dataPt)) $doDel = 1;
+                    }
+                    if (($et->NEW_VALUE[spl_object_id($extra['CanonDR4'])] ?? null) and !$doDel) {
+                        // delete if this is version 4
+                        if (preg_match('/^.{28}\xff\xff\0\xf7/s', $dataPt)) $doDel = 1;
+                    }
+                }
+            }
+            if ($doDel and $et->FILE_TYPE !== 'VRD') {
+                if ($verbose) fwrite($out, "  Deleting CanonVRD trailer\n");
+                ++$et->CHANGED;
+                return 1;
+            }
+            // (PHP: writing CanonVRD information is not ported yet)
+            $et->Error('Not ported: writing CanonVRD', 1);
+            return 0;
+        }
+
         if ($verbose or $et->HTML_DUMP) {
             if ($dirInfo['RAF'] ?? null) $et->DumpTrailer($dirInfo);
         }

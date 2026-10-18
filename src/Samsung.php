@@ -16,9 +16,8 @@
 //               IB) Iliah Borg private communication (LibRaw)
 //               NJ) Niels Kristian Bech Jensen private communication
 //
-// PHP port of Image::ExifTool::Samsung 1.62 (reading only: WriteSTMN and the writing
-// branches of ProcessSamsung are not ported). Tag tables are generated into
-// tables/Samsung.php, %formatMinMax and %samsungLensTypes into Vars\Samsung.
+// PHP port of Image::ExifTool::Samsung 1.62 (WriteSTMN is not ported). Tag tables are
+// generated into tables/Samsung.php, %formatMinMax and %samsungLensTypes into Vars\Samsung.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -183,14 +182,14 @@ final class Samsung
     // Returns: 1 on success, 0 not valid Samsung trailer, or -1 error writing
     // - updates DataPos to point to start of Samsung trailer
     // - updates DirLen to existing trailer length
-    // (PHP: reading only, the OutFile branches are not ported)
     public static function ProcessSamsung(ExifTool $et, array &$dirInfo, ?TagTable $tagTablePtr = null)
     {
         $raf = $dirInfo['RAF'] ?? null;
         $offset = ($dirInfo['Offset'] ?? null) ?: 0;
+        $outfile = $dirInfo['OutFile'] ?? null;
         $verbose = $et->Options('Verbose');
         $unknown = $et->Options('Unknown');
-        $buff = $buf2 = $index = null;
+        $buff = $buf2 = $index = $offsetPos = $audioNOff = $audioSize = null;
 
         if (!$raf) {
             $raf = new RandomAccess(($dirInfo['DataPt'] ?? null) instanceof ScalarRef ? $dirInfo['DataPt']->value : (string) $dirInfo['DataPt']);
@@ -217,7 +216,21 @@ final class Samsung
             if (!($raf->Seek(-8 - $len, 1) and $raf->Read($buff, $len) == $len)) break;
             $blockEnd -= $len + 8;
             if ($type !== 'SEFT') {     // look for directory block (ends with "SEFT")
-                // (the QDIO block is only needed when writing)
+                if (!($outfile and $type === 'QDIO')) continue;
+                // QDIO block format:
+                //   0 - 'QDIO'
+                //   4 - int32u: 101 (version)
+                //   8 - int32u: 1
+                //  12 - int32u: absolute offset of audio file start (augh!!)
+                //  16 - int32u: absolute offset of audio file end (augh!!)
+                //  20 - int32u: 20 (QDIO block length minus 8)
+                //  24 - 'QDIO'
+                if ($len == 20) {
+                    // save position of audio file offset in QDIO block
+                    $offsetPos = $endPos - $raf->Tell() + $len - 12;
+                } else {
+                    $et->Error('Unsupported Samsung trailer QDIO block', 1);
+                }
                 continue;
             }
             // validate SEFH header
@@ -245,7 +258,7 @@ final class Samsung
             // save trailer position and length
             $dataPos = $dirInfo['DataPos'] = $dirPos - $firstBlock;
             $dirLen = $dirInfo['DirLen'] = $endPos - $dataPos;
-            if (($verbose or $et->HTML_DUMP) and !empty($dirInfo['RAF'])) {
+            if (($verbose or $et->HTML_DUMP) and !$outfile and !empty($dirInfo['RAF'])) {
                 $et->DumpTrailer($dirInfo);
                 if ($et->HTML_DUMP) return 1;
             }
@@ -258,6 +271,15 @@ final class Samsung
                 $size = ExifTool::Get32u($buff, $entry + 8);    // block size
                 if ($noff > $dirPos or $size > $noff or $size < 8) break 2;     // (last SamBlock)
                 if ($firstBlock < $noff) $firstBlock = $noff;
+                if ($outfile) {
+                    if (!($type == 0x0100 and !$audioNOff)) continue;
+                    // save offset and length of first audio file for QDIO block
+                    if (!($raf->Seek($dirPos - $noff, 0) and $raf->Read($buf2, 8) == 8)) break;
+                    $len = ExifTool::Get32u($buf2, 4);
+                    $audioNOff = $noff - 8 - $len;  // negative offset to start of audio data
+                    $audioSize = $size - 8 - $len;
+                    continue;
+                }
                 if (!($raf->Seek($dirPos - $noff, 0) and $raf->Read($buf2, $size) == $size)) break;
                 // (could validate the first 4 bytes of the block because they
                 // are the same as the first 4 bytes of the directory entry)
@@ -299,6 +321,24 @@ final class Samsung
                     Size:    $size - (8 + $len),
                 );
                 unset($et->SamsungTagName);
+            }
+            if ($outfile) {
+                if (!($raf->Seek($dataPos, 0) and $raf->Read($buff, $dirLen) == $dirLen)) break;
+                // adjust the absolute offset in the QDIO block if necessary
+                if ($offsetPos and $audioNOff) {
+                    // initialize the audio file start/end position in the QDIO block
+                    $newPos = ExifTool::Tell($outfile) + $dirPos - $audioNOff - $dataPos;
+                    ExifTool::Set32u($newPos, $buff, strlen($buff) - $offsetPos);
+                    ExifTool::Set32u($newPos + $audioSize, $buff, strlen($buff) - $offsetPos + 4);
+                    // add a fixup so the calling routine can apply further shifts if necessary
+                    $fixup = $dirInfo['Fixup'] ?? null;
+                    if (!$fixup) $fixup = $dirInfo['Fixup'] = new Fixup();
+                    $fixup->AddFixup(strlen($buff) - $offsetPos);
+                    $fixup->AddFixup(strlen($buff) - $offsetPos + 4);
+                }
+                if ($verbose) $et->VPrint(0, "  Writing Samsung trailer ($dirLen bytes)\n");
+                if (!ExifTool::Write($dirInfo['OutFile'], $buff)) return -1;
+                return 1;
             }
             return 1;
         }
