@@ -152,7 +152,7 @@ trait WriteQuickTime
      * to one of its subs (AUTOLOAD), usually the dummy call to a QuickTime write proc made by
      * SetNewValue.  Called at the start of those subs.
      */
-    private static function LoadWriteQuickTime(): void
+    public static function LoadWriteQuickTime(): void
     {
         if (self::$writeQuickTimeLoaded) return;
         self::$writeQuickTimeLoaded = true;

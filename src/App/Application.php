@@ -16,9 +16,8 @@ use Image\ExifTool\XMP;
  * Port of the `exiftool` command-line script (exiftool 13.59), reading and writing.
  *
  * File-scope variables of the script are properties, its subs are methods with the same names,
- * and the main script is run(). Not ported (the command stops with an error): -geotag, and
- * writing Geotag, Geotime or Geosync (Geotag.pm is not ported yet), -X, -h, -htmlDump, -listx,
- * -diff, -plot, -fileNUM, -fileOrder, -z, -use of modules other than those of ExifTool, and
+ * and the main script is run(). Not ported (the command stops with an error): -X, -h, -htmlDump, -listx,
+ * -diff, -plot, -fileNUM, -use of modules other than those of ExifTool, and
  * -config files. -if and -p evaluate Perl code: -if supports a subset of Perl expressions (see
  * CompileCondition()), and advanced formatting expressions (${TAG;EXPR}) are not supported in
  * -p or in tag copies (-TAG<STR). The writers not ported yet (MIE, PNG...) give an error for
@@ -106,6 +105,9 @@ final class Application
     private array $echo4 = [];          // stderr echo after processing is complete
     private array $efile = [];          // files for writing list of error/fail/same file names
     private array $exclude = [];        // list of excluded tags
+    private $doUnzip;                  // flag to extract info from .gz and .bz2 files
+    private array $fileOrder = [];      // tags to use for ordering of input files
+    private ?int $fileOrderFast = null; // -fast level for -fileOrder option
     private array $files = [];          // list of files and directories to scan
     private array $moreArgs = [];       // more arguments to process after -stay_open -@
     private array $newValues = [];      // list of new tag values to set
@@ -194,6 +196,8 @@ final class Application
     private $progressIncr;              // increment for progress counter
     private $progressMax;               // total number of files to process
     private $progressNext;              // next progress count to output
+    private ?string $windowTitle = null;   // title for console window
+    private string $curTitle = '';
     private $progStr = '';              // progress message string
     private $purge;                     // flag to purge memory
     private $quiet = 0;                 // flag to disable printing of informational messages / warnings
@@ -406,7 +410,7 @@ final class Application
             $this->filtered = $this->fixLen = $this->forcePrint = $this->geoOnly = $this->ignoreHidden = null;
             $this->isBinary = $this->joinLists = $this->langOpt = $this->listDir = $this->listItem = null;
             $this->multiFile = $this->noBinary = $this->outOpt = $this->preserveTime = $this->progress = null;
-            $this->progressCount = $this->progressIncr = $this->progressMax = $this->progressNext = null;
+            $this->progressCount = $this->progressIncr = $this->progressMax = $this->progressNext = $this->windowTitle = $this->doUnzip = null;
             $this->purge = $this->recurse = $this->scanWritable = $this->sectHeader = $this->setCharset = null;
             $this->showGroup = $this->showTagID = $this->structOpt = $this->tagOut = $this->textOut = null;
             $this->textOut2 = $this->textOverwrite = $this->tmpFile = $this->tmpText = $this->validFile = null;
@@ -1062,8 +1066,18 @@ final class Application
                         $mt->Options('FastScan', \strlen($m[1]) ? $m[1] : 1);
                         continue;
                     }
-                    if (preg_match('/^(file\d+)$/i', $arg) || preg_match('/^fileorder(\d*)$/i', $arg)) {
+                    if (preg_match('/^(file\d+)$/i', $arg)) {
                         $badCmd = $this->NotPorted($arg);
+                        continue;
+                    }
+                    if (preg_match('/^fileorder(\d*)$/i', $arg, $m)) {
+                        if ($this->ARGV) {
+                            $this->fileOrder[] = array_shift($this->ARGV);
+                        }
+                        $num = (int) ($m[1] ?? 0);
+                        if (null === $this->fileOrderFast || $this->fileOrderFast > $num) {
+                            $this->fileOrderFast = $num;
+                        }
                         continue;
                     }
                     if ('globaltimeshift' === $a) {
@@ -1287,12 +1301,20 @@ final class Application
                     if (preg_match('/^progress(\d*)(:.*)?$/i', $arg, $m)) {
                         $this->progressIncr = ($m[1] ?? '') ?: 1;
                         $this->progressNext = 0; // start showing progress at the first file
-                        if (empty($m[2])) {
+                        if (!empty($m[2])) {
+                            $this->windowTitle = substr($m[2], 1);
+                            if (!\strlen($this->windowTitle)) {
+                                $this->windowTitle = 'ExifTool %p%%';
+                            }
+                            if (preg_match('/%\d*[bpr]/', $this->windowTitle) && null === $this->progress) {
+                                $this->progress = 0;
+                            }
+                        } else {
                             $this->progress = 1;
                             if (null === $this->verbose) {
                                 $this->verbose = 0;
                             }
-                        } // (else: the console window title is not set by the PHP port)
+                        }
                         $this->progressCount = 0;
                         continue;
                     }
@@ -1548,7 +1570,7 @@ final class Application
                         continue;
                     }
                     if (preg_match('/^z(ip)?$/i', $arg)) {
-                        $badCmd = $this->NotPorted($arg);
+                        $this->doUnzip = 1;
                         continue;
                     }
                     if ('' === $arg) {
@@ -2071,8 +2093,66 @@ final class Application
                 $this->fixLen = 1;
             }
 
-            // (-fileOrder is not ported)
-            if (null !== $this->progress) {
+            // sort input files if specified
+            if ($this->fileOrder) {
+                $allFiles = [];
+                $this->ProcessFiles($mt, $allFiles);
+                $sortTool = new ExifTool();
+                if ($this->fileOrderFast) {
+                    $sortTool->Options('FastScan', $this->fileOrderFast);
+                }
+                $sortTool->Options('PrintConv', $mt->Options('PrintConv'));
+                $sortTool->Options('Duplicates', 0);
+                $sortBy = $isFloat = $rev = [];
+                // save reverse sort flags
+                foreach ($this->fileOrder as &$fo) {
+                    $rev[] = str_starts_with($fo, '-') ? 1 : 0;
+                    $fo = preg_replace('/^-/', '', $fo);
+                }
+                unset($fo);
+                foreach ($allFiles as $file) {
+                    $tags = [];
+                    $info = $sortTool->ImageInfo($this->Infile($file, 1), ...$this->fileOrder, ...[$tags]);
+                    $tags = $sortTool->IO_TAG_LIST ?? [];
+                    // get values of all tags (or '~' to sort last if not defined)
+                    foreach ($tags as &$t) {
+                        $t = $info[$t] ?? null;
+                        if (null === $t) {
+                            $t = '~';
+                            continue;
+                        }
+                        $t = Perl::str($t);
+                        $isFloat[$t] = ExifTool::IsFloat($t);
+                        // pad numbers to 12 digits to keep them sequential
+                        if (!$isFloat[$t]) {
+                            $t = preg_replace_callback('/(\d+)/', static fn ($m) => (\strlen($m[1]) < 12 ? str_repeat('0', 12 - \strlen($m[1])) : '').$m[1], $t);
+                        }
+                    }
+                    unset($t);
+                    $sortBy[$file] = $tags;    // save tag values for each file
+                }
+                // sort in specified order
+                usort($allFiles, static function ($a, $b) use ($rev, $sortBy, $isFloat) {
+                    for ($i = 0; $i < \count($rev); ++$i) {
+                        $u = $sortBy[$a][$i] ?? null;
+                        $v = $sortBy[$b][$i] ?? null;
+                        $fu = !empty($isFloat[$u]);
+                        $fv = !empty($isFloat[$v]);
+                        if (!$fu && !$fv) {
+                            $cmp = strcmp((string) $u, (string) $v);
+                        } elseif ($fu && $fv) {
+                            $cmp = (float) $u <=> (float) $v;
+                        } else {
+                            $cmp = $fu ? -1 : 1;
+                        }
+                        if ($cmp) {
+                            return $rev[$i] ? -$cmp : $cmp;
+                        }
+                    }
+                    return strcmp($a, $b);
+                });
+                $this->files = $allFiles;
+            } elseif (null !== $this->progress) {
                 // expand FILE argument to count the number of files to process
                 $allFiles = [];
                 $this->ProcessFiles($mt, $allFiles);
@@ -2305,7 +2385,36 @@ final class Application
         $foundTags = [];
         $info = $file = null;
 
-        // (-progress:TITLE: the console window title is not set by the PHP port)
+        // set window title for this file if necessary
+        if (null !== $this->windowTitle) {
+            if ($this->progressCount >= $this->progressNext) {
+                $prog = $this->progressMax ? "{$this->progressCount}/{$this->progressMax}" : '0/0';
+                $title = $this->windowTitle;
+                [$num, $denom] = explode('/', $prog);
+                $frac = $num / ($denom ?: 1);
+                $n = 20;    // length of bar
+                $title = preg_replace_callback('/%(\d+)b/', static function ($m) use (&$n) { $n = (int) $m[1]; return '%b'; }, $title, 1);
+                $bar = (int) floor($frac * $n + 0.5);
+                $lkup = [
+                    'b' => str_repeat('I', $bar).str_repeat('.', $n - $bar),
+                    'f' => $orig,
+                    'p' => (int) floor(100 * $frac + 0.5),
+                    'r' => $prog,
+                    '%' => '%',
+                ];
+                $title = preg_replace_callback('/%([%bfpr])/', static fn ($m) => $lkup[$m[1]], $title);
+                $this->SetWindowTitle($title);
+                if (null !== $this->progressMax) {
+                    $this->progressNext = null;
+                } else {
+                    $this->progressNext += $this->progressIncr;
+                }
+            }
+            // ($progressMax is not defined for "-progress:%f")
+            if (null === $this->progressMax) {
+                ++$this->progressCount;
+            }
+        }
         if (!(\strlen($orig) || $this->outOpt)) {
             $this->Warn("Error: Zero-length file name - \"\"\n");
             ++$this->countBad;
@@ -2336,9 +2445,23 @@ final class Application
         } else {
             $file = $orig;
         }
-        // (-fileNUM and -z are not ported)
+        // (-fileNUM is not ported)
 
         $pipe = $file;
+        if ($this->doUnzip) {
+            // pipe through gzip or bzip2 if necessary
+            if (preg_match('/\.(gz|bz2)$/i', $file, $m)) {
+                $type = strtolower($m[1]);
+                if (preg_match('/[^-_.\'A-Za-z0-9\/\\\\]/', $file)) {
+                    $this->Warn("Error: Insecure zip file name. Skipped\n");
+                    $this->EFile($file);
+                    ++$this->countBad;
+                    return;
+                }
+                $pipe = 'gz' === $type ? "gzip -dc \"$file\" |" : "bzip2 -dc \"$file\" |";
+                $et->TRUST_PIPE = 1;
+            }
+        }
         // evaluate -if expression for conditional processing
         if ($this->condition) {
             $result = $evalWarning = null;
@@ -5380,6 +5503,16 @@ final class Application
         exit(1);
     }
 
+    // Set window title
+    private function SetWindowTitle(string $title): void
+    {
+        if ($this->curTitle !== $title) {
+            $this->curTitle = $title;
+            // (this only works for XTerm terminals, and STDERR must go to the console)
+            fwrite(\STDERR, sprintf("\033]0;%s\007", $title));
+        }
+    }
+
     private function Cleanup(): void
     {
         if (null !== $this->tmpFile) {
@@ -5392,7 +5525,7 @@ final class Application
         if ($this->preserveTimes) {
             $this->PreserveTime();
         }
-        // (no console window title to reset)
+        $this->SetWindowTitle('');
     }
 
     // exit routine
@@ -5430,7 +5563,7 @@ final class Application
             return $this->stdin;
         }
 
-        return is_file($argFile) ? @fopen($argFile, 'r') : false;
+        return (is_file($argFile) || (file_exists($argFile) && !is_dir($argFile))) ? @fopen($argFile, 'r') : false;
     }
 
     /** Perl: close STAYOPEN */

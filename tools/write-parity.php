@@ -1321,6 +1321,12 @@ if (isset($opt['cli'])) {
         ['Writer.jpg', ['-efile15', 'all.txt', '-Comment=x', '-o', 'out.jpg', '-execute', '-efile2', 'same.txt', '-Comment=', '-common_args']],
         ['Canon.jpg', ['-efile4', 'failed.txt', '-if', '$Make eq "Nikon"', '-Comment=x']],
         ['Writer.jpg', ['-efile8!', 'updated.txt', '-Comment=x']],
+        // -fileOrder, -progress:TITLE, -@ with a device
+        ['Canon.jpg', ['-fileOrder', '-ISO', '-fileOrder1', 'Model', '-Comment=x', '.']],
+        ['Canon.jpg', ['-fileOrder4', 'FileSize', '-progress2', '-Comment=x', '.']],
+        ['Writer.jpg', ['-progress:%b %p %r', '-Comment=x', '.']],
+        ['Writer.jpg', ['-progress5:%f', '-Comment=x', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-Comment=x', '-@', '/dev/null']],
         // -if, -progress, -v, -q, -m, -api with writing
         ['Canon.jpg', ['-if', '$Make eq "Canon"', '-Comment=x', '-o', 'out.jpg']],
         ['Canon.jpg', ['-if', '$Make eq "Nikon"', '-Comment=x', '-o', 'out.jpg']],

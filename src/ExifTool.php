@@ -2798,7 +2798,14 @@ COMPOSITE_TAG:
         // default to read mode ('<') unless input is a trusted pipe
         if (!$mode) $mode = (preg_match('/\|$/', $file) and $this->TRUST_PIPE) ? '' : '<';
         $this->TRUST_PIPE = null;
-        if ($mode === '') return false;     // (ponytail: pipes not supported)
+        if ($mode === '') {     // trusted input pipe ("gzip -dc FILE |", see exiftool -z)
+            $fh = @popen(substr($file, 0, -1), 'r');
+            if ($fh === false) {
+                $fh = null;
+                return false;
+            }
+            return true;
+        }
         $this->EncodeFileName($file);
         if ($file === '-') {
             $fh = @fopen($mode === '<' ? 'php://stdin' : 'php://stdout', $mode === '<' ? 'rb' : 'wb');
@@ -6256,6 +6263,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
 
         $et = new self();
         self::LoadAllTables();
+        QuickTime::LoadWriteQuickTime();    // (PHP: Perl has loaded WriteQuickTime.pl by now)
         $tableNames = array_map('strval', array_keys(self::$allTables));
 
         while ($tableNames) {
