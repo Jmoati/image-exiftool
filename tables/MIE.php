@@ -10,31 +10,45 @@ $f_b2e41c1595 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintExposureTime($val);
 };
-$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
+$f_1d8918cb54 = static function ($val, ExifTool $self, $wantGroup) {
+    return $val;
+};
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
+$f_2f0c5a83d2 = static function ($val, ExifTool $self, $wantGroup) {
+    return $self->InverseDateTime($val);
+};
 $f_5f55a3e4a5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1, 'N');
 };
-$f_cb54e897d7 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv cb54e897d7'); };
+$f_cb54e897d7 = static function ($val, ExifTool $self, $wantGroup) {
+    return GPS::ToDegrees($val, 1, 'lat');
+};
 $f_473c5a1df4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDegrees($val, 1);
 };
-$f_ad82fb7d22 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv ad82fb7d22'); };
+$f_ad82fb7d22 = static function ($val, ExifTool $self, $wantGroup) {
+    return GPS::ToDMS($self, $val, 3);
+};
 $f_5817105f7a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1, 'E');
 };
-$f_c94d243322 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c94d243322'); };
+$f_c94d243322 = static function ($val, ExifTool $self, $wantGroup) {
+    return GPS::ToDegrees($val, 1, 'lon');
+};
 $f_05825dd92f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', 'x');
 };
-$f_83d255d5dd = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 83d255d5dd'); };
+$f_83d255d5dd = static function ($val, ExifTool $self, $wantGroup) {
+    return strtr(Perl::str($val), 'x', ' ');
+};
 $f_1f2667c7fa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->ValidateImage(new ScalarRef($val), $tag);
 };
-$f_d2c798ea2d = static function (mixed ...$args) { throw new NotPorted('ValueConvInv d2c798ea2d'); };
+$f_d2c798ea2d = static function ($val, ExifTool $self, $wantGroup) {
+    return '';
+};
 
 return [
     'load' => [

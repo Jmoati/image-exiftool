@@ -1,0 +1,1074 @@
+==== f46ac524d0 ValueConvInv
+# Google::Device Cameras /Struct/Camera /Struct/Pose /Struct/Timestamp TimeStamp
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::int(Perl::numw(ExifTool::GetUnixTime($val, 1), 'multiplication (*)') * 1000);
+}
+
+==== 1bc9b98957 PrintConvInv
+# APP12::Ducky 0x0001 Quality
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/(\d+)/', Perl::str($val), $m) ? $m[1] : null;
+}
+
+==== 23408319fe ValueConvInv
+# APP12::Ducky 0x0002 Comment
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::pack('N', strlen(Perl::str($val))).$self->Encode($val, 'UTF16', 'MM');
+}
+
+==== 6b055d65d8 PrintConvInv
+# CanonCustom::Functions2 0x010d ApertureRange
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/([\d.]+)/', Perl::str($val), $m) ? $m[1] : 0;
+}
+
+==== 8fb65bcfb5 PrintConvInv
+# CanonCustom::Functions2 0x0610 ContinuousShootingSpeed
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/(\d+)/', Perl::str($val), $m) ? $m[1] : 0;
+}
+
+==== 967a809307 PrintConvInv
+# CanonCustom::Functions2 0x010c ShutterSpeedRange
+# $val=~m{([\d./]+)} ? eval $1 : 0  (eval of Perl code made of digits, dots and slashes: a
+# v-string, or numbers divided left to right, where a leading 0 makes an octal integer, which a
+# following "." concatenates; undef when the eval fails)
+static function ($val, ExifTool $self, $wantGroup) {
+    if (!preg_match('{([\d./]+)}', Perl::str($val), $m)) {
+        return 0;
+    }
+    $e = $m[1];
+    if (preg_match('/^\d+\.\d+(\.\d+)+$/', $e)) {
+        return implode('', array_map(static fn ($n) => Perl::chr((int) $n), explode('.', $e)));
+    }
+    // terms joined by ".", each one numbers joined by "/"
+    $terms = [];
+    $pos = 0;
+    $len = strlen($e);
+    while ($pos < $len) {
+        $nums = [];
+        for (;;) {
+            if (!preg_match('{\G(?:(0\d+)|(\d+\.?\d*|\.\d+))}', $e, $t, 0, $pos)) {
+                return null;    // (syntax error)
+            }
+            $pos += strlen($t[0]);
+            if (($t[1] ?? '') !== '') {
+                if (preg_match('/[89]/', $t[1])) {
+                    return null;    // (Illegal octal digit)
+                }
+                $nums[] = octdec($t[1]);
+            } else {
+                $nums[] = Perl::num($t[2]);
+            }
+            if ($pos < $len && $e[$pos] === '/') {
+                ++$pos;
+                continue;
+            }
+            break;
+        }
+        $r = array_shift($nums);
+        foreach ($nums as $n) {
+            if ($n == 0) {
+                return null;    // (Illegal division by zero)
+            }
+            $r = $r / $n;
+        }
+        $terms[] = $r;
+        if ($pos < $len) {
+            if ($e[$pos] !== '.') {
+                return null;
+            }
+            ++$pos;
+        }
+    }
+    return count($terms) == 1 ? $terms[0] : implode('', array_map(Perl::str(...), $terms));
+}
+
+==== a2cc1f73f2 PrintConvInv
+# CanonCustom::Functions2 0x080c TimerLength
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/(\d+)$/', Perl::str($val), $m) ? $m[1] : 0;
+}
+
+==== c7922760f0 PrintConvInv
+# CanonCustom::Functions2 0x0109 UsableShootingModes
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/0x([\dA-F]+)/i', Perl::str($val), $m) ? Perl::hexw($m[1], '$1') : null;
+}
+
+==== f58795f79e PrintConvInv
+# CanonCustom::Functions2 0x0103 ISOSpeedRange
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/(-?[\d.]+)/', Perl::str($val), $m) ? $m[1] : 0;
+}
+
+==== 0a0801ad38 ValueConvInv
+# CanonCustom::PersonalFuncValues 0x0004 PF4ExposureTimeMin
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::num(Canon::CanonEvInv(-Perl::log(Perl::numw($val, 'multiplication (*)', '$val') * 8 / 1000) / log(2))) / 4;
+}
+
+==== 6af727d742 ValueConvInv
+# CanonCustom::Functions2 0x0103 ISOSpeedRange
+static function ($val, ExifTool $self, $wantGroup) {
+    $v = Perl::numw($val, 'numeric lt (<)', '$val');
+    return $v < 2 ? $val : Perl::int(8 * (Perl::log($v / 100) / log(2) + 9) + 0.5);
+}
+
+==== a6bac7eadf ValueConvInv
+# CanonCustom::Functions2 0x010d ApertureRange
+# The Perl source has an extra closing parenthesis: its eval always dies with this syntax error
+static function ($val, ExifTool $self, $wantGroup) {
+    throw new \RuntimeException('syntax error at (eval 1) line 1, near "0.5)"');
+}
+
+==== a95f050be4 ValueConvInv
+# CanonCustom::Functions2 0x010c ShutterSpeedRange
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::int(-Perl::log(Perl::numw($val, 'log', '$val')) * 1600 * log(2) + 0.5);
+}
+
+==== a9afffc453 ValueConvInv
+# CanonCustom::PersonalFuncValues 0x0006 PF5ApertureMin
+static function ($val, ExifTool $self, $wantGroup) {
+    return (Perl::num(Canon::CanonEvInv(Perl::log(Perl::numw($val, 'log', '$val')) * 2 / log(2))) + 32) / 4;
+}
+
+==== acb7175dfc ValueConvInv
+# CanonCustom::Functions2 0x010d ApertureRange
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::int(8 * (Perl::log(Perl::numw($val, 'log', '$val')) * 2 / log(2) + 1) + 0.5);
+}
+
+==== f7cd287e0e ValueConvInv
+# CanonCustom::Functions2 0x010c ShutterSpeedRange
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::int(-8 * (Perl::log(Perl::numw($val, 'log', '$val')) / log(2) - 7) + 0.5);
+}
+
+==== 4dce33ccc9 PrintConvInv
+# CanonRaw::Main 0x180b SerialNumber
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/(.*)-(\d+)/', Perl::str($val), $m) ? Perl::uvr((Perl::uv(Perl::hexw($m[1], '$1')) << 16) + Perl::num($m[2])) : null;
+}
+
+==== 9a9242744f PrintConvInv
+# CanonRaw::Main 0x1806 SelfTimerTime
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_replace('/\s*s.*/', '', Perl::str($val), 1);
+}
+
+==== d4fbaf444a PrintConvInv
+# CanonRaw::Main 0x1817 FileNumber
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_replace('/-/', '', Perl::str($val), 1);
+}
+
+==== 95f7588528 ValueConvInv
+# CanonRaw::Main 0x1814 MeasuredEV
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'subtraction (-)', '$val') - 5;
+}
+
+==== b60a4417b0 ValueConvInv
+# CanonRaw::TimeStamp 0x0001 TimeZoneCode
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 3600;
+}
+
+==== 476a76dee6 PrintConvInv
+# CanonVRD::DR4 0x20701 ShootingDistance
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw(ExifTool::ToFloat($val), 'division (/)') / 100;
+}
+
+==== 4d29a54e7b PrintConvInv
+# CanonVRD::ToneCurve 0x0007 RGBCurvePoints
+static function ($val, ExifTool $self, $wantGroup) {
+    return CanonVRD::ToneCurvePrintInv($val);
+}
+
+==== afea06632d PrintConvInv
+# CanonVRD::DR4 0x20125 WBAdjRGGBLevels
+static function ($val, ExifTool $self, $wantGroup) {
+    return '14 '.Perl::str($val);
+}
+
+==== 1200984292 ValueConvInv
+# CanonVRD::GammaInfo 0x000d GammaWhitePoint
+static function ($val, ExifTool $self, $wantGroup) {
+    return $val ? exp((Perl::numw($val, 'addition (+)', '$val') + 11.77109325169954) * log(2)) * 4.6875 : 0;
+}
+
+==== 3a9ceedb80 ValueConvInv
+# CanonVRD::GammaInfo 0x000e GammaMidPoint
+static function ($val, ExifTool $self, $wantGroup) {
+    return $val ? exp((Perl::numw($val, 'addition (+)', '$val') + 8) * log(2)) * 4.6876 : 0;
+}
+
+==== 8af8d80367 ValueConvInv
+# CanonVRD::Ver2 0x0069 AberrationCorrectionDistance
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::int((1 - Perl::numw($val, 'subtraction (-)', '$val')) * 0x400 + 0.5);
+}
+
+==== 96e39b87a0 ValueConvInv
+# CanonVRD::Ver1 0x0038 RawBrightnessAdj
+static function ($val, ExifTool $self, $wantGroup) {
+    $v = Perl::numw($val, 'multiplication (*)', '$val');
+    return Perl::int($v * 6000 + ($v < 0 ? -0.5 : 0.5));
+}
+
+==== deb374f093 ValueConvInv
+# CanonVRD::Ver2 0x0066 ChromaticAberration
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::int(Perl::numw($val, 'multiplication (*)', '$val') * 0x400 + 0.5);
+}
+
+==== fde9b9e3d5 ValueConvInv
+# CanonVRD::GammaInfo 0x000c GammaBlackPoint
+static function ($val, ExifTool $self, $wantGroup) {
+    return $val ? exp((Perl::numw($val, 'subtraction (-)', '$val') - 1) * log(2)) * 4.6876 : 0;
+}
+
+==== e122286ae9 PrintConvInv
+# Casio::Main 0x0015 FirmwareDate
+static function ($val, ExifTool $self, $wantGroup) {
+    $_ = Perl::str($val);
+    if (preg_match('/^(19|20)(\d{2}):(\d{2}):(\d{2}) (\d{2}):(\d{2})$/', $_, $m)) {
+        return "$m[2]$m[3]\0\0$m[4]$m[5]\0\0$m[6]\0\0\0\0";
+    } elseif (preg_match('/^Unknown\s*\((.*)\)$/i', $_, $m)) {
+        $_ = strtr($m[1], '.', "\0");
+        return $_;
+    } else {
+        return null;
+    }
+}
+
+==== 3a3d8b301f ValueConvInv
+# Casio::Type2 0x2022 ObjectDistance
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::str($val) === 'inf' ? 0x20000000 : Perl::numw($val, 'multiplication (*)', '$val') * 1000;
+}
+
+==== e8322fcf74 ValueConvInv
+# Casio::Type2 0x4001 CaptureFrameRate
+static function ($val, ExifTool $self, $wantGroup) {
+    $v = Perl::numw($val, 'numeric le (<=)', '$val');
+    return $v <= 60 ? $v * 1000 : Perl::str(Perl::int($v)).' 0';
+}
+
+==== 8cc8f4a94f PrintConvInv
+# DarwinCore::Main Event DCEvent/Struct/eventTime
+static function ($val, ExifTool $self, $wantGroup) {
+    $v = $self->InverseDateTime($val, null, 1);
+    ExifTool::$evalWarning = null;
+    if ($v) {
+        return $v;
+    }
+    // allow time-only values by adding dummy date (thanks Herb)
+    $v = $self->InverseDateTime('2000:01:01 '.Perl::str($val), null, 1);
+    ExifTool::$evalWarning = null;
+    if ($v and preg_match('/.* /', Perl::str($v))) {
+        return preg_replace('/.* /', '', Perl::str($v), 1);    // strip off dummy date
+    }
+    ExifTool::$evalWarning = 'Invalid date/time or time-only value (use HH:MM:SS[.ss][+/-HH:MM|Z])';
+    return null;
+}
+
+==== e344555497 ValueConvInv
+# DarwinCore::Main Event DCEvent/Struct/eventTime
+static function ($val, ExifTool $self, $wantGroup) {
+    return XMP::FormatXMPDate($val) ?: $val;
+}
+
+==== 1f2cf7b051 PrintConvInv
+# FotoStation::SoftEdit 0x0006 CropLeft
+static function ($val, ExifTool $self, $wantGroup) {
+    return str_replace([' ', '%'], '', Perl::str($val));
+}
+
+==== efb2470293 ValueConvInv
+# FotoStation::SoftEdit 0x000b CropRotation
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw(Perl::neg($val, '$val'), 'multiplication (*)') * 100;
+}
+
+==== feb9573114 ValueConvInv
+# FotoStation::SoftEdit 0x0004 Rotation
+static function ($val, ExifTool $self, $wantGroup) {
+    return $val ? (360 - Perl::numw($val, 'subtraction (-)', '$val')) * 100 : 0;
+}
+
+==== 1a57414cae PrintConvInv
+# Kodak::SubIFD0 0xfa3d OpticalZoom
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_replace('/ ?x/', '', Perl::str($val), 1);
+}
+
+==== 51813aaa52 PrintConvInv
+# Kodak::Main 0x0064 DateTimeStamp
+static function ($val, ExifTool $self, $wantGroup) {
+    $val = preg_replace('/[^0-9]/', '', Perl::str($val));
+    return $val ? $val : 0;
+}
+
+==== 108a98edd7 ValueConvInv
+# Kodak::Main 0x001e FNumber
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::int(Perl::numw($val, 'multiplication (*)', '$val') * 100 + 0.5);
+}
+
+==== 202c3913ad ValueConvInv
+# Kodak::Main 0x0012 MonthDayCreated
+static function ($val, ExifTool $self, $wantGroup) {
+    return strtr(Perl::str($val), ':.', '  ');
+}
+
+==== d6554d13b7 ValueConvInv
+# Kodak::CameraInfo 0xfd05 ExposureTime
+static function ($val, ExifTool $self, $wantGroup) {
+    // (Perl multiplies integers as integers: 1e6 is the integer 1000000)
+    return Perl::numw($val, 'multiplication (*)', '$val') * 1000000;
+}
+
+==== d9612f84db ValueConvInv
+# Kodak::Type10 0x0014 ISO
+static function ($val, ExifTool $self, $wantGroup) {
+    return 3 * Perl::log(Perl::numw($val, 'division (/)', '$val') / 25) / log(2);
+}
+
+==== f2536aae30 ValueConvInv
+# Kodak::IFD 0x0e4c KodakLook
+static function ($val, ExifTool $self, $wantGroup) {
+    return strtr(Perl::str($val), "\n", "\0");
+}
+
+==== ff71b1b421 ValueConvInv
+# Kodak::Type9 0x0014 DateTimeOriginal
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_replace('{^(\d{4}):(\d{2}):}', '$1/$2/', Perl::str($val), 1);
+}
+
+==== 83d255d5dd PrintConvInv
+# MIE::Image ImageSize
+static function ($val, ExifTool $self, $wantGroup) {
+    return strtr(Perl::str($val), 'x', ' ');
+}
+
+==== ad82fb7d22 ValueConvInv
+# MIE::GPS Latitude GPSLatitude
+static function ($val, ExifTool $self, $wantGroup) {
+    return GPS::ToDMS($self, $val, 3);
+}
+
+==== d2c798ea2d ValueConvInv
+# MIE::Main zmie TrailerSignature
+static function ($val, ExifTool $self, $wantGroup) {
+    return '';
+}
+
+==== 1382674969 DelCheck
+# MWG::Composite City
+static function (ExifTool $self, TagInfo $tagInfo, $wantGroup) {
+    return MWG::ReconcileIPTCDigest($self);
+}
+
+==== bbebb7d11a DelCheck
+# MWG::Composite ModifyDate
+static function (ExifTool $self, TagInfo $tagInfo, $wantGroup) {
+    return '';
+}
+
+==== 6e48053b23 WriteAlso
+# MWG::Composite CreateDate
+# (the caller uses the %opts left by the expression: they are passed by reference)
+static function ($val, array &$opts) {
+    unset($opts['Type']);
+    return $val;
+}
+
+==== 6f1a11d8ce WriteAlso
+# MWG::Composite Copyright
+# ($self is the ExifTool object of SetNewValue, the caller passes it as 3rd argument; the
+# result of Encode is discarded by the Perl code)
+static function ($val, array &$opts, ?ExifTool $self = null) {
+    // encode if necessary (not automatic because Format is 'undef')
+    $enc = $self->Options('CharsetEXIF');
+    if ($enc) {
+        $v = $val;
+        $self->Encode($v, $enc);
+        return $v;
+    }
+    return $val;
+}
+
+==== cccaf96975 WriteAlso
+# MWG::Composite City
+# (the caller uses the %opts left by the expression: they are passed by reference)
+static function ($val, array &$opts) {
+    $opts['EditGroup'] = 1;
+    return $val;
+}
+
+==== 65f081ae03 WriteCheck
+# MWG::Composite ModifyDate
+static function (ExifTool $self, TagInfo $tagInfo, $val) {
+    return '';
+}
+
+==== a0e52572af WriteCheck
+# MWG::Composite City
+static function (ExifTool $self, TagInfo $tagInfo, $val) {
+    return MWG::ReconcileIPTCDigest($self);
+}
+
+==== 383f917626 WriteCheck
+# MacOS::MDItem MDItemFSLabel
+static function (ExifTool $self, TagInfo $tagInfo, $val) {
+    return preg_match('/^[0-7]$/', Perl::str($val)) ? null : 'Not an integer in the range 0-7';
+}
+
+==== 4eaba744c0 WriteCheck
+# MacOS::XAttr com.apple.metadata:kMDItemWhereFroms XAttrMDItemWhereFroms
+static function (ExifTool $self, TagInfo $tagInfo, $val) {
+    return 'May only delete this tag';
+}
+
+==== 814d5be385 PrintConvInv
+# Microsoft::Xtra {2CBAA8F5-D81F-47CA-B17A-F8D822300131} 100 DateAcquired
+static function ($val, ExifTool $self, $wantGroup) {
+    return $self->InverseDateTime($val, null);
+}
+
+==== 995d29c08f PrintConvInv
+# Minolta::CameraSettingsA100 0x003d InstantPlaybackTime
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_replace('/\s*s/', '', Perl::str($val), 1);
+}
+
+==== fd94f0bdd6 PrintConvInv
+# Minolta::WBInfoA100 0x49bb FocusDistance
+static function ($val, ExifTool $self, $wantGroup) {
+    $val = preg_replace('/ ?m/', '', Perl::str($val), 1);
+    return preg_match('/inf/i', $val) ? 267 : $val;
+}
+
+==== 13fedd9e8e ValueConvInv
+# Minolta::CameraSettings 0x002c Brightness
+static function ($val, ExifTool $self, $wantGroup) {
+    return (Perl::numw($val, 'addition (+)', '$val') + 6) * 8;
+}
+
+==== 45097ede21 ValueConvInv
+# Minolta::CameraSettings 0x0023 FlashExposureComp
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 3 + 6;
+}
+
+==== 4cd193f991 ValueConvInv
+# Minolta::CameraSettings 0x0015 MinoltaDate
+static function ($val, ExifTool $self, $wantGroup) {
+    $a = preg_match('/(\d+):(\d+):(\d+)/', Perl::str($val), $m) ? array_slice($m, 1) : [];
+    return $a ? Perl::uvr((Perl::uv($a[0]) << 16) + (Perl::uv($a[1]) << 8) + Perl::num($a[2])) : null;
+}
+
+==== 69a7e7ad41 ValueConvInv
+# Minolta::WBInfoA100 0x49bb FocusDistance
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::log(Perl::numw($val, 'log', '$val')) / log(2) * 16 + 126;
+}
+
+==== 6dac221b88 ValueConvInv
+# Minolta::CameraSettings 0x0009 ExposureTime
+static function ($val, ExifTool $self, $wantGroup) {
+    return 48 - 8 * Perl::log(Perl::numw($val, 'log', '$val')) / log(2);
+}
+
+==== 7bf53fd80d ValueConvInv
+# Minolta::CameraSettings 0x000a FNumber
+static function ($val, ExifTool $self, $wantGroup) {
+    return 8 + 16 * Perl::log(Perl::numw($val, 'log', '$val')) / log(2);
+}
+
+==== 7f1867f95f ValueConvInv
+# Minolta::CameraSettings 0x000d ExposureCompensation
+static function ($val, ExifTool $self, $wantGroup) {
+    return (Perl::numw($val, 'addition (+)', '$val') + 2) * 3;
+}
+
+==== 8034d57c51 ValueConvInv
+# Minolta::CameraSettings7D 0x001e ExposureCompensation
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 24;
+}
+
+==== 978b58e5ba ValueConvInv
+# Minolta::CameraSettingsA100 0x0001 ExposureCompensationSetting
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::int((Perl::numw($val, 'addition (+)', '$val') + 3) * 100 + 0.5);
+}
+
+==== b3a5a6c46b ValueConvInv
+# Minolta::CameraSettings 0x0012 FocalLength
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 256;
+}
+
+==== be90c1e08f ValueConvInv
+# Minolta::CameraSettings 0x001f Saturation
+static function ($val, ExifTool $self, $wantGroup) {
+    // (the right operand is evaluated first)
+    $r = preg_match('/DiMAGE A2/', Perl::strw($self->Model, 'pattern match (m//)')) ? 5 : 3;
+    return Perl::numw($val, 'addition (+)', '$val') + $r;
+}
+
+==== c45f046b19 ValueConvInv
+# Minolta::CameraSettings5D 0x0053 ExposureCompensation
+static function ($val, ExifTool $self, $wantGroup) {
+    return (Perl::numw($val, 'addition (+)', '$val') + 3) * 100;
+}
+
+==== d1d1df232b ValueConvInv
+# Minolta::CameraSettings 0x0008 ISO
+static function ($val, ExifTool $self, $wantGroup) {
+    return 48 + 8 * Perl::log(Perl::numw($val, 'division (/)', '$val') / 100) / log(2);
+}
+
+==== ce83ca458d code:conv
+# Minolta::WBInfoA100 0x0628 AEMeteringSegments ValueConvInv
+static function ($val) {
+    return implode(' ', array_map(static fn ($_) => Perl::str(Perl::int(Perl::numw($_, 'multiplication (*)', '$_') * 8 + 106.5)),
+        Perl::split(' ', $val)));
+}
+
+==== 0005d99e19 PrintConvInv
+# MinoltaRaw::RIF 0x004c ColorTemperature
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/Auto/i', Perl::str($val)) ? 0 : $val;
+}
+
+==== 08a51acc77 ValueConvInv
+# NikonCapture::Brightness 0x0000 BrightnessAdj
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'division (/)', '$val') / 50;
+}
+
+==== 2c2749a11f ValueConvInv
+# NikonCapture::PictureCtrl 0x002b SharpeningAdj
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/\d/', Perl::str($val)) ? Perl::numw($val, 'addition (+)', '$val') + 128 : 0;
+}
+
+==== b1b26b5f04 ValueConvInv
+# NikonCapture::CropData 0x001e CropLeft
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 2;
+}
+
+==== a6325ca6e3 PrintConvInv
+# NikonCustom::SettingsD40 8.2 ManualFlashOutput
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/F/i', Perl::str($val)) ? 1 : Exif::ConvertFraction($val);
+}
+
+==== bb8d7dd8d5 PrintConvInv
+# NikonCustom::SettingsD3 10.2 CLModeShootingSpeed
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_replace('/\s*fps/i', '', Perl::str($val), 1);
+}
+
+==== 00e4336430 ValueConvInv
+# NikonCustom::SettingsD5000 22.2 ManualFlashOutput
+static function ($val, ExifTool $self, $wantGroup) {
+    $v = Perl::numw($val, 'numeric gt (>)', '$val');
+    return $v > 0 ? -3 * log($v) / log(2) : 0;
+}
+
+==== 1c2927ee93 ValueConvInv
+# NikonCustom::SettingsD700 17.2 RepeatingFlashCount
+static function ($val, ExifTool $self, $wantGroup) {
+    $v = Perl::numw($val, 'numeric le (<=)', '$val');
+    return $v <= 10 ? $v - 1 : $v / 5 + 7;
+}
+
+==== 297d4a09e5 ValueConvInv
+# NikonCustom::SettingsD3 7.2 FineTuneOptCenterWeighted
+static function ($val, ExifTool $self, $wantGroup) {
+    $v = Perl::numw($val, 'multiplication (*)', '$val');
+    return Perl::int($v * 6 + ($v > 0 ? 0.5 : -0.5));
+}
+
+==== 51e37023a3 ValueConvInv
+# NikonCustom::SettingsD700 17.1 RepeatingFlashOutput
+static function ($val, ExifTool $self, $wantGroup) {
+    $v = Perl::numw($val, 'numeric gt (>)', '$val');
+    return $v > 0 ? Perl::int(-log($v) / log(2) - 2 + 0.5) : 0;
+}
+
+==== 55201a7b9b ValueConvInv
+# NikonCustom::SettingsD40 0x0009 FlashLevel
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 6;
+}
+
+==== 5a725e3488 ValueConvInv
+# NikonCustom::SettingsD800 27.2 CommanderInternalManualOutput
+static function ($val, ExifTool $self, $wantGroup) {
+    $v = Perl::numw($val, 'numeric gt (>)', '$val');
+    return $v > 0 ? Perl::int(-log($v) / log(2) * 3 + 0.5) : 0;
+}
+
+==== 5c585265e8 ValueConvInv
+# NikonCustom::SettingsZ6III 0x0023 FineTuneOptMatrixMetering
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::int(Perl::numw($val, 'multiplication (*)', '$val') * 6);
+}
+
+==== 642551f7a7 ValueConvInv
+# NikonCustom::SettingsD700 20.1 CommanderInternalTTLCompBuiltin
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 3 + 9;
+}
+
+==== 6862220f86 ValueConvInv
+# NikonCustom::SettingsZ6III 0x00e5 MovieAFSpeed
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'addition (+)', '$val') + 5;
+}
+
+==== 9befe6e2e8 ValueConvInv
+# NikonCustom::SettingsD40 8.2 ManualFlashOutput
+static function ($val, ExifTool $self, $wantGroup) {
+    $v = Perl::numw($val, 'numeric gt (>)', '$val');
+    return $v > 0 ? -log($v) / log(2) : 0;
+}
+
+==== b6fe4a841b ValueConvInv
+# NikonCustom::SettingsD80 7.2 FlashShutterSpeed
+static function ($val, ExifTool $self, $wantGroup) {
+    $v = Perl::numw($val, 'numeric gt (>)', '$val');
+    return $v > 0 ? Perl::int(log($v) / log(2) + 6 + 0.5) : 0;
+}
+
+==== cace0a5a17 ValueConvInv
+# NikonCustom::SettingsD80 12.2 CommanderInternalManualOutput
+static function ($val, ExifTool $self, $wantGroup) {
+    $v = Perl::numw($val, 'numeric gt (>)', '$val');
+    return $v > 0 ? Perl::int(-log($v) / log(2) + 0.5) : 0;
+}
+
+==== e00fa30529 ValueConvInv
+# NikonCustom::SettingsD700 18.1 RepeatingFlashRate
+static function ($val, ExifTool $self, $wantGroup) {
+    $v = Perl::numw($val, 'numeric le (<=)', '$val');
+    return Perl::int(($v <= 10 ? $v - 1 : $v / 10 + 8) + 0.5);
+}
+
+==== 42c2e24ca0 ValueConvInv
+# NikonSettings::Main 0x011f CHModeShootingSpeed
+static function ($val, ExifTool $self, $wantGroup) {
+    return 15 + Perl::numw($val, 'addition (+)', '$val');
+}
+
+==== 73667e4106 ValueConvInv
+# NikonSettings::Main 0x00ee MovieAFSpeed
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'addition (+)', '$val') + 6;
+}
+
+==== ad419c1c12 ValueConvInv
+# NikonSettings::Main 0x0120 CLModeShootingSpeed
+static function ($val, ExifTool $self, $wantGroup) {
+    return 11 + Perl::numw($val, 'addition (+)', '$val');
+}
+
+==== b1499ad77b ValueConvInv
+# NikonSettings::Main 0x002f FineTuneOptMatrixMetering
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::int(Perl::numw($val, 'multiplication (*)', '$val') * 6 + 7);
+}
+
+==== c4d27675c7 ValueConvInv
+# NikonSettings::Main 0x003e CLModeShootingSpeed
+static function ($val, ExifTool $self, $wantGroup) {
+    return 6 + Perl::numw($val, 'addition (+)', '$val');
+}
+
+==== ebedda35cc ValueConvInv
+# NikonSettings::Main 0x0036 SelfTimerShotCount
+static function ($val, ExifTool $self, $wantGroup) {
+    return 10 + Perl::numw($val, 'addition (+)', '$val');
+}
+
+==== c9aab2f102 ValueConvInv
+# Nintendo::CameraInfo 0x0008 TimeStamp
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw(ExifTool::GetUnixTime($val), 'subtraction (-)') - 10957 * 24 * 3600;
+}
+
+==== fd81d16aa7 ValueConvInv
+# Nintendo::CameraInfo 0x0018 InternalSerialNumber
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::pack('H*', preg_replace('/^0x/', '', Perl::str($val), 1));
+}
+
+==== f5b97b2292 ValueConvInv
+# PLUS::XMP AdultContentWarning
+static function ($val, ExifTool $self, $wantGroup) {
+    return 'http://ns.useplus.org/ldf/vocab/'.Perl::str($val);
+}
+
+==== 0c4acef443 ValueConvInv
+# PanasonicRaw::CameraIFD 0x1301 ApertureValue
+static function ($val, ExifTool $self, $wantGroup) {
+    $v = Perl::numw($val, 'numeric gt (>)', '$val');
+    return $v > 0 ? 512 * log($v) / log(2) : 0;
+}
+
+==== 64232c0fc2 ValueConvInv
+# PanasonicRaw::CameraIFD 0x1302 ShutterSpeedValue
+static function ($val, ExifTool $self, $wantGroup) {
+    $v = Perl::numw($val, 'numeric gt (>)', '$val');
+    return $v > 0 ? -256 * log($v) / log(2) : -25600;
+}
+
+==== 89b6557e7a ValueConvInv
+# PanasonicRaw::CameraIFD 0x1303 SensitivityValue
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::int(Perl::numw($val, 'multiplication (*)', '$val') * 256);
+}
+
+==== d98cb5e8c4 ValueConvInv
+# PanasonicRaw::DistortionInfo 0x0002 DistortionParam02
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 32768;
+}
+
+==== f213e1be9f ValueConvInv
+# PanasonicRaw::DistortionInfo 0x0005 DistortionScale
+static function ($val, ExifTool $self, $wantGroup) {
+    return (1 / Perl::numw($val, 'division (/)', '$val') - 1) * 32768;
+}
+
+==== 5b222dabf1 ValueConvInv
+# PhotoMechanic::SoftEdit 0x00d1 RawCropLeft
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::int(Perl::numw($val, 'multiplication (*)', '$val') * 655.36 + 0.5);
+}
+
+==== 1754de4886 PrintConvInv
+# Reconyx::HyperFire 0x0000 MakerNoteVersion
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::hexw($val, '$val');
+}
+
+==== 1b6e6838f9 PrintConvInv
+# Reconyx::HyperFire 0x0013 AmbientTemperatureFahrenheit
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/(-?\d+)/', Perl::str($val), $m) ? $m[1] : $val;
+}
+
+==== 31bffda0da PrintConvInv
+# Reconyx::HyperFire 0x002a BatteryVoltage
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_replace('/ ?V$/', '', Perl::str($val), 1);
+}
+
+==== fa36026ce3 PrintConvInv
+# Reconyx::HyperFire 0x0007 Sequence
+static function ($val, ExifTool $self, $wantGroup) {
+    preg_match_all('/\d+/', Perl::str($val), $m);
+    return implode(' ', $m[0]);
+}
+
+==== 072ee8344d ValueConvInv
+# Reconyx::HyperFire2 0x0030 FirmwareDate
+static function ($val, ExifTool $self, $wantGroup) {
+    $a = Perl::split('/:/', $val);
+    $h0 = Perl::hexw($a[0] ?? null, '$a[0]');
+    $h1 = Perl::hexw(Perl::strw($a[1] ?? null, 'concatenation (.) or string').
+        Perl::strw($a[2] ?? null, 'concatenation (.) or string'));
+    return Perl::str($h0).' '.Perl::str($h1);
+}
+
+==== 0b7f826faf ValueConvInv
+# Reconyx::HyperFire2 0x003a EventNumber
+static function ($val, ExifTool $self, $wantGroup) {
+    $v1 = Perl::uv($val, 'right bitshift (>>)', '$val');
+    // (the second use of $val takes the number Perl cached at the first one)
+    $v2 = Perl::uv(Perl::num($val));
+    return Perl::str(Perl::uvr(($v1 >> 16) & 0xFFFFFFFFFFFF)).' '.Perl::str($v2 & 0xffff);
+}
+
+==== 3a9e0ef91d ValueConvInv
+# Reconyx::HyperFire2 0x003e DateTimeOriginal
+static function ($val, ExifTool $self, $wantGroup) {
+    preg_match_all('/\d+/', Perl::str($val), $m);
+    $a = $m[0];
+    if (count($a) < 6) {
+        return null;
+    }
+    return implode(' ', [$a[5], $a[4], $a[3], $a[2], $a[1], $a[0]]);
+}
+
+==== 3d06a9ba04 ValueConvInv
+# Reconyx::MicroFire 0x0014 DirectoryCreateDate
+static function ($val, ExifTool $self, $wantGroup) {
+    preg_match_all('/\d+/', Perl::str($val), $m);
+    $a = $m[0];
+    $d = (Perl::uv(Perl::numw($a[0] ?? null, 'subtraction (-)', '$a[0]') - 1980) << 9) |
+        (Perl::uv($a[1] ?? null, 'left bitshift (<<)', '$a[1]') << 5) | Perl::uv($a[2] ?? null, 'bitwise or (|)');
+    $t = (Perl::uv($a[3] ?? null, 'left bitshift (<<)', '$a[3]') << 11) | (Perl::uv($a[4] ?? null, 'left bitshift (<<)', '$a[4]') << 5) |
+        Perl::uv(Perl::int(Perl::numw($a[5] ?? null, 'division (/)', '$a[5]') / 2));
+    return Perl::sprintf('%d %d', $d, $t);
+}
+
+==== 6001d7d9fe ValueConvInv
+# Reconyx::HyperFire 0x0004 FirmwareDate
+static function ($val, ExifTool $self, $wantGroup) {
+    $v = Perl::split('/:/', $val);
+    $h0 = Perl::hexw($v[0] ?? null, '$v[0]');
+    $h1 = Perl::hexw(Perl::strw($v[1] ?? null, 'concatenation (.) or string').
+        Perl::strw($v[2] ?? null, 'concatenation (.) or string'));
+    return Perl::str($h0).' '.Perl::str($h1);
+}
+
+==== 9adcc9a69a ValueConvInv
+# Reconyx::MicroFire 0x003a BluetoothFirmwareDate
+static function ($val, ExifTool $self, $wantGroup) {
+    preg_match_all('/\d+/', Perl::str($val), $m);
+    $a = $m[0];
+    return Perl::uvr((Perl::uv(Perl::numw($a[0] ?? null, 'subtraction (-)', '$a[0]') - 1980) << 9) |
+        (Perl::uv($a[1] ?? null, 'left bitshift (<<)', '$a[1]') << 5) | Perl::uv($a[2] ?? null, 'bitwise or (|)'));
+}
+
+==== ab7be67c75 ValueConvInv
+# Reconyx::HyperFire2 0x002a FirmwareVersion
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/(\d+)\.(\d+)([a-zA-Z])/', Perl::str($val), $m) ? "$m[1] $m[2] ".ord($m[3]) : null;
+}
+
+==== bd916c7ba4 ValueConvInv
+# Reconyx::HyperFire4K 0x002f DateTimeOriginal
+static function ($val, ExifTool $self, $wantGroup) {
+    preg_match_all('/\d+/', Perl::str($val), $m);
+    $a = $m[0];
+    if (count($a) < 6) {
+        return null;
+    }
+    return Perl::packw('C5v', $a[5], $a[4], $a[3], $a[2], $a[1], $a[0]);
+}
+
+==== c4c8dec721 ValueConvInv
+# Reconyx::HyperFire 0x0015 SerialNumber
+static function ($val, ExifTool $self, $wantGroup) {
+    return $self->Encode($val, 'UTF16', 'II');
+}
+
+==== e23a7482d5 ValueConvInv
+# Reconyx::HyperFire2 0x0014 DirectoryCreateDate
+static function ($val, ExifTool $self, $wantGroup) {
+    preg_match_all('/\d+/', Perl::str($val), $m);
+    $a = $m[0];
+    $d = (Perl::uv(Perl::numw($a[0] ?? null, 'subtraction (-)', '$a[0]') - 1980) << 9) |
+        (Perl::uv($a[1] ?? null, 'left bitshift (<<)', '$a[1]') << 5) | Perl::uv($a[2] ?? null, 'bitwise or (|)');
+    $t = (Perl::uv($a[3] ?? null, 'left bitshift (<<)', '$a[3]') << 11) | (Perl::uv($a[4] ?? null, 'left bitshift (<<)', '$a[4]') << 5) |
+        Perl::uv(Perl::int(Perl::numw($a[5] ?? null, 'division (/)', '$a[5]') / 2));
+    return Perl::sprintf('%d %d', $d, $t);
+}
+
+==== e3a6e334a8 ValueConvInv
+# Reconyx::HyperFire 0x0009 EventNumber
+static function ($val, ExifTool $self, $wantGroup) {
+    $v1 = Perl::uv($val, 'right bitshift (>>)', '$val');
+    // (the second use of $val takes the number Perl cached at the first one)
+    $v2 = Perl::uv(Perl::num($val));
+    return Perl::str(Perl::uvr(($v1 >> 16) & 0xFFFFFFFFFFFF)).' '.Perl::str($v2 & 0xffff);
+}
+
+==== f737142699 ValueConvInv
+# Reconyx::HyperFire 0x000b DateTimeOriginal
+static function ($val, ExifTool $self, $wantGroup) {
+    preg_match_all('/\d+/', Perl::str($val), $m);
+    $a = $m[0];
+    if (count($a) < 6) {
+        return null;
+    }
+    return implode(' ', [$a[5], $a[4], $a[3], $a[1], $a[2], $a[0]]);
+}
+
+==== fed5311263 ValueConvInv
+# Reconyx::HyperFire4K 0x001a FirmwareVersion
+static function ($val, ExifTool $self, $wantGroup) {
+    if (!preg_match('/^([0-9a-f]+)\.([0-9a-f]+) (\d{4}):(\d{2}):(\d{2})\s*Rev\.(\w)/i', Perl::str($val), $m)) {
+        return null;
+    }
+    $v = array_slice($m, 1);
+    return Perl::packw('CCvCCa', ...array_map(static fn ($x) => Perl::hexw($x), array_slice($v, 0, 5)), ...[$v[5]]);
+}
+
+==== 5b6823c105 PrintConvInv
+# Ricoh::Main 0x0002 FirmwareVersion
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/^(\d+)\.(\d+)$/', Perl::str($val), $m) ? Perl::sprintf('Rev%.2d%.2d', $m[1], $m[2]) : $val;
+}
+
+==== dfb47487c1 PrintConvInv
+# Ricoh::Main 0x0005 SerialNumber
+static function ($val, ExifTool $self, $wantGroup) {
+    return str_replace(['(', ')'], '', Perl::str($val));
+}
+
+==== eb30d19429 PrintConvInv
+# Ricoh::Text Rev FirmwareVersion
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/^(\d+)\.(\d+)$/', Perl::str($val), $m) ? Perl::sprintf('%.2d%.2d', $m[1], $m[2]) : $val;
+}
+
+==== fdada34473 RawConvInv
+# Ricoh::ImageInfo 0x001c PreviewImageStart
+static function ($val, ExifTool $self, ?TagInfo $tagInfo) {
+    if (Perl::strw($self->FILE_TYPE, 'string eq') === 'JPEG') {
+        return $val;
+    }
+    trigger_error("\n", E_USER_WARNING); // suppress warning
+    return null;
+}
+
+==== f53f0004ff ValueConvInv
+# Ricoh::ImageInfo 0x0006 RicohDate
+static function ($val, ExifTool $self, $wantGroup) {
+    preg_match_all('/(\d{1,2})/', Perl::str($val), $m);
+    $vals = $m[1];
+    if (count($vals) < 7) {
+        $vals[] = 0;
+    }
+    return implode(' ', array_map(static fn ($x) => Perl::str(Perl::hexw($x)), $vals));
+}
+
+==== 16430c614d PrintConvInv
+# Sigma::Main 0x002b LensMaxApertureRange
+# s/to /; $val has no end delimiter: the Perl eval always dies with this syntax error
+static function ($val, ExifTool $self, $wantGroup) {
+    throw new \RuntimeException('Substitution replacement not terminated at (eval 1) line 1.');
+}
+
+==== 9bd7cef64c PrintConvInv
+# Sigma::Main 0x002a LensFocalRange
+static function ($val, ExifTool $self, $wantGroup) {
+    return preg_replace('/to /', '', Perl::str($val), 1);
+}
+
+==== 0b36abf2d6 ValueConvInv
+# Sigma::Main 0x000f Highlight
+static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('High:%+.1f', $val) : null;
+}
+
+==== 12b8d25a00 ValueConvInv
+# Sigma::Main 0x000d Contrast
+static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('Cont:%+.1f', $val) : null;
+}
+
+==== 202a9ba771 ValueConvInv
+# Sigma::Main 0x000c ExposureCompensation
+static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('Expo:%+.1f', $val) : null;
+}
+
+==== 2a8a84a017 ValueConvInv
+# Sigma::Main 0x0027 LensType
+static function ($val, ExifTool $self, $wantGroup) {
+    $val = preg_replace('/\.\d+$/', '', Perl::str($val), 1);
+    if (preg_match('/^0x/', $val)) {
+        $val = Perl::hexw($val, '$val');
+    }
+    return ExifTool::IsInt($val) ? Perl::sprintf('%x', $val) : $val;
+}
+
+==== 33b56d4487 ValueConvInv
+# Sigma::Main 0x0016 Quality
+static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsInt($val) ? 'Qual:'.Perl::str($val) : null;
+}
+
+==== 3850104c9a ValueConvInv
+# Sigma::Main 0x0014 ColorAdjustment
+static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsInt($val) ? 'CC:'.Perl::str($val) : null;
+}
+
+==== 3c33370d49 ValueConvInv
+# Sigma::Main 0x000e Shadow
+static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('Shad:%+.1f', $val) : null;
+}
+
+==== 408f448951 ValueConvInv
+# Sigma::Main 0x001a ChrominanceNoiseReduction
+static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('Chro:%+.1f', $val) : null;
+}
+
+==== 57557a6a83 ValueConvInv
+# Sigma::Main 0x001b LuminanceNoiseReduction
+static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('Luma:%+.1f', $val) : null;
+}
+
+==== 85dc8b2713 ValueConvInv
+# Sigma::Main 0x004b ExposureTime2
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 1000000;
+}
+
+==== 878e74dcc5 ValueConvInv
+# Sigma::Main 0x0010 Saturation
+static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('Satu:%+.1f', $val) : null;
+}
+
+==== 935d64381f ValueConvInv
+# Sigma::Main 0x0011 Sharpness
+static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('Shar:%+.1f', $val) : null;
+}
+
+==== dea40ac488 ValueConvInv
+# Sigma::Main 0x0012 X3FillLight
+static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('Fill:%+.1f', $val) : null;
+}
+
+==== 1d9796caac ValueConvInv
+# SigmaRaw::Properties LENSMODEL LensType
+static function ($val, ExifTool $self, $wantGroup) {
+    $val = preg_replace('/\.\d+$/', '', Perl::str($val), 1);
+    return ExifTool::IsInt($val) ? Perl::sprintf('%x', $val) : $val;
+}
+
+==== 6bb94a816c PrintConvInv
+# SonyIDC::Main 0x9014 PxShiftPeriphEdgeNRValue
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 10;
+}
+
+==== a889049cd9 PrintConvInv
+# SonyIDC::Main 0x900f InclinationAngle
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw(ExifTool::ToFloat($val), 'multiplication (*)') * 1000;
+}
+
+==== dd102c17a8 PrintConvInv
+# SonyIDC::Main 0x8018 BrightnessAdj
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 300;
+}
+
+==== 9b29086c84 ValueConvInv
+# SonyIDC::Main 0x8027 NoiseReductionValue
+static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 2 - 100;
+}

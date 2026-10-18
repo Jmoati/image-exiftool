@@ -10,8 +10,15 @@ $f_13aa3b925b = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_0ba968218d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->ValidateImage((is_object($val) || is_array($val)) ? $val : new ScalarRef($val), $tag);
 };
-$f_a9e5ca28a7 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv a9e5ca28a7'); };
-$f_93f659a56e = static function (mixed ...$args) { throw new NotPorted('WriteCheck 93f659a56e'); };
+$f_a9e5ca28a7 = static function ($val, ExifTool $self, $wantGroup) {
+    if (Perl::str($val) === '') {
+        $val = 'none';
+    }
+    return $val;
+};
+$f_93f659a56e = static function (ExifTool $self, TagInfo $tagInfo, $val) {
+    return Perl::str($val) === 'none' ? null : $self->CheckImage($val);
+};
 
 return [
     'load' => [

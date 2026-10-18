@@ -13,7 +13,9 @@ $f_0ba4b3ba90 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
+$f_2f0c5a83d2 = static function ($val, ExifTool $self, $wantGroup) {
+    return $self->InverseDateTime($val);
+};
 
 return [
     'load' => [

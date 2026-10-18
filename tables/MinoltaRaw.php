@@ -35,14 +35,18 @@ $f_22935065a3 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_b94c7bf60c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) * 100;
 };
-$f_b2e9e0be57 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv b2e9e0be57'); };
+$f_b2e9e0be57 = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'division (/)', '$val') / 100;
+};
 $f_bcf0582141 = static function (ExifTool $self, $valPt, $format, $count) {
     return (bool) preg_match('/^SONY/', Perl::str($self->Make));
 };
 $f_bd1a8a43d0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? $val : 'Auto';
 };
-$f_0005d99e19 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 0005d99e19'); };
+$f_0005d99e19 = static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/Auto/i', Perl::str($val)) ? 0 : $val;
+};
 $f_db49c4f56d = static function (ExifTool $self, $valPt, $format, $count) {
     return (bool) preg_match('/^DSLR-A(200|700)$/', Perl::str($self->Model));
 };

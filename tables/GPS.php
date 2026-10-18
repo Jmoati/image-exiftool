@@ -48,15 +48,27 @@ $f_5817105f7a = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_732e29c6b9 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_match('/^W/i', Perl::str($vals[1])) ? -Perl::num($vals[0]) : $vals[0];
 };
-$f_cb54e897d7 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv cb54e897d7'); };
-$f_dc0ae2b70f = static function (mixed ...$args) { throw new NotPorted('WriteAlso dc0ae2b70f'); };
-$f_ca8a5de2f1 = static function (mixed ...$args) { throw new NotPorted('WriteAlso ca8a5de2f1'); };
-$f_c94d243322 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c94d243322'); };
-$f_7bd1afa45c = static function (mixed ...$args) { throw new NotPorted('WriteAlso 7bd1afa45c'); };
+$f_cb54e897d7 = static function ($val, ExifTool $self, $wantGroup) {
+    return GPS::ToDegrees($val, 1, 'lat');
+};
+$f_dc0ae2b70f = static function ($val, array $opts) {
+    return $val;
+};
+$f_ca8a5de2f1 = static function ($val, array $opts) {
+    return ($val !== null and Perl::numw($val, 'numeric lt (<)', '$val') < 0) ? 'S' : 'N';
+};
+$f_c94d243322 = static function ($val, ExifTool $self, $wantGroup) {
+    return GPS::ToDegrees($val, 1, 'lon');
+};
+$f_7bd1afa45c = static function ($val, array $opts) {
+    return ($val !== null and Perl::numw($val, 'numeric lt (<)', '$val') < 0) ? 'W' : 'E';
+};
 $f_870d813f22 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', '.');
 };
-$f_55164c9509 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 55164c9509'); };
+$f_55164c9509 = static function ($val, ExifTool $self, $wantGroup) {
+    return strtr(Perl::str($val), '.', ' ');
+};
 $f_6fef8e6758 = static function ($val, $inv, $conv) {
     if (!$inv) return null;
     if (preg_match('/(^|[^A-Z])([NS])(orth|outh)?\b/i', Perl::str($val), $m)) return strtoupper($m[2]);
@@ -66,18 +78,24 @@ $f_6fef8e6758 = static function ($val, $inv, $conv) {
 $f_017f96b76a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1);
 };
-$f_bcfafdb1c8 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv bcfafdb1c8'); };
+$f_bcfafdb1c8 = static function ($val, ExifTool $self, $wantGroup) {
+    return GPS::ToDegrees($val, null, 'lat');
+};
 $f_d721e23504 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDegrees($val);
 };
-$f_3c8333f6a7 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 3c8333f6a7'); };
+$f_3c8333f6a7 = static function ($val, ExifTool $self, $wantGroup) {
+    return GPS::ToDMS($self, $val);
+};
 $f_50c8d94b43 = static function ($val, $inv, $conv) {
     if (!$inv) return null;
     if (preg_match('/(^|[^A-Z])([EW])(ast|est)?\b/i', Perl::str($val), $m)) return strtoupper($m[2]);
     if (preg_match('/([-+]?)\d+/', Perl::str($val), $m)) return $m[1] === '-' ? 'W' : 'E';
     return null;
 };
-$f_59a90d20b7 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 59a90d20b7'); };
+$f_59a90d20b7 = static function ($val, ExifTool $self, $wantGroup) {
+    return GPS::ToDegrees($val, null, 'lon');
+};
 $f_eae5f4d018 = static function ($val, $inv, $conv) {
     if (!($inv && preg_match('/^([-+0-9])/', Perl::str($val), $m))) {
         return null;
@@ -87,32 +105,88 @@ $f_eae5f4d018 = static function ($val, $inv, $conv) {
 $f_59af52397a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_match('/^(inf|undef)$/', Perl::str($val)) ? $val : Perl::str($val).' m';
 };
-$f_d68fc876a9 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv d68fc876a9'); };
-$f_948ab7b9c4 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 948ab7b9c4'); };
+$f_d68fc876a9 = static function ($val, ExifTool $self, $wantGroup) {
+    return preg_replace('/\s*m$/', '', Perl::str($val), 1);
+};
+$f_948ab7b9c4 = static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/((?=\d|\.\d)\d*(?:\.\d*)?)/', Perl::str($val), $m) ? $m[1] : null;
+};
 $f_1f57b9342a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::PrintTimeStamp($val);
 };
-$f_e715335bd6 = static function (mixed ...$args) { throw new NotPorted('code:conv e715335bd6'); };
+$f_e715335bd6 = static function ($v, $et) {
+    if (strtolower(Perl::str($v)) === 'now') {
+        $v = $et->TimeNow();
+    }
+    $v = Perl::str($v);
+    $tz = [];
+    if (preg_match('/([-+])(\d{1,2}):?(\d{2})\s*(DST)?$/i', $v, $m)) {
+        $v = preg_replace('/([-+])(\d{1,2}):?(\d{2})\s*(DST)?$/i', '', $v, 1);
+        $s = $m[1] === '-' ? 1 : -1;
+        $t = $m[2];
+        $tz = [$s * Perl::num($m[2]), $s * Perl::num($m[3])];
+    }
+    $a = preg_match('/^[^\d]*\d{4}[^\d]*\d{1,2}[^\d]*\d{1,2}[^\d]*(\d{1,2})[^\d]*(\d{2})[^\d]*(\d{2}(?:\.\d+)?)[^\d]*$/', $v, $m) ?
+        array_slice($m, 1) : [];
+    if (!$a) {
+        $a = preg_match('/^[^\d]*(\d{1,2})[^\d]*(\d{2})[^\d]*(\d{2}(?:\.\d+)?)[^\d]*$/', $v, $m) ? array_slice($m, 1) : [];
+    }
+    if (!$a) {
+        trigger_error('Invalid time (use HH:MM:SS[.ss][+/-HH:MM|Z])', E_USER_WARNING);
+        return null;
+    }
+    if ($tz) {
+        $a[1] = Perl::num($a[1]) + $tz[1];
+        $a[0] = Perl::num($a[0]) + $tz[0];
+        while ($a[1] >= 60) {
+            $a[1] -= 60;
+            ++$a[0];
+        }
+        while ($a[1] < 0) {
+            $a[1] += 60;
+            --$a[0];
+        }
+        $a[0] = Perl::mod($a[0] + 24, 24);
+    }
+    return implode(':', array_map(Perl::str(...), $a));
+};
 $f_20f3ea07a3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ConvertTimeStamp($val);
 };
-$f_20a9c38ee2 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 20a9c38ee2'); };
+$f_20a9c38ee2 = static function ($val, ExifTool $self, $wantGroup) {
+    return strtr(Perl::str($val), ':', ' ');
+};
 $f_e518854124 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Exif::ConvertExifText($self, $val, 1, $tag);
 };
-$f_78c42a32a3 = static function (mixed ...$args) { throw new NotPorted('RawConvInv 78c42a32a3'); };
-$f_0cc0132acc = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 0cc0132acc'); };
+$f_78c42a32a3 = static function ($val, ExifTool $self, ?TagInfo $tagInfo) {
+    return Exif::EncodeExifText($self, $val);
+};
+$f_0cc0132acc = static function ($val, ExifTool $self, $wantGroup) {
+    $secs = null;
+    if (strtolower(Perl::str($val)) === 'now') {
+        $val = $self->TimeNow();
+    }
+    if (preg_match('/[-+]/', Perl::str($val)) and ($secs = ExifTool::GetUnixTime($val, 1))) {
+        $val = ExifTool::ConvertUnixTime($secs);
+    }
+    return preg_match('/(\d{4}).*?(\d{2}).*?(\d{2})/', Perl::str($val), $m) ? "$m[1]:$m[2]:$m[3]" : null;
+};
 $f_6c1b7c7113 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return preg_replace('/\0+$/', '', Perl::str($val));
 };
 $f_ea51c8e58d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::ExifDate($val);
 };
-$f_25924ee98a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 25924ee98a'); };
+$f_25924ee98a = static function ($val, ExifTool $self, $wantGroup) {
+    return $val;
+};
 $f_d9fec15555 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).' m';
 };
-$f_18ae0c4c5d = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 18ae0c4c5d'); };
+$f_18ae0c4c5d = static function ($val, ExifTool $self, $wantGroup) {
+    return preg_replace('/\s*m$/', '', Perl::str($val), 1);
+};
 
 $d_1 = ['N' => 'North', 'OTHER' => $f_6fef8e6758, 'S' => 'South'];
 $d_2 = ['E' => 'East', 'OTHER' => $f_50c8d94b43, 'W' => 'West'];

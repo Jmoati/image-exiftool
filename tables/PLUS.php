@@ -7,11 +7,15 @@ namespace Image\ExifTool;
 $f_38d6cb803f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('{http://ns.useplus.org/ldf/vocab/}', '', Perl::str($val), 1);
 };
-$f_f5b97b2292 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv f5b97b2292'); };
+$f_f5b97b2292 = static function ($val, ExifTool $self, $wantGroup) {
+    return 'http://ns.useplus.org/ldf/vocab/'.Perl::str($val);
+};
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_289bae1164 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 289bae1164'); };
+$f_289bae1164 = static function ($val, ExifTool $self, $wantGroup) {
+    return $self->InverseDateTime($val, null, 1);
+};
 $f_49a0ca9e42 = static function ($val, $inv, $conv) {
     $val = strtoupper(Perl::str($val));
     if ($inv) {

@@ -7,9 +7,15 @@ namespace Image\ExifTool;
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_289bae1164 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 289bae1164'); };
-$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
-$f_814d5be385 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 814d5be385'); };
+$f_289bae1164 = static function ($val, ExifTool $self, $wantGroup) {
+    return $self->InverseDateTime($val, null, 1);
+};
+$f_2f0c5a83d2 = static function ($val, ExifTool $self, $wantGroup) {
+    return $self->InverseDateTime($val);
+};
+$f_814d5be385 = static function ($val, ExifTool $self, $wantGroup) {
+    return $self->InverseDateTime($val, null);
+};
 
 return [
     'load' => [

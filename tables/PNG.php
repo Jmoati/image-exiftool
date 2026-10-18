@@ -31,7 +31,9 @@ $f_a3972b70a2 = static function ($val, ExifTool $self, array &$vals, array $prt,
     $a = Perl::unpack('N', $val)[0] ?? null;
     return $a ? Perl::int(1e9 / $a + 0.5) / 1e4 : $val;
 };
-$f_4f6de32cdf = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 4f6de32cdf'); };
+$f_4f6de32cdf = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::packw('N', Perl::int(1e5 / Perl::numw($val, 'division (/)', '$val') + 0.5));
+};
 $f_2275c08708 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::unpack('NNC', $val);
     $a[2] = ($a[2] ?? null) ? 'microns' : 'pixels';
@@ -46,15 +48,26 @@ $f_24eebf3aff = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_e9f5acccb2 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::unpack('C', $val)[0] ?? null;
 };
-$f_bf7df0127e = static function (mixed ...$args) { throw new NotPorted('ValueConvInv bf7df0127e'); };
+$f_bf7df0127e = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::packw('C', $val);
+};
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
+$f_2f0c5a83d2 = static function ($val, ExifTool $self, $wantGroup) {
+    return $self->InverseDateTime($val);
+};
 $f_ff909df216 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.4d:%.2d:%.2d %.2d:%.2d:%.2d', ...Perl::unpack('nC5', $val));
 };
-$f_f2396d0cf1 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv f2396d0cf1'); };
+$f_f2396d0cf1 = static function ($val, ExifTool $self, $wantGroup) {
+    $a = preg_match('/^(\d+):(\d+):(\d+)\s+(\d+):(\d+):(\d+)/', Perl::str($val), $m) ? array_slice($m, 1) : [];
+    if (count($a) != 6) {
+        trigger_error('Invalid date', E_USER_WARNING);
+        return null;
+    }
+    return Perl::packw('nC5', ...$a);
+};
 $f_1b487e7ccb = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     if (\strlen($val) > 6) {
         return new ScalarRef($val);
@@ -64,12 +77,17 @@ $f_1b487e7ccb = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_dbc5622757 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 100000;
 };
-$f_289bae1164 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 289bae1164'); };
+$f_289bae1164 = static function ($val, ExifTool $self, $wantGroup) {
+    return $self->InverseDateTime($val, null, 1);
+};
 $f_cf49427e8a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     ExifTool::RequireModule('Image::ExifTool::XMP');
     return XMP::ConvertXMPDate($val);
 };
-$f_f93e852c17 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv f93e852c17'); };
+$f_f93e852c17 = static function ($val, ExifTool $self, $wantGroup) {
+    ExifTool::RequireModule('Image::ExifTool::XMP');
+    return XMP::FormatXMPDate($val);
+};
 
 return [
     'load' => [

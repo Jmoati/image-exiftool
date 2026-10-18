@@ -404,7 +404,9 @@ $f_24585565de = static function (ExifTool $self, $valPt, $format, $count) {
 $f_609fe59810 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strlen(Perl::str($val)) > 64 ? new ScalarRef($val) : $val;
 };
-$f_25924ee98a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 25924ee98a'); };
+$f_25924ee98a = static function ($val, ExifTool $self, $wantGroup) {
+    return $val;
+};
 $f_1a47d140b4 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^LSI1\0/', $valPt);
 };

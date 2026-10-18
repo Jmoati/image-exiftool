@@ -14,12 +14,20 @@ $f_0fb2685b8c = static function ($val, ExifTool $self, array &$vals, array $prt,
     $a = Perl::split(' ', $val);
     return Perl::sprintf('%.2f - %.2f m', ...(Perl::num($a[0] ?? null) <= Perl::num($a[1] ?? null) ? $a : array_reverse($a)));
 };
-$f_ebadc2f4a1 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv ebadc2f4a1'); };
+$f_ebadc2f4a1 = static function ($val, ExifTool $self, $wantGroup) {
+    $val = preg_replace('/ - /', ' ', Perl::str($val), 1);
+    return preg_replace('/ ?m$/', '', $val, 1);
+};
 $f_f594b218a5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::split(' ', $val);
     return Perl::sprintf('%d %d %d', $a[0] ?? null, (Perl::int($a[1] ?? null) >> 28) & 0xFFFFFFFFF, Perl::int($a[1] ?? null) & 0xfffffff);
 };
-$f_874d15eae8 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 874d15eae8'); };
+$f_874d15eae8 = static function ($val, ExifTool $self, $wantGroup) {
+    $a = Perl::split(' ', $val);
+    // (sprintf numifies its arguments after they are evaluated)
+    $b = (Perl::uv($a[1] ?? null, 'left bitshift (<<)', '$a[1]') << 28) + Perl::numw($a[2] ?? null, 'addition (+)');
+    return Perl::sprintf('%d %d', Perl::numw($a[0] ?? null, 'sprintf'), $b);
+};
 
 return [
     'load' => [

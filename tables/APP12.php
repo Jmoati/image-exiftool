@@ -7,15 +7,21 @@ namespace Image\ExifTool;
 $f_0a6503c132 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).'%';
 };
-$f_1bc9b98957 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1bc9b98957'); };
+$f_1bc9b98957 = static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/(\d+)/', Perl::str($val), $m) ? $m[1] : null;
+};
 $f_770b7e2b24 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::unpack('N', $val)[0] ?? null;
 };
-$f_8fe06f8e1e = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 8fe06f8e1e'); };
+$f_8fe06f8e1e = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::packw('N', $val);
+};
 $f_c8863b2298 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->Decode(\strlen($val) < 4 ? null : substr($val, 4), 'UTF16', 'MM');
 };
-$f_23408319fe = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 23408319fe'); };
+$f_23408319fe = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::pack('N', strlen(Perl::str($val))).$self->Encode($val, 'UTF16', 'MM');
+};
 $f_9c98df8b6c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f', $val);
 };

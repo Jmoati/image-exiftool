@@ -7,7 +7,9 @@ namespace Image\ExifTool;
 $f_5d58a4e0c1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? $val : 'Infinite';
 };
-$f_41fe91f3f4 = static function (mixed ...$args) { throw new NotPorted('code 41fe91f3f4'); };
+$f_41fe91f3f4 = static function () {
+    return 1;
+};
 $f_7ae83d5506 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('0x%.4x', $val);
 };

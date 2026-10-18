@@ -12,19 +12,27 @@ $f_a32435b63c = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_b6c0baa5a0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.2f', Perl::num($val) / 300);
 };
-$f_dd102c17a8 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv dd102c17a8'); };
+$f_dd102c17a8 = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 300;
+};
 $f_8f4757174a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return (Perl::num($val) + 100) / 2;
 };
-$f_9b29086c84 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 9b29086c84'); };
+$f_9b29086c84 = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 2 - 100;
+};
 $f_28f4f642f1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f deg', Perl::num($val) / 1000);
 };
-$f_a889049cd9 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv a889049cd9'); };
+$f_a889049cd9 = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw(ExifTool::ToFloat($val), 'multiplication (*)') * 1000;
+};
 $f_a2edd7d09b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f', Perl::num($val) / 10);
 };
-$f_6bb94a816c = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 6bb94a816c'); };
+$f_6bb94a816c = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 10;
+};
 $f_776710f713 = static function ($start, $base = 0) {
     return $start;
 };
@@ -34,7 +42,9 @@ $f_5879ccff58 = static function ($valuePtr = null, $val = null, $dirStart = null
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_9183f2970f = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 9183f2970f'); };
+$f_9183f2970f = static function ($val, ExifTool $self, $wantGroup) {
+    return $self->InverseDateTime($val, 0);
+};
 
 return [
     'load' => [

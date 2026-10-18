@@ -10,10 +10,18 @@ $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_b2e41c1595 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertDuration($val);
 };
-$f_5a6c693af3 = static function (mixed ...$args) { throw new NotPorted('DelCheck 5a6c693af3'); };
-$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
-$f_25924ee98a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 25924ee98a'); };
-$f_383f917626 = static function (mixed ...$args) { throw new NotPorted('WriteCheck 383f917626'); };
+$f_5a6c693af3 = static function (ExifTool $self, TagInfo $tagInfo, $wantGroup) {
+    return "Can't delete";
+};
+$f_2f0c5a83d2 = static function ($val, ExifTool $self, $wantGroup) {
+    return $self->InverseDateTime($val);
+};
+$f_25924ee98a = static function ($val, ExifTool $self, $wantGroup) {
+    return $val;
+};
+$f_383f917626 = static function (ExifTool $self, TagInfo $tagInfo, $val) {
+    return preg_match('/^[0-7]$/', Perl::str($val)) ? null : 'Not an integer in the range 0-7';
+};
 $f_641c610afa = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $val = Perl::str($val);
     if (!preg_match("/^('.*?') ('.*?') /s", $val, $m)) return $val;
@@ -58,7 +66,9 @@ $f_986bcca18f = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     }
     return ExifTool::ConvertUnixTime(Perl::unpack('V', $val->value)[0] ?? null);
 };
-$f_4eaba744c0 = static function (mixed ...$args) { throw new NotPorted('WriteCheck 4eaba744c0'); };
+$f_4eaba744c0 = static function (ExifTool $self, TagInfo $tagInfo, $val) {
+    return 'May only delete this tag';
+};
 $f_962d85de43 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::split('/;/', $val);
     $a[0] = 'Flags=' . Perl::str($a[0] ?? null);
@@ -66,7 +76,9 @@ $f_962d85de43 = static function ($val, ExifTool $self, array &$vals, array $prt,
     $a[2] = 'by ' . Perl::str($a[2] ?? null);
     return implode(' ', $a);
 };
-$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
+$f_1d8918cb54 = static function ($val, ExifTool $self, $wantGroup) {
+    return $val;
+};
 
 return [
     'load' => [

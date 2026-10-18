@@ -10,61 +10,87 @@ $f_16c7ed6979 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_3b5912c7d8 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/Expo:\s*/', '', Perl::str($val), 1);
 };
-$f_202a9ba771 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 202a9ba771'); };
+$f_202a9ba771 = static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('Expo:%+.1f', $val) : null;
+};
 $f_e074f8843d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/Cont:\s*/', '', Perl::str($val), 1);
 };
-$f_12b8d25a00 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 12b8d25a00'); };
+$f_12b8d25a00 = static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('Cont:%+.1f', $val) : null;
+};
 $f_1e2999e8a9 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/Shad:\s*/', '', Perl::str($val), 1);
 };
-$f_3c33370d49 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 3c33370d49'); };
+$f_3c33370d49 = static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('Shad:%+.1f', $val) : null;
+};
 $f_3351b5542c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/High:\s*/', '', Perl::str($val), 1);
 };
-$f_0b36abf2d6 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 0b36abf2d6'); };
+$f_0b36abf2d6 = static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('High:%+.1f', $val) : null;
+};
 $f_b272afe147 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/Satu:\s*/', '', Perl::str($val), 1);
 };
-$f_878e74dcc5 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 878e74dcc5'); };
+$f_878e74dcc5 = static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('Satu:%+.1f', $val) : null;
+};
 $f_de7eaae126 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/Shar:\s*/', '', Perl::str($val), 1);
 };
-$f_935d64381f = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 935d64381f'); };
+$f_935d64381f = static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('Shar:%+.1f', $val) : null;
+};
 $f_1d8e1d18f7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/Fill:\s*/', '', Perl::str($val), 1);
 };
-$f_dea40ac488 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv dea40ac488'); };
+$f_dea40ac488 = static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('Fill:%+.1f', $val) : null;
+};
 $f_80f3ca2302 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/CC:\s*/', '', Perl::str($val), 1);
 };
-$f_3850104c9a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 3850104c9a'); };
+$f_3850104c9a = static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsInt($val) ? 'CC:'.Perl::str($val) : null;
+};
 $f_3c9685c4c3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/Qual:\s*/', '', Perl::str($val), 1);
 };
-$f_33b56d4487 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 33b56d4487'); };
+$f_33b56d4487 = static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsInt($val) ? 'Qual:'.Perl::str($val) : null;
+};
 $f_9b86aafa14 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/(\d)of(\d)/', '$1 of $2', Perl::str($val), 1);
 };
-$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
+$f_1d8918cb54 = static function ($val, ExifTool $self, $wantGroup) {
+    return $val;
+};
 $f_50e54f3cb2 = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::str($format) === 'int32u';
 };
 $f_54241c3f11 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/Chro:\s*/', '', Perl::str($val), 1);
 };
-$f_408f448951 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 408f448951'); };
+$f_408f448951 = static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('Chro:%+.1f', $val) : null;
+};
 $f_35a9a0c90a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/Luma:\s*/', '', Perl::str($val), 1);
 };
-$f_57557a6a83 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 57557a6a83'); };
+$f_57557a6a83 = static function ($val, ExifTool $self, $wantGroup) {
+    return ExifTool::IsFloat($val) ? Perl::sprintf('Luma:%+.1f', $val) : null;
+};
 $f_18cba2cf9b = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::num($self->MakerNoteSigmaVer) < 3;
 };
 $f_32fa794234 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', 'x');
 };
-$f_4f4b756712 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 4f4b756712'); };
+$f_4f4b756712 = static function ($val, ExifTool $self, $wantGroup) {
+    return strtr(Perl::str($val), 'x', ' ');
+};
 $f_7e84797f0c = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::num($self->MakerNoteSigmaVer) >= 3;
 };
@@ -74,12 +100,22 @@ $f_e1ea1f5360 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_76cbd6b2d3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_match('/^[0-9a-f]+$/i', Perl::str($val)) ? Perl::hex($val) : $val;
 };
-$f_2a8a84a017 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 2a8a84a017'); };
+$f_2a8a84a017 = static function ($val, ExifTool $self, $wantGroup) {
+    $val = preg_replace('/\.\d+$/', '', Perl::str($val), 1);
+    if (preg_match('/^0x/', $val)) {
+        $val = Perl::hexw($val, '$val');
+    }
+    return ExifTool::IsInt($val) ? Perl::sprintf('%x', $val) : $val;
+};
 $f_511918c1b6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/ /', ' to ', Perl::str($val), 1);
 };
-$f_9bd7cef64c = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 9bd7cef64c'); };
-$f_16430c614d = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 16430c614d'); };
+$f_9bd7cef64c = static function ($val, ExifTool $self, $wantGroup) {
+    return preg_replace('/to /', '', Perl::str($val), 1);
+};
+$f_16430c614d = static function ($val, ExifTool $self, $wantGroup) {
+    throw new \RuntimeException('Substitution replacement not terminated at (eval 1) line 1.');
+};
 $f_9c98df8b6c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f', $val);
 };
@@ -89,11 +125,15 @@ $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_b5b73947a5 = static function (ExifTool $self, $valPt, $format, $count) {
     return !preg_match('/ (SD1|SD9|SD15|Merrill|Quattro|fp)$/', Perl::str($self->Model)) && Perl::num($self->MakerNoteSigmaVer) < 4;
 };
-$f_153707d441 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 153707d441'); };
+$f_153707d441 = static function ($val, ExifTool $self, $wantGroup) {
+    return Exif::ConvertFraction($val);
+};
 $f_438f87995e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) * 1e-6;
 };
-$f_d9720c295d = static function (mixed ...$args) { throw new NotPorted('ValueConvInv d9720c295d'); };
+$f_d9720c295d = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::int(Perl::numw($val, 'multiplication (*)', '$val') * 1e6 + 0.5);
+};
 $f_5ca05a9012 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     if ($val) $val = preg_replace('/^(\d)/', '+$1', Perl::str($val), 1);
     return $val;
@@ -101,7 +141,9 @@ $f_5ca05a9012 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_da08e73859 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::IsInt($val) ? Perl::str($val) . ' C' : $val;
 };
-$f_554ae2f15f = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 554ae2f15f'); };
+$f_554ae2f15f = static function ($val, ExifTool $self, $wantGroup) {
+    return preg_replace('/ ?C$/', '', Perl::str($val), 1);
+};
 $f_e7c8cf2ae1 = static function (ExifTool $self, $valPt, $format, $count) {
     return (bool) preg_match('/^SIGMA (SD1( Merrill)?|DP\d Merrill)$/', Perl::str($self->Model));
 };
@@ -111,7 +153,9 @@ $f_641aead6ba = static function (ExifTool $self, $valPt, $format, $count) {
 $f_b22b3181bf = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1000000;
 };
-$f_85dc8b2713 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 85dc8b2713'); };
+$f_85dc8b2713 = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 1000000;
+};
 
 $d_1 = [
     16 => 'Sigma 50mm F2.8 EX DG MACRO',

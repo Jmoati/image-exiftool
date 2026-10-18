@@ -7,27 +7,39 @@ namespace Image\ExifTool;
 $f_40a730c975 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) * 50;
 };
-$f_08a51acc77 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 08a51acc77'); };
+$f_08a51acc77 = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'division (/)', '$val') / 50;
+};
 $f_75416aa93f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 2;
 };
-$f_b1b26b5f04 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv b1b26b5f04'); };
+$f_b1b26b5f04 = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 2;
+};
 $f_2beaacd6d4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 100;
 };
-$f_509567a743 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 509567a743'); };
+$f_509567a743 = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 100;
+};
 $f_e2582d25e8 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.4f', $val);
 };
-$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
+$f_1d8918cb54 = static function ($val, ExifTool $self, $wantGroup) {
+    return $val;
+};
 $f_05a61fd4e2 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) - 128;
 };
-$f_0f5557b641 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 0f5557b641'); };
+$f_0f5557b641 = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'addition (+)', '$val') + 128;
+};
 $f_e1b21e5266 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? Perl::num($val) - 128 : 'Auto';
 };
-$f_2c2749a11f = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 2c2749a11f'); };
+$f_2c2749a11f = static function ($val, ExifTool $self, $wantGroup) {
+    return preg_match('/\d/', Perl::str($val)) ? Perl::numw($val, 'addition (+)', '$val') + 128 : 0;
+};
 
 $d_1 = [0 => 'Off', 1 => 'On'];
 $d_2 = [0 => 'No', 1 => 'Yes'];

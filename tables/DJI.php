@@ -26,7 +26,9 @@ $f_4d862aa166 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_4a113cad5b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%+.2f', $val);
 };
-$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
+$f_1d8918cb54 = static function ($val, ExifTool $self, $wantGroup) {
+    return $val;
+};
 $f_b1fdb19171 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     if (!((Vars\DJI::$knownProtocol[Perl::str($val)] ?? null) || preg_match('/^dbginfo/', Perl::str($val)))) {
         $self->Warn('Unknown protocol '.Perl::str($val).' (please submit sample for testing)');
@@ -72,8 +74,12 @@ $f_5963c78984 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_2beaacd6d4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 100;
 };
-$f_cb54e897d7 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv cb54e897d7'); };
-$f_c94d243322 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c94d243322'); };
+$f_cb54e897d7 = static function ($val, ExifTool $self, $wantGroup) {
+    return GPS::ToDegrees($val, 1, 'lat');
+};
+$f_c94d243322 = static function ($val, ExifTool $self, $wantGroup) {
+    return GPS::ToDegrees($val, 1, 'lon');
+};
 
 return [
     'load' => [

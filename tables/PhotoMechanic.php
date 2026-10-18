@@ -7,19 +7,28 @@ namespace Image\ExifTool;
 $f_22afa7dfc4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.3f%%', $val);
 };
-$f_1f2cf7b051 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1f2cf7b051'); };
+$f_1f2cf7b051 = static function ($val, ExifTool $self, $wantGroup) {
+    return str_replace([' ', '%'], '', Perl::str($val));
+};
 $f_0ec2e7e81a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 655.36;
 };
-$f_5b222dabf1 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 5b222dabf1'); };
+$f_5b222dabf1 = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::int(Perl::numw($val, 'multiplication (*)', '$val') * 655.36 + 0.5);
+};
 $f_f62d9dd77e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/\s*(\d+):\s*(\d+):\s*(\d+):\s*(\S*)/', 'Tagged:$1, ColorClass:$2, Rating:$3, FrameNum:$4', Perl::str($val), 1);
 };
-$f_4cef5c329f = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 4cef5c329f'); };
+$f_4cef5c329f = static function ($val, ExifTool $self, $wantGroup) {
+    return preg_replace('/Tagged:\s*(\d+).*ColorClass:\s*(\d+).*Rating:\s*(\d+).*FrameNum:\s*(\S*)/is',
+        '$1:$2:$3:$4', Perl::str($val), 1);
+};
 $f_746dd5d294 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::ExifTime($val);
 };
-$f_3cac7e9162 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 3cac7e9162'); };
+$f_3cac7e9162 = static function ($val, ExifTool $self, $wantGroup) {
+    return IPTC::IptcTime($val);
+};
 
 $d_1 = [
     0 => '0 (None)',

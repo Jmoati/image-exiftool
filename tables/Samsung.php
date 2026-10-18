@@ -76,7 +76,9 @@ $f_f35ab42c3c = static function (array $val, $size, $varSize, ExifTool $self) {
 $f_96e91196b7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) - 4;
 };
-$f_17067bed8c = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 17067bed8c'); };
+$f_17067bed8c = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'addition (+)', '$val') + 4;
+};
 $f_ea67e5c065 = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::str($self->SamsungTagName) !== 'DualShot_2';
 };
@@ -112,7 +114,9 @@ $f_f083d1874f = static function ($val, ExifTool $self, array &$vals, array $prt,
     $val = preg_replace('/\x00 */', "\n", $val);
     return $val;
 };
-$f_a07cf94401 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv a07cf94401'); };
+$f_a07cf94401 = static function ($val, ExifTool $self, $wantGroup) {
+    return preg_replace('/(\x0d\x0a|\x0d|\x0a)/', "\0 ", Perl::str($val))."\0\0";
+};
 $f_8850269b88 = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::str($self->TIFF_TYPE) === 'SRW' && Perl::str($self->Model) !== 'EK-GN120';
 };
@@ -128,23 +132,33 @@ $f_5396013a83 = static function ($valuePtr = null, $val = null, $dirStart = null
 $f_6a8f5fe893 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_match('/\d/', Perl::str($val)) ? Perl::str($val) . ' C' : $val;
 };
-$f_1845a2bd14 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1845a2bd14'); };
+$f_1845a2bd14 = static function ($val, ExifTool $self, $wantGroup) {
+    return preg_replace('/ ?C/', '', Perl::str($val), 1);
+};
 $f_3d594e1db3 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^\w{5}/', $valPt);
 };
-$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
+$f_1d8918cb54 = static function ($val, ExifTool $self, $wantGroup) {
+    return $val;
+};
 $f_c4ce3b175c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/ .*/', '', Perl::str($val), 1);
 };
-$f_25924ee98a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 25924ee98a'); };
+$f_25924ee98a = static function ($val, ExifTool $self, $wantGroup) {
+    return $val;
+};
 $f_be71053a96 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' mm';
 };
-$f_c74468af9a = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c74468af9a'); };
+$f_c74468af9a = static function ($val, ExifTool $self, $wantGroup) {
+    return preg_replace('/\s*mm$/', '', Perl::str($val), 1);
+};
 $f_ddae2f7edc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 10;
 };
-$f_8f9dd09855 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 8f9dd09855'); };
+$f_8f9dd09855 = static function ($val, ExifTool $self, $wantGroup) {
+    return Perl::numw($val, 'multiplication (*)', '$val') * 10;
+};
 $f_edc9eab8c2 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     $self->EncryptionKey = Perl::split(' ', $val);
     return $val;
@@ -152,51 +166,75 @@ $f_edc9eab8c2 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_aeb24e1832 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, '-0');
 };
-$f_af6158172c = static function (mixed ...$args) { throw new NotPorted('RawConvInv af6158172c'); };
+$f_af6158172c = static function ($val, ExifTool $self, ?TagInfo $tagInfo) {
+    return Samsung::Crypt($self, $val, $tagInfo, 0);
+};
 $f_4a447f69fa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, -4);
 };
-$f_3f12b36c39 = static function (mixed ...$args) { throw new NotPorted('RawConvInv 3f12b36c39'); };
+$f_3f12b36c39 = static function ($val, ExifTool $self, ?TagInfo $tagInfo) {
+    return Samsung::Crypt($self, $val, $tagInfo, 4);
+};
 $f_2e02341390 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, -8);
 };
-$f_eaa505fcee = static function (mixed ...$args) { throw new NotPorted('RawConvInv eaa505fcee'); };
+$f_eaa505fcee = static function ($val, ExifTool $self, ?TagInfo $tagInfo) {
+    return Samsung::Crypt($self, $val, $tagInfo, 8);
+};
 $f_321d502259 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, -1);
 };
-$f_7d7475869f = static function (mixed ...$args) { throw new NotPorted('RawConvInv 7d7475869f'); };
+$f_7d7475869f = static function ($val, ExifTool $self, ?TagInfo $tagInfo) {
+    return Samsung::Crypt($self, $val, $tagInfo, 1);
+};
 $f_5b0cbfc5f8 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, 0);
 };
-$f_96c28960ae = static function (mixed ...$args) { throw new NotPorted('RawConvInv 96c28960ae'); };
+$f_96c28960ae = static function ($val, ExifTool $self, ?TagInfo $tagInfo) {
+    return Samsung::Crypt($self, $val, $tagInfo, '-0');
+};
 $f_d2d2b2f154 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, 4);
 };
-$f_9cbda3dbeb = static function (mixed ...$args) { throw new NotPorted('RawConvInv 9cbda3dbeb'); };
+$f_9cbda3dbeb = static function ($val, ExifTool $self, ?TagInfo $tagInfo) {
+    return Samsung::Crypt($self, $val, $tagInfo, -4);
+};
 $f_f326ec0de6 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, -2);
 };
-$f_c66a252e8c = static function (mixed ...$args) { throw new NotPorted('RawConvInv c66a252e8c'); };
+$f_c66a252e8c = static function ($val, ExifTool $self, ?TagInfo $tagInfo) {
+    return Samsung::Crypt($self, $val, $tagInfo, 2);
+};
 $f_3549cbfabe = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, 0, '-0');
 };
-$f_6c0092b766 = static function (mixed ...$args) { throw new NotPorted('RawConvInv 6c0092b766'); };
+$f_6c0092b766 = static function ($val, ExifTool $self, ?TagInfo $tagInfo) {
+    return Samsung::Crypt($self, $val, $tagInfo, '-0', 0);
+};
 $f_6e0f95f235 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, '-0', -7, -3);
 };
-$f_8e89c1a6d9 = static function (mixed ...$args) { throw new NotPorted('RawConvInv 8e89c1a6d9'); };
+$f_8e89c1a6d9 = static function ($val, ExifTool $self, ?TagInfo $tagInfo) {
+    return Samsung::Crypt($self, $val, $tagInfo, 0, 7, 3);
+};
 $f_ec4e1c9650 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, 8);
 };
-$f_07637bfd78 = static function (mixed ...$args) { throw new NotPorted('RawConvInv 07637bfd78'); };
+$f_07637bfd78 = static function ($val, ExifTool $self, ?TagInfo $tagInfo) {
+    return Samsung::Crypt($self, $val, $tagInfo, -8);
+};
 $f_45f65bceae = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, 5);
 };
-$f_11a31d593d = static function (mixed ...$args) { throw new NotPorted('RawConvInv 11a31d593d'); };
+$f_11a31d593d = static function ($val, ExifTool $self, ?TagInfo $tagInfo) {
+    return Samsung::Crypt($self, $val, $tagInfo, -5);
+};
 $f_c4d170ca95 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, 2);
 };
-$f_c9186d7902 = static function (mixed ...$args) { throw new NotPorted('RawConvInv c9186d7902'); };
+$f_c9186d7902 = static function ($val, ExifTool $self, ?TagInfo $tagInfo) {
+    return Samsung::Crypt($self, $val, $tagInfo, -2);
+};
 $f_588a82f62f = static function (array $val, $size, $varSize, ExifTool $self) {
     return $val[0x208] ?? null;
 };

@@ -52,7 +52,9 @@ $f_42870d06cd = static function (ExifTool $self, $valPt, $format, $count) {
 $f_1f2667c7fa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->ValidateImage(new ScalarRef($val), $tag);
 };
-$f_0fa5c867aa = static function (mixed ...$args) { throw new NotPorted('WriteCheck 0fa5c867aa'); };
+$f_0fa5c867aa = static function (ExifTool $self, TagInfo $tagInfo, $val) {
+    return $self->CheckImage($val);
+};
 $f_03c93132e2 = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::str($format) === 'rational64u';
 };

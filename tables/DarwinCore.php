@@ -7,12 +7,30 @@ namespace Image\ExifTool;
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
-$f_289bae1164 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 289bae1164'); };
-$f_8cc8f4a94f = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 8cc8f4a94f'); };
+$f_289bae1164 = static function ($val, ExifTool $self, $wantGroup) {
+    return $self->InverseDateTime($val, null, 1);
+};
+$f_8cc8f4a94f = static function ($val, ExifTool $self, $wantGroup) {
+    $v = $self->InverseDateTime($val, null, 1);
+    ExifTool::$evalWarning = null;
+    if ($v) {
+        return $v;
+    }
+    // allow time-only values by adding dummy date (thanks Herb)
+    $v = $self->InverseDateTime('2000:01:01 '.Perl::str($val), null, 1);
+    ExifTool::$evalWarning = null;
+    if ($v and preg_match('/.* /', Perl::str($v))) {
+        return preg_replace('/.* /', '', Perl::str($v), 1);    // strip off dummy date
+    }
+    ExifTool::$evalWarning = 'Invalid date/time or time-only value (use HH:MM:SS[.ss][+/-HH:MM|Z])';
+    return null;
+};
 $f_67d4f92774 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return XMP::ConvertXMPDate($val);
 };
-$f_e344555497 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv e344555497'); };
+$f_e344555497 = static function ($val, ExifTool $self, $wantGroup) {
+    return XMP::FormatXMPDate($val) ?: $val;
+};
 
 $d_1 = [
     'NAMESPACE' => 'dwc',
