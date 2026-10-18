@@ -355,7 +355,7 @@ function check(...$args): bool
 {
     $exifTool = ($args[0] ?? null) instanceof ExifTool ? array_shift($args) : null;
     [$info, $testname, $testnum, $stdnum, $topGroup] = $args + [null, null, null, null, null];
-    if (!$info) {
+    if (!is_array($info)) {     // (a Perl hash ref is true even if empty)
         echo "FAIL $testname $testnum\n";
 
         return false;
