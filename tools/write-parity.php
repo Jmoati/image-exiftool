@@ -22,7 +22,7 @@
  * edits the copy in place (FileName, Directory... then rename or move it).
  *
  * The API runners (Runner() below and its Perl twin tools/write-parity.pl) understand the
- * exiftool arguments -TAG[+-^]=[VALUE], -o FILE, -m, -n, -v[NUM], -api OPT[=VAL] and
+ * exiftool arguments -TAG[+-^]=[VALUE], -TAG<=DATAFILE, -o FILE, -m, -n, -v[NUM], -api OPT[=VAL] and
  * -overwrite_original, and set the new values like the exiftool script does. They also take
  * -_memin, -_memout, -_handle, -_handleout and -_raf, to pass the files to WriteInfo as data in
  * memory, as file handles or as a RandomAccess object (API-only cases, skipped with --cli). A case
@@ -39,6 +39,10 @@ if (($argv[1] ?? null) === '--run') {
     require $root.'/vendor/autoload.php';
     exit(Runner(array_slice($argv, 2)));
 }
+
+$opt = getopt('v', ['case:', 'cli', 'keep', 'exiftool:'], $rest);
+$etDir = rtrim($opt['exiftool'] ?? getenv('HOME').'/exiftool', '/');
+$images = "$etDir/t/images";
 
 // cases: [source file in ~/exiftool/t/images, [exiftool arguments]]
 $cases = [
@@ -84,6 +88,16 @@ $cases = [
     ['Pentax.jpg', ['-JFIF:YResolution=123', '-o', 'out.jpg']],
     ['Pentax.jpg', ['-JFIF:all=', '-JFIF:XResolution=72', '-o', 'out.jpg']],
     ['Canon.jpg', ['-Adobe=', '-o', 'out.jpg']],
+    // JPEG: segments written as a block (-TAG<=FILE)
+    ['Canon.jpg', ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.jpg']],
+    ['XMP.jpg', ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.jpg']],
+    ['XMP.jpg', ['-v3', "-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.jpg']],
+    ['Writer.jpg', ["-XMP<=$images/XMP.xmp", '-o', 'out.jpg']],
+    ['XMP.jpg', ["-XMP<=$images/XMP2.xmp", '-o', 'out.jpg']],
+    ['Writer.jpg', ["-EXIF<=$images/ExifTool.tif", '-o', 'out.jpg']],
+    ['Canon.jpg', ["-EXIF<=$images/ExifTool.tif", '-o', 'out.jpg']],
+    ['Canon.jpg', ['-EXIF=', '-o', 'out.jpg']],
+    ['XMP.jpg', ['-XMP=', '-ICC_Profile=', '-o', 'out.jpg']],
     // JPEG: nothing changed (WriteInfo returns 2)
     ['Writer.jpg', ['-Comment=', '-o', 'out.jpg']],
     ['Canon.jpg', ['-XMP:all=', '-o', 'out.jpg']],
@@ -115,8 +129,6 @@ $cases = [
     ['PNG.png', ['-Comment=x', '-o', 'out.png']],
 ];
 
-$opt = getopt('v', ['case:', 'cli', 'keep', 'exiftool:'], $rest);
-$etDir = rtrim($opt['exiftool'] ?? getenv('HOME').'/exiftool', '/');
 $verbose = isset($opt['v']);
 $work = "$root/var/write-parity";
 $perlEnv = ['PERL_HASH_SEED' => '0', 'PERL_PERTURB_KEYS' => '0'];   // deterministic reference
@@ -353,6 +365,16 @@ function Runner(array $argv): int
         // allow writing of 'Unsafe' tags unless specified by wildcard
         if (!preg_match('/[?*]/', $tag)) {
             $opts['Protected'] = 1;
+        }
+        if (str_contains($tag, '<') && null !== $newVal) {
+            $tag = preg_replace('/</', '', $tag, 1);
+            // read file data into $newVal (-TAG<=FILE)
+            $data = @file_get_contents($newVal);
+            if (false === $data) {
+                echo "Error opening file $newVal\n";
+                continue;
+            }
+            $newVal = $data;
         }
         if (preg_match('/([-+]|\xe2\x88\x92)$/', $tag, $m)) {
             $tag = substr($tag, 0, -strlen($m[1]));

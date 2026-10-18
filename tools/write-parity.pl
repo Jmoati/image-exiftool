@@ -4,7 +4,7 @@
 # write arguments through the Image::ExifTool API (SetNewValue + WriteInfo, the way the
 # exiftool script does it) and prints the result of every call.
 #
-#   perl tools/write-parity.pl EXIFTOOL_LIB [OPTIONS] [-TAG[+-^]=[VALUE]...] FILE
+#   perl tools/write-parity.pl EXIFTOOL_LIB [OPTIONS] [-TAG[+-^]=[VALUE]...] [-TAG<=DATAFILE] FILE
 #
 # OPTIONS: -o OUTFILE, -m, -n, -v[NUM], -api OPT[=VAL], -overwrite_original (no -o: edit FILE
 # in place), and how FILE and OUTFILE are passed to WriteInfo: -_memin (data in memory, a scalar
@@ -54,6 +54,14 @@ foreach (@newValues) {
     my %opts = ( Shift => 0 );  # shift values if possible instead of adding/deleting
     # allow writing of 'Unsafe' tags unless specified by wildcard
     $opts{Protected} = 1 unless $tag =~ /[?*]/;
+    if ($tag =~ s/<// and defined $newVal) {
+        # read file data into $newVal (-TAG<=FILE)
+        open my $in, '<', $newVal or print("Error opening file $newVal\n"), next;
+        binmode $in;
+        local $/;
+        $newVal = <$in>;
+        close $in;
+    }
     if ($tag =~ s/([-+]|\xe2\x88\x92)$//) {
         $opts{$addDelOpt{$1}} = 1;  # set AddValue or DelValue option
         # set $newVal to '' if deleting nothing
