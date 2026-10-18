@@ -638,7 +638,117 @@ class ExifTool
         $this->ESCAPE_PROC = null;
 
         // load user-defined default options
-        // (ponytail: %Image::ExifTool::UserDefined::Options comes from the config file, not supported)
+        foreach (self::$UserOptions as $opt => $val) {
+            $this->Options($opt, $val);
+        }
+    }
+
+    /** %Image::ExifTool::UserDefined::Options (set by LoadConfig) */
+    public static array $UserOptions = [];
+    /** @Image::ExifTool::UserDefined::Arguments (set by LoadConfig) */
+    public static array $UserArguments = [];
+    /** %Image::ExifTool::UserDefined::xmpStruct (set by LoadConfig) */
+    public static array $UserXmpStruct = [];
+    /** @Image::ExifTool::UserDefined::Geolocation (set by LoadConfig) */
+    public static array $UserGeolocation = [];
+
+    //------------------------------------------------------------------------------
+    // Load config files (ExifTool.pm: "Load .ExifTool_config file from user's home directory")
+    // Inputs: 0) list of config files from -config options (an empty name disables configuration)
+    //         1) directory of the executable (config files are also looked for there)
+    // The files are PHP files returning an array with the keys Shortcuts, UserDefined, Tables,
+    // Options, Arguments, Lenses, FileTypes, Geolocation and xmpStruct (see PORTING.md).
+    // Without -config, the file is .ExifTool_config.php in $EXIFTOOL_HOME or $HOME.
+    public static function LoadConfig(array $configFiles = [], ?string $exeDir = null): void
+    {
+        $exeDir ??= dirname(__DIR__) . '/bin';
+        do {
+            $config = array_shift($configFiles);
+            $wasConfig = false;
+            if ($config === null) {
+                $config = '.ExifTool_config.php';
+                $home = getenv('EXIFTOOL_HOME') ?: getenv('HOME') ?: (getenv('HOMEDRIVE') . getenv('HOMEPATH')) ?: '.';
+                $file = "$home/$config";
+            } else {
+                if ($config === '') break;  // filename of "" disables configuration
+                $file = $config;
+                $wasConfig = true;
+            }
+            // also check executable directory unless path is absolute
+            if (!is_readable($file) and !str_starts_with($config, '/')) $file = "$exeDir/$config";
+            if (!is_file($file) or !is_readable($file)) {
+                if ($wasConfig) self::PerlWarn("Config file not found\n");
+                break;
+            }
+            $head = (string) file_get_contents($file, false, null, 0, 200);
+            if (!preg_match('/^(#![^\n]*\n)?\s*<\?php/', $head)) {
+                // (the Perl code of a config file can't be evaluated)
+                self::PerlWarn("Config file $file is not a PHP file: the PHP port can't load Perl config files (see PORTING.md)\n");
+                break;
+            }
+            try {
+                $cfg = (static fn () => require $file)();
+                if (!is_array($cfg)) throw new \RuntimeException("Config file $file must return an array");
+                self::ApplyConfig($cfg);
+            } catch (\Throwable $e) {
+                self::PerlWarn(rtrim($e->getMessage()) . "\n");
+            }
+        } while ($configFiles);
+    }
+
+    /** load the UserDefined::* variables of a config file (see LoadConfig) */
+    private static function ApplyConfig(array $cfg): void
+    {
+        // Shortcuts.pm LoadShortcuts()
+        foreach ($cfg['Shortcuts'] ?? [] as $shortcut => $val) {
+            Vars\Shortcuts::$Main[$shortcut] = is_array($val) ? $val : [$val];
+        }
+        foreach ($cfg['Tables'] ?? [] as $tableName => $table) {   // %Image::ExifTool::UserDefined::xxx
+            if (is_array($table['NAMESPACE'] ?? null) and self::RequireModule('Image::ExifTool::XMP')) {
+                XMP::RegisterNamespace($table);
+            }
+            self::$rawTables[$tableName] = $table;
+        }
+        foreach ($cfg['UserDefined'] ?? [] as $tableName => $table) {
+            self::$UserDefined[$tableName] = $table;
+        }
+        self::$UserArguments = $cfg['Arguments'] ?? self::$UserArguments;
+        self::$UserOptions = $cfg['Options'] ?? self::$UserOptions;
+        self::$UserXmpStruct = ($cfg['xmpStruct'] ?? []) + self::$UserXmpStruct;
+        array_push(self::$UserGeolocation, ...($cfg['Geolocation'] ?? []));
+        // read user-defined lenses
+        foreach ($cfg['Lenses'] ?? [] as $lens) Vars\ExifTool::$userLens[$lens] = 1;
+        // add user-defined file types
+        $fileTypes = $cfg['FileTypes'] ?? [];
+        ksort($fileTypes, SORT_STRING);
+        foreach ($fileTypes as $ext => $fileInfo) {
+            $type = strtoupper((string) $ext);
+            if (!is_array($fileInfo)) {
+                Vars\ExifTool::$fileTypeLookup[$type] = $fileInfo;
+                continue;
+            }
+            $baseType = $fileInfo['BaseType'] ?? null;
+            if ($baseType) {
+                Vars\ExifTool::$fileTypeLookup[$type] = !empty($fileInfo['Description']) ? [$baseType, $fileInfo['Description']] : $baseType;
+                if (isset($fileInfo['Writable']) and !$fileInfo['Writable']) {
+                    // first make sure we are using an actual base type and not a derived type
+                    while ($baseType and !is_array(Vars\ExifTool::$fileTypeLookup[$baseType] ?? null)) {
+                        $baseType = Vars\ExifTool::$fileTypeLookup[$baseType] ?? null;
+                    }
+                    // mark this type as not writable
+                    Vars\ExifTool::$noWriteFile[$baseType] ??= [];
+                    Vars\ExifTool::$noWriteFile[$baseType][] = $type;
+                }
+            } else {
+                Vars\ExifTool::$fileTypeLookup[$type] = [$type, $fileInfo['Description'] ?? $type];
+                Vars\ExifTool::$moduleName[$type] = 0;  // not supported
+                if (!empty($fileInfo['Magic'])) {
+                    Vars\ExifTool::$magicNumber[$type] = $fileInfo['Magic'];
+                    if (!in_array($type, Vars\ExifTool::$fileTypes, true)) Vars\ExifTool::$fileTypes[] = $type;
+                }
+            }
+            if (isset($fileInfo['MIMEType'])) Vars\ExifTool::$mimeType[$type] = $fileInfo['MIMEType'];
+        }
     }
 
     //------------------------------------------------------------------------------
