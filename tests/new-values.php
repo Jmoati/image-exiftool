@@ -172,6 +172,10 @@ $c('delcheck', ['set', 'FileName', null], ['set', 'PreviewImage', null], ['set',
 // options
 $c('shift', ['set', 'DateTimeOriginal', '1:00:00', ['Shift' => 1]], ['over', 'DateTimeOriginal', '2020:01:02 03:04:05'], ['get', 'DateTimeOriginal'],
     ['set', 'CreateDate', '0:0:1 0:0:0', ['Shift' => -1]], ['over', 'CreateDate', '2020:01:02 03:04:05']);
+$c('shift twice', ['set', 'DateTimeOriginal', '1:2:3 4:5:6', ['Shift' => 1]], ['over', 'DateTimeOriginal', '2020:01:31 23:59:59'],
+    ['get', 'DateTimeOriginal'], ['over', 'DateTimeOriginal', '2019:12:31 00:00:00'], ['get', 'DateTimeOriginal'],
+    ['set', 'OffsetTime', '1:30', ['Shift' => -1]], ['over', 'OffsetTime', '+02:00'], ['get', 'OffsetTime'], ['over', 'OffsetTime', '-01:00']);
+$c('over createonly', ['opt', 'WriteMode', 'cg'], ['set', 'Artist', 'a'], ['over', 'Artist', 'old'], ['over', 'Artist', ''], ['set', 'XMP:Subject', 'k']);
 $c('shift add del', ['set', 'DateTimeOriginal', '1', ['Shift' => 0, 'AddValue' => 1]], ['over', 'DateTimeOriginal', '2020:01:02 03:04:05.5'],
     ['set', 'ModifyDate', '0:30', ['Shift' => 0, 'DelValue' => 1]], ['over', 'ModifyDate', '2020:01:02 03:04:05+02:00']);
 $c('shift errors', ['set', 'Artist', '1', ['Shift' => 1]], ['set', 'DateTimeOriginal', 'abc', ['Shift' => 1]], ['set', 'Keywords', 'x', ['Shift' => 1]],
