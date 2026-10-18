@@ -24,9 +24,9 @@
  * The API runners (Runner() below and its Perl twin tools/write-parity.pl) understand the
  * exiftool arguments -TAG[+-^]=[VALUE], -o FILE, -m, -n, -v[NUM], -api OPT[=VAL] and
  * -overwrite_original, and set the new values like the exiftool script does. They also take
- * -_memin, -_memout, -_handle and -_raf, to pass the files to WriteInfo as data in memory, as a
- * file handle or as a RandomAccess object (API-only cases, skipped with --cli). A case with a
- * null source creates its output from scratch.
+ * -_memin, -_memout, -_handle, -_handleout and -_raf, to pass the files to WriteInfo as data in
+ * memory, as file handles or as a RandomAccess object (API-only cases, skipped with --cli). A case
+ * with a null source creates its output from scratch.
  * Each case prints "ok" (identical), "MSG" (same files, but the output of the runners differs:
  * results of SetNewValue/WriteInfo, warnings, errors) or "DIFF" (the files differ).
  * Exit status: 0 when every case gives the same result.
@@ -102,6 +102,8 @@ $cases = [
     ['Canon.jpg', ['-_handle', '-Comment=']],
     ['Canon.jpg', ['-_raf', '-Comment=from RAF', '-o', 'out.jpg']],
     ['Canon.jpg', ['-_raf', '-Comment=RAF in place']],
+    ['Canon.jpg', ['-_handleout', '-Comment=to a handle', '-o', 'out.jpg']],
+    ['Canon.jpg', ['-_handle', '-_handleout', '-Comment=handles', '-o', 'out.jpg']],
     // errors
     ['Writer.jpg', ['-Comment=x', '-o', 'Writer.jpg']],
     ['Writer.jpg', ['-Comment=x', '-o', 'nodir/out.jpg']],
@@ -327,7 +329,7 @@ function Runner(array $argv): int
             $et->Options($parts[0], $parts[1] ?? 1);
         } elseif ('-overwrite_original' === $arg) {
             // (the API never keeps a backup)
-        } elseif (preg_match('/^-_(memin|memout|handle|raf)$/', $arg, $m)) {
+        } elseif (preg_match('/^-_(memin|memout|handle|handleout|raf)$/', $arg, $m)) {
             $api[$m[1]] = 1;    // (not exiftool options: how the files are passed to WriteInfo)
         } elseif (preg_match('/^-(.*=.*)$/s', $arg, $m)) {
             $newValues[] = $m[1];
@@ -373,8 +375,11 @@ function Runner(array $argv): int
     } elseif (isset($api['handle'])) {
         $src = $fh = fopen($src, 'r+b');
     }
+    $outFh = null;
     if (isset($api['memout'])) {
         $dst = new Image\ExifTool\ScalarRef(null);
+    } elseif (isset($api['handleout'])) {
+        $dst = $outFh = fopen($outfile, 'wb');
     }
     $rtn = $et->WriteInfo($src, $dst);
     echo "WriteInfo: $rtn\n";
@@ -385,6 +390,9 @@ function Runner(array $argv): int
     }
     if ($fh) {
         fclose($fh);
+    }
+    if ($outFh) {
+        fclose($outFh);
     }
     $info = $et->GetInfo('Warning', 'Error');
     $keys = array_map('strval', array_keys($info));

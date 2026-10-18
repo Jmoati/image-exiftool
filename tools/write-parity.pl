@@ -8,8 +8,8 @@
 #
 # OPTIONS: -o OUTFILE, -m, -n, -v[NUM], -api OPT[=VAL], -overwrite_original (no -o: edit FILE
 # in place), and how FILE and OUTFILE are passed to WriteInfo: -_memin (data in memory, a scalar
-# reference), -_memout (to a scalar reference, then saved), -_handle (a file handle), -_raf (a
-# File::RandomAccess object)
+# reference), -_memout (to a scalar reference, then saved), -_handle (a file handle),
+# -_handleout (OUTFILE as a file handle), -_raf (a File::RandomAccess object)
 # Keep in sync with Runner() in tools/write-parity.php.
 #------------------------------------------------------------------------------
 use strict;
@@ -36,7 +36,7 @@ while (@ARGV) {
         $et->Options($opt => defined $val ? $val : 1);
     } elsif ($arg eq '-overwrite_original') {
         # (the API never keeps a backup)
-    } elsif ($arg =~ /^-_(memin|memout|handle|raf)$/) {
+    } elsif ($arg =~ /^-_(memin|memout|handle|handleout|raf)$/) {
         $api{$1} = 1;   # (not exiftool options: how the files are passed to WriteInfo)
     } elsif ($arg =~ /^-(.*=.*)$/s) {
         push @newValues, $1;
@@ -80,7 +80,14 @@ if ($api{memin} or $api{raf}) {
     binmode $fh;
     $src = $fh;
 }
-$dst = \$outBuff if $api{memout};
+my $outFh;
+if ($api{memout}) {
+    $dst = \$outBuff;
+} elsif ($api{handleout}) {
+    open $outFh, '>', $outfile or die "can't create $outfile\n";
+    binmode $outFh;
+    $dst = $outFh;
+}
 my $rtn = $et->WriteInfo($src, $dst);
 print "WriteInfo: $rtn\n";
 if ($api{memout} and defined $outBuff and defined $outfile) {
@@ -95,5 +102,6 @@ if ($api{memout} and defined $outBuff and defined $outfile) {
     close $out;
 }
 close $fh if $api{handle};
+close $outFh if $api{handleout};
 my $info = $et->GetInfo('Warning', 'Error');
 print "$_: $$info{$_}\n" foreach sort keys %$info;
