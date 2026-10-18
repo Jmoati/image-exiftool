@@ -108,6 +108,8 @@ $cases = [
     ['Pentax.jpg', ['-v2', '-JFIF:XResolution=96', '-o', 'out.jpg']],
     // EXV and EXIF files
     [null, ['-Comment=new EXV', '-o', 'out.exv']],
+    [null, ["-EXIF<=$images/ExifTool.tif", '-o', 'out.exif']],
+    [null, ["-EXIF<=$images/ExifTool.tif", '-Comment=x', '-o', 'out.exv']],
     // files in memory, file handles, RandomAccess (API only)
     ['Canon.jpg', ['-_memin', '-_memout', '-Comment=in memory', '-o', 'out.jpg']],
     ['Canon.jpg', ['-_memin', '-Comment=memory in place']],
