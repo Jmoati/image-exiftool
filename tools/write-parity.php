@@ -303,6 +303,9 @@ $cases = [
     ["$inputs/img-badz.png", ['-ICC_Profile:all=', '-PNG:all=', '-o', 'out.png']],
     ["$inputs/img-exifafter.png", ['-EXIF:Artist=moved', '-o', 'out.png']],
     ["$inputs/img-exifafter.png", ['-EXIF:all=', '-o', 'out.png']],
+    ["$inputs/img-itxt.png", ['-XMP:Title=uncompressed', '-PNG:Title-en-US=new english', '-o', 'out.png']],
+    ["$inputs/img-itxt.png", ['-PNG:Title-en-US=', '-PNG:Title=default', '-o', 'out.png']],
+    ["$inputs/img-itxt.png", ['-PNG:all=', '-o', 'out.png']],
     // GIF (ProcessGIF): comments and application extensions (XMP, ICC_Profile)
     ['GIF.gif', ['-Comment=new gif comment', '-o', 'out.gif']],
     ['GIF.gif', ['-Comment=', '-o', 'out.gif']],
@@ -1330,6 +1333,8 @@ function ImageInputs(string $etDir, string $inputs): void
         'img-seal.png' => $sig.$ihdr.$chunk('seAl', '<seal seal="1" kv="1" ka="rsa" da="sha256" d="e.com" s="abc"/>').$idat.$iend,
         'img-badz.png' => $sig.$ihdr.$chunk('zTXt', "Comment\0\0not deflated").$chunk('iCCP', "icc\0\0bad").$idat.$iend,
         'img-exifafter.png' => $sig.$ihdr.$idat.$chunk('eXIf', $tiff).$chunk('tEXt', "Title\0after").$iend,
+        'img-itxt.png' => $sig.$ihdr.$chunk('iTXt', "XML:com.adobe.xmp\0\x01\0\0\0".$z($xmp)).
+            $chunk('iTXt', "Title\0\0\0en-US\0Titre\0english title").$chunk('tEXt', "Foo Bar\0unknown").$idat.$iend,
     ];
     $jumd = $box('jumd', "c2pa\x00\x11\x00\x10\x80\x00\x00\xaa\x00\x38\x9b\x71\x03c2pa\0");
     $jumb = $box('jumb', $jumd.$box('jumb', $box('jumd', "json\x00\x11\x00\x10\x80\x00\x00\xaa\x00\x38\x9b\x71\x03test\0").
