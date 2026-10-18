@@ -305,6 +305,10 @@ New values (`src/ExifTool/NewValues.php`):
   accept a call without arguments (`?ExifTool $et = null, ?array &$dirInfo = null...`, then
   `if (!$et) return 1;` like Perl's `$et or return 1`); one not ported yet, or whose signature
   requires the arguments, counts as 1 (all Perl write procs give 1 except `WriteKodakIFD`).
+- Code a write package runs at file scope when Perl loads it (only `WriteQuickTime.pl`: the
+  Preferred/Writable flags of the QuickTime ItemList and UserData tags) runs once, at the start
+  of the subs Perl would autoload it for (`QuickTime::LoadWriteQuickTime()`), never in the
+  generator (loading the package there would change the translation ids).
 - A `CHECK_PROC` is called as `$checkProc($self, $tagInfo, $val, $convType)` with `$val` by
   reference: `static function CheckXxx(ExifTool $et, TagInfo $tagInfo, &$valPtr, $convType = null)`.
 - Until everything is ported, a closure not translated, a CHECK_PROC or named code ref not
