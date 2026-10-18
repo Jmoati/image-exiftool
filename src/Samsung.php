@@ -16,7 +16,7 @@
 //               IB) Iliah Borg private communication (LibRaw)
 //               NJ) Niels Kristian Bech Jensen private communication
 //
-// PHP port of Image::ExifTool::Samsung 1.62 (WriteSTMN is not ported). Tag tables are
+// PHP port of Image::ExifTool::Samsung 1.62. Tag tables are
 // generated into tables/Samsung.php, %formatMinMax and %samsungLensTypes into Vars\Samsung.
 //------------------------------------------------------------------------------
 
@@ -344,5 +344,20 @@ final class Samsung
         }
         $et->Warn('Error processing Samsung trailer', 1);
         return 0;
+    }
+
+    //------------------------------------------------------------------------------
+    // Write Samsung STMN maker notes
+    // Inputs: 0) ExifTool object ref, 1) source dirInfo ref, 2) tag table ref
+    // Returns: Binary data block or undefined on error
+    public static function WriteSTMN(?ExifTool $et = null, ?array &$dirInfo = null, ?TagTable $tagTablePtr = null)
+    {
+        if (!$et) return 1;     // (allow dummy access)
+        // create a Fixup for the PreviewImage
+        $dirInfo['Fixup'] = new Fixup();
+        $val = ExifTool::WriteBinaryData($et, $dirInfo, $tagTablePtr);
+        // force PreviewImage into the trailer even if it fits in EXIF segment
+        if ($et->PREVIEW_INFO) $et->PREVIEW_INFO['IsTrailer'] = 1;
+        return $val;
     }
 }

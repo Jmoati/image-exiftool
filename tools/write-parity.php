@@ -923,6 +923,13 @@ $cases = [
     ['Nikon.nef', ['-PhotoEffects=', '-o', 'out.nef']],
     ['Nikon.nef', ['-v3', '-VignetteControlIntensity=10', '-o', 'out.nef']],
     ['Nikon.nef', ['-Artist=me', '-o', 'out.nef']],
+    // Samsung STMN maker notes (WriteSTMN): the PreviewImage goes to the trailer
+    ["$inputs/stmn.jpg", ['-Samsung:PreviewImageStart=0', '-o', 'out.jpg']],
+    ["$inputs/stmn.jpg", ['-Artist=me', '-o', 'out.jpg']],
+    ["$inputs/stmn.jpg", ['-PreviewImage=', '-o', 'out.jpg']],
+    ["$inputs/stmn.jpg", ['-MakerNotes:all=', '-o', 'out.jpg']],
+    ["$inputs/stmn.jpg", ['-v3', '-Samsung:MakerNoteVersion=STMN200', '-o', 'out.jpg']],
+    ["$inputs/stmn-nopreview.jpg", ['-Samsung:MakerNoteVersion=STMN200', '-o', 'out.jpg']],
 ];
 // RIFF, PDF, PostScript and InDesign writers (inputs made by DocumentInputs(), see below)
 array_push($cases,
@@ -2230,4 +2237,15 @@ function RawInputs(string $etDir, string $inputs): void
     $mrw = 'MM'.pack('n', 0).$segs;
     file_put_contents("$inputs/raw-crw.dng", $dng("Adobe\0".$record('CRW ', $crw).$record('MRW ', $mrw).
         $record('RAF ', 'MM'.pack('N', 0)).$record('Junk', 'unknown record')));
+    // JPEG with Samsung STMN maker notes: version, then PreviewImage start and length (relative to the
+    // maker notes) and a 2nd preview-less one, with an Exif IFD holding only the MakerNote tag
+    $preview = file_get_contents("$images/Writer.jpg");
+    $preview = substr($preview, 0, 2).substr($preview, strpos($preview, "\xff\xdb"));
+    foreach (['stmn' => true, 'stmn-nopreview' => false] as $name => $withPreview) {
+        $mn = $withPreview ? 'STMN100'."\0".pack('VV', 12, strlen($preview)).$preview : 'STMN100'."\0\0\0\0\0";
+        $exif = 'II*'."\0".pack('V', 8).pack('v', 1).pack('vvVV', 0x8769, 4, 1, 26).pack('V', 0).
+            pack('v', 1).pack('vvVV', 0x927c, 7, strlen($mn), 44).pack('V', 0).$mn;
+        $exif .= strlen($exif) & 1 ? "\0" : '';
+        file_put_contents("$inputs/$name.jpg", "\xff\xd8\xff\xe1".pack('n', strlen($exif) + 8)."Exif\0\0".$exif.substr($preview, 2));
+    }
 }
