@@ -67,6 +67,9 @@ $cases = [
     ['FotoStation.jpg', ['-FotoStation:all=', '-o', 'out.jpg']],
     ['PhotoMechanic.jpg', ['-PhotoMechanic:all=', '-o', 'out.jpg']],
     ['ExifTool.jpg', ['-Trailer=', '-o', 'out.jpg']],
+    ['AFCP.jpg', ['-Comment=x', '-o', 'out.jpg']],
+    ['AFCP.jpg', ['-AFCP:all=', '-o', 'out.jpg']],
+    ['AFCP.jpg', ['-v3', '-Comment=x', '-o', 'out.jpg']],
     // file system tags (in place: no -o)
     ['Writer.jpg', ['-FileName=renamed.jpg']],
     ['Writer.jpg', ['-Directory=sub/dir']],
