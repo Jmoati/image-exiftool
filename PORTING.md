@@ -4,8 +4,8 @@ This repository is a **faithful, file-for-file port** of Image::ExifTool 13.59
 (`~/exiftool`, git clone of github.com/exiftool/exiftool). It is not a rewrite:
 keep ExifTool's structure, function names, argument order, variable names,
 comments and control flow, so that upstream releases (every couple of weeks)
-can be diffed and re-applied. Scope for now: **reading** metadata. Writing
-(`Writer.pl`, `Write*.pl`, `*Inv` conversions) is out of scope.
+can be diffed and re-applied. Reading is done; **writing is being ported** (see
+"Writing" below).
 
 ## Layout
 
@@ -214,3 +214,64 @@ on the order, the port uses insertion order. The only visible case is `RestoreSt
 the others give "Error 3 placing ... in structure or list". Perl's choice changes from one run to
 the next (hash randomization), the port always keeps the first item of the file. The parity tool
 fixes Perl's hash seed, so these 3 files differ with `-struct`.
+
+## Writing
+
+The same rules apply to the write code. Layout:
+
+| Perl | PHP |
+|---|---|
+| `Writer.pl`, new values (`SetNewValue`, `GetNewValue*`, `SetNewValuesFromFile`, `ConvInv`, `CheckValue`, `InverseDateTime`, `IsOverwriting`...) | trait `Image\ExifTool\ExifTool\NewValues` (`src/ExifTool/NewValues.php`) |
+| `Writer.pl`, writing files (`WriteInfo`, `WriteDirectory`, `WriteJPEG`, `WriteBinaryData`, trailers, file operations...) | trait `Image\ExifTool\ExifTool\Writer` (`src/ExifTool/Writer.php`) |
+| `Writer.pl` subs already ported for reading (`InsertTagValues`, `GetAllTags`, `Set16u`...) | stay in `src/ExifTool.php` |
+| `WriteExif.pl`, `WriteXMP.pl`, `WriteIPTC.pl`, `WritePhotoshop.pl`, `WritePNG.pl`, `WriteQuickTime.pl`, `WriteRIFF.pl`, `WritePDF.pl`, `WritePostScript.pl`, `WriteCanonRaw.pl` | a trait of the module class: `src/<Module>/Write<Name>.php` (`src/Exif/WriteExif.php`...) |
+| write subs of the other modules (`WriteMIEGroup`, `WriteRAF`...) | in their module class |
+| `Fixup.pm` (objects) | class `Image\ExifTool\Fixup` (`src/Fixup.php`), dynamic properties like `TagInfo` |
+| `TagLookup.pm` | class `Image\ExifTool\TagLookup` (`src/TagLookup.php`), data in `Vars\TagLookup` (generated) |
+| `Geotag.pm` | class `Image\ExifTool\Geotag` (`src/Geotag.php`) |
+| write side of `Shift.pl` (`ApplyShift`, `ShiftTime`...) | `src/ExifTool/Shift.php` |
+| writing parts of the `exiftool` script | `src/App/Application.php` |
+
+Data:
+
+- `$$self{NEW_VALUE}{$tagInfo}` → `$self->NEW_VALUE[spl_object_id($tagInfo)]`. A new value hash
+  (`$nvHash`) is an object of class `Image\ExifTool\NewValue` (`src/NewValue.php`, dynamic
+  properties like `TagInfo`: `$$nvHash{Value}` → `$nvHash->Value`, `$$nvHash{Next}` →
+  `$nvHash->Next`), because Perl shares and mutates it through references.
+- Output files: Perl writes to a file handle or to a scalar ref (`\$buff`). In PHP `$outfile` is a
+  stream resource or a `ScalarRef` (its `->value` is the buffer), and `ExifTool::Write($outfile,
+  ...$data)` appends to either. `WriteInfo($src, $dst)` takes, like Perl, a file name, a
+  `ScalarRef` (data in memory) or a resource, and `$dst = null` to overwrite `$src`.
+- A directory rebuilt in memory is a string, returned like in Perl (`undef` → `null` for "no
+  change", `''` to delete it).
+
+Code in the tag tables (translated in `translations/<Module>.txt`, see above) has these contexts
+(from the `#### eval` comments of Writer.pl and WriteExif.pl):
+
+| Context | PHP closure |
+|---|---|
+| `PrintConvInv`, `ValueConvInv` string | `static function ($val, ExifTool $self, $wantGroup)` |
+| `RawConvInv` string | `static function ($val, ExifTool $self, ?TagInfo $tagInfo)` |
+| `WriteCheck` | `static function (ExifTool $self, TagInfo $tagInfo, $val)` |
+| `DelCheck` | `static function (ExifTool $self, TagInfo $tagInfo, $wantGroup)` |
+| `WriteCondition` | `static function (ExifTool $self)` |
+| `WriteAlso` (each value of the hash) | `static function ($val, array $opts)` |
+| anonymous `sub` used as an inverse conversion | `static function ($val, $et)`, called as `$conv($val, $self)` |
+
+A Perl expression that warns or dies in these contexts is reported by the caller (`$evalWarning`):
+throw, or `trigger_error()` like in the reading code. An expression that sets `$@` to "\n" (an empty
+warning) makes the tag be ignored without error: keep that behaviour.
+
+`WRITE_PROC`, `CHECK_PROC` (tables), `WriteProc`, `CheckProc` (SubDirectory) and `WriteHook` are
+generated as callables: the module port must provide the static method they name.
+
+### Verifying the writing
+
+- `tests/<name>.php` replays the write tests of ExifTool's `t/<Name>.t` against their expected
+  output (`tests/TestLib.php` has `check()`, `writeInfo()`, `writeCheck()`, `testVerbose()`,
+  `testCompare()` with its `nearEnough()` tolerance). Write the test files under `var/` (never in
+  `~/exiftool/t`), and never write into `~/exiftool` or the user's own files.
+- `tools/write-parity.php` writes the same changes with Perl and with the port and compares the
+  output files byte for byte (then their tags, when the bytes differ). A writer is done when its
+  `t/*.t` tests pass and its write-parity cases give identical files.
+

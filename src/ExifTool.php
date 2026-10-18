@@ -39,6 +39,8 @@ class ExifTool
 {
     use \Image\ExifTool\ExifTool\Formats;
     use \Image\ExifTool\ExifTool\Shift;
+    use \Image\ExifTool\ExifTool\NewValues;
+    use \Image\ExifTool\ExifTool\Writer;
 
     public static $VERSION = '13.59';
     public static $RELEASE = '';
