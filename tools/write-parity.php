@@ -7,8 +7,12 @@
  * times, and the result of WriteInfo with its warnings and errors.
  *
  *   php tools/write-parity.php [--case=TEXT] [--cli] [--keep] [--exiftool=DIR] [-v]
+ *   php tools/write-parity.php --sweep='ARGS' --ext=jpg,tif [...]
  *
  *   --case=TEXT     only the cases whose source or arguments contain TEXT
+ *   --sweep=ARGS    instead of the cases below, apply these exiftool arguments (separated by
+ *                   spaces, quotes allowed) to every file of t/images with an extension of --ext,
+ *                   writing out.<ext> (eg. --sweep='-Comment=x' --ext=jpg)
  *   --cli           run the real command-line tools (perl exiftool / php bin/exiftool) instead
  *                   of the API runners (for when bin/exiftool parses the write arguments)
  *   --keep          keep the work directories (var/write-parity/) of the identical cases too
@@ -40,7 +44,7 @@ if (($argv[1] ?? null) === '--run') {
     exit(Runner(array_slice($argv, 2)));
 }
 
-$opt = getopt('v', ['case:', 'cli', 'keep', 'exiftool:'], $rest);
+$opt = getopt('v', ['case:', 'cli', 'keep', 'exiftool:', 'sweep:', 'ext:'], $rest);
 $etDir = rtrim($opt['exiftool'] ?? getenv('HOME').'/exiftool', '/');
 $images = "$etDir/t/images";
 // large data written as a block (more than one JPEG segment)
@@ -160,6 +164,16 @@ $cases = [
     ['Writer.jpg', ['-Comment=x', '-o', 'out.tif']],
     ['PNG.png', ['-Comment=x', '-o', 'out.png']],
 ];
+if (isset($opt['sweep'])) {
+    $exts = array_map('strtolower', explode(',', $opt['ext'] ?? 'jpg'));
+    $cases = [];
+    foreach (glob("$images/*") as $file) {
+        $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        if (in_array($ext, $exts, true)) {
+            $cases[] = [basename($file), [...str_getcsv($opt['sweep'], ' ', '"', ''), '-o', "out.$ext"]];
+        }
+    }
+}
 
 $verbose = isset($opt['v']);
 $work = "$root/var/write-parity";

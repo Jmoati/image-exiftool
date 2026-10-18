@@ -1254,7 +1254,7 @@ trait Writer
                 {
                     $this->Warn("Can't delete {$m[1]} from {$this->FileType}", 1);
                     $grp1 = null;
-                } elseif (!(self::BLOCK_EXIF_TYPES[$this->FILE_TYPE] ?? null)) {
+                } elseif (!(self::BLOCK_EXIF_TYPES[Perl::str($this->FILE_TYPE)] ?? null)) {
                     // restrict delete logic to prevent entire tiff image from being killed
                     // (don't allow IFD0 to be deleted, and delete only ExifIFD if EXIF specified)
                     if ($this->FILE_TYPE === 'PSD') {
@@ -1330,7 +1330,7 @@ trait Writer
         {
             // protect against writing EXIF to wrong file types, etc
             if ($blockName === 'EXIF') {
-                if (!(self::BLOCK_EXIF_TYPES[$this->FILE_TYPE] ?? null)) {
+                if (!(self::BLOCK_EXIF_TYPES[Perl::str($this->FILE_TYPE)] ?? null)) {
                     $this->Warn("Can't write EXIF as a block to {$this->FILE_TYPE} file");
                     break;
                 }
