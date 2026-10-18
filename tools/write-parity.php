@@ -1147,6 +1147,14 @@ array_push($cases,
 if (isset($opt['cli'])) {
     CliInputs($etDir, $inputs);     // (see below)
     array_push($cases,
+        // -geotag (with the default -geotime from DateTimeOriginal), -geosync, -geotime
+        ['Panasonic.jpg', ["-geotag", "$images/Geotag.xml", '-geosync=1:30', '-o', 'out.jpg']],
+        ['Panasonic.jpg', ['-geotag', "$images/Geotag.*", '-o', 'out.jpg']],
+        ['Writer.jpg', ['-geotag', "$images/Geotag.gpx", '-geotime=2003:05:24 17:09:31Z', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-geotag', "$images/Geotag.igc", '-geosync=2010:01:05 07:00:00Z@2001:08:01 12:00:00-02:00',
+            '-geosync=2010:01:05 09:01:00Z@2001:08:01 14:00:00-02:00', '-geotime=2001:08:01 13:00:00-02:00', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-geotag', "$images/Geotag.kml", '-geotime<2013:11:13 09:04:31Z', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-geotag', "$images/Geotag.gpx", '-geotime=2003:05:24 17:09:31Z', '-api', 'GeoMaxExtSecs=1', '-v2', '-o', 'out.jpg']],
         // assignments: +=, -=, ^=, #=, -n, wildcards, groups, lists, escapes, charsets
         ['Writer.jpg', ['-Comment=a', '-Artist=b', '-XMP:Title=c', '-IPTC:Keywords=d', '-o', 'out.jpg']],
         ['Canon.jpg', ['-XMP:Subject+=one', '-XMP:Subject+=two', '-Keywords+=k1', '-o', 'out.jpg']],

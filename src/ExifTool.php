@@ -6674,7 +6674,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
                 self::$evalWarning = null;
                 if ($asList) {
                     foreach ($vals as &$v) {
-                        $err = self::EvalAdvancedFormat($expr, $v);
+                        $err = self::EvalAdvancedFormat($expr, $v, $this);
                         if ($err !== null) self::$evalWarning = $err;
                     }
                     unset($v);
@@ -6682,7 +6682,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
                     $vals = array_values(array_filter($vals, static fn ($v) => $v !== null));
                     $val = $vals ? implode($listSep, array_map(Perl::str(...), $vals)) : null;
                 } else {
-                    $err = self::EvalAdvancedFormat($expr, $val);
+                    $err = self::EvalAdvancedFormat($expr, $val, $this);
                     if ($err !== null) self::$evalWarning = $err;
                 }
                 if (self::$evalWarning) {
@@ -6736,7 +6736,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     // Returns: error message, or undef on success
     // (PHP: the expression is Perl code: only the default Windows filename filter (empty
     //  expression) is supported, any other expression is refused and the value is dropped)
-    private static function EvalAdvancedFormat($expr, &$val)
+    private static function EvalAdvancedFormat($expr, &$val, ?self $et = null)
     {
         if ($expr === 'tr(/\\\\?*:|"<>\\0)()d') {
             if ($val !== null) $val = str_replace(['/', '\\', '?', '*', ':', '|', '"', '<', '>', "\0"], '', Perl::str($val));
@@ -6746,6 +6746,12 @@ GR_TAG:     foreach ($rtnTags as $tag) {
         return "Advanced formatting expressions are not supported by the PHP port ($expr)\n";
     }
 
+        // (the expression added by the exiftool -geotag option)
+        if ($et and $expr === '$_=$self->GetValue(\'SubSecDateTimeOriginal\',\'ValueConv\') || $_') {
+            $r = $et->GetValue('SubSecDateTimeOriginal', 'ValueConv');
+            if ($r) $val = $r;
+            return null;
+        }
     //------------------------------------------------------------------------------
     // Dump data in hex and ASCII to console
     // Inputs: 0) data reference, 1) length or undef, 2-N) Options:
