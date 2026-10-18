@@ -1006,7 +1006,7 @@ final class Perl
                 case 'a':
                 case 'A':
                 case 'Z':
-                    $s = self::str($args[$ai++] ?? '');
+                    $s = self::packStr($args, $ai);
                     if ('*' === $count) {
                         $out .= $s.('Z' === $code ? "\0" : '');
                     } else {
@@ -1018,7 +1018,7 @@ final class Perl
                 case 'H':
                 case 'h':
                     // like Perl: every character gives a nybble (letters: (c+9)&15, others: c&15)
-                    $s = self::str($args[$ai++] ?? '');
+                    $s = self::packStr($args, $ai);
                     $n = '*' === $count ? \strlen($s) : ($count ?? 1);
                     $len = \strlen($s);
                     for ($k = 0; $k < $n; $k += 2) {
@@ -1029,7 +1029,7 @@ final class Perl
                     break;
                 case 'b':
                 case 'B':
-                    $s = self::str($args[$ai++] ?? '');
+                    $s = self::packStr($args, $ai);
                     if ('*' !== $count) {
                         $s = substr(str_pad($s, $count ?? 1, '0'), 0, $count ?? 1);
                     }
@@ -1075,7 +1075,9 @@ final class Perl
                     }
                     $reps = '*' === $count ? \count($args) - $ai : ($count ?? 1);
                     for ($r = 0; $r < $reps; ++$r) {
-                        $out .= self::packNum($code, $mods, $args[$ai++] ?? 0);
+                        // (a missing argument packs 0 silently, an undef one with a warning)
+                        $out .= self::packNum($code, $mods, \array_key_exists($ai, $args) ? $args[$ai] : 0);
+                        ++$ai;
                     }
             }
         }
@@ -1083,12 +1085,31 @@ final class Perl
 
     private static function nybble(string $c): int
     {
-        return ctype_alpha($c) ? (\ord($c) + 9) & 15 : \ord($c) & 15;
+        // (ASCII letters only, like Perl for a byte string: ctype_alpha() depends on the locale)
+        return preg_match('/^[A-Za-z]$/', $c) ? (\ord($c) + 9) & 15 : \ord($c) & 15;
+    }
+
+    /** argument of a string code of pack() (an undef one warns under packw()) */
+    private static function packStr(array $args, int &$ai): string
+    {
+        $v = $args[$ai] ?? null;
+        if (self::$packWarn && null === $v && \array_key_exists($ai, $args)) {
+            trigger_error('Use of uninitialized value in pack', E_USER_WARNING);
+        }
+        ++$ai;
+
+        return self::str($v ?? '');
     }
 
     private static function packNum(string $code, string $mods, mixed $v): string
     {
         $big = str_contains($mods, '>');
+        if (self::$packWarn) {
+            $v = self::numw($v, 'pack');
+            if (\is_float($v) && (is_nan($v) || is_infinite($v)) && !\in_array($code, ['f', 'd', 'F'], true)) {
+                throw new \RuntimeException('Cannot pack '.self::str($v)." with '$code'");
+            }
+        }
         if (\in_array($code, ['f', 'd', 'F'], true)) {
             $f = (float) self::num($v);
             $s = 'f' === $code ? pack('g', $f) : pack('e', $f);
@@ -1098,6 +1119,9 @@ final class Perl
         $n = self::int($v);
         if (\is_float($n)) {
             $n = $n >= 9.2233720368547758E18 ? (int) ($n - 1.8446744073709552E19) : (int) $n;
+        }
+        if (self::$packWarn && ('C' === $code ? $n < 0 || $n > 255 : ('c' === $code && ($n < -128 || $n > 127)))) {
+            trigger_error("Character in '$code' format wrapped in pack", E_USER_WARNING);
         }
         $s = match ($code) {
             'c', 'C' => \chr($n & 0xFF),
@@ -1112,5 +1136,213 @@ final class Perl
         };
 
         return $big && !\in_array($code, ['c', 'C', 'n', 'N', 'v', 'V'], true) ? strrev($s) : $s;
+    }
+
+    //------------------------------------------------------------------------------
+    // Perl run-time warnings under -w ($^W = 1, as in the exiftool script). The write code of
+    // the tag tables is evaluated with $SIG{__WARN__} catching them, and a warning there means
+    // an error for the tag (writing "abc" to a numeric tag fails instead of writing 0), so the
+    // translations raise them with trigger_error(E_USER_WARNING), which the eval site records.
+
+    /**
+     * Numification of an operand: num(), plus Perl's warning for undef ("Use of uninitialized
+     * value $name in $op") or for a string that doesn't look like a number ("Argument "..."
+     * isn't numeric in $op"). $op is Perl's description of the operator ('multiplication (*)',
+     * 'numeric gt (>)', 'int', 'sprintf', 'pack'...), $name the Perl variable ('$val', '$a[1]')
+     * when Perl names it.
+     */
+    public static function numw(mixed $v, string $op, ?string $name = null): int|float
+    {
+        if (null === $v) {
+            trigger_error('Use of uninitialized value'.(null === $name ? '' : " $name")." in $op", E_USER_WARNING);
+
+            return 0;
+        }
+        if (\is_string($v) && '0 but true' !== $v &&
+            !preg_match('/^\s*[-+]?(?:(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?|inf(?:inity)?|nan)\s*\z/i', $v)) {
+            trigger_error('Argument "'.self::display($v)."\" isn't numeric in $op", E_USER_WARNING);
+        }
+
+        return self::num($v);
+    }
+
+    /** Stringification of an operand: str(), plus "Use of uninitialized value $name in $op" for undef */
+    public static function strw(mixed $v, string $op, ?string $name = null): string
+    {
+        if (null === $v) {
+            trigger_error('Use of uninitialized value'.(null === $name ? '' : " $name")." in $op", E_USER_WARNING);
+        }
+
+        return self::str($v);
+    }
+
+    /**
+     * hex() with its warnings (no trimming of white space: Perl stops at the first illegal digit).
+     * A value above PHP_INT_MAX is the decimal string of the unsigned integer Perl gives, a value
+     * above 64 bits a float.
+     */
+    public static function hexw(mixed $v, ?string $name = null): int|float|string
+    {
+        $s = self::strw($v, 'hex', $name);
+        $len = \strlen($s);
+        $i = 0;
+        if ($len >= 1 && ('x' === $s[0] || 'X' === $s[0])) {
+            $i = 1;
+        } elseif ($len >= 2 && '0' === $s[0] && ('x' === $s[1] || 'X' === $s[1])) {
+            $i = 2;
+        }
+        $n = 0;         // (the 64 bits of the unsigned value)
+        $f = null;      // (the float value after an overflow)
+        // (a NUL byte ends the number silently, like a C string)
+        for (; $i < $len && "\0" !== $s[$i]; ++$i) {
+            $c = $s[$i];
+            if (!str_contains('0123456789abcdefABCDEF', $c)) {
+                // (a single underscore between digits is allowed)
+                if ('_' === $c && $i + 1 < $len && str_contains('0123456789abcdefABCDEF', $s[$i + 1])) {
+                    continue;
+                }
+                // (Perl prints the character with "%c" of a sign-extended char: a byte above 0x7f
+                // gives the extended UTF-8 encoding of 0xffffff00 + byte)
+                $b = \ord($c);
+                $c = $b < 0x80 ? $c : "\xfe\x83\xbf\xbf\xbf".\chr(0xBC | ($b >> 6)).\chr(0x80 | ($b & 0x3F));
+                trigger_error("Illegal hexadecimal digit '$c' ignored", E_USER_WARNING);
+                break;
+            }
+            if (null === $f && (($n >> 60) & 0xF)) {
+                $f = $n < 0 ? $n + 1.8446744073709552E19 : (float) $n;
+                trigger_error('Integer overflow in hexadecimal number', E_USER_WARNING);
+            }
+            if (null === $f) {
+                $n = ($n << 4) | hexdec($c);
+            } else {
+                $f = $f * 16.0 + hexdec($c);
+            }
+        }
+        if (null !== $f || $n < 0 || $n > 0xFFFFFFFF) {
+            trigger_error('Hexadecimal number > 0xffffffff non-portable', E_USER_WARNING);
+        }
+
+        return $f ?? ($n < 0 ? \sprintf('%u', $n) : $n);
+    }
+
+    /**
+     * The integer that a Perl bitwise operator (&, |, ^, <<, >>, ~) works on, an unsigned 64-bit
+     * value: NaN gives 0, Inf and values out of range saturate, a negative integer keeps its bits.
+     * Returned as the PHP int with the same 64 bits (negative when the top bit is set, where Perl
+     * shows an unsigned number). With $op, also gives the warnings of numw().
+     */
+    public static function uv(mixed $v, ?string $op = null, ?string $name = null): int
+    {
+        if (null !== $op) {
+            self::numw($v, $op, $name);
+        }
+        // (a string "inf" or "nan" gives 0, where the number Inf gives the largest value)
+        if (\is_string($v) && preg_match('/^\s*[-+]?(inf|nan)/i', $v)) {
+            return 0;
+        }
+        $n = self::num($v);
+        if (\is_int($n)) {
+            return $n;
+        }
+        if (is_nan($n)) {
+            return 0;
+        }
+        if ($n >= 1.8446744073709552E19) {
+            return -1;
+        }
+        if ($n >= 9.2233720368547758E18) {
+            return (int) ($n - 1.8446744073709552E19);
+        }
+        if ($n < -9.2233720368547758E18) {
+            return PHP_INT_MIN;
+        }
+
+        return (int) $n;
+    }
+
+    /**
+     * The result of a Perl bitwise operator, an unsigned integer, from the PHP int holding its 64
+     * bits: the decimal string of the unsigned value when the top bit is set.
+     */
+    public static function uvr(int|float $n): int|float|string
+    {
+        return \is_int($n) && $n < 0 ? \sprintf('%u', $n) : $n;
+    }
+
+    /** set by packw() */
+    private static bool $packWarn = false;
+
+    /**
+     * pack() with the warnings of -w ("Argument isn't numeric in pack", "Use of uninitialized
+     * value in pack", "Character in 'c' format wrapped in pack"), and the error for Inf and NaN
+     * values ("Cannot pack Inf with 'n'"), in the order of the arguments like Perl.
+     */
+    public static function packw(string $template, mixed ...$args): string
+    {
+        self::$packWarn = true;
+        try {
+            return self::pack($template, ...$args);
+        } finally {
+            self::$packWarn = false;
+        }
+    }
+
+    /**
+     * Unary minus: a string that isn't a number is negated as a string ("abc" gives "-abc",
+     * "-x" gives "+x", "+x" gives "-x"), else the number (with the warnings of numw() unless
+     * $numified: the value was already used as a number, so Perl warned then).
+     * Note: when Perl flips the sign of "-x"/"+x" after the value was used as a number, the
+     * result keeps that number; callers in that situation use the number they got.
+     */
+    public static function neg(mixed $v, ?string $name = null, bool $numified = false): mixed
+    {
+        $isNum = \is_string($v) && preg_match('/^\s*[-+]?(?:(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?|inf(?:inity)?|nan)\s*\z/i', $v);
+        // (a string used as a number is a number for Perl only if it looks like one)
+        if (\is_string($v) && !($numified && $isNum)) {
+            if (preg_match('/^[A-Za-z_]/', $v)) {
+                return "-$v";
+            }
+            if ('' !== $v && ('+' === $v[0] || ('-' === $v[0] && !$isNum))) {
+                return ('-' === $v[0] ? '+' : '-').substr($v, 1);
+            }
+        }
+
+        return -($numified ? self::num($v) : self::numw($v, 'negation (-)', $name));
+    }
+
+    /** log(): dies for a value <= 0 like Perl */
+    public static function log(mixed $v): float
+    {
+        $n = self::num($v);
+        if ($n <= 0) {
+            throw new \RuntimeException("Can't take log of ".self::sprintf('%g', $n));
+        }
+
+        return log($n);
+    }
+
+    /** a string as Perl shows it in a warning (sv_display(): escapes, 56 characters at most) */
+    private static function display(string $s): string
+    {
+        $d = '';
+        $len = \strlen($s);
+        for ($i = 0; $i < $len && \strlen($d) < 56; ++$i) {
+            $c = \ord($s[$i]);
+            if ($c >= 0x80 && $c < 0xA0) {
+                $d .= 'M-';
+                $c &= 0x7F;
+            }
+            $d .= match (true) {
+                0x0A === $c => '\n',
+                0x0D === $c => '\r',
+                0x0C === $c => '\f',
+                0x5C === $c => '\\\\',
+                0 === $c => '\0',
+                ($c >= 0x20 && $c < 0x7F) || $c >= 0xA0 => \chr($c),
+                default => '^'.\chr($c ^ 0x40),
+            };
+        }
+
+        return $i < $len ? "$d..." : $d;
     }
 }
