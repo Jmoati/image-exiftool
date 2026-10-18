@@ -923,6 +923,43 @@ array_push($cases,
     ["$inputs/doc-trunc.indd", ['-XMP:Title=truncated', '-o', 'out.indd']],
     ["$inputs/doc-short.indd", ['-XMP:Title=short', '-o', 'out.indd']],
     ["$inputs/doc-seq.indd", ['-XMP:Title=second master page', '-o', 'out.indd']],
+    // PostScript (WritePS): DSC comments, XMP, Photoshop and ICC_Profile blocks, DOS EPS headers
+    ['PostScript.eps', ['-PostScript:Title=new title', '-Author=me', '-o', 'out.eps']],
+    ['PostScript.eps', ['-XMP:Title=xmp', '-o', 'out.eps']],
+    ['PostScript.eps', ['-IPTC:Keywords=kw', '-EXIF:Artist=exif', '-o', 'out.eps']],
+    ['PostScript.eps', ['-all=', '-o', 'out.eps']],
+    ['PostScript.eps', ['-XMP:all=', '-o', 'out.eps']],
+    ['PostScript.eps', ['-Photoshop:all=', '-o', 'out.eps']],
+    ['PostScript.eps', ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.eps']],
+    ['PostScript.eps', ['-PostScript:all=', '-o', 'out.eps']],
+    ['PostScript.eps', ['-v3', '-Title=v', '-XMP:Title=v', '-o', 'out.eps']],
+    ['PostScript.eps', ['-Keywords='.str_repeat('long keyword (with brackets) \\ ', 20), '-o', 'out.eps']],
+    ['PostScript.eps', ["-Copyright=tab\there\x01", '-CreateDate=2020:01:02 03:04:05', '-o', 'out.eps']],
+    ['PostScript.eps', ['-_memin', '-_memout', '-Title=memory', '-o', 'out.eps']],
+    ['PostScript.eps', ['-Title=in place']],
+    ["$inputs/doc-plain.ps", ['-Title=plain', '-Keywords=new', '-o', 'out.ps']],
+    ["$inputs/doc-plain.ps", ['-XMP:Title=plain', "-ICC_Profile<=$images/ICC_Profile.icc", '-IPTC:Keywords=k', '-o', 'out.ps']],
+    ["$inputs/doc-plain.ps", ['-Keywords=', '-Creator=', '-o', 'out.ps']],
+    ["$inputs/doc-crlf.eps", ['-XMP:Title=crlf', '-Subject=s', '-o', 'out.eps']],
+    ["$inputs/doc-crlf.eps", ['-api', 'Compact=NoPadding', '-XMP:Title=compact', '-o', 'out.eps']],
+    ["$inputs/doc-xmp.eps", ['-XMP:Title=changed size', '-o', 'out.eps']],
+    ["$inputs/doc-xmp.eps", ['-XMP:all=', '-o', 'out.eps']],
+    ["$inputs/doc-xmp.eps", ['-all=', '-o', 'out.eps']],
+    ["$inputs/doc-xmpfixed.eps", ['-XMP:Title=in place size', '-o', 'out.eps']],
+    ["$inputs/doc-ai.ps", ['-XMP:Title=ai', '-Creator=other', '-Title=ai title', '-o', 'out.ps']],
+    ["$inputs/doc-hint.ps", ['-XMP:Title=hint', '-o', 'out.ps']],
+    ["$inputs/doc-hint.ps", ['-XMP:all=', '-o', 'out.ps']],
+    ["$inputs/doc-plate.eps", ['-XMP:Title=plate', '-o', 'out.eps']],
+    ["$inputs/doc-noend.ps", ['-Title=noend', '-o', 'out.ps']],
+    ["$inputs/doc-old.ps", ['-Title=old', '-o', 'out.ps']],
+    ["$inputs/doc-old.ps", ['-m', '-Title=old', '-o', 'out.ps']],
+    ["$inputs/doc-adobe.ps", ['-Title=adobe', '-o', 'out.ps']],
+    ["$inputs/doc-dos.eps", ['-XMP:Title=dos', '-EXIF:Artist=preview', '-o', 'out.eps']],
+    ["$inputs/doc-dos.eps", ['-EXIF:all=', '-o', 'out.eps']],
+    ["$inputs/doc-dos.eps", ['-_memout', '-Title=dos', '-o', 'out.eps']],
+    ["$inputs/doc-dos.eps", ['-Title=in place']],
+    ["$inputs/doc-dosw.eps", ['-XMP:Title=wmf', '-o', 'out.eps']],
+    ["$inputs/doc-dosbad.eps", ['-Title=bad', '-o', 'out.eps']],
 );
 // command line only (--cli): options of the exiftool script, which the API runners don't parse
 if (isset($opt['cli'])) {
@@ -1487,6 +1524,32 @@ function DocumentInputs(string $etDir, string $inputs): void
     $files['doc-trunc.indd'] = substr($ind, 0, 9000);
     $files['doc-short.indd'] = substr_replace($ind, pack('N', 1377 - 20), 8224, 4);
     $files['doc-seq.indd'] = substr_replace($ind, pack('V', 9), 4096 + 264, 4);
+    // PostScript: LF and CR/LF newlines, continued comments, Illustrator, XMP hint, DCS plate
+    // file, missing end token, PS 2.0, "%!Adobe-PS", DOS EPS with a TIFF or WMF preview
+    $ps = "%!PS-Adobe-3.0\n%%Creator: (someone)\n%%Title: (old title)\n%%Keywords: (one \\(two\\) three)\n".
+        "%%+ ( continued)\n%%For: me\n%%EndComments\n%%BeginProlog\n/x 1 def\n%%EndProlog\n%%Page: 1 1\n".
+        "newpath\nshowpage\n%%Trailer\n%%EOF\n";
+    $files['doc-plain.ps'] = $ps;
+    $eps = "%!PS-Adobe-3.0 EPSF-3.0\r\n%%BoundingBox: 0 0 8 8\r\n%%EndComments\r\nnewpath\r\n%%Trailer\r\n%%EOF\r\n";
+    $files['doc-crlf.eps'] = $eps;
+    $files['doc-ai.ps'] = str_replace('(someone)', 'Adobe Illustrator(R) 8.0', $ps);
+    $files['doc-hint.ps'] = str_replace("%%For: me\n", "%%For: me\n%ADO_ContainsXMP: NoMain\n", $ps);
+    $files['doc-plate.eps'] = str_replace("%%Page: 1 1\n", "%%PlateFile: (Cyan) EPS 1000 2000\n", $ps);
+    $files['doc-noend.ps'] = "%!PS-Adobe-3.0\n%%Title: (x)\n%%BeginSetup\nsetup\n";
+    $files['doc-old.ps'] = str_replace('%!PS-Adobe-3.0', '%!PS-Adobe-2.0', $ps);
+    $files['doc-adobe.ps'] = '%!Adobe-PS'.substr($ps, 14);
+    $tiff = (string) @file_get_contents("$inputs/img-tiny.exif");
+    $dos = static fn (string $ps, int $wmf, int $tif) => "\xc5\xd0\xd3\xc6".pack('V6v', 30, strlen($ps), $wmf ? 30 + strlen($ps) : 0,
+        $wmf, $tif ? 30 + strlen($ps) : 0, $tif, 0xffff);
+    $files['doc-dos.eps'] = $dos($eps, 0, strlen($tiff)).$eps.$tiff;
+    $files['doc-dosw.eps'] = $dos($eps, 16, 0).$eps.str_repeat("\x01", 16);
+    $files['doc-dosbad.eps'] = substr_replace($dos($eps, 0, 0), pack('V', 31), 4, 4).$eps;
+    foreach ($files as $name => $data) {
+        file_put_contents("$inputs/$name", $data);
+    }
+    // written by Perl: EPS with XMP (whose size is in the PostScript code, or not)
+    Run(['perl', "$etDir/exiftool", '-q', '-XMP:Title=old xmp', '-o', "$inputs/doc-xmp.eps", "$inputs/doc-crlf.eps"], $inputs);
+    $files = ['doc-xmpfixed.eps' => str_replace('%begin_xml_packet: ', '%begin_xml_packet: x', (string) @file_get_contents("$inputs/doc-xmp.eps"))];
     foreach ($files as $name => $data) {
         file_put_contents("$inputs/$name", $data);
     }

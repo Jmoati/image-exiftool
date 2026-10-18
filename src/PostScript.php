@@ -11,7 +11,8 @@
 //               2) http://partners.adobe.com/public/developer/en/ps/5001.DSC_Spec.pdf
 //               3) http://partners.adobe.com/public/developer/en/illustrator/sdk/AI7FileFormat.pdf
 //
-// PHP port of Image::ExifTool::PostScript 1.46 (reading only: WritePS is not ported).
+// PHP port of Image::ExifTool::PostScript 1.46 (the writer, WritePostScript.pl, is the trait
+// PostScript\WritePostScript).
 // Tag tables are generated into tables/PostScript.php.
 // (Perl's input record separator $/ is Perl::$RS, used by RandomAccess::ReadLine)
 //------------------------------------------------------------------------------
@@ -22,6 +23,8 @@ use Image\ExifTool\File\RandomAccess;
 
 final class PostScript
 {
+    use PostScript\WritePostScript;
+
     public static $VERSION = '1.46';
 
     //------------------------------------------------------------------------------
