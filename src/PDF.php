@@ -30,6 +30,8 @@ use Image\ExifTool\File\RandomAccess;
 
 final class PDF
 {
+    use PDF\WritePDF;
+
     public static $VERSION = '1.62';
 
     // $lastFetched - last fetched object reference (used for decryption)

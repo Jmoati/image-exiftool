@@ -8,17 +8,99 @@
 // Revisions:    10/28/2005 - P. Harvey Created
 //               03/13/2019 - PH Added single-argument form of ShiftTime()
 //
-// PHP port of the reading parts of Shift.pl (package Image::ExifTool), mixed into
-// Image\ExifTool\ExifTool: GlobalTimeShift option and table code (Parrot). ApplyShift
-// (writing) is not ported, and DaysInMonth is already in src/ExifTool.php.
+// PHP port of Shift.pl (package Image::ExifTool), mixed into Image\ExifTool\ExifTool:
+// GlobalTimeShift option, table code (Parrot) and writing (ApplyShift). DaysInMonth is
+// in src/ExifTool.php.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool\ExifTool;
 
+use Image\ExifTool\ConvList;
+use Image\ExifTool\NewValue;
+use Image\ExifTool\NotPorted;
 use Image\ExifTool\Perl;
 
 trait Shift
 {
+    //------------------------------------------------------------------------------
+    // apply shift to value in new value hash
+    // Inputs: 0) ExifTool ref, 1) shift type, 2) shift string, 3) raw date/time value,
+    //         4) new value hash ref
+    // Returns: error string or undef on success and updates value in new value hash
+    public function ApplyShift($func, $shift, $val, NewValue $nvHash)
+    {
+        // get shift direction from first character in shift string
+        $shift = Perl::str($shift);
+        $pre = '+';
+        if (preg_match('/^(\+|-)/', $shift, $m)) {
+            $pre = $m[1];
+            $shift = substr($shift, 1);
+        }
+        $dir = ($pre === '+') ? 1 : -1;
+        $tagInfo = $nvHash->TagInfo;
+        $tag = $tagInfo->Name;
+        $nvHash->ShiftOffset ??= [];
+        $shiftOffset = &$nvHash->ShiftOffset;
+
+        // initialize handler for eval warnings
+        self::EvalBegin();  // (local $SIG{'__WARN__'} = \&SetWarning)
+        try {
+            self::SetWarning(null);
+
+            // shift is applied to ValueConv value, so we must ValueConv-Shift-ValueConvInv
+            $err = null;
+            foreach (['ValueConv', 'Shift', 'ValueConvInv'] as $type) {
+                $evalErr = null;    // ($@)
+                if ($type === 'Shift') {
+                    //### eval ShiftXxx function
+                    try {
+                        $proc = "Shift$func";
+                        $err = self::$proc($val, $shift, $dir, $shiftOffset);
+                    } catch (\Throwable $e) {
+                        $evalErr = self::EvalError($e);
+                    }
+                } elseif ($tagInfo->$type) {
+                    $conv = $tagInfo->$type;
+                    if ($conv instanceof ConvList or is_array($conv)) {
+                        return "Can't handle $type for $tag in ApplyShift()";
+                    }
+                    if ($type === 'ValueConv' ? self::IsCodeRef($conv) : self::IsInvCodeRef($conv)) {
+                        try {
+                            $val = self::CallCode($conv, $val, $this);
+                        } catch (NotPorted $e) {
+                            $val = null;
+                            $evalErr = self::EvalError($e);
+                        }
+                    } else {
+                        //### eval ValueConv/ValueConvInv ($val, $self)
+                        try {
+                            if ($type === 'ValueConv') {
+                                $vals = [];
+                                $val = $conv($val, $this, $vals, [], [], $tagInfo, $tag);
+                            } else {
+                                $val = $conv($val, $this, null);
+                            }
+                        } catch (\Throwable $e) {
+                            $val = null;
+                            $evalErr = self::EvalError($e);
+                        }
+                    }
+                } else {
+                    continue;
+                }
+                // handle errors
+                if ($err) return $err;
+                if ($evalErr) self::SetWarning($evalErr);
+                if (self::GetWarning()) return self::CleanWarning();
+            }
+        } finally {
+            self::EvalEnd();
+        }
+        // update value in new value hash
+        $nvHash->Value = [$val];
+        return null;    // success
+    }
+
     //------------------------------------------------------------------------------
     // Check date/time shift
     // Inputs: 0) shift type, 1) shift string (without sign)

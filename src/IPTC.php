@@ -18,6 +18,8 @@ namespace Image\ExifTool;
 
 final class IPTC
 {
+    use IPTC\WriteIPTC;
+
     public static $VERSION = '1.59';
 
     // manufacturer strings for IPTCPictureNumber

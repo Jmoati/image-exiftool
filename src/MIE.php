@@ -9,8 +9,8 @@
 //
 // PHP port of Image::ExifTool::MIE 1.57 (reading only). Tag tables are generated into
 // tables/MIE.php, the file lexicals ($hasZlib, %mieFormat, %mieMap...) into Vars\MIE.
-// Not ported (writing): UpdateMieMap, MIEGroupFormat, CheckMIE, WriteMIEGroup and the
-// OutFile branches of ProcessMIE.
+// Not ported (writing): UpdateMieMap, MIEGroupFormat, WriteMIEGroup and the OutFile
+// branches of ProcessMIE.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -21,6 +21,39 @@ use Image\ExifTool\Vars\MIE as Vars;
 final class MIE
 {
     public static $VERSION = '1.57';
+
+    //------------------------------------------------------------------------------
+    // validate raw values for writing
+    // Inputs: 0) ExifTool object ref, 1) tagInfo hash ref, 2) raw value ref
+    // Returns: error string or undef (and possibly changes value) on success
+    public static function CheckMIE(ExifTool $et, TagInfo $tagInfo, &$valPtr, $convType = null)
+    {
+        $format = $tagInfo->Writable ?: $tagInfo->Table['WRITABLE'];
+        $err = null;
+
+        if (!$format or Perl::str($format) === '1') return 'No writable format';
+        // handle units if supported by this tag
+        $ulist = $tagInfo->Units;
+        if ($ulist and preg_match('/(.*)\((.*)\)$/', Perl::str($valPtr), $m)) {
+            [$val, $units] = [$m[1], $m[2]];
+            $units = array_values(@preg_grep(ExifTool::Rx("^$units\$", 'i'), $ulist) ?: [])[0] ?? null;
+            if ($units === null) return 'Allowed units: (' . implode('|', $ulist) . ')';
+            $err = ExifTool::CheckValue($val, $format, $tagInfo->Count);
+            // add units back onto value
+            if (!$err) $valPtr = Perl::str($val) . "($units)";
+        } elseif (!preg_match('/^(utf|string|undef)/', $format) and preg_match('/\)$/', Perl::str($valPtr))) {
+            return 'Units not supported';
+        } else {
+            if ($format === 'string' and $et->OPTIONS['Charset'] !== 'UTF8' and
+                preg_match('/[\x80-\xff]/', Perl::str($valPtr)))
+            {
+                // convert from Charset to UTF-8
+                $valPtr = $et->Encode($valPtr, 'UTF8');
+            }
+            $err = ExifTool::CheckValue($valPtr, $format, $tagInfo->Count);
+        }
+        return $err;
+    }
 
     //------------------------------------------------------------------------------
     // Get localized version of tagInfo hash

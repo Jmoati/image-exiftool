@@ -21,6 +21,8 @@ namespace Image\ExifTool;
 
 final class Exif
 {
+    use Exif\WriteExif;
+
     // size limit for loading binary data block into memory
     public static function BINARY_DATA_LIMIT() { return 10 * 1024 * 1024; }
 

@@ -401,7 +401,10 @@ final class Canon
             20 => 800, //PH
         ];
         if ($inv) {
-            return null;
+            $rtnVal = ExifTool::ReverseLookup($val, $isoLookup);
+            if ($rtnVal === null and ExifTool::IsInt($val)) {
+                $rtnVal = (Perl::int($val) & 0x3fff) | 0x4000;
+            }
         } elseif (Perl::num($val) != 0x7fff) {
             if (Perl::int($val) & 0x4000) {
                 $rtnVal = Perl::int($val) & 0x3fff;

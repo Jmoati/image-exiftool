@@ -19,7 +19,7 @@
 //               this module represents a lot of work downloading sample images
 //               (about 100MB worth!), and testing with my daughter's CX4200.
 //
-// PHP port of Image::ExifTool::Kodak 1.48 (reading only: WriteKodakIFD is not ported).
+// PHP port of Image::ExifTool::Kodak 1.48.
 // Tag tables are generated into tables/Kodak.php.
 //------------------------------------------------------------------------------
 
@@ -172,5 +172,29 @@ final class Kodak
             $et->HDump($dirStart + $base, 2, 'Byte Order Mark');
         }
         return Exif::ProcessExif($et, $dirInfo, $tagTablePtr);
+    }
+
+    //------------------------------------------------------------------------------
+    // Write Kodak IFD (with leading byte order mark)
+    // Inputs: 0) ExifTool object ref, 1) source dirInfo ref, 2) tag table ref
+    // Returns: Exif data block (may be empty if no Exif data) or undef on error
+    // (PHP: the arguments may be omitted, like Perl's dummy call made to autoload the writer)
+    public static function WriteKodakIFD(?ExifTool $et = null, ?array &$dirInfo = null, ?TagTable $tagTablePtr = null)
+    {
+        $dirStart = ($dirInfo['DirStart'] ?? null) ?: 0;
+        if ($dirStart <= 0 or $dirStart + 2 > ($dirInfo['DataLen'] ?? null)) return '';
+        $byteOrder = substr($dirInfo['DataPt'], $dirStart, 2);
+        if (!ExifTool::SetByteOrder($byteOrder)) return '';
+        $dirInfo['DirStart'] += 2;  // skip byte order mark
+        $dirInfo['DirLen'] -= 2;
+        $buff = Exif::WriteExif($et, $dirInfo, $tagTablePtr);
+        if (!($buff !== null and strlen($buff))) return $buff;
+        // apply one-time fixup for length of byte order mark
+        if (!empty($dirInfo['Fixup'])) {
+            $dirInfo['Fixup']->Shift += 2;
+            $dirInfo['Fixup']->ApplyFixup($buff);
+            unset($dirInfo['Fixup']);
+        }
+        return ExifTool::GetByteOrder() . $buff;
     }
 }

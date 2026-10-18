@@ -56,6 +56,7 @@ use Image\ExifTool\File\RandomAccess;
 final class QuickTime
 {
     use QuickTime\Stream;
+    use QuickTime\WriteQuickTime;
 
     public static $VERSION = '3.35';
 
