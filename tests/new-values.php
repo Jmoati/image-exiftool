@@ -134,10 +134,35 @@ $c('canon', ['set', 'Canon:OwnerName', 'me'], ['get', 'Canon:OwnerName'], ['set'
     ['get', 'Canon:MacroMode'], ['set', 'Canon:Quality', 'Fine'], ['set', 'Canon:FocalLength', '50'], ['set', 'MakerNotes:OwnerName', 'x']);
 $c('canon delete', ['set', 'Canon:OwnerName', null], ['get', 'Canon:OwnerName'], ['set', 'Canon:MacroMode', null], ['set', 'Canon:MacroMode', null, ['IgnorePermanent' => 1]]);
 $c('nikon', ['set', 'Nikon:Quality', 'Fine'], ['set', 'Nikon:WhiteBalance', 'Auto'], ['set', 'Nikon:ISOSelection', 'x'], ['set', 'Nikon:ColorMode', 'Color']);
+// (Perl runs with -w like the exiftool script: "abc" fails for the tags whose inverse conversion
+// warns, so Contrast=abc sets 15 tags and ExposureTime=abc none, against 21 and 9 without -w)
+$c('contrast', ['set', 'Contrast', 'High'], ['set', 'Saturation', 'Low'], ['set', 'Sharpness', 'Soft'], ['set', 'ExposureCompensation', '-1/3']);
+$c('contrast bad', ['set', 'Contrast', 'abc'], ['set', 'Contrast', '+1'], ['set', 'ExposureTime', 'abc']);
+$c('nikon picture control', ['set', 'Nikon:Contrast', 'n/a'], ['set', 'Nikon:Brightness', 'Auto'], ['set', 'Nikon:Saturation', 'User'],
+    ['set', 'Nikon:Sharpness', '1.5'], ['set', 'Nikon:Hue', '-2'], ['set', 'Nikon:Clarity', '1']);
+$c('nikon af points', ['set', 'AFPointsUsed', 'C6,A1, e9'], ['set', 'Nikon:AFPointsInFocus', 'A0 B2'], ['set', 'AFPointsUsed', '(none)']);
+$c('pentax', ['set', 'Pentax:FlashExposureCompSet', '-0.3'], ['set', 'Pentax:BaseExposureCompensation', '0.7'],
+    ['set', 'Pentax:FlashExposureCompSet', 'abc'], ['set', 'DigitalFilter01', 'Soft Focus, Brightness=+2, Saturation=-1'],
+    ['set', 'DigitalFilter02', 'Soft Focus, Bogus=1'], ['set', 'DigitalFilter03', 'Off'], ['set', 'DigitalFilter04', 'Toy Camera, Brightness=x']);
+// (library functions with the warnings of -w: GPS::ToDMS, GetUnixTime (which dies in Time::Local))
+$c('library warnings', ['set', 'XMP-exif:GPSLatitude', '-1/3', ['Type' => 'ValueConv']], ['set', 'XMP-exif:GPSLongitude', '-1/3x', ['Type' => 'ValueConv']],
+    ['set', 'XMP-exif:GPSLatitude', '1/3', ['Type' => 'ValueConv']], ['set', 'GPS:GPSLatitude', '12 x', ['Type' => 'ValueConv']],
+    ['set', 'XMP-exif:GPSDestLatitude', '-12.5', ['Type' => 'ValueConv']], ['set', 'QuickTime:CreateDate', '2020:01:00 00:00:00'],
+    ['set', 'QuickTime:CreateDate', '2020:01:00 00:00:00', ['Type' => 'ValueConv']],
+    ['set', 'QuickTime:ModifyDate', '99999999999:01:01 00:00:00', ['Type' => 'ValueConv']],
+    ['set', 'QuickTime:TrackCreateDate', str_repeat('1', 400) . ':01:01 00:00:00', ['Type' => 'ValueConv']],
+    ['set', 'QuickTime:MediaCreateDate', '2020:02:30 00:00:00', ['Type' => 'ValueConv']]);
+$c('sony lens spec', ['set','Sony:LensSpec', 'E 18-55mm F3.5-5.6 OSS'], ['set', 'LensSpec', 'DT 35mm F1.8 SAM'],
+    ['set', 'LensSpec', 'Unknown (00 18 55 35 56 00)'], ['set', 'LensSpec', '100-400mm F4.5-22'], ['set', 'LensSpecFeatures', 'E PZ OSS'],
+    ['set', 'LensSpec', 'x']);
 $c('quicktime', ['set', 'QuickTime:Title', 'q'], ['set', 'QuickTime:Artist', 'a'], ['set', 'Keys:Title', 'k'], ['set', 'ItemList:Title', 'i'],
     ['set', 'UserData:Title', 'u'], ['set', 'QuickTime:CreateDate', '2020:01:02 03:04:05'], ['set', 'QuickTime:GPSCoordinates', '45.5 N, 122.3 W'],
     ['set', 'Rotation', '90'], ['set', 'Track1:HandlerDescription', 'h'], ['get', 'QuickTime:Title'], ['get', 'Keys:Title']);
-$c('png pdf', ['set', 'PNG:Title', 'p'], ['set', 'PNG:Comment', 'c'], ['set', 'PNG:Title-fr', 'f'], ['set', 'PDF:Title', 'p'], ['set', 'PDF:Author', 'a'],
+// (Charset::Decompose leaves Perl's -w warning for malformed UTF-8 in $evalWarning: the conversion fails)
+$c('malformed utf8', ['set', 'Ducky:Copyright', $hex("\xa9 2010 Phil")], ['set', 'Ducky:Copyright', $hex("inst f\xfcr zusammenh\xe4nge")],
+    ['set', 'XPTitle', $hex("caf\xe9")], ['set', 'XPComment', $hex("\xc0\x80")], ['set', 'PNG:Title', $hex("\xe4\x80")],
+    ['set', 'Ducky:Quality', $hex("\xff")], ['set', 'Ducky:Comment', $hex("caf\xc3\xa9")]);
+$c('png pdf',['set', 'PNG:Title', 'p'], ['set', 'PNG:Comment', 'c'], ['set', 'PNG:Title-fr', 'f'], ['set', 'PDF:Title', 'p'], ['set', 'PDF:Author', 'a'],
     ['set', 'PDF:Keywords', ['a', 'b']], ['get', 'PDF:Keywords']);
 $c('photoshop', ['set', 'Photoshop:XResolution', '300'], ['set', 'Photoshop:URL', 'http://x'], ['set', 'Photoshop:IPTCDigest', 'old', ['Protected' => 1, 'DelValue' => 1]],
     ['set', 'Photoshop:IPTCDigest', 'new', ['Protected' => 1]], ['get', 'Photoshop:IPTCDigest']);
@@ -310,6 +335,8 @@ $c('user defined struct', ['udt', 'Image::ExifTool::XMP::xmp', ['MyStruct' => ['
         'Sub' => ['Struct' => ['Deep' => new \stdClass()]]]]]],   // (stdClass: an empty hash in the JSON)
     ['set', 'MyStructField1', 'x'], ['get', 'MyStructField1'], ['set', 'XMP:MyStructField2', 'y'], ['set', 'MyStructField2', '3'],
     ['set', 'MyStructSubDeep', 'd'], ['writable', 'MyStructSubDeep'], ['nvlist']);
+$c('user defined empty', ['udt', 'Image::ExifTool::XMP::dc', ['Test' => new \stdClass()]], ['set', 'XMP-dc:Test', 'B'],
+    ['get', 'XMP-dc:Test'], ['writable', 'Test'], ['nvlist']);    // (Perl test => { }: a tag without attributes)
 
 if ($images) {
     foreach (glob("$img/*") as $file) {
