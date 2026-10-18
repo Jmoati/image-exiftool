@@ -17,9 +17,9 @@
 //
 // References:   (see Canon.pm)
 //
-// PHP port of Image::ExifTool::Canon 5.07 (reading only). Tag tables are generated into
+// PHP port of Image::ExifTool::Canon 5.07. Tag tables are generated into
 // tables/Canon.php, %canonLensTypes and %canonModelID into Vars\Canon. Not ported:
-// WriteCanon, CanonEvInv and the inverse conversion of CameraISO (writing).
+// the inverse conversion of CameraISO (writing).
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -601,6 +601,33 @@ final class Canon
     }
 
     //------------------------------------------------------------------------------
+    // Convert number to Canon hex-based EV (modulo 0x20)
+    // Inputs: 0) number
+    // Returns: Canon EV code
+    public static function CanonEvInv($num)
+    {
+        // (Perl warns at the first numeric use of a non-numeric value only)
+        $num = Perl::numw($num, 'numeric lt (<)', '$num');
+        // temporarily make the number positive
+        if ($num < 0) {
+            $num = -$num;
+            $sign = -1;
+        } else {
+            $sign = 1;
+        }
+        $val = Perl::int($num);
+        $frac = $num - $val;
+        if (abs($frac - 0.33) < 0.05) {
+            $frac = 0x0c;
+        } elseif (abs($frac - 0.67) < 0.05) {
+            $frac = 0x14;
+        } else {
+            $frac = Perl::int($frac * 0x20 + 0.5);
+        }
+        return $sign * ($val * 0x20 + $frac);
+    }
+
+    //------------------------------------------------------------------------------
     // Read CMT3 maker notes from CR3 file
     // Inputs: 0) ExifTool object reference, 1) dirInfo ref, 2) tag table ref
     // Returns: data block (may be empty if no Exif data) or undef on error
@@ -777,5 +804,21 @@ final class Canon
         }
         if ($err) $et->Warn($err, 1);
         return 1;
+    }
+
+    //------------------------------------------------------------------------------
+    // Write Canon maker notes
+    // Inputs: 0) ExifTool object reference, 1) dirInfo ref, 2) tag table ref
+    // Returns: data block (may be empty if no Exif data) or undef on error
+    public static function WriteCanon(?ExifTool $et = null, ?array &$dirInfo = null, ?TagTable $tagTablePtr = null)
+    {
+        if (!$et) return 1;    // allow dummy access to autoload this package
+        $dirData = Exif::WriteExif($et, $dirInfo, $tagTablePtr);
+        // add footer which is written by some Canon models (format of a TIFF header)
+        if ($dirData !== null and strlen($dirData) and ($dirInfo['Fixup'] ?? null)) {
+            $dirData .= ExifTool::GetByteOrder() . ExifTool::Set16u(42) . ExifTool::Set32u(0);
+            $dirInfo['Fixup']->AddFixup(strlen($dirData) - 4);
+        }
+        return $dirData;
     }
 }

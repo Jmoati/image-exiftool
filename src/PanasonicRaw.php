@@ -15,8 +15,8 @@
 //              IB) Iliah Borg private communication (LibRaw)
 //              JD) Jens Duttke private communication (TZ3,FZ30,FZ50)
 //
-// PHP port of Image::ExifTool::PanasonicRaw 1.29 (reading only: WriteJpgFromRaw,
-// WriteDistortionInfo and PatchRawDataOffset are not ported). Tag tables are generated into
+// PHP port of Image::ExifTool::PanasonicRaw 1.29 (WriteJpgFromRaw and WriteDistortionInfo
+// are not ported; PatchRawDataOffset is, for the EXIF writer). Tag tables are generated into
 // tables/PanasonicRaw.php, %jpgFromRawMap into Vars\PanasonicRaw.
 //------------------------------------------------------------------------------
 
@@ -65,6 +65,76 @@ final class PanasonicRaw
             $et->Warn('Invalid DistortionInfo', 1);
         }
         return $et->ProcessBinaryData($dirInfo, $tagTablePtr);
+    }
+
+    //------------------------------------------------------------------------------
+    // Patch for writing non-standard Panasonic RAW/RW2/RWL raw data
+    // Inputs: 0) offset info ref, 1) raf ref, 2) IFD number
+    // Returns: error string, or undef on success
+    // OffsetInfo is a hash by tag ID of lists with the following elements:
+    //  0 - tag info ref
+    //  1 - pointer to int32u offset in IFD or value data
+    //  2 - value count
+    //  3 - reference to list of original offset values
+    //  4 - IFD format number
+    //  5 - (pointer to StripOffsets value added by this PatchRawDataOffset routine)
+    //  6 - flag set if this is a fixed offset (Panasonic GH6 fixed-offset hack)
+    public static function PatchRawDataOffset(array &$offsetInfo, RandomAccess $raf, $ifd)
+    {
+        $stripOffsets = $offsetInfo[0x111] ?? null;
+        $stripByteCounts = $offsetInfo[0x117] ?? null;
+        $rawDataOffset = $offsetInfo[0x118] ?? null;
+        $err = null;
+        if ($ifd != 0) $err = 1;
+        if ($stripOffsets or $stripByteCounts) {
+            if (!($stripOffsets and $stripByteCounts and $stripOffsets[2] == 1)) $err = 1;
+        } else {
+            // the DC-GH6 and DC-GH5M2 write RawDataOffset with no Strip tags, so we need
+            // to create fake StripByteCounts information for copying the data
+            if ($offsetInfo[0x118] ?? null) { // (just to be safe)
+                // (Perl uses $PanasonicRaw::Main{0x117}, an empty package hash, so the tagInfo is undef)
+                $stripByteCounts = $offsetInfo[0x117] = [null, 0, 1, [0], 4];
+                // set flag so the offset will be fixed (GH6 hack, see https://exiftool.org/forum/index.php?topic=13861.0)
+                // (of course, fixing up the offset is now unnecessary, but continue to do this even
+                // though the fixup adjustment will be 0 because this allows us to delete the following
+                // line to remove the fix-offset restriction if Panasonic ever sees the light, but note
+                // that in this case we should investigate the purpose of the seemily-duplicate raw
+                // data offset contained within PanasonicRaw_0x0044)
+                $offsetInfo[0x118][6] = 1;
+                $rawDataOffset = $offsetInfo[0x118];   // (same list in Perl)
+            }
+        }
+        if ($rawDataOffset and !$err) {
+            if ($rawDataOffset[2] != 1) $err = 1;
+            if ($stripOffsets) {
+                if (!(($stripOffsets[3][0] ?? null) == 0xffffffff or ($stripByteCounts[3][0] ?? null) == 0)) $err = 1;
+            }
+        }
+        if ($err) return 'Unsupported Panasonic/Leica RAW variant';
+        if ($rawDataOffset) {
+            // update StripOffsets along with this tag if it contains a reasonable value
+            if ($stripOffsets and ($stripOffsets[3][0] ?? null) != 0xffffffff) {
+                // save pointer to StripOffsets value for updating later
+                $rawDataOffset[] = $stripOffsets[1];
+            }
+            // handle via RawDataOffset instead of StripOffsets
+            $stripOffsets = $offsetInfo[0x111] = $rawDataOffset;
+            unset($offsetInfo[0x118]);
+        }
+        // determine the length of the raw data
+        $pos = $raf->Tell();
+        if (!$raf->Seek(0, 2)) $err = 1; // seek to end of file
+        $len = $raf->Tell() - ($stripOffsets[3][0] ?? 0);
+        $raf->Seek($pos, 0);
+        // quick check to be sure the raw data length isn't unreasonable
+        // (the 22-byte length is for '<Dummy raw image data>' in our tests)
+        if (($len < 1000 and $len != 22) or $len & 0x80000000) $err = 1;
+        if ($err) return 'Error reading Panasonic raw data';
+        // update StripByteCounts info with raw data length
+        // (note that the original value is maintained in the file)
+        $offsetInfo[0x117][3][0] = $len;   // (Perl: $$stripByteCounts[3][0])
+
+        return null;
     }
 
     //------------------------------------------------------------------------------

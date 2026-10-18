@@ -19,7 +19,8 @@
 // PHP port of Image::ExifTool::Nikon 4.58 (reading only). Tag tables are generated into
 // tables/Nikon.php, %nikonLensIDs, the AF point maps, @xlat and the decryption state
 // ($ci0, $cj0, $ck0, $decryptStart) into Vars\Nikon. Not ported (writing): PrintAFPointsInv,
-// PrintAFPointsGridInv, PrintPCInv and the IsWriting/OutFile branches.
+// PrintAFPointsGridInv, PrintPCInv and the OutFile branches (the IsWriting branches of
+// ProcessNikon and ProcessNikonEncrypted are ported: they are the write procs of the maker notes).
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -624,7 +625,6 @@ final class Nikon
     // Read/Write Nikon Encrypted data block
     // Inputs: 0) ExifTool object ref, 1) dirInfo ref, 2) tag table ref
     // Returns: 1 on success when reading, or new directory when writing (IsWriting set)
-    //          (PHP: writing not ported)
     public static function ProcessNikonEncrypted(?ExifTool $et, array &$dirInfo, TagTable $tagTablePtr)
     {
         if (!$et) return 1;     // allow dummy access
@@ -644,12 +644,25 @@ final class Nikon
             return 0;
         }
         $oldOrder = ExifTool::GetByteOrder();
-        $verbose = $et->Options('Verbose');
+        $isWriting = $dirInfo['IsWriting'] ?? null;
+        $verbose = $isWriting ? 0 : $et->Options('Verbose');
         $tagInfo = $dirInfo['TagInfo'] ?? null;
         $dirStart = $dirInfo['DirStart'];
         $data = substr(Perl::str($dirInfo['DataPt']), $dirStart, $dirInfo['DirLen'] ?? null);
 
-        $start = $len = $offset = $didDecrypt = null;
+        $start = $len = $offset = $recrypt = $newSerial = $newCount = $didDecrypt = null;
+
+        // must re-encrypt when writing if serial number or shutter count changes
+        if ($isWriting) {
+            if ($et->NewNikonSerialKey) {
+                $newSerial = $et->NewNikonSerialKey;
+                $recrypt = 1;
+            }
+            if ($et->NewNikonCountKey) {
+                $newCount = $et->NewNikonCountKey;
+                $recrypt = 1;
+            }
+        }
 
         if ($tagInfo and $tagInfo->SubDirectory) {
             // initialize SubDirectory entries used in encryption (KnownStart, KnownEnd)
@@ -664,8 +677,7 @@ final class Nikon
             // prepare for processing NIKON_OFFSETS directory if necessary
             $unknown = $verbose > 2 || $et->Options('Unknown') > 1;
             // decrypt mode: 0=piecewise, 1=continuous to end of last known section, 2=all
-            // (1 and the re-encryption are for writing)
-            $dMode = $unknown ? 2 : 0;
+            $dMode = $isWriting ? ($recrypt ? 2 : 1) : ($unknown ? 2 : 0);
             if (!empty($tagTablePtr['VARS']['NIKON_OFFSETS'])) {
                 $len = self::PrepareNikonOffsets($et, $data, $tagTablePtr, $start, $dMode);
                 $didDecrypt = 1;
@@ -706,7 +718,28 @@ final class Nikon
             'DataPos'  => ($dirInfo['DataPos'] ?? 0) + $dirStart,
             'Base'     => $dirInfo['Base'] ?? null,
         ];
-        $rtnVal = $et->ProcessBinaryData($subdirInfo, $tagTablePtr);
+        $rtnVal = null;
+        if ($isWriting) {
+            $changed = $et->CHANGED;
+            $rtnVal = ExifTool::WriteBinaryData($et, $subdirInfo, $tagTablePtr);
+            // must re-encrypt if serial number or shutter count changes
+            if ($recrypt) {
+                if ($newSerial !== null) $serial = $newSerial;
+                if ($newCount !== null) $count = $newCount;
+                ++$et->CHANGED;
+            }
+            if ($changed == $et->CHANGED) {
+                $rtnVal = null;  // nothing changed so use original data
+            } else {
+                // add back any un-encrypted data at start
+                if ($offset) $rtnVal = substr($data, 0, $offset) . $rtnVal;
+                // re-encrypt data (symmetrical algorithm)
+                $rtnVal = self::Decrypt($rtnVal, $start, $len, $serial, $count);
+                $et->VPrint(2, $et->INDENT, "  [recrypted {$tagInfo->Name}]");
+            }
+        } else {
+            $rtnVal = $et->ProcessBinaryData($subdirInfo, $tagTablePtr);
+        }
         ExifTool::SetByteOrder($oldOrder);
         return $rtnVal;
     }
@@ -849,7 +882,19 @@ final class Nikon
         $et->NikonCountKey = $needTags[0x00a7];
 
         // process Nikon makernotes
-        $rtnVal = Exif::ProcessExif($et, $dirInfo, $tagTablePtr);
+        $rtnVal = null;
+        if ($dirInfo['IsWriting'] ?? null) {
+            // get new decryptino keys if they are being changed
+            $main = ExifTool::GetTagTable('Image::ExifTool::Nikon::Main');
+            $serial = $et->GetNewValue($main[0x001d]);
+            $count = $et->GetNewValue($main[0x00a7]);
+            $et->NewNikonSerialKey = self::SerialKey($et, $serial);
+            $et->NewNikonCountKey = $count;
+            $rtnVal = Exif::WriteExif($et, $dirInfo, $tagTablePtr);
+            unset($et->NewNikonSerialKey, $et->NewNikonCountKey);
+        } else {
+            $rtnVal = Exif::ProcessExif($et, $dirInfo, $tagTablePtr);
+        }
         unset($et->NikonSerialKey, $et->NikonCountKey);
         return $rtnVal;
     }
