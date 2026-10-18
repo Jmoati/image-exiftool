@@ -9,7 +9,6 @@ require __DIR__.'/TestLib.php';
 use Image\ExifTool\ExifTool;
 
 $skip = [
-    3 => 'DNG writer (WriteAdobeStuff: maker notes in the DNGPrivateData)',
 ];
 $t = testDir();
 $testname = 'DNG';

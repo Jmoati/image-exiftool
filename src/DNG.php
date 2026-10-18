@@ -9,9 +9,9 @@
 //
 // References:   1) http://www.adobe.com/products/dng/
 //
-// PHP port of Image::ExifTool::DNG 1.25 (reading only: WriteAdobeStuff and the OutFile
-// branches are not ported). Tag tables are generated into tables/DNG.php (with the MakN
-// list already filled in from the MakerNotes table).
+// PHP port of Image::ExifTool::DNG 1.25. Tag tables are generated into tables/DNG.php (with
+// the MakN list already filled in from the MakerNotes table). The OutFile of the Process
+// routines is a ScalarRef (set by WriteAdobeStuff).
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -122,14 +122,17 @@ final class DNG
         $dataPos = $dirInfo['DataPos'] ?? null;
         $pos = $dirInfo['DirStart'];
         $end = $dirInfo['DirLen'] + $pos;
+        $outfile = $dirInfo['OutFile'] ?? null;
         $verbose = $et->Options('Verbose');
         $htmlDump = $et->Options('HtmlDump');
 
         if (!preg_match('/^Adobe\0/', $dataPt)) return 0;
-        $et->VerboseDir($dirInfo);
-        // don't parse makernotes if FastScan > 1
-        $fast = $et->Options('FastScan');
-        if ($fast and $fast > 1) return 1;
+        if (!$outfile) {
+            $et->VerboseDir($dirInfo);
+            // don't parse makernotes if FastScan > 1
+            $fast = $et->Options('FastScan');
+            if ($fast and $fast > 1) return 1;
+        }
         if ($htmlDump) $et->HDump($dataPos, 6, 'Adobe DNGPrivateData header');
         ExifTool::SetByteOrder('MM'); // always big endian
         $pos += 6;
@@ -147,7 +150,7 @@ final class DNG
                     $et->HDump($dataPos + $pos, $size, "$name data");
                 }
             }
-            if ($verbose) {
+            if ($verbose and !$outfile) {
                 if (!$tagInfo) $et->VPrint(0, "{$et->INDENT}Unsupported DNGAdobeData record: ($tag)\n");
                 $et->VerboseInfo($tag,
                     $tagInfo instanceof TagInfo ? $tagInfo : null,
@@ -157,13 +160,19 @@ final class DNG
                     Size: $size,
                 );
             }
+            $value = null;
             // (Perl: while ($tagInfo) { ... last; }, which runs at most once)
             if ($tagInfo) {
                 $subTable = $subName = $processProc = null;
                 $handled = null;
                 if ($tagInfo instanceof TagInfo) {
                     if (!$tagInfo->SubDirectory) {
-                        $et->HandleTag($tagTablePtr, $tag, substr($dataPt, $pos, $size));
+                        if ($outfile) {
+                            // copy value across to outfile
+                            $value = substr($dataPt, $pos, $size);
+                        } else {
+                            $et->HandleTag($tagTablePtr, $tag, substr($dataPt, $pos, $size));
+                        }
                         $handled = 1;
                     } else {
                         $subTable = ExifTool::GetTagTable($tagInfo->SubDirectory['TagTable']);
@@ -185,9 +194,22 @@ final class DNG
                         'DirLen'   => $size,
                         'DirName'  => $subName,
                     ];
-                    // override process proc for MakN
-                    $et->ProcessDirectory($subdirInfo, $subTable, $processProc);
+                    if ($outfile) {
+                        $subdirInfo['Proc'] = $processProc;  // WriteAdobeStuff() calls this to do the actual writing
+                        $value = $et->WriteDirectory($subdirInfo, $subTable, self::class . '::WriteAdobeStuff');
+                        // use old directory if an error occurred
+                        if ($value === null) $value = substr($dataPt, $pos, $size);
+                    } else {
+                        // override process proc for MakN
+                        $et->ProcessDirectory($subdirInfo, $subTable, $processProc);
+                    }
                 }
+            }
+            if ($value !== null and strlen($value)) {
+                // add "Adobe" header if necessary
+                if (!($outfile->value !== null and strlen($outfile->value))) $outfile->value = "Adobe\0";
+                $outfile->value .= $tag . pack('N', strlen($value)) . $value;
+                if (strlen($value) & 0x01) $outfile->value .= "\0";   // pad if necessary
             }
             $pos += $size;
             if ($size & 0x01) ++$pos; // (darn padding)
@@ -210,6 +232,8 @@ final class DNG
         $end = $start + $dirInfo['DirLen'];
         $verbose = $et->Options('Verbose');
         $buildMakerNotes = $et->Options('MakerNotes');
+        $outfile = $dirInfo['OutFile'] ?? null;
+        $newTags = $oldChanged = null;
 
         ExifTool::SetByteOrder('MM'); // always big endian
         if ($dirInfo['DirLen'] < 4) return 0;
@@ -221,7 +245,13 @@ final class DNG
 
         $entries = ExifTool::Get16u($dataPt, $start + 2);
         $pos = $start + 4;
-        $et->VerboseDir($dirInfo, $entries);
+        if (!$outfile) $et->VerboseDir($dirInfo, $entries);
+        if ($outfile) {
+            // get hash of new tags
+            $newTags = $et->GetNewTagInfoHash($tagTablePtr);
+            $outfile->value = substr($dataPt, $start, 4);
+            $oldChanged = $et->CHANGED;
+        }
         // loop through entries in Adobe CRW information
         for ($index = 0; $index < $entries; ++$index) {
             if ($pos + 6 > $end) break;
@@ -253,23 +283,87 @@ final class DNG
             $format or $format = 'undef';
             ExifTool::SetByteOrder($byteOrder);
             $val = ExifTool::ReadValue($value, 0, $format, $count, $size);
-            $et->HandleTag($tagTablePtr, $tagID, $val,
-                Index: $index,
-                DataPt: $dataPt,
-                DataPos: $dirInfo['DataPos'] ?? null,
-                Start: $pos,
-                Size: $size,
-                TagInfo: $tagInfo,
-            );
-            if ($buildMakerNotes) {
-                // build maker notes information if requested
-                CanonRaw::BuildMakerNotes($et, $tagID, $tagInfo, $value, $format, $count);
+            if ($outfile) {
+                if ($tagInfo) {
+                    $subdir = $tagInfo->SubDirectory;
+                    if ($subdir and !empty($subdir['TagTable'])) {
+                        $name = $tagInfo->Name;
+                        $newTagTable = ExifTool::GetTagTable($subdir['TagTable']);
+                        if (!$newTagTable) return 0;
+                        $subdirStart = 0;
+                        //### eval Start ()
+                        if (!empty($subdir['Start'])) $subdirStart = Perl::num(Exif::EvalCode($subdir['Start']));
+                        $dirData = $value;
+                        $subdirInfo = [
+                            'Name'     => $name,
+                            'DataPt'   => $dirData,
+                            'DataLen'  => $size,
+                            'DirStart' => $subdirStart,
+                            'DirLen'   => $size - $subdirStart,
+                            'Parent'   => $dirInfo['DirName'] ?? null,
+                        ];
+                        //### eval Validate ($dirData, $subdirStart, $size)
+                        if (isset($subdir['Validate']) and !Exif::EvalCode($subdir['Validate'], null, $dirData, $subdirStart, $size, null)) {
+                            $et->Warn("Invalid $name data");
+                        } else {
+                            $subdir = $et->WriteDirectory($subdirInfo, $newTagTable);
+                            if ($subdir !== null and strlen($subdir)) {
+                                if ($subdirStart) {
+                                    // add header before data directory
+                                    $value = substr($value, 0, $subdirStart) . $subdir;
+                                } else {
+                                    $value = $subdir;
+                                }
+                            }
+                        }
+                    } elseif ($newTags[$tagID] ?? null) {
+                        $nvHash = $et->GetNewValueHash($tagInfo);
+                        if ($et->IsOverwriting($nvHash, $val)) {
+                            $newVal = $et->GetNewValue($nvHash);
+                            $verboseVal = null;
+                            if ($verbose > 1) $verboseVal = $newVal;
+                            // convert to specified format if necessary
+                            if ($newVal !== null and $format) {
+                                $newVal = ExifTool::WriteValue($newVal, $format, $count);
+                            }
+                            if ($newVal !== null) {
+                                $et->VerboseValue("- CanonRaw:{$tagInfo->Name}", $value);
+                                $et->VerboseValue("+ CanonRaw:{$tagInfo->Name}", $verboseVal);
+                                $value = $newVal;
+                                ++$et->CHANGED;
+                            }
+                        }
+                    }
+                }
+                // write out new value (always big-endian)
+                ExifTool::SetByteOrder('MM');
+                // (verified that there is no padding here)
+                $outfile->value .= ExifTool::Set16u($tag) . ExifTool::Set32u(strlen($value)) . $value;
+            } else {
+                $et->HandleTag($tagTablePtr, $tagID, $val,
+                    Index: $index,
+                    DataPt: $dataPt,
+                    DataPos: $dirInfo['DataPos'] ?? null,
+                    Start: $pos,
+                    Size: $size,
+                    TagInfo: $tagInfo,
+                );
+                if ($buildMakerNotes) {
+                    // build maker notes information if requested
+                    CanonRaw::BuildMakerNotes($et, $tagID, $tagInfo, $value, $format, $count);
+                }
             }
             // (we lost the directory structure, but the second tag 0x0805
             // should be in the ImageDescription directory)
             if ($tagID == 0x0805) $et->DIR_NAME = 'ImageDescription';
             ExifTool::SetByteOrder('MM');
             $pos += $size;
+        }
+        if ($outfile and ($outfile->value === null or $index != $entries or
+            $et->CHANGED == $oldChanged))
+        {
+            $et->CHANGED = $oldChanged;     // nothing changed
+            $outfile->value = null;         // rewrite old directory
         }
         if ($index != $entries) {
             $et->Warn('Truncated CRW notes');
@@ -294,14 +388,20 @@ final class DNG
         $dataPt = $dirInfo['DataPt'];
         $dirLen = $dirInfo['DirLen'];
         $dirStart = $dirInfo['DirStart'];
+        $outfile = $dirInfo['OutFile'] ?? null;
 
         // construct fake MRW file
         $buff = "\0MRM" . Perl::pack('N', $dirLen - 4);
         // ignore leading byte order and directory count words
         $buff .= substr($dataPt, $dirStart + 4, $dirLen - 4);
         $raf = new RandomAccess($buff);
-        $mrwDirInfo = ['RAF' => $raf];  // (Perl: my %dirInfo, OutFile is for writing)
-        return MinoltaRaw::ProcessMRW($et, $mrwDirInfo);
+        $mrwDirInfo = ['RAF' => $raf, 'OutFile' => $outfile];   // (Perl: my %dirInfo)
+        $rtnVal = MinoltaRaw::ProcessMRW($et, $mrwDirInfo);
+        if ($outfile and $outfile->value !== null and strlen($outfile->value)) {
+            // remove MRW header and add Adobe header
+            $outfile->value = substr($dataPt, $dirStart, 4) . substr($outfile->value, 8);
+        }
+        return $rtnVal;
     }
 
     //------------------------------------------------------------------------------
@@ -310,6 +410,7 @@ final class DNG
     // Returns: 1 on success, otherwise returns 0 and sets a Warning
     public static function ProcessAdobeRAF(ExifTool $et, array &$dirInfo, TagTable $tagTablePtr)
     {
+        if (!empty($dirInfo['OutFile'])) return 0;  // (can't write this yet)
         $dataPt = $dirInfo['DataPt'];
         $pos = $dirInfo['DirStart'];
         $dirEnd = $dirInfo['DirLen'] + $pos;
@@ -359,6 +460,7 @@ final class DNG
     // Notes: data has 6 byte header (2 for byte order and 4 for original offset)
     public static function ProcessAdobeSR2(ExifTool $et, array &$dirInfo, TagTable $tagTablePtr)
     {
+        if (!empty($dirInfo['OutFile'])) return 0;  // (can't write this yet)
         $dataPt = $dirInfo['DataPt'];
         $start = $dirInfo['DirStart'];
         $len = $dirInfo['DirLen'];
@@ -400,6 +502,7 @@ final class DNG
     // Notes: data has 2 byte header (byte order of the data)
     public static function ProcessAdobeIFD(ExifTool $et, array &$dirInfo, TagTable $tagTablePtr)
     {
+        if (!empty($dirInfo['OutFile'])) return 0;  // (can't write this yet)
         $dataPt = $dirInfo['DataPt'];
         $pos = $dirInfo['DirStart'];
         $dataPos = $dirInfo['DataPos'] ?? null;
@@ -463,13 +566,14 @@ final class DNG
         $dataPt = $dirInfo['DataPt'];
         $start = $dirInfo['DirStart'];
         $len = $dirInfo['DirLen'];
+        $outfile = $dirInfo['OutFile'] ?? null;
 
         if ($len < 6) return 0;
         ExifTool::SetByteOrder('MM');
         $originalPos = ExifTool::Get32u($dataPt, $start + 2);
         if (!ExifTool::SetByteOrder(substr($dataPt, $start, 2))) return 0;
 
-        $et->VerboseDir($dirInfo);
+        if (!$outfile) $et->VerboseDir($dirInfo);
         $dataPos = $dirInfo['DataPos'] ?? null;
         $hdrLen = 6;
 
@@ -524,34 +628,82 @@ final class DNG
             $subdirInfo['Base'] += $fix;
             $subdirInfo['DataPos'] -= $fix;
         }
-        // parse the maker notes directory
-        $et->ProcessDirectory($subdirInfo, $subTable, $subdir['ProcessProc'] ?? null);
-        // extract maker notes as a block if specified
-        if ($et->Options('MakerNotes') or
-            ($et->REQ_TAG_LOOKUP[strtolower($tagInfo->Name)] ?? null))
-        {
-            $val = null;
-            if ($tagInfo->MakerNotes) {
-                $subdirInfo['Base']     = ($dirInfo['Base'] ?? null) + $fix;
-                $subdirInfo['DataPos']  = $dataPos - $fix;
-                $subdirInfo['DirStart'] = $dirStart;
-                $subdirInfo['DirLen']   = $dirLen;
-                // rebuild the maker notes to identify all offsets that require fixing up
-                $val = Exif::RebuildMakerNotes($et, $subdirInfo, $subTable);
-                if ($val === null and $dirLen > 4) {
-                    $et->Warn('Error rebuilding maker notes (may be corrupt)');
-                }
-            } else {
-                // extract this directory as a block if specified
-                if (!$tagInfo->Writable) return 1;
+        if ($outfile) {
+            // rewrite the maker notes directory
+            $fixup = $subdirInfo['Fixup'] = new Fixup();
+            $oldChanged = $et->CHANGED;
+            $buff = $et->WriteDirectory($subdirInfo, $subTable);
+            // nothing to do if error writing directory or nothing changed
+            if (!($buff !== null and $et->CHANGED != $oldChanged)) {
+                $et->CHANGED = $oldChanged;
+                return 1;
             }
-            if ($val === null) $val = substr($dataPt, 20);
-            $key = $et->FoundTag($tagInfo, $val);
-            if ($et->MAKER_NOTE_FIXUP) {
-                $et->TAG_EXTRA[$key]['Fixup'] = $et->MAKER_NOTE_FIXUP;
-                unset($et->MAKER_NOTE_FIXUP);
+            // deleting maker notes if directory is empty
+            if (!strlen($buff)) {
+                $outfile->value = '';
+                return 1;
+            }
+            // apply a one-time fixup to offsets
+            if ($subdirInfo['Relative'] ?? null) {
+                // shift all offsets to be relative to new base
+                $baseShift = $dataPos + $dirStart + ($dirInfo['Base'] ?? null) - $subdirInfo['Base'];
+                $fixup->Shift += $baseShift;
+            } else {
+                // shift offsets to position of original maker notes
+                $fixup->Shift += $originalPos;
+            }
+            // if we wrote the directory as a block the header is already included
+            if ($subdirInfo['BlockWrite'] ?? null) $loc = 0;
+            $fixup->Shift += $loc;  // adjust for makernotes header
+            $fixup->ApplyFixup($buff);  // fix up pointer offsets
+            // get copy of original Adobe header (6 or 18) and makernotes header ($loc)
+            $header = substr($dataPt, $start, $hdrLen + $loc);
+            // add Adobe and makernotes headers to new directory
+            $outfile->value = $header . $buff;
+        } else {
+            // parse the maker notes directory
+            $et->ProcessDirectory($subdirInfo, $subTable, $subdir['ProcessProc'] ?? null);
+            // extract maker notes as a block if specified
+            if ($et->Options('MakerNotes') or
+                ($et->REQ_TAG_LOOKUP[strtolower($tagInfo->Name)] ?? null))
+            {
+                $val = null;
+                if ($tagInfo->MakerNotes) {
+                    $subdirInfo['Base']     = ($dirInfo['Base'] ?? null) + $fix;
+                    $subdirInfo['DataPos']  = $dataPos - $fix;
+                    $subdirInfo['DirStart'] = $dirStart;
+                    $subdirInfo['DirLen']   = $dirLen;
+                    // rebuild the maker notes to identify all offsets that require fixing up
+                    $val = Exif::RebuildMakerNotes($et, $subdirInfo, $subTable);
+                    if ($val === null and $dirLen > 4) {
+                        $et->Warn('Error rebuilding maker notes (may be corrupt)');
+                    }
+                } else {
+                    // extract this directory as a block if specified
+                    if (!$tagInfo->Writable) return 1;
+                }
+                if ($val === null) $val = substr($dataPt, 20);
+                $key = $et->FoundTag($tagInfo, $val);
+                if ($et->MAKER_NOTE_FIXUP) {
+                    $et->TAG_EXTRA[$key]['Fixup'] = $et->MAKER_NOTE_FIXUP;
+                    unset($et->MAKER_NOTE_FIXUP);
+                }
             }
         }
         return 1;
+    }
+
+    //------------------------------------------------------------------------------
+    // Write Adobe information (calls appropriate ProcessProc to do the actual work)
+    // Inputs: 0) ExifTool object ref, 1) source dirInfo ref, 2) tag table ref
+    // Returns: new data block (may be empty if directory is deleted) or undef on error
+    public static function WriteAdobeStuff(?ExifTool $et = null, ?array &$dirInfo = null, ?TagTable $tagTablePtr = null)
+    {
+        if (!$et) return 1;     // allow dummy access
+        $proc = ($dirInfo['Proc'] ?? null) ?: self::class . '::ProcessAdobeData';
+        $buff = new ScalarRef(null);
+        $dirInfo['OutFile'] = $buff;
+        if (!$proc($et, $dirInfo, $tagTablePtr)) $buff->value = null;
+        return $buff->value;
     }
 }

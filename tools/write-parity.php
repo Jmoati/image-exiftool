@@ -63,6 +63,7 @@ $ducky = 'Ducky'.pack('nnN', 1, 4, 75).pack('nn', 2, 30).$utf16('Ducky comment')
 file_put_contents("$inputs/ducky.jpg", "\xff\xd8\xff\xec".pack('n', strlen($ducky) + 2).$ducky.substr(file_get_contents("$images/Writer.jpg"), 2));
 QuickTimeInputs($etDir, $inputs);   // (see below)
 ImageInputs($etDir, $inputs);       // (see below)
+RawInputs($etDir, $inputs);         // (see below)
 DocumentInputs($etDir, $inputs);    // (see below)
 
 // cases: [source file in ~/exiftool/t/images, [exiftool arguments]]
@@ -865,6 +866,23 @@ $cases = [
     ["$inputs/insta360.mov", ['-Insta360:all=', '-o', 'out.mov']],
     ["$inputs/garbage.mov", ['-Artist=garbage', '-o', 'out.mov']],
     ["$inputs/garbage.mov", ['-m', '-Artist=garbage', '-o', 'out.mov']],
+    // DNG: maker notes and other Adobe records in the DNGPrivateData (WriteAdobeStuff)
+    ['DNG.dng', ['-OwnerName=Just Me', '-o', 'out.dng']],
+    ['DNG.dng', ['-Canon:FileNumber=100-1234', '-Canon:WhiteBalance=Daylight', '-Canon:LensModel=a lens', '-o', 'out.dng']],
+    ['DNG.dng', ['-MakerNotes:all=', '-o', 'out.dng']],
+    ['DNG.dng', ['-DNGAdobeData=', '-o', 'out.dng']],
+    ['DNG.dng', ['-OriginalDecisionData=x', '-o', 'out.dng']],
+    ['DNG.dng', ['-v3', '-OwnerName=verbose', '-o', 'out.dng']],
+    ['DNG.dng', ['-OwnerName=in place']],
+    ['DNG.dng', ['-_tagsFromFile', "$images/Canon.jpg", '-o', 'out.dng']],
+    ["$inputs/raw-nikon.dng", ['-Nikon:Quality=FINE', '-Nikon:ImageAdjustment=adjusted', '-o', 'out.dng']],
+    ["$inputs/raw-nikon.dng", ['-MakerNotes:all=', '-o', 'out.dng']],
+    ["$inputs/raw-nikon3.dng", ['-Nikon:Quality=FINE', '-Nikon:WhiteBalance=sunny', '-o', 'out.dng']],
+    ["$inputs/raw-nikon3.dng", ['-v3', '-Nikon:Quality=NORMAL', '-o', 'out.dng']],
+    ["$inputs/raw-crw.dng", ['-CanonRaw:OwnerName=CRW owner', '-o', 'out.dng']],
+    ["$inputs/raw-crw.dng", ['-CanonRaw:CanonFileDescription=description', '-MinoltaRaw:ColorMode=Vivid color', '-o', 'out.dng']],
+    ["$inputs/raw-crw.dng", ['-MinoltaRaw:all=', '-o', 'out.dng']],
+    ["$inputs/raw-crw.dng", ['-v3', '-Artist=nothing in the Adobe data', '-o', 'out.dng']],
 ];
 // RIFF, PDF, PostScript and InDesign writers (inputs made by DocumentInputs(), see below)
 array_push($cases,
@@ -2108,4 +2126,68 @@ function Runner(array $argv): int
     }
 
     return 0;
+}
+
+// inputs for the camera raw formats: DNG.dng with other DNGPrivateData records
+function RawInputs(string $etDir, string $inputs): void
+{
+    $images = "$etDir/t/images";
+    // replace the DNGPrivateData of DNG.dng (IFD0 tag 0xc634) by a block added at the end
+    $dng = static function (string $data) use ($images): string {
+        $dng = (string) file_get_contents("$images/DNG.dng");
+        $f = 'II' === substr($dng, 0, 2) ? ['v', 'V'] : ['n', 'N'];
+        $ifd = unpack($f[1], $dng, 4)[1];
+        for ($i = 0, $n = unpack($f[0], $dng, $ifd)[1]; $i < $n; ++$i) {
+            $entry = $ifd + 2 + 12 * $i;
+            if (0xc634 === unpack($f[0], $dng, $entry)[1]) {
+                $dng .= str_repeat("\0", -strlen($dng) & 3);
+
+                return substr_replace($dng, pack($f[1].'2', strlen($data), strlen($dng)), $entry + 4, 8).$data;
+            }
+        }
+
+        return $dng;
+    };
+    // maker notes block of a JPEG: [offset from the TIFF header, data, byte order of the TIFF]
+    $makerNotes = static function (string $file): array {
+        $d = (string) file_get_contents($file);
+        $tiff = strpos($d, "Exif\0\0") + 6;
+        $f = 'II' === substr($d, $tiff, 2) ? ['v', 'V'] : ['n', 'N'];
+        $find = static function (int $ifd, int $tag) use ($d, $tiff, $f): array {
+            for ($i = 0, $n = unpack($f[0], $d, $tiff + $ifd)[1]; $i < $n; ++$i) {
+                $e = $tiff + $ifd + 2 + 12 * $i;
+                if (unpack($f[0], $d, $e)[1] === $tag) {
+                    return [unpack($f[1], $d, $e + 4)[1], unpack($f[1], $d, $e + 8)[1]];
+                }
+            }
+
+            return [0, 0];
+        };
+        [$count, $offset] = $find($find(unpack($f[1], $d, $tiff + 4)[1], 0x8769)[1], 0x927c);
+
+        return [$offset, substr($d, $tiff + $offset, $count), substr($d, $tiff, 2)];
+    };
+    $record = static fn (string $tag, string $data) => $tag.pack('N', strlen($data)).$data.(strlen($data) & 1 ? "\0" : '');
+    // Adobe MakN records (byte order, original offset, data) with the Nikon maker notes of
+    // NikonD70.jpg (with a TIFF header) and Nikon.jpg (offsets relative to the original TIFF header)
+    [$pos, $mn] = $makerNotes("$images/NikonD70.jpg");
+    file_put_contents("$inputs/raw-nikon.dng", $dng("Adobe\0".$record('MakN', substr($mn, 10, 2).pack('N', $pos).$mn)));
+    [$pos, $mn, $order] = $makerNotes("$images/Nikon.jpg");
+    file_put_contents("$inputs/raw-nikon3.dng", $dng("Adobe\0".$record('MakN', $order.pack('N', $pos).$mn)));
+    // Adobe CRW record (byte order, entry count, entries), MRW record with the MRW segments of
+    // Minolta.mrw but its TTW (TIFF) one, a RAF record (not writable: copied), an unknown record
+    // (dropped when writing)
+    $crw = 'II'.pack('n', 3).pack('nN', 0x0810, 32).str_pad('owner', 32, "\0").
+        pack('nN', 0x0805, 32).str_pad('file description', 32, "\0").pack('nN', 0x5817, 4).pack('V', 0x12345678);
+    $mrw = (string) file_get_contents("$images/Minolta.mrw");
+    $segs = '';
+    for ($pos = 8, $end = 8 + unpack('N', $mrw, 4)[1]; $pos + 8 <= $end; $pos += 8 + $len) {
+        $len = unpack('N', $mrw, $pos + 4)[1];
+        if ("\0TTW" !== substr($mrw, $pos, 4)) {
+            $segs .= substr($mrw, $pos, 8 + $len);
+        }
+    }
+    $mrw = 'MM'.pack('n', 0).$segs;
+    file_put_contents("$inputs/raw-crw.dng", $dng("Adobe\0".$record('CRW ', $crw).$record('MRW ', $mrw).
+        $record('RAF ', 'MM'.pack('N', 0)).$record('Junk', 'unknown record')));
 }
