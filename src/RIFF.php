@@ -25,7 +25,8 @@
 //              15) https://tech.ebu.ch/docs/tech/tech3306-2009.pdf
 //              16) https://sites.google.com/site/musicgapi/technical-documents/wav-file-format
 //
-// PHP port of Image::ExifTool::RIFF 1.73 (reading only). Tag tables and file lexicals
+// PHP port of Image::ExifTool::RIFF 1.73 (the writer, WriteRIFF.pl, is the trait
+// RIFF\WriteRIFF). Tag tables and file lexicals
 // (%isImageData, %riffType, %riffMimeType, %monthNum...) are generated into tables/RIFF.php
 // and Vars\RIFF.
 //------------------------------------------------------------------------------
@@ -34,6 +35,8 @@ namespace Image\ExifTool;
 
 final class RIFF
 {
+    use RIFF\WriteRIFF;
+
     public static $VERSION = '1.73';
 
     //------------------------------------------------------------------------------

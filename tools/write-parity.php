@@ -63,6 +63,7 @@ $ducky = 'Ducky'.pack('nnN', 1, 4, 75).pack('nn', 2, 30).$utf16('Ducky comment')
 file_put_contents("$inputs/ducky.jpg", "\xff\xd8\xff\xec".pack('n', strlen($ducky) + 2).$ducky.substr(file_get_contents("$images/Writer.jpg"), 2));
 QuickTimeInputs($etDir, $inputs);   // (see below)
 ImageInputs($etDir, $inputs);       // (see below)
+DocumentInputs($etDir, $inputs);    // (see below)
 
 // cases: [source file in ~/exiftool/t/images, [exiftool arguments]]
 $cases = [
@@ -865,6 +866,64 @@ $cases = [
     ["$inputs/garbage.mov", ['-Artist=garbage', '-o', 'out.mov']],
     ["$inputs/garbage.mov", ['-m', '-Artist=garbage', '-o', 'out.mov']],
 ];
+// RIFF, PDF, PostScript and InDesign writers (inputs made by DocumentInputs(), see below)
+array_push($cases,
+    // RIFF (WriteRIFF): EXIF, XMP, ICCP and C2PA chunks of WebP images (VP8X chunk added,
+    // updated or deleted); other RIFF files (AVI, WAV) can't be written
+    ['RIFF.webp', ['-EXIF:Artist=webp', '-XMP:Title=webp', '-o', 'out.webp']],
+    ['RIFF.webp', ['-ExifIFD:UserComment=c', '-XMP-dc:Description=d', '-o', 'out.webp']],
+    ['RIFF.webp', ['-EXIF:all=', '-o', 'out.webp']],
+    ['RIFF.webp', ['-XMP:all=', '-o', 'out.webp']],
+    ['RIFF.webp', ['-all=', '-o', 'out.webp']],
+    ['RIFF.webp', ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.webp']],
+    ['RIFF.webp', ["-EXIF<=$images/ExifTool.tif", '-o', 'out.webp']],
+    ['RIFF.webp', ["-XMP<=$images/XMP.xmp", '-o', 'out.webp']],
+    ['RIFF.webp', ['-v3', '-EXIF:Artist=v', '-XMP:Title=v', '-o', 'out.webp']],
+    ['RIFF.webp', ['-_memin', '-_memout', '-EXIF:Artist=memory', '-o', 'out.webp']],
+    ['RIFF.webp', ['-XMP:Title=in place']],
+    ["$inputs/doc-vp8.webp", ['-EXIF:Artist=vp8', '-o', 'out.webp']],
+    ["$inputs/doc-vp8.webp", ['-v', '-XMP:Title=vp8', "-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.webp']],
+    ["$inputs/doc-vp8l.webp", ['-XMP:Title=vp8l', '-o', 'out.webp']],
+    ["$inputs/doc-vp8l.webp", ['-EXIF:Artist=vp8l', "-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.webp']],
+    ["$inputs/doc-vp8x.webp", ['-v', '-EXIF:all=', '-o', 'out.webp']],
+    ["$inputs/doc-vp8x.webp", ['-XMP:Title=kept', '-o', 'out.webp']],
+    ["$inputs/doc-xmp0.webp", ['-XMP:all=', '-o', 'out.webp']],
+    ["$inputs/doc-xmp0.webp", ['-EXIF:Artist=xmp0', '-o', 'out.webp']],
+    ["$inputs/doc-seal.webp", ['-SEAL:all=', '-o', 'out.webp']],
+    ["$inputs/doc-seal.webp", ['-XMP:Title=seal', '-o', 'out.webp']],
+    ["$inputs/doc-c2pa.webp", ['-JUMBF:all=', '-o', 'out.webp']],
+    ["$inputs/doc-c2pa.webp", ['-XMP:Title=c2pa', '-o', 'out.webp']],
+    ["$inputs/doc-exifhdr.webp", ['-EXIF:Artist=header', '-o', 'out.webp']],
+    ["$inputs/doc-exifhdr.webp", ['-EXIF:all=', '-EXIF:Artist=no header', '-o', 'out.webp']],
+    ["$inputs/doc-anim.webp", ['-XMP:Title=anim', '-o', 'out.webp']],
+    ["$inputs/doc-iccp.webp", ['-ICC_Profile:all=', '-o', 'out.webp']],
+    ["$inputs/doc-iccp.webp", ['-EXIF:Artist=icc', '-o', 'out.webp']],
+    ["$inputs/doc-dup.webp", ['-EXIF:Artist=dup', '-o', 'out.webp']],
+    ["$inputs/doc-odd.webp", ['-XMP:Title=odd', '-o', 'out.webp']],
+    ["$inputs/doc-trunc.webp", ['-XMP:Title=trunc', '-o', 'out.webp']],
+    ["$inputs/doc-null.webp", ['-XMP:Title=null', '-o', 'out.webp']],
+    ['RIFF.avi', ['-XMP:Title=avi', '-o', 'out.avi']],
+    ['RIFF.wav', ['-XMP:Title=wav', '-o', 'out.wav']],
+    ["$inputs/doc-rf64.wav", ['-XMP:Title=rf64', '-o', 'out.wav']],
+    // InDesign (ProcessIND): XMP stream of the contiguous objects
+    ['InDesign.indd', ['-XMP:Title=indd', '-XMP-dc:Subject=one', '-o', 'out.indd']],
+    ['InDesign.indd', ['-XMP:all=', '-o', 'out.indd']],
+    ['InDesign.indd', ['-XMP=', '-o', 'out.indd']],
+    ['InDesign.indd', ['-all=', '-o', 'out.indd']],
+    ['InDesign.indd', ["-XMP<=$images/XMP.xmp", '-o', 'out.indd']],
+    ['InDesign.indd', ['-EXIF:Artist=not in indd', '-o', 'out.indd']],
+    ['InDesign.indd', ['-v3', '-XMP:Title=verbose', '-o', 'out.indd']],
+    ['InDesign.indd', ['-_memin', '-_memout', '-XMP:Title=memory', '-o', 'out.indd']],
+    ['InDesign.indd', ['-XMP:Title=in place']],
+    ["$inputs/doc-pad.indd", ['-XMP:Title=pad', '-o', 'out.indd']],
+    ["$inputs/doc-pad.indd", ['-m', '-XMP:Title=pad', '-o', 'out.indd']],
+    ["$inputs/doc-ro.indd", ['-XMP:Title=read-only', '-o', 'out.indd']],
+    ["$inputs/doc-noxmp.indd", ['-XMP:Title=none', '-o', 'out.indd']],
+    ["$inputs/doc-mismatch.indd", ['-XMP:Title=mismatch', '-o', 'out.indd']],
+    ["$inputs/doc-trunc.indd", ['-XMP:Title=truncated', '-o', 'out.indd']],
+    ["$inputs/doc-short.indd", ['-XMP:Title=short', '-o', 'out.indd']],
+    ["$inputs/doc-seq.indd", ['-XMP:Title=second master page', '-o', 'out.indd']],
+);
 // command line only (--cli): options of the exiftool script, which the API runners don't parse
 if (isset($opt['cli'])) {
     CliInputs($etDir, $inputs);     // (see below)
@@ -1375,6 +1434,62 @@ function ImageInputs(string $etDir, string $inputs): void
         "-ICC_Profile<=$images/ICC_Profile.icc");
     $perl('img-meta.jxl', "$images/JXL.jxl", '-XMP:Title=xmp', '-EXIF:Artist=artist');
     $perl('img-none.flif', "$images/FLIF.flif", '-all=');
+}
+
+/**
+ * Inputs of the RIFF, PDF, PostScript and InDesign writers: WebP images with other chunks (VP8 or
+ * VP8L only, "XMP\0", SEAL, C2PA, EXIF with an "Exif\0\0" header, animation, ICCP, duplicate,
+ * odd-sized, truncated and null chunks), a RF64 WAV
+ */
+function DocumentInputs(string $etDir, string $inputs): void
+{
+    $images = "$etDir/t/images";
+    foreach (glob("$inputs/doc-*") as $f) {
+        unlink($f);
+    }
+    $box = static fn (string $type, string $data) => pack('N', strlen($data) + 8).$type.$data;
+    // WebP: chunks padded to an even length in a RIFF container
+    $chunk = static fn (string $tag, string $data) => $tag.pack('V', strlen($data)).$data.(strlen($data) & 1 ? "\0" : '');
+    $riff = static fn (string $chunks) => 'RIFF'.pack('V', strlen($chunks) + 4).'WEBP'.$chunks;
+    $webp = (string) file_get_contents("$images/RIFF.webp");
+    $vp8 = substr($webp, 50, 32);           // (VP8X, ALPH, VP8, EXIF and XMP chunks)
+    $exif = substr($webp, 90, 98);
+    $xmp = substr($webp, 196, 389);
+    $vp8x = static fn (int $flags) => $chunk('VP8X', pack('V', $flags)."\0\0\0\0\0\0");    // (1x1 canvas)
+    $jumd = $box('jumd', "c2pa\x00\x11\x00\x10\x80\x00\x00\xaa\x00\x38\x9b\x71\x03c2pa\0");
+    $jumb = $box('jumb', $jumd.$box('jumb', $box('jumd', "json\x00\x11\x00\x10\x80\x00\x00\xaa\x00\x38\x9b\x71\x03test\0").
+        $box('json', '{"a":1}')));
+    $files = [
+        'doc-vp8.webp' => $riff($vp8),
+        'doc-vp8l.webp' => $riff($chunk('VP8L', "\x2f".pack('V', 15 | (7 << 14) | (1 << 28))."\0\0\0")),
+        'doc-vp8x.webp' => $riff($vp8x(0x08).$vp8.$chunk('EXIF', $exif)),
+        'doc-xmp0.webp' => $riff($vp8x(0x04).$vp8.$chunk("XMP\0", $xmp)),
+        'doc-seal.webp' => $riff($vp8.$chunk('SEAL', '<seal seal="1" kv="1" ka="rsa" da="sha256" d="e.com" s="abc"/>')),
+        'doc-c2pa.webp' => $riff($vp8x(0).$vp8.$chunk('C2PA', $jumb)),
+        'doc-exifhdr.webp' => $riff($vp8x(0x08).$vp8.$chunk('EXIF', "Exif\0\0".$exif)),
+        'doc-anim.webp' => $riff($vp8x(0x02).$chunk('ANIM', "\0\0\0\0\0\0").$chunk('ANMF', str_repeat("\0", 16).$vp8)),
+        'doc-iccp.webp' => $riff($vp8x(0x20).$chunk('ICCP', (string) file_get_contents("$images/ICC_Profile.icc")).$vp8),
+        'doc-dup.webp' => $riff($vp8x(0x08).$vp8.$chunk('EXIF', $exif).$chunk('EXIF', $exif)),
+        'doc-odd.webp' => $riff($vp8.$chunk('abcd', 'odd').$chunk('JUNK', '')),
+        'doc-trunc.webp' => substr($riff($vp8.$chunk('EXIF', $exif)), 0, -10),
+        'doc-null.webp' => $riff($vp8."\0\0\0\0\0\0\0\0"),
+        'doc-rf64.wav' => 'RF64'.pack('V', 0xffffffff).'WAVE'.substr((string) file_get_contents("$images/RIFF.wav"), 12),
+    ];
+    // InDesign: 2 master pages, an XMP object at 8192 (header, 1381 bytes of stream, trailer at
+    // 9605), then null padding: non-null padding, XMP class not writable, no XMP, trailer not
+    // matching the header, truncated, XMP length word smaller than the stream, second master page
+    // more current than the first
+    $ind = (string) file_get_contents("$images/InDesign.indd");
+    $files['doc-pad.indd'] = substr_replace($ind, 'garbage', 9637, 7);
+    $files['doc-ro.indd'] = substr_replace(substr_replace($ind, "\x80", 8215, 1), "\x80", 9628, 1);
+    $files['doc-noxmp.indd'] = substr_replace($ind, 'X', 8230, 1);
+    $files['doc-mismatch.indd'] = substr_replace($ind, "\x41", 9625, 1);
+    $files['doc-trunc.indd'] = substr($ind, 0, 9000);
+    $files['doc-short.indd'] = substr_replace($ind, pack('N', 1377 - 20), 8224, 4);
+    $files['doc-seq.indd'] = substr_replace($ind, pack('V', 9), 4096 + 264, 4);
+    foreach ($files as $name => $data) {
+        file_put_contents("$inputs/$name", $data);
+    }
 }
 
 /**
