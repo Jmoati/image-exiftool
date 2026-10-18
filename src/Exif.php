@@ -11,10 +11,9 @@
 //               11/11/2004 - P. Harvey Split off maker notes into MakerNotes.pm
 //               12/13/2004 - P. Harvey Added AUTOLOAD to load write routines
 //
-// PHP port of Image::ExifTool::Exif 4.65 (reading only). Tag tables and package
-// variables (@formatSize, %formatNumber, %compression...) are generated into
-// tables/Exif.php and Vars\Exif. The read-side subs of WriteExif.pl (ValidateIFD,
-// GetOffList, ProcessTiffIFD...) are at the end of this class.
+// PHP port of Image::ExifTool::Exif 4.65. Tag tables and package variables
+// (@formatSize, %formatNumber, %compression...) are generated into tables/Exif.php
+// and Vars\Exif. WriteExif.pl (autoloaded by Exif.pm) is the trait Exif\WriteExif.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -273,6 +272,23 @@ final class Exif
             }
         }
         return $val;
+    }
+
+    //------------------------------------------------------------------------------
+    // Convert parameter back to standard EXIF value
+    //   0,0.00,etc or "Normal" => 0
+    //   -1,-2,etc or "Soft" or "Low" => 1
+    //   +1,+2,1,2,etc or "Hard" or "High" => 2
+    public static function ConvertParameter($val)
+    {
+        $isFloat = ExifTool::IsFloat($val);
+        // normal is a value of zero
+        if (preg_match('/\bn/i', Perl::str($val)) or ($isFloat and Perl::num($val) == 0)) return 0;
+        // "soft", "low" or any negative number is a value of 1
+        if (preg_match('/\b(s|l)/i', Perl::str($val)) or ($isFloat and Perl::num($val) < 0)) return 1;
+        // "hard", "high" or any positive number is a value of 2
+        if (preg_match('/\bh/i', Perl::str($val)) or $isFloat) return 2;
+        return null;
     }
 
     //------------------------------------------------------------------------------
@@ -1273,8 +1289,7 @@ final class Exif
                                     'TagInfo' => $tagInfo ?: $tmpInfo,
                                     'Offset'  => $base + $valuePtr + $dataPos,
                                     'Size'    => $size,
-                                    // ponytail: Image::ExifTool::Fixup is only used when writing
-                                    'Fixup'   => null,
+                                    'Fixup'   => new Fixup(),
                                 ];
                             }
                         } else {
@@ -1765,8 +1780,13 @@ final class Exif
                         ];
                         $val2 = null;
                         if ($tagInfo->IsPhaseOne) {
-                            // ponytail: PhaseOne::WritePhaseOne is write-side (not ported), so
-                            // the original block is kept, with Perl's rebuild warning
+                            $et->DropTags = 1;
+                            // (PHP: until PhaseOne::WritePhaseOne is ported, the original block is
+                            //  kept, with the rebuild warning below)
+                            if (method_exists(PhaseOne::class, 'WritePhaseOne')) {
+                                $val2 = PhaseOne::WritePhaseOne($et, $makerDirInfo, $newTagTable);
+                            }
+                            unset($et->DropTags);
                         } else {
                             if ($subdir['FixBase'] ?? null) $makerDirInfo['FixBase'] = 1;
                             // rebuild maker notes (creates $$et{MAKER_NOTE_FIXUP})
@@ -1875,246 +1895,5 @@ final class Exif
             $dirInfo['BytesFromEnd'] = $bytesFromEnd;
         }
         return $success;
-    }
-
-    //==============================================================================
-    // Read-side subs of WriteExif.pl (the rest of that file is write-only, not ported)
-    //==============================================================================
-
-    //------------------------------------------------------------------------------
-    // Inverse print conversion for LensInfo
-    // Inputs: 0) lens info string
-    // Returns: PrintConvInv of string
-    public static function ConvertLensInfo($val)
-    {
-        $a = self::GetLensInfo($val, 1); // (allow unknown "?" values)
-        return $a ? implode(' ', $a) : $val;
-    }
-
-    //------------------------------------------------------------------------------
-    // rebuild maker notes to properly contain all value data
-    // (some manufacturers put value data outside maker notes!!)
-    // Inputs: 0) ExifTool object ref, 1) dirInfo ref, 2) tag table ref
-    // Returns: new maker note data (and creates MAKER_NOTE_FIXUP), or undef on error
-    public static function RebuildMakerNotes(ExifTool $et, array &$dirInfo, TagTable $tagTablePtr)
-    {
-        $dirStart = $dirInfo['DirStart'];
-        $dirLen = $dirInfo['DirLen'];
-        $dataPt = $dirInfo['DataPt'];
-
-        unset($et->MAKER_NOTE_FIXUP);
-
-        // ponytail: rewriting the maker note IFD needs the writer (WriteDirectory, Fixup), which is
-        // out of scope, so the original block is returned as Perl does for text, binary and preview
-        // maker notes. Port the rest of WriteExif.pl RebuildMakerNotes() with the writer.
-        return substr($dataPt, $dirStart, $dirLen);
-    }
-
-    //------------------------------------------------------------------------------
-    // Validate IFD entries (strict validation to test possible chained IFD's)
-    // Inputs: 0) dirInfo ref (must have RAF set), 1) optional DirStart
-    // Returns: true if IFD looks OK
-    public static function ValidateIFD(array &$dirInfo, $dirStart = null)
-    {
-        $raf = $dirInfo['RAF'] ?? null;
-        if (!$raf) return 0;
-        $base = $dirInfo['Base'] ?? null;
-        if ($dirStart === null) $dirStart = ($dirInfo['DirStart'] ?? null) ?: 0;
-        $offset = $dirStart + (($dirInfo['DataPos'] ?? null) ?: 0);
-        $buff = null;
-        if (!($raf->Seek($offset + $base, 0) and $raf->Read($buff, 2) == 2)) return 0;
-        $numEntries = ExifTool::Get16u($buff, 0);
-        if (!($numEntries > 1 and $numEntries < 64)) return 0;
-        $len = 12 * $numEntries;
-        if ($raf->Read($buff, $len) != $len) return 0;
-        $lastID = -1;
-        for ($index = 0; $index < $numEntries; ++$index) {
-            $entry = 12 * $index;
-            $tagID = ExifTool::Get16u($buff, $entry);
-            if (!($tagID > $lastID or ($dirInfo['AllowOutOfOrderTags'] ?? null))) return 0;
-            $format = ExifTool::Get16u($buff, $entry + 2);
-            if (!($format > 0 and $format <= 13)) return 0;
-            $count = ExifTool::Get32u($buff, $entry + 4);
-            if (!($count > 0)) return 0;
-            $lastID = $tagID;
-        }
-        return 1;
-    }
-
-    //------------------------------------------------------------------------------
-    // Get sorted list of offsets used in IFD
-    // Inputs: 0) data ref, 1) directory start, 2) dataPos, 3) IFD entries, 4) tag table ref
-    // Returns: 0) sorted list of offsets (only offsets after the end of the IFD)
-    //          1) hash of list indices keyed by offset value
-    // Notes: This is used in a patch to fix the count for tags in Kodak SubIFD3
-    public static function GetOffList($dataPt, $dirStart, $dataPos, $numEntries, TagTable $tagTablePtr)
-    {
-        $ifdEnd = $dirStart + 2 + 12 * $numEntries + $dataPos;
-        $offHash = [];
-        for ($index = 0; $index < $numEntries; ++$index) {
-            $entry = $dirStart + 2 + 12 * $index;
-            $format = ExifTool::Get16u($dataPt, $entry + 2);
-            if ($format < 1 or $format > 13) continue;
-            $count = ExifTool::Get16u($dataPt, $entry + 4);
-            $size = Vars\Exif::$formatSize[$format] * $count;
-            if ($size <= 4) {
-                $tagID = ExifTool::Get16u($dataPt, $entry);
-                if (!($tagTablePtr[$tagID] instanceof TagInfo and $tagTablePtr[$tagID]->FixCount)) continue;
-            }
-            $offset = ExifTool::Get16u($dataPt, $entry + 8);
-            if ($offset >= $ifdEnd) $offHash[$offset] = 1;
-        }
-        // set offset hash values to indices in list
-        $offList = array_keys($offHash);
-        sort($offList, SORT_STRING);
-        $index = 0;
-        foreach ($offList as $offset) {
-            $offHash[$offset] = $index++;
-        }
-        return [$offList, $offHash];
-    }
-
-    //------------------------------------------------------------------------------
-    // Validate image data size
-    // Inputs: 0) ExifTool ref, 1) validate info hash ref,
-    //         2) flag to issue error (ie. we're writing)
-    // - issues warning or error if problems found
-    public static function ValidateImageData(ExifTool $et, array $vInfo, $dirName, $errFlag = null)
-    {
-        // determine the expected size of the image data for an uncompressed image
-        // (0x102 BitsPerSample, 0x103 Compression and 0x115 SamplesPerPixel
-        //  all default to a value of 1 if they don't exist)
-        if ((!isset($vInfo[0x103]) or Perl::str($vInfo[0x103]) === '1') and
-            ($vInfo[0x100] ?? null) and ($vInfo[0x101] ?? null) and (($vInfo[0x117] ?? null) or ($vInfo[0x145] ?? null)))
-        {
-            $samplesPerPix = ($vInfo[0x115] ?? null) ?: 1;
-            $bitsPerSample = ($vInfo[0x102] ?? null) ? Perl::split(' ', $vInfo[0x102]) :
-                array_fill(0, max(0, Perl::int($samplesPerPix)), 1);
-            $byteCountInfo = ($vInfo[0x117] ?? null) ?: $vInfo[0x145];
-            $byteCounts = $byteCountInfo[1];
-            $totalBytes = 0;
-            foreach (Perl::split(' ', $byteCounts) as $_) $totalBytes += Perl::num($_);
-            $minor = null;
-            if ($et->DOC_NUM or $et->FILE_TYPE !== 'TIFF') $minor = 1;
-            if (count($bitsPerSample) != $samplesPerPix) {
-                if (!($et->FILE_TYPE === 'EPS' and count($bitsPerSample) == 1)) {
-                    // (just a warning for this problem)
-                    $s = Perl::str($samplesPerPix) === '1' ? '' : 's';
-                    $et->Warn("$dirName BitsPerSample should have $samplesPerPix value$s", $minor);
-                }
-                while (count($bitsPerSample) < $samplesPerPix) $bitsPerSample[] = $bitsPerSample[0];
-                foreach ($bitsPerSample as $_) {
-                    if (Perl::str($_) !== Perl::str($bitsPerSample[0])) $et->Warn("$dirName BitsPerSample values are different", $minor);
-                    if (Perl::num($_) < 1 or Perl::num($_) > 32) $et->Warn("Invalid $dirName BitsPerSample value", $minor);
-                }
-            }
-            $bitsPerPixel = 0;
-            foreach ($bitsPerSample as $_) $bitsPerPixel += Perl::num($_);
-            $expectedBytes = Perl::int((Perl::num($vInfo[0x100]) * Perl::num($vInfo[0x101]) * $bitsPerPixel + 7) / 8);
-            if ($expectedBytes != $totalBytes and
-                // (this problem seems normal for certain types of RAW files...)
-                !preg_match('/^(K25|KDC|MEF|ORF|SRF)$/', Perl::str($et->TIFF_TYPE)))
-            {
-                $adj = $minor = null;
-                if ($expectedBytes > $totalBytes) {
-                    $adj = 'Under'; // undersized is a bigger problem because we may lose data
-                    if (!$errFlag) $minor = 0;
-                } else {
-                    $adj = 'Over';
-                    $minor = 1;
-                }
-                $msg = "{$adj}sized $dirName {$byteCountInfo[0]->Name} ($totalBytes bytes, but expected $expectedBytes)";
-                if ($minor === null) {
-                    // this is a serious error if we are writing the file and there
-                    // is a chance that we may not copy all of the image data
-                    // (but make it minor to allow the file to be written anyway)
-                    $et->Error($msg, 1);
-                } else {
-                    $et->Warn($msg, $minor);
-                }
-            }
-        }
-    }
-
-    //------------------------------------------------------------------------------
-    // Add specified image data to ImageDataHash hash
-    // Inputs: 0) ExifTool ref, 1) dirInfo ref, 2) lookup for [tagInfo,value] based on tagID
-    public static function AddImageDataHash(ExifTool $et, array &$dirInfo, array $offsetInfo)
-    {
-        $verbose = $et->Options('Verbose');
-        $raf = $dirInfo['RAF'] ?? null;
-
-        $tagIDs = array_keys($offsetInfo);
-        sort($tagIDs, SORT_STRING);
-        foreach ($tagIDs as $tagID) {
-            if (!is_array($offsetInfo[$tagID])) continue; // ignore scalar tag values used for Validate
-            $tagInfo = $offsetInfo[$tagID][0];
-            if (!$tagInfo->IsImageData) continue;     // only consider image data
-            $sizeID = $tagInfo->OffsetPair;
-            $sizes = [];
-            if ($tagInfo->NotRealPair) {
-                $sizes = [999999999];     // (Panasonic hack: raw data runs to end of file)
-            } elseif ($sizeID and ($offsetInfo[$sizeID] ?? null)) {
-                $sizes = Perl::split(' ', $offsetInfo[$sizeID][1]);
-            } else {
-                continue;
-            }
-            $offsets = Perl::split(' ', $offsetInfo[$tagID][1]);
-            if ($tagInfo->NotRealPair) $sizes[0] = 999999999;
-            $total = 0;
-            foreach ($offsets as $offset) {
-                $size = array_shift($sizes);
-                if (!(preg_match('/^\d+$/', $offset) and $size and preg_match('/^\d+$/', $size) and $size)) continue;
-                if (!$raf->Seek($offset, 0)) continue; // (offset is absolute)
-                $total += $et->ImageDataHash($raf, $size);
-            }
-            if ($verbose) {
-                $name = ($dirInfo['DirName'] ?? '') . ":{$tagInfo->Name}";
-                $name = preg_replace('/Offsets?|Start$/', '', $name, 1);
-                $et->VPrint(0, "{$et->INDENT}(ImageDataHash: $total bytes of $name data)\n");
-            }
-        }
-    }
-
-    //------------------------------------------------------------------------------
-    // Read/Write IFD with TIFF-like header (used by DNG 1.2)
-    // Inputs: 0) ExifTool object ref, 1) dirInfo ref, 2) tag table ref
-    // Returns: Reading: 1 on success, otherwise returns 0 and sets a Warning
-    //          (writing is not ported)
-    public static function ProcessTiffIFD(?ExifTool $et, array &$dirInfo, TagTable $tagTablePtr)
-    {
-        if (!$et) return 1;    // allow dummy access
-        $raf = $dirInfo['RAF'] ?? null;
-        $base = ($dirInfo['Base'] ?? null) ?: 0;
-        $dirName = $dirInfo['DirName'] ?? null;
-        $magic = ($dirInfo['Subdir']['Magic'] ?? null) ?: 0x002a;
-        $buff = null;
-
-        // structured with a TIFF-like header and relative offsets
-        if (!($raf->Seek($base, 0) and $raf->Read($buff, 8) == 8)) return 0;
-        if (!(ExifTool::SetByteOrder(substr($buff, 0, 2)) and ExifTool::Get16u($buff, 2) == $magic)) {
-            $msg = "Invalid $dirName header";
-            $et->Warn($msg);
-            return 0;
-        }
-        $offset = ExifTool::Get32u($buff, 4);
-        $tiffDirInfo = [   // (Perl %dirInfo)
-            'DirName'  => $dirInfo['DirName'] ?? null,
-            'Parent'   => $dirInfo['Parent'] ?? null,
-            'Base'     => $base,
-            'DataPt'   => $buff,
-            'DataLen'  => strlen($buff),
-            'DataPos'  => 0,
-            'DirStart' => $offset,
-            'DirLen'   => strlen($buff) - $offset,
-            'RAF'      => $raf,
-            'NewDataPos' => 8,
-        ];
-        if ($et->HTML_DUMP) {
-            $tip = Perl::sprintf("Byte order: %s endian\nIdentifier: 0x%.4x\n%s offset: 0x%.4x",
-                              (ExifTool::GetByteOrder() === 'II') ? 'Little' : 'Big', $magic, $dirName, $offset);
-            $et->HDump($base, 8, "$dirName header", $tip, 0);
-        }
-        return self::ProcessExif($et, $tiffDirInfo, $tagTablePtr);
     }
 }

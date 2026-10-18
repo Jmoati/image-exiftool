@@ -7,7 +7,7 @@
 //
 // Revisions:    11/11/2004 - P. Harvey Created
 //
-// PHP port of Image::ExifTool::MakerNotes 2.19 (reading only). The conditional list
+// PHP port of Image::ExifTool::MakerNotes 2.19. The conditional list
 // @Image::ExifTool::MakerNotes::Main is generated into the tag tables that use it
 // (and into Vars\MakerNotes::$Main).
 //------------------------------------------------------------------------------
@@ -651,6 +651,37 @@ final class MakerNotes
             return 1;
         }
         return self::ProcessUnknown($et, $dirInfo, $tagTablePtr);
+    }
+
+    //------------------------------------------------------------------------------
+    // Write unknown maker notes or PreviewImage
+    // Inputs: 0) ExifTool object ref, 1) dirInfo ref, 2) tag table ref
+    // Returns: directory data, '' to delete, or undef on error
+    public static function WriteUnknownOrPreview(?ExifTool $et = null, ?array &$dirInfo = null, ?TagTable $tagTablePtr = null)
+    {
+        $dataPt = Perl::str($dirInfo['DataPt'] ?? null);
+        $dirStart = $dirInfo['DirStart'] ?? null;
+        $dirLen = $dirInfo['DirLen'] ?? null;
+        $newVal = null;
+        // check to see if this is a preview image
+        if ($dirLen > 6 and substr($dataPt, $dirStart, 3) === "\xff\xd8\xff") {
+            $previewInfo = ExifTool::PackageTable('Image::ExifTool::Extra')['PreviewImage'];
+            if ($previewInfo instanceof TagInfo and ($et->NEW_VALUE[spl_object_id($previewInfo)] ?? null)) {
+                // write or delete new preview (if deleted, it can't currently be added back again)
+                $newVal = $et->GetNewValue('PreviewImage') ?: '';
+                if ($et->Options('Verbose') > 1) {
+                    $et->VerboseValue('- MakerNotes:PreviewImage', substr($dataPt, $dirStart, $dirLen));
+                    if ($newVal) $et->VerboseValue('+ MakerNotes:PreviewImage', $newVal);
+                }
+                ++$et->CHANGED;
+            } else {
+                $newVal = substr($dataPt, $dirStart, $dirLen);
+            }
+        } else {
+            // rewrite MakerNote IFD
+            $newVal = Exif::WriteExif($et, $dirInfo, $tagTablePtr);
+        }
+        return $newVal;
     }
 
     //------------------------------------------------------------------------------
