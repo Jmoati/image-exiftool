@@ -261,7 +261,7 @@ Data:
 - Until every writer is ported, `WriteDirectory()` gives a "Not ported: <proc>" error when the
   write proc of a directory being edited (in `EDIT_DIRS`) doesn't exist yet, and leaves the other
   directories unchanged (like the procs which only rewrite edited directories); the trailers whose
-  writer isn't ported (CanonVRD edits, MIE) give a minor "Not ported" error.
+  writer isn't ported (MIE) give a minor "Not ported" error.
 
 Code in the tag tables (translated in `translations/<Module>.txt`, see above) has these contexts
 (from the `#### eval` comments of Writer.pl and WriteExif.pl):
