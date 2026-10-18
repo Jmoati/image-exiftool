@@ -59,6 +59,7 @@ file_put_contents("$inputs/big.xmp", str_replace('</x:xmpmeta>', str_repeat(' ',
 $utf16 = static fn (string $s) => pack('N', strlen($s)).implode('', array_map(static fn ($c) => "\0$c", str_split($s)));
 $ducky = 'Ducky'.pack('nnN', 1, 4, 75).pack('nn', 2, 30).$utf16('Ducky comment').pack('nn', 3, 20).$utf16('(c) Phil')."\0\0";
 file_put_contents("$inputs/ducky.jpg", "\xff\xd8\xff\xec".pack('n', strlen($ducky) + 2).$ducky.substr(file_get_contents("$images/Writer.jpg"), 2));
+QuickTimeInputs($etDir, $inputs);   // (see below)
 
 // cases: [source file in ~/exiftool/t/images, [exiftool arguments]]
 $cases = [
@@ -466,6 +467,45 @@ $cases = [
     ['CanonRaw.cr3', ['-CreateDate=2021:02:03 04:05:06', '-o', 'out.cr3']],
     ['CanonRaw.cr3', ['-api', 'QuickTimePad', '-Artist=padded', '-o', 'out.cr3']],
     ['CanonRaw.cr3', ['-v3', '-Artist=verbose', '-o', 'out.cr3']],
+    ["$inputs/noxmp.cr3", ['-XMP:Title=re-added', '-o', 'out.cr3']],
+    ["$inputs/noxmp.cr3", ['-Artist=no xmp', '-o', 'out.cr3']],
+    // QuickTime: HEIC with EXIF and XMP items (written by Perl), plain and deflated
+    ["$inputs/meta.heic", ['-XMP:Title=a longer title than before', '-o', 'out.heic']],
+    ["$inputs/meta.heic", ['-EXIF:Artist=changed', '-EXIF:Copyright=new', '-o', 'out.heic']],
+    ["$inputs/meta.heic", ['-XMP:all=', '-o', 'out.heic']],
+    ["$inputs/meta.heic", ['-EXIF:all=', '-o', 'out.heic']],
+    ["$inputs/meta.heic", ['-all=', '-o', 'out.heic']],
+    ["$inputs/meta.heic", ['-EXIF:all=', '-EXIF:UserComment=a comment', '-XMP:Subject=a', '-XMP:Subject=b', '-o', 'out.heic']],
+    ["$inputs/meta.heic", ['-XMP:Title=in place']],
+    ["$inputs/meta.heic", ['-v3', '-EXIF:Artist=verbose', '-o', 'out.heic']],
+    ["$inputs/deflate.heic", ['-api', 'Compress', '-XMP:Title=still compressed', '-o', 'out.heic']],
+    ["$inputs/deflate.heic", ['-XMP:Title=no Compress option', '-o', 'out.heic']],
+    ["$inputs/deflate.heic", ['-api', 'Compress=0', '-XMP:Title=uncompress?', '-o', 'out.heic']],
+    // QuickTime: alternate languages, existing XMP in MP4
+    ["$inputs/lang.mov", ['-Keys:Title-eng-ca=', '-ItemList:Title-eng-ca=', '-o', 'out.mov']],
+    ["$inputs/lang.mov", ['-ItemList:Title=default only', '-o', 'out.mov']],
+    ["$inputs/lang.mov", ['-UserData:Title=ud default', '-UserData:Title-ger=', '-o', 'out.mov']],
+    ["$inputs/lang.mov", ['-QuickTime:Comment-fra-FR=nouveau', '-ItemList:Title-eng-ca=changed', '-o', 'out.mov']],
+    ["$inputs/lang.mov", ['-Keys:all=', '-o', 'out.mov']],
+    ["$inputs/xmp.m4a", ['-XMP:Title=changed', '-o', 'out.m4a']],
+    ["$inputs/xmp.m4a", ['-XMP:all=', '-o', 'out.m4a']],
+    ["$inputs/xmp.m4a", ['-api', 'QuickTimePad', '-XMP:Title=y', '-o', 'out.m4a']],
+    // QuickTime: chunk offsets (stco/co64) into the media data, mdat layouts, trailers
+    ["$inputs/stco.mov", ['-Artist=a much longer artist name to move the media data', '-o', 'out.mov']],
+    ["$inputs/stco.mov", ['-all=', '-o', 'out.mov']],
+    ["$inputs/co64.mov", ['-Artist=co64', '-o', 'out.mov']],
+    ["$inputs/mdatfirst.mov", ['-Artist=mdat first', '-o', 'out.mov']],
+    ["$inputs/mdat64.mov", ['-Artist=64-bit mdat', '-o', 'out.mov']],
+    ["$inputs/mdat0.mov", ['-Artist=mdat to end of file', '-o', 'out.mov']],
+    ["$inputs/twomdat.mov", ['-Artist=two mdat', '-o', 'out.mov']],
+    ["$inputs/wide.mov", ['-Artist=wide', '-o', 'out.mov']],
+    ["$inputs/term.mov", ['-UserData:Title=terminated', '-o', 'out.mov']],
+    ["$inputs/kenwood.mov", ['-Artist=kenwood', '-o', 'out.mov']],
+    ["$inputs/kenwood.mov", ['-trailer:all=', '-o', 'out.mov']],
+    ["$inputs/insta360.mov", ['-Artist=insta360', '-o', 'out.mov']],
+    ["$inputs/insta360.mov", ['-Insta360:all=', '-o', 'out.mov']],
+    ["$inputs/garbage.mov", ['-Artist=garbage', '-o', 'out.mov']],
+    ["$inputs/garbage.mov", ['-m', '-Artist=garbage', '-o', 'out.mov']],
 ];
 if (isset($opt['sweep'])) {
     $exts = array_map('strtolower', explode(',', $opt['ext'] ?? 'jpg'));
@@ -667,6 +707,105 @@ function EmptyDir(string $dir, bool $remove = false): void
     if (!$remove && !is_dir($dir)) {
         mkdir($dir, 0777, true);
     }
+}
+
+/**
+ * QuickTime inputs (t/images has no HEIC with EXIF/XMP items, and its MOV/MP4 have empty chunk
+ * offset tables): files written by Perl ExifTool, and variants of QuickTime.mov built here with
+ * stco/co64 tables pointing into a non-empty mdat (moov first or mdat first, 64-bit or zero
+ * mdat size, two mdat atoms), a 'wide' atom, a udta terminator and trailers.
+ */
+function QuickTimeInputs(string $etDir, string $inputs): void
+{
+    $images = "$etDir/t/images";
+    foreach ([
+        'meta.heic' => ['QuickTime.heic', '-XMP:Title=a title', '-EXIF:Artist=an artist'],
+        'deflate.heic' => ['QuickTime.heic', '-api', 'Compress', '-XMP:Title=compressed', '-EXIF:Artist=x'],
+        'lang.mov' => ['QuickTime.mov', '-Keys:Title-eng-ca=keys ca', '-ItemList:Title-eng-ca=il ca',
+            '-ItemList:Title=il', '-QuickTime:Comment-fra-FR=fr', '-UserData:Title-ger=de'],
+        'xmp.m4a' => ['QuickTime.m4a', '-XMP:Title=x', '-XMP-dc:Subject=s'],
+        'noxmp.cr3' => ['CanonRaw.cr3', '-XMP:all='],
+    ] as $out => $args) {
+        $src = array_shift($args);
+        @unlink("$inputs/$out");
+        Run(['perl', "$etDir/exiftool", '-q', '-m', ...$args, '-o', "$inputs/$out", "$images/$src"], $inputs,
+            ['PERL_HASH_SEED' => '0', 'PERL_PERTURB_KEYS' => '0']);
+    }
+    // QuickTime.mov rebuilt with real chunk offsets
+    $parse = static function (string $d) use (&$parse): array {
+        $atoms = [];
+        for ($pos = 0; $pos + 8 <= strlen($d); $pos += $size) {
+            $size = unpack('N', $d, $pos)[1];
+            $tag = substr($d, $pos + 4, 4);
+            $data = substr($d, $pos + 8, $size - 8);
+            $atoms[] = [$tag, in_array($tag, ['moov', 'trak', 'mdia', 'minf', 'stbl'], true) ? $parse($data) : $data];
+        }
+
+        return $atoms;
+    };
+    $build = static function (array $atoms) use (&$build): string {
+        $out = '';
+        foreach ($atoms as [$tag, $data]) {
+            $data = is_array($data) ? $build($data) : $data;
+            $out .= pack('N', strlen($data) + 8).$tag.$data;
+        }
+
+        return $out;
+    };
+    // replace the stco tables (with $offsets relative to the start of the media data)
+    $tables = static function (array $atoms, string $type, array &$offsets) use (&$tables): array {
+        foreach ($atoms as &$atom) {
+            if (is_array($atom[1])) {
+                $atom[1] = $tables($atom[1], $type, $offsets);
+            } elseif ('stco' === $atom[0]) {
+                $offs = array_shift($offsets);
+                $atom = [$type, pack('NN', 0, count($offs)).implode('', array_map(
+                    static fn ($o) => 'co64' === $type ? pack('J', $o) : pack('N', $o), $offs))];
+            }
+        }
+
+        return $atoms;
+    };
+    $moov = $parse(file_get_contents("$images/QuickTime.mov"))[0][1];
+    $mdatData = str_repeat("\x11\x22\x33\x44\x55\x66\x77\x88", 8);  // 64 bytes of media data
+    $mov = static function (string $type, string $layout) use ($moov, $tables, $build, $mdatData): string {
+        foreach ([0, 1] as $pass) {     // (pass 0 measures the moov atom)
+            $base = $pass ? $dataPos : 0;
+            $offsets = [[$base, $base + 16, $base + 40], [$base + 8]];
+            $moovAtom = $build([['moov', $tables($moov, $type, $offsets)]]);
+            $dataPos = match ($layout) {
+                'mdat first' => 8,
+                'mdat64', 'wide' => strlen($moovAtom) + 16,
+                default => strlen($moovAtom) + 8,
+            };
+        }
+        return match ($layout) {
+            'mdat first' => pack('N', 72).'mdat'.$mdatData.$moovAtom,
+            'mdat64' => $moovAtom.pack('N', 1).'mdat'.pack('J', 80).$mdatData,
+            'mdat0' => $moovAtom.pack('N', 0).'mdat'.$mdatData,
+            'two mdat' => $moovAtom.pack('N', 40).'mdat'.substr($mdatData, 0, 32).pack('N', 40).'mdat'.substr($mdatData, 32),
+            'wide' => $moovAtom.pack('N', 8).'wide'.pack('N', 72).'mdat'.$mdatData,
+            default => $moovAtom.pack('N', 72).'mdat'.$mdatData,
+        };
+    };
+    file_put_contents("$inputs/stco.mov", $mov('stco', 'moov first'));
+    file_put_contents("$inputs/co64.mov", $mov('co64', 'moov first'));
+    file_put_contents("$inputs/mdatfirst.mov", $mov('stco', 'mdat first'));
+    file_put_contents("$inputs/mdat64.mov", $mov('co64', 'mdat64'));
+    file_put_contents("$inputs/mdat0.mov", $mov('stco', 'mdat0'));
+    file_put_contents("$inputs/twomdat.mov", $mov('stco', 'two mdat'));
+    file_put_contents("$inputs/wide.mov", $mov('stco', 'wide'));
+    $stco = $mov('stco', 'moov first');
+    // trailers: Kenwood (identified after a truncated atom), Insta360 (identified from its end)
+    file_put_contents("$inputs/kenwood.mov", $stco.'CCCCCCCC'.str_repeat('k', 400));
+    file_put_contents("$inputs/insta360.mov", $stco.str_repeat('i', 100).pack('V', 140).'abcd8db42d694ccc418790edff439fe026bf');
+    file_put_contents("$inputs/garbage.mov", $stco.pack('N', 2048).'junk'.str_repeat("\0", 20));
+    // udta terminated by 4 zero bytes ("for historical reasons")
+    $d = file_get_contents("$images/QuickTime.mov");
+    $udta = strpos($d, 'udta') - 4;
+    $size = unpack('N', $d, $udta)[1];
+    $d = substr($d, 0, $udta).pack('N', $size + 4).substr($d, $udta + 4, $size - 4)."\0\0\0\0".substr($d, $udta + $size);
+    file_put_contents("$inputs/term.mov", pack('N', unpack('N', $d)[1] + 4).substr($d, 4));
 }
 
 /**
