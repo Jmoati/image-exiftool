@@ -43,6 +43,13 @@ if (($argv[1] ?? null) === '--run') {
 $opt = getopt('v', ['case:', 'cli', 'keep', 'exiftool:'], $rest);
 $etDir = rtrim($opt['exiftool'] ?? getenv('HOME').'/exiftool', '/');
 $images = "$etDir/t/images";
+// large data written as a block (more than one JPEG segment)
+$inputs = "$root/var/write-parity-inputs";
+@mkdir($inputs, 0777, true);
+file_put_contents("$inputs/big.exif", file_get_contents("$images/ExifTool.tif").str_repeat("\0MM\0\x2a", 30000));
+file_put_contents("$inputs/big.icc", file_get_contents("$images/ICC_Profile.icc").str_repeat("\0", 150000));
+file_put_contents("$inputs/big.xmp", str_replace('</x:xmpmeta>', str_repeat(' ', 70000).'</x:xmpmeta>',
+    file_get_contents("$images/XMP.xmp")));
 
 // cases: [source file in ~/exiftool/t/images, [exiftool arguments]]
 $cases = [
@@ -111,6 +118,11 @@ $cases = [
     ['Writer.jpg', ["-EXIF<=$images/ExifTool.tif", '-o', 'out.jpg']],
     ['Canon.jpg', ["-EXIF<=$images/ExifTool.tif", '-o', 'out.jpg']],
     ['Canon.jpg', ['-EXIF=', '-o', 'out.jpg']],
+    ['Writer.jpg', ["-EXIF<=$inputs/big.exif", '-o', 'out.jpg']],
+    ['Writer.jpg', ['-api', 'NoMultiExif', "-EXIF<=$inputs/big.exif", '-o', 'out.jpg']],
+    ['Writer.jpg', ["-ICC_Profile<=$inputs/big.icc", '-o', 'out.jpg']],
+    ['Writer.jpg', ["-XMP<=$inputs/big.xmp", '-o', 'out.jpg']],
+    ['Writer.jpg', ['-Comment='.str_repeat('0123456789', 7000), '-o', 'out.jpg']],
     ['XMP.jpg', ['-XMP=', '-ICC_Profile=', '-o', 'out.jpg']],
     // JPEG: nothing changed (WriteInfo returns 2)
     ['Writer.jpg', ['-Comment=', '-o', 'out.jpg']],
