@@ -440,6 +440,8 @@ $cases = [
     ['QuickTime.m4a', ['-XMP:Title=x', '-TrackCreateDate=2000:01:02 03:04:05', '-o', 'out.m4a']],
     ['QuickTime.m4a', ['-XMP-dc:Creator=me', '-XMP-dc:Description=desc', '-o', 'out.m4a']],
     ['QuickTime.m4a', ['-XMP:all=', '-o', 'out.m4a']],
+    ['QuickTime.mov', ['-XMP-GSpherical:Spherical=True', '-XMP-GSpherical:Stitched=True', '-XMP-GSpherical:ProjectionType=equirectangular', '-o', 'out.mov']],
+    ['QuickTime.m4a', ['-XMP-GSpherical:Spherical=True', '-o', 'out.m4a']],
     // QuickTime: M4A audio tags
     ['QuickTime.m4a', ['-Title=a song', '-Artist=a band', '-Album=an album', '-o', 'out.m4a']],
     ['QuickTime.m4a', ['-Genre=Jazz', '-TrackNumber=3 of 12', '-DiskNumber=1 of 2', '-o', 'out.m4a']],
