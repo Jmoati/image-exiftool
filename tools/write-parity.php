@@ -907,6 +907,15 @@ $cases = [
     ['Panasonic.rw2', ['-JpgFromRaw=', '-o', 'out.rw2']],
     ['Panasonic.rw2', ['-v3', '-Artist=verbose', '-o', 'out.rw2']],
     ['Panasonic.rw2', ['-Artist=in place']],
+    // Phase One IIQ (WritePhaseOne): maker notes entries rewritten with a new layout of the values
+    ['PhaseOne.iiq', ['-SerialNumber=1234', '-o', 'out.iiq']],
+    ['PhaseOne.iiq', ['-PhaseOne:ISO=200', '-PhaseOne:LensModel=A much longer lens model name than before', '-SplitColumn=100', '-o', 'out.iiq']],
+    ['PhaseOne.iiq', ['-PhaseOne:ColorMatrix1=1 0 0 0 1 0 0 0 1', '-PhaseOne:SensorWidth=100', '-o', 'out.iiq']],
+    ['PhaseOne.iiq', ['-PhaseOne:all=', '-o', 'out.iiq']],
+    ['PhaseOne.iiq', ['-PhaseOne:Software=', '-o', 'out.iiq']],
+    ['PhaseOne.iiq', ['-v3', '-SerialNumber=verbose', '-o', 'out.iiq']],
+    ['PhaseOne.iiq', ['-Artist=me', '-o', 'out.iiq']],
+    ['PhaseOne.iiq', ['-SerialNumber=in place']],
 ];
 // RIFF, PDF, PostScript and InDesign writers (inputs made by DocumentInputs(), see below)
 array_push($cases,
