@@ -1,7 +1,7 @@
 <?php
 
-// Runs Perl exiftool and bin/exiftool with the same -if / -p / -list commands and compares their
-// stdout and exit status. Run: php tests/cli-compat.php [~/exiftool]
+// Runs Perl exiftool and bin/exiftool with the same -if / -p / -list commands and write commands, and
+// compares their stdout and exit status. Run: php tests/cli-compat.php [~/exiftool]
 
 $et = rtrim($argv[1] ?? getenv('HOME').'/exiftool', '/');
 $img = "$et/t/images";
@@ -28,7 +28,10 @@ $cases = [
     ['-lang'], ['-lang', 'zz', 'Canon.jpg'], ['-lang', 'fr', 'Canon.jpg'],
     ['-lang', 'de', '-j', '-a', 'Canon.jpg', 'Nikon.jpg'], ['-lang', 'ja', '-a', '-G1', 'XMP5.xmp'],
     ['-lang', 'ru', '-t', '-flash', '-exposureprogram', 'Canon.jpg'],
-    // writing (never into t/images: the written file goes to stdout with -o -, or the command fails)
+];
+// writing: run in var/cli-compat/<tool>, on fresh copies of the test images named in the arguments
+// (so that nothing is ever written into t/images); the written file goes to stdout with -o -
+$writeCases = [
     ['-o', '-', '-Comment=cli-compat', '-XMP:Title=x', '-IPTC:Keywords=y', 'Writer.jpg'],
     ['-o', '-', '-all=', '-Comment=only', 'Nikon.jpg'],
     ['-o', '-', '-tagsFromFile', 'Canon.jpg', '-Make', '-Model>Artist', '-Comment<$Make $ISO', 'Writer.jpg'],
@@ -39,21 +42,40 @@ $cases = [
     ['-tagsFromFile', 'NoSuchFile.jpg', '-o', '-', 'Canon.jpg'],
     ['-wm', 'x', '-Comment=x', 'Canon.jpg'], ['-delete_original', '-Comment=x', 'Canon.jpg'],
     ['-overwrite_original_in_place', '-o', 'x.jpg', '-Comment=x', 'Canon.jpg'],
+    ['-Comment=in place', 'Writer.jpg'], ['-overwrite_original', '-all=', 'Canon.jpg'], ['-NoSuchTag=x', 'Canon.jpg'],
+    ['-csv=NoSuchFile.csv', 'Canon.jpg'], ['-Comment=x', '-execute', '-restore_original', '-common_args', 'Writer.jpg'],
+    ['-CompositeImageExposureTimes=1 2 3 4 5 6 7 8 inf 10', 'Writer.jpg'],     // (dies while writing)
 ];
 $fail = 0;
-foreach ($cases as $args) {
-    $run = function (array $cmd) use ($args, $img) {
-        $p = proc_open([...$cmd, ...$args], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, $img);
+foreach ([...$cases, ...$writeCases] as $i => $args) {
+    $run = function (array $cmd, string $tool) use ($args, $img, $i, $cases) {
+        $dir = $img;
+        if ($i >= count($cases)) {
+            $dir = __DIR__."/../var/cli-compat/".getmypid()."/$tool";  // (a directory per run)
+            @mkdir($dir, 0777, true);
+            array_map('unlink', array_filter(glob("$dir/*"), 'is_file'));
+            foreach ($args as $a) {
+                if (is_file("$img/$a")) {
+                    copy("$img/$a", "$dir/$a");
+                }
+            }
+        }
+        $p = proc_open([...$cmd, ...$args], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, $dir);
         $out = stream_get_contents($pipes[1]);
         stream_get_contents($pipes[2]);
 
         return [proc_close($p), $out];
     };
-    $perl = $run(['perl', "$et/exiftool"]);
-    $php = $run([PHP_BINARY, __DIR__.'/../bin/exiftool']);
+    $perl = $run(['perl', "$et/exiftool"], 'perl');
+    $php = $run([PHP_BINARY, __DIR__.'/../bin/exiftool'], 'php');
     $ok = $perl === $php;
     $fail += $ok ? 0 : 1;
     echo ($ok ? 'ok   ' : 'FAIL ').implode(' ', $args)."\n";
 }
+// remove the copies of this run
+$runDir = __DIR__.'/../var/cli-compat/'.getmypid();
+array_map('unlink', array_filter(glob("$runDir/*/*"), 'is_file'));
+array_map('rmdir', glob("$runDir/*", GLOB_ONLYDIR));
+@rmdir($runDir);
 echo $fail ? "$fail failed\n" : "all passed\n";
 exit($fail ? 1 : 0);

@@ -14,7 +14,8 @@
  *                   spaces, quotes allowed) to every file of t/images with an extension of --ext,
  *                   writing out.<ext> (eg. --sweep='-Comment=x' --ext=jpg)
  *   --cli           run the real command-line tools (perl exiftool / php bin/exiftool) instead
- *                   of the API runners (for when bin/exiftool parses the write arguments)
+ *                   of the API runners, and adds the command-line cases (options of the
+ *                   exiftool script that the runners don't parse: -tagsFromFile, -csv=, -w...)
  *   --keep          keep the work directories (var/write-parity/) of the identical cases too
  *   --exiftool=DIR  Perl ExifTool (default ~/exiftool)
  *   -v              print the output of the runners
@@ -1107,6 +1108,8 @@ foreach ($cases as $i => [$src, $args]) {
     ++$total;
     $caseDir = sprintf('%s/%03d', $work, $i);
     $results = [];
+        ['Writer.jpg', ['-CompositeImageExposureTimes=1 2 3 4 5 6 7 8 inf 10', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-CompositeImageExposureTimes=1 2 3 4 5 6 7 8 inf 10']],
     foreach ($tools as $tool => $cmd) {
         $dir = "$caseDir/$tool";
         EmptyDir($dir);
@@ -1160,6 +1163,7 @@ function Compare(array $results, string $perlDir, string $phpDir, array $args, s
     if ($perl['out'] !== $php['out']) {
         $a = explode("\n", rtrim($perl['out']));
         $b = explode("\n", rtrim($php['out']));
+        $out = preg_replace('/ at \S+ line \d+(, <\w+> \w+ \d+)?\.$/m', ' at <source line>.', $out);  // (die)
         foreach (array_diff($a, $b) as $line) {
             $msgs[] = "perl: $line";
         }

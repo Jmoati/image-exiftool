@@ -267,8 +267,16 @@ final class Application
             pcntl_async_signals(true);
             pcntl_signal(\SIGINT, static fn () => $app->SigInt());   // do cleanup on Ctrl-C
         }
+        try {
+            return $app->run($argv);
+        } catch (\Throwable $e) {
+            // (Perl die: the message is printed, the END block cleans up, and the exit status is 255)
+            $msg = $e->getMessage();
+            fwrite($app->stderr, str_ends_with($msg, "\n") ? $msg : "$msg at {$e->getFile()} line {$e->getLine()}.\n");
+            $app->Cleanup();
 
-        return $app->run($argv);
+            return 255;
+        }
     }
 
     /**
