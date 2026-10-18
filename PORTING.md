@@ -250,9 +250,13 @@ Data:
 - A directory rebuilt in memory is a string, returned like in Perl (`undef` → `null` for "no
   change", `''` to delete it).
 - dirInfo members holding a Perl scalar ref that the callee writes into are `ScalarRef`s
-  (`OutFile` of a trailer or of WriteTIFF, `HeaderPtr` of DoProcessTIFF); `ExtendedXMP` (data
-  returned by the XMP writer) is a string. `PREVIEW_INFO`, `HiddenData` and `LeicaTrailer` are
-  arrays whose `Fixup` is a `Fixup` object.
+  (`OutFile` of a trailer or of WriteTIFF, `HeaderPtr` of DoProcessTIFF, `OutBuff` of the PNG
+  chunk procs); `ExtendedXMP` (data returned by the XMP writer) is a string. `PREVIEW_INFO`,
+  `HiddenData` and `LeicaTrailer` are arrays whose `Fixup` is a `Fixup` object.
+- Compression: `Compress::Zlib::deflateInit()` and `IO::Compress::RawDeflate` use a MemLevel of 9,
+  so `deflate_init(ZLIB_ENCODING_DEFLATE` (or `_RAW`)`, ['memory' => 9])` gives the same bytes
+  (same zlib); `IO::(Un)Compress::Brotli` is the brotli extension (`brotli_compress()`...), when
+  installed (it is not, on either side, in the parity runs).
 - The write procs of Writer.pl named by the tables (`WriteBinaryData`, `WriteTIFF`,
   `CheckBinaryData`, `DummyWriteProc`) are static methods of `ExifTool` taking `$self` first, like
   the module ones: call them as `ExifTool::WriteBinaryData($et, $dirInfo, $tagTablePtr)`, and pass
