@@ -81,6 +81,14 @@ $cases = [
     ['Writer.jpg', ['-FileName=renamed.jpg']],
     ['Writer.jpg', ['-Directory=sub/dir']],
     ['Writer.jpg', ['-FileName=sub/renamed.jpg']],
+    ['Writer.jpg', ['-FileName=writer.JPG']],
+    ['Writer.jpg', ['-FileName=Writer.jpg']],
+    ['Writer.jpg', ['-FileName=.']],
+    ['Writer.jpg', ['-FileName=']],
+    ['Writer.jpg', ['-HardLink=link.jpg']],
+    ['Writer.jpg', ['-SymLink=sym.jpg']],
+    ['Writer.jpg', ['-TestName=sub/test.jpg']],
+    ['Writer.jpg', ['-Comment=x', '-HardLink=link.jpg']],
     ['Writer.jpg', ['-FileModifyDate=2001:02:03 04:05:06']],
     ['Writer.jpg', ['-FilePermissions=0600']],
     ['Writer.jpg', ['-Comment=in place']],
@@ -234,6 +242,9 @@ function Compare(array $results, string $perlDir, string $phpDir, array $args, s
             $diffs[] = "$name: only written by ".($a ? 'perl' : 'php');
             continue;
         }
+        if ($a['link'] !== $b['link']) {
+            $diffs[] = "$name: link perl {$a['link']}, php {$b['link']}";
+        }
         if ($a['mode'] !== $b['mode']) {
             $diffs[] = sprintf('%s: permissions perl %o, php %o', $name, $a['mode'], $b['mode']);
         }
@@ -280,7 +291,7 @@ function Run(array $cmd, string $cwd, array $env = []): array
     return [$status, $out.$err];
 }
 
-/** files under a directory: relative name => [size, md5, mode, mtime] */
+/** files under a directory: relative name => [size, md5, mode, mtime, symbolic link target] */
 function ListFiles(string $dir): array
 {
     $files = [];
@@ -292,6 +303,7 @@ function ListFiles(string $dir): array
                 'md5' => md5_file($path),
                 'mode' => $info->getPerms() & 0777,
                 'mtime' => $info->getMTime(),
+                'link' => $info->isLink() ? readlink($path) : null,
             ];
         }
     }
