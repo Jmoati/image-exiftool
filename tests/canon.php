@@ -8,9 +8,7 @@ require __DIR__.'/TestLib.php';
 
 use Image\ExifTool\ExifTool;
 
-$skip = [
-    3 => 'CanonCustom writer (WriteCanonCustom2)',
-];
+$skip = [];
 $t = testDir();
 $testname = 'Canon';
 

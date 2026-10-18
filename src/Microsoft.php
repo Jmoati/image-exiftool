@@ -11,10 +11,10 @@
 //
 // References:   1) http://research.microsoft.com/en-us/um/redmond/groups/ivm/hdview/hdmetadataspec.htm
 //
-// PHP port of Image::ExifTool::Microsoft 1.24 (reading only). Tag tables are generated into
-// tables/Microsoft.php, %codePage into Vars\Microsoft. Not ported (writing): CheckXtra,
-// WriteXtraValue, AddNewValues and WriteXtra.
-// ReadXtraValue is wantarray-dependent: it returns the list-context result (its only caller).
+// PHP port of Image::ExifTool::Microsoft 1.24. Tag tables are generated into
+// tables/Microsoft.php, %codePage into Vars\Microsoft.
+// ReadXtraValue is wantarray-dependent: it returns the list-context result (WriteXtra takes
+// the list of values from it, the scalar-context result).
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -22,6 +22,23 @@ namespace Image\ExifTool;
 final class Microsoft
 {
     public static $VERSION = '1.24';
+
+    //------------------------------------------------------------------------------
+    // check new value for Xtra tag
+    // Inputs: 0) ExifTool object ref, 1) tagInfo hash ref, 2) raw value ref
+    // Returns: error string, or undef on success
+    public static function CheckXtra(ExifTool $et, TagInfo $tagInfo, &$valPt, $convType = null)
+    {
+        $format = $tagInfo->Writable;
+        if (!$format) return 'Unknown format';
+        if (preg_match('/^int/', Perl::str($format))) {
+            if (!ExifTool::IsInt($valPt)) return 'Not an integer';
+        } elseif ($format !== 'Unicode') {
+            $vals = [$valPt];
+            if (!strlen(self::WriteXtraValue($et, $tagInfo, $vals))) return 'Invalid format';
+        }
+        return null;
+    }
 
     //------------------------------------------------------------------------------
     // Decode value(s) in Microsoft Xtra tag
@@ -80,6 +97,180 @@ final class Microsoft
             if ($valPos > strlen($data)) break;
         }
         return [$vals, $format];
+    }
+
+    //------------------------------------------------------------------------------
+    // Write a Microsoft Xtra value
+    // Inputs: 0) ExifTool object ref, 1) tagInfo ref, 2) reference to list of values
+    // Returns: new value binary data (or empty string)
+    public static function WriteXtraValue(ExifTool $et, TagInfo $tagInfo, array $vals)
+    {
+        $format = $tagInfo->Writable;
+        $buff = '';
+        $count = 0;
+        foreach ($vals as $val) {
+            ExifTool::SetByteOrder('II');
+            $type = $dat = null;
+            if ($format === 'Unicode') {
+                $dat = $et->Encode($val, 'UTF16', 'II') . "\0\0";  // (must be null terminated)
+                $type = 8;
+            } elseif ($format === 'int64u') {
+                if (ExifTool::IsInt($val)) {
+                    $dat = ExifTool::Set64u($val);
+                    $type = 19;
+                }
+            } elseif ($format === 'date') {
+                $dat = ExifTool::GetUnixTime($val, 1);   // (convert to UTC, NC)
+                if ($dat) {
+                    // 100ns intervals since Jan 1, 1601
+                    $dat = ExifTool::Set64u(($dat + 11644473600) * 1e7);
+                    $type = 21;
+                }
+            } elseif ($format === 'vt_filetime') { // 'date' value inside a VT_VARIANT
+                $dat = ExifTool::GetUnixTime($val);  // (leave as local time, NC)
+                if ($dat) {
+                    // 100ns intervals since Jan 1, 1601
+                    $dat = ExifTool::Set32u(64) . ExifTool::Set64u(($dat + 11644473600) * 1e7);
+                    $type = 65;
+                }
+            } elseif ($format === 'GUID') {
+                $dat = str_replace('-', '', Perl::str($val));
+                if (strlen($dat) == 32) {
+                    $dat = Perl::pack('VvvNN', ...Perl::unpack('NnnNN', Perl::pack('H*', $dat)));
+                    $type = 72;
+                }
+            } else {
+                $et->Warn("Error converting value for Microsoft:{$tagInfo->Name}");
+            }
+            ExifTool::SetByteOrder('MM');
+            if ($type !== null) {
+                ++$count;
+                $buff .= ExifTool::Set32u(strlen($dat) + 6) . ExifTool::Set16u($type) . $dat;
+            }
+        }
+        return $count ? ExifTool::Set32u($count) . $buff : '';
+    }
+
+    //------------------------------------------------------------------------------
+    // Add new values to list
+    // Inputs: 0) ExifTool ref, 1) new value list ref, 2) nvHash ref
+    // Returns: true if something was added
+    public static function AddNewValues(ExifTool $et, array &$vals, NewValue $nvHash)
+    {
+        $newVals = $et->GetNewValueList($nvHash);
+        if (!$newVals) return null;
+        if ($et->OPTIONS['Verbose'] > 1) {
+            foreach ($newVals as $v) $et->VPrint(1, "  + Microsoft:{$nvHash->TagInfo->Name} = " . Perl::str($v) . "\n");
+        }
+        array_push($vals, ...$newVals);
+        return 1;
+    }
+
+    //------------------------------------------------------------------------------
+    // Write tags to a Microsoft Xtra MP4 atom
+    // Inputs: 0) ExifTool object ref, 1) source dirInfo ref, 2) tag table ref
+    // Returns: Microsoft Xtra data block (may be empty if no Xtra data) or undef on error
+    public static function WriteXtra(?ExifTool $et = null, ?array &$dirInfo = null, ?TagTable $tagTablePtr = null)
+    {
+        if (!$et) return 1;      // allow dummy access
+
+        $delGroup = ($et->DEL_GROUP and ($et->DEL_GROUP['Microsoft'] ?? null));
+        $newTags = $et->GetNewTagInfoHash($tagTablePtr);
+
+        if (!($delGroup or $newTags)) return null;  // don't rewrite if nothing to do
+
+        $dataPt = Perl::str($dirInfo['DataPt']);
+        $dataLen = strlen($dataPt);
+        $newData = '';
+        $pos = 0;
+        $err = $changed = $tag = null;
+        $done = [];
+
+        if ($delGroup) {
+            if ($dataLen) $changed = 1;
+            $dataPt = '';
+            $dataLen = 0;
+        }
+        for (;;) {
+            if ($pos + 4 > $dataLen) break;
+            $size = ExifTool::Get32u($dataPt, $pos); // (includes $size word)
+            if ($size < 8 or $pos + $size > $dataLen) {
+                $err = 1;
+                break;
+            }
+            $tagLen = ExifTool::Get32u($dataPt, $pos + 4);
+            if ($tagLen + 18 > $size) {
+                $err = 1;
+                break;
+            }
+            $tag = substr($dataPt, $pos + 8, $tagLen);
+            $newVals = [];
+            while ($newTags[$tag] ?? null) {
+                $nvHash = $et->GetNewValueHash($newTags[$tag]);
+                if ($nvHash?->CreateOnly) {
+                    unset($newTags[$tag]);  // don't edit this tag
+                    break;
+                }
+                $valPos = $pos + 8 + $tagLen;
+                $valLen = $size - 8 - $tagLen;
+                // (scalar-context ReadXtraValue: the list of values)
+                $vals = self::ReadXtraValue($et, substr($dataPt, $valPos, $valLen))[0] ?? [];
+                foreach ($vals as $val) {
+                    $overwrite = $et->IsOverwriting($nvHash, $val);
+                    if (!$overwrite) {
+                        $newVals[] = $val;
+                        continue;
+                    }
+                    $et->VPrint(1, "  - Microsoft:{$newTags[$tag]->Name} = " . Perl::str($val) . "\n");
+                    if ($done[$tag] ?? null) continue;
+                    $done[$tag] = 1;
+                    self::AddNewValues($et, $newVals, $nvHash);
+                }
+                // add to the end of the list if this was a List-type tag and we didn't delete anything
+                if (!($done[$tag] ?? null) and $newTags[$tag]->List) {
+                    if (!self::AddNewValues($et, $newVals, $nvHash)) break;
+                    $done[$tag] = 1;
+                }
+                break;   // (it was a cheap goto)
+            }
+            if ($done[$tag] ?? null) {
+                $changed = 1;
+                // write changed values
+                $buff = self::WriteXtraValue($et, $newTags[$tag], $newVals);
+                if (strlen($buff)) {
+                    $newData .= ExifTool::Set32u(8 + strlen($tag) + strlen($buff)) . ExifTool::Set32u(strlen($tag)) . $tag . $buff;
+                }
+            } else {
+                // nothing changed; just copy over
+                $newData .= substr($dataPt, $pos, $size);
+            }
+            $pos += $size;  // step to next entry
+        }
+        if ($err) {
+            $et->Warn('Microsoft Xtra format error');
+            return null;
+        }
+        // add any new tags
+        $keys = array_map('strval', array_keys($newTags));
+        sort($keys, SORT_STRING);
+        foreach ($keys as $tag) {
+            if ($done[$tag] ?? null) continue;
+            $nvHash = $et->GetNewValueHash($newTags[$tag]);
+            if (!($nvHash?->IsCreating and !$nvHash->EditOnly)) continue;
+            $newVals = [];
+            if (!self::AddNewValues($et, $newVals, $nvHash)) continue;
+            $buff = self::WriteXtraValue($et, $newTags[$tag], $newVals);
+            if (strlen($buff)) {
+                $newData .= ExifTool::Set32u(8 + strlen($tag) + strlen($buff)) . ExifTool::Set32u(strlen($tag)) . $tag . $buff;
+                $changed = 1;
+            }
+        }
+        if ($changed) {
+            ++$et->CHANGED;
+        } else {
+            $newData = null;
+        }
+        return $newData;
     }
 
     //------------------------------------------------------------------------------
