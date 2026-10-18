@@ -70,18 +70,22 @@ $f_85ad452bd8 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_0ceabd33e2 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) < 65535 ? Perl::str($val) . ' m' : 'inf';
 };
+$f_c9985416dc = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c9985416dc'); };
 $f_7b446e214d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1000;
 };
+$f_9f4b179b48 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 9f4b179b48'); };
 $f_8f0e71a82a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f mm', $val);
 };
+$f_c74468af9a = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c74468af9a'); };
 $f_273894f86a = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $val ? $val : null;
 };
 $f_21cce16fc3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.7d', $val);
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 $f_8827ca3bf5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ((Perl::int($val) >> 2) & (PHP_INT_MAX >> 1)) . ' ' . (Perl::int($val) & 0x3);
 };
@@ -94,6 +98,7 @@ $f_84cd9cb095 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_98770fe8c4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' C';
 };
+$f_1845a2bd14 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1845a2bd14'); };
 $f_16c7ed6979 = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::str($format) === 'string';
 };
@@ -104,6 +109,7 @@ $f_6cfd9d6dfe = static function ($val, ExifTool $self, array &$vals, array $prt,
     $yr = Perl::num($m[2]) + (Perl::num($m[2]) < 70 ? 2000 : 1900);
     return "($m[1]) $yr:$m[3]:$m[4] no. $m[5]";
 };
+$f_c7c979691b = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c7c979691b'); };
 $f_e8fc564891 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^(II\x2a\x00\x08\x00\x00\x00|MM\x00\x2a\x00\x00\x00\x08)/', $valPt);
 };
@@ -122,9 +128,12 @@ $f_789b487ce8 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     }
     return null;
 };
+$f_d69f631d3c = static function (mixed ...$args) { throw new NotPorted('ValueConvInv d69f631d3c'); };
+$f_7bf8a55c84 = static function (mixed ...$args) { throw new NotPorted('WriteCheck 7bf8a55c84'); };
 $f_fe5b177481 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/ +$/', '', Perl::str($val), 1);
 };
+$f_25924ee98a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 25924ee98a'); };
 $f_50d6207616 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/Typ 006/', Perl::str($self->Model));
 };
@@ -132,6 +141,7 @@ $f_227aa4ff88 = static function ($val, ExifTool $self, array &$vals, array $prt,
     $val = strtr(Perl::str($val), ' ', '.');
     return $val;
 };
+$f_226ee11c90 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 226ee11c90'); };
 $f_f295758a91 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.10d', $val);
 };
@@ -141,15 +151,18 @@ $f_f95307fac0 = static function ($val, $inv, $conv) {
 $f_d747e2c1fc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_match('/[\x00-\x2f]/', Perl::str($val)) ? implode(' ', Perl::unpack('C*', $val)) : $val;
 };
+$f_6132eee0fc = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 6132eee0fc'); };
 $f_825c7f2e90 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/DMC-FZ10\b/', Perl::str($self->Model));
 };
 $f_811b111291 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintFraction($val);
 };
+$f_153707d441 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 153707d441'); };
 $f_c365d6a958 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 3;
 };
+$f_0d3ea0974b = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 0d3ea0974b'); };
 $f_6ee7ab933b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     if (!preg_match('/^([A-Z][0-9A-Z]{2})(\d{2})(\d{2})(\d{2})(\d{4})/', Perl::str($val), $m)) {
         return $val;
@@ -181,9 +194,11 @@ $f_927545250c = static function ($val) {
     }
     return Perl::sprintf('%s%.2d:%.2d:%s', $str, $h, $m, $ss);
 };
+$f_e566a96c5a = static function (mixed ...$args) { throw new NotPorted('code:conv e566a96c5a'); };
 $f_2beaacd6d4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 100;
 };
+$f_509567a743 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 509567a743'); };
 $f_79072fc192 = static function (ExifTool $self, $valPt, $format, $count) {
     return !preg_match('/^DMC-(FX10|G1|L1|L10|LC80|GF\d+|G2|TZ10|ZS7)$/', Perl::str($self->Model))
         // tested for DC-GH6, but rule out other DC- models just in case - PH
@@ -198,9 +213,11 @@ $f_6430a1b524 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_63c76786a6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) === '9999:99:99 00:00:00' ? '(not set)' : $val;
 };
+$f_590f7d2843 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 590f7d2843'); };
 $f_e4fd75d085 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) == 65535 ? 'n/a' : $val;
 };
+$f_a9142e8a3b = static function (mixed ...$args) { throw new NotPorted('PrintConvInv a9142e8a3b'); };
 $f_ea42e2f7d5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     if (Perl::str($val) === '16777216 16777216') {
         return 'none';
@@ -211,24 +228,29 @@ $f_ea42e2f7d5 = static function ($val, ExifTool $self, array &$vals, array $prt,
     $a = Perl::split(' ', $val);
     return Perl::sprintf('%.2g %.2g', ...$a);
 };
+$f_503c9eeb48 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 503c9eeb48'); };
 $f_2009fd1b3b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return \strlen(Perl::str($val));
 };
 $f_9c28ab02b4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f kPa', $val);
 };
+$f_77b2353cfe = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 77b2353cfe'); };
 $f_e317db8aab = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Perl::num($val) == 65535 ? null : $val;
 };
 $f_ddae2f7edc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 10;
 };
+$f_8f9dd09855 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 8f9dd09855'); };
 $f_30d7b4053c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return -Perl::num($val) / 10;
 };
+$f_4b0fa4ccf5 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 4b0fa4ccf5'); };
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
+$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
 $f_f78f9fe034 = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::str($format) === 'int16u' && $valPt !== "\xff\xff";
 };
@@ -247,12 +269,14 @@ $f_74930d334f = static function ($val, ExifTool $self, array &$vals, array $prt,
     $_ = preg_replace('/(..)(..)/', '$2 $1', $_, 1);
     return $_;
 };
+$f_152b354212 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 152b354212'); };
 $f_4a3f62e38c = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Perl::num($val) > 0xfffffff0 ? null : $val;
 };
 $f_d507e84afa = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_match('/^4194303\.9/', Perl::str($val)) ? 'n/a' : $val;
 };
+$f_41ae5cdf43 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 41ae5cdf43'); };
 $f_9285317f54 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^(LEICA|Panasonic)/', $valPt);
 };
@@ -312,12 +336,14 @@ $f_2f46fc6ab1 = static function (array $val, $size, $varSize, ExifTool $self) {
 $f_d4c8346ab7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1e5;
 };
+$f_f7d23b0254 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv f7d23b0254'); };
 $f_429e3be357 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return preg_match('/^\x00/', Perl::str($val)) ? null : $val;
 };
 $f_fb22b883e3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%s:%s:%s %s:%s:%s.%s', ...Perl::unpack('H4H2H2H2H2H2H2', $val));
 };
+$f_588da68c9a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 588da68c9a'); };
 
 $d_1 = [
     1 => 'Elmarit-M 21mm f/2.8',
@@ -513,12 +539,15 @@ return [
                 'PrintConv' => $d_1,
                 'Priority' => 0,
                 'ValueConv' => $f_d534348227,
+                'ValueConvInv' => 'Image\\ExifTool\\Panasonic::LensTypeConvInv',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 1 => 'Leica', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'TAG_PREFIX' => 'Leica_Data1',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Panasonic::Data2' => [
             'FIRST_ENTRY' => 0,
@@ -558,12 +587,14 @@ return [
                 'Name' => 'Face5Position',
                 'RawConv' => $f_119d538e2c,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [0],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Panasonic::FaceRecInfo' => [
             0 => [
@@ -617,31 +648,39 @@ return [
                 'Name' => 'RecognizedFace3Age',
                 'RawConv' => $f_85ad452bd8,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [0],
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Panasonic::FocusInfo' => [
             0 => [
                 'Name' => 'FocusDistance',
                 'PrintConv' => $f_0ceabd33e2,
+                'PrintConvInv' => $f_c9985416dc,
                 'ValueConv' => $f_7b446e214d,
+                'ValueConvInv' => $f_9f4b179b48,
             ],
             1 => [
                 'Name' => 'FocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_c74468af9a,
                 'Priority' => 0,
                 'RawConv' => $f_273894f86a,
                 'ValueConv' => $f_7b446e214d,
+                'ValueConvInv' => $f_9f4b179b48,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16u',
             'GROUPS' => [0 => 'MakerNotes', 1 => 'Leica', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'TAG_PREFIX' => 'Leica_FocusInfo',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Panasonic::Leica2' => [
             768 => [
@@ -662,6 +701,7 @@ return [
             771 => [
                 'Name' => 'SerialNumber',
                 'PrintConv' => $f_21cce16fc3,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'int32u',
             ],
             772 => [
@@ -682,28 +722,33 @@ return [
                 'Name' => 'LensType',
                 'PrintConv' => $d_1,
                 'ValueConv' => $f_8827ca3bf5,
+                'ValueConvInv' => 'Image\\ExifTool\\Panasonic::LensTypeConvInv',
                 'Writable' => 'int32u',
             ],
             785 => [
                 'Format' => 'rational64s',
                 'Name' => 'ExternalSensorBrightnessValue',
                 'PrintConv' => $f_b7c22d6b90,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'rational64s',
             ],
             786 => [
                 'Format' => 'rational64s',
                 'Name' => 'MeasuredLV',
                 'PrintConv' => $f_b7c22d6b90,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'rational64s',
             ],
             787 => [
                 'Name' => 'ApproximateFNumber',
                 'PrintConv' => $f_84cd9cb095,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'rational64u',
             ],
             800 => [
                 'Name' => 'CameraTemperature',
                 'PrintConv' => $f_98770fe8c4,
+                'PrintConvInv' => $f_1845a2bd14,
                 'Writable' => 'int32s',
             ],
             801 => [
@@ -748,8 +793,10 @@ return [
                 'Name' => 'ImageIDNumber',
                 'Writable' => 'int32u',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 1 => 'Leica', 2 => 'Camera'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Panasonic::Leica3' => [
             11 => [
@@ -763,8 +810,10 @@ return [
                 'Name' => 'WB_RGBLevels',
                 'Writable' => 'int16u',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 1 => 'Leica', 2 => 'Camera'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Panasonic::Leica4' => [
             12288 => [
@@ -795,8 +844,10 @@ return [
                     'TagTable' => 'Image::ExifTool::Panasonic::Subdir',
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 1 => 'Leica', 2 => 'Camera'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Panasonic::Leica5' => [
             771 => [
@@ -852,6 +903,7 @@ return [
             1280 => [
                 'Name' => 'InternalSerialNumber',
                 'PrintConv' => $f_6cfd9d6dfe,
+                'PrintConvInv' => $f_c7c979691b,
                 'Writable' => 'undef',
             ],
             1535 => [
@@ -863,9 +915,11 @@ return [
                     'TagTable' => 'Image::ExifTool::PanasonicRaw::CameraIFD',
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 1 => 'Leica', 2 => 'Camera'],
             'PRIORITY' => 0,
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Panasonic::Leica6' => [
             768 => [
@@ -874,7 +928,9 @@ return [
                 'Groups' => [2 => 'Preview'],
                 'Name' => 'PreviewImage',
                 'RawConv' => $f_789b487ce8,
+                'ValueConvInv' => $f_d69f631d3c,
                 'Writable' => 'undef',
+                'WriteCheck' => $f_7bf8a55c84,
             ],
             769 => [
                 'Flags' => ['Unknown', 'Binary', 'Drop'],
@@ -883,6 +939,7 @@ return [
             771 => [
                 'Name' => 'LensType',
                 'ValueConv' => $f_fe5b177481,
+                'ValueConvInv' => $f_25924ee98a,
                 'Writable' => 'string',
             ],
             772 => [
@@ -894,6 +951,7 @@ return [
                 'Format' => 'rational64s',
                 'Name' => 'ExternalSensorBrightnessValue',
                 'PrintConv' => $f_b7c22d6b90,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'rational64s',
             ],
             786 => [
@@ -901,6 +959,7 @@ return [
                 'Format' => 'rational64s',
                 'Name' => 'MeasuredLV',
                 'PrintConv' => $f_b7c22d6b90,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'rational64s',
             ],
             800 => [
@@ -908,15 +967,19 @@ return [
                 'Count' => 4,
                 'Name' => 'FirmwareVersion',
                 'PrintConv' => $f_227aa4ff88,
+                'PrintConvInv' => $f_226ee11c90,
                 'Writable' => 'int8u',
             ],
             801 => [
                 'Condition' => $f_50d6207616,
                 'Name' => 'LensSerialNumber',
                 'PrintConv' => $f_f295758a91,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'int32u',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 1 => 'Leica', 2 => 'Camera'],
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Panasonic::Leica9' => [
             772 => [
@@ -927,12 +990,14 @@ return [
                 'Format' => 'rational64s',
                 'Name' => 'ExternalSensorBrightnessValue',
                 'PrintConv' => $f_b7c22d6b90,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'rational64s',
             ],
             786 => [
                 'Format' => 'rational64s',
                 'Name' => 'MeasuredLV',
                 'PrintConv' => $f_b7c22d6b90,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'rational64s',
             ],
             844 => [
@@ -947,7 +1012,9 @@ return [
             858 => [
                 'Name' => 'FNumber',
                 'PrintConv' => $f_84cd9cb095,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_7b446e214d,
+                'ValueConvInv' => $f_9f4b179b48,
                 'Writable' => 'int32s',
             ],
             859 => [
@@ -967,7 +1034,9 @@ return [
                 'Name' => 'LensProfileName',
                 'Writable' => 'string',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 1 => 'Leica', 2 => 'Camera'],
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Panasonic::Main' => [
             1 => [
@@ -987,7 +1056,9 @@ return [
             2 => [
                 'Name' => 'FirmwareVersion',
                 'PrintConv' => $f_227aa4ff88,
+                'PrintConvInv' => $f_226ee11c90,
                 'ValueConv' => $f_d747e2c1fc,
+                'ValueConvInv' => $f_6132eee0fc,
                 'Writable' => 'undef',
             ],
             3 => [
@@ -1183,20 +1254,25 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'WhiteBalanceBias',
                 'PrintConv' => $f_811b111291,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_c365d6a958,
+                'ValueConvInv' => $f_0d3ea0974b,
                 'Writable' => 'int16s',
             ],
             36 => [
                 'Format' => 'int16s',
                 'Name' => 'FlashBias',
                 'PrintConv' => $f_811b111291,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_c365d6a958,
+                'ValueConvInv' => $f_0d3ea0974b,
                 'Writable' => 'int16s',
             ],
             37 => [
                 'Count' => 16,
                 'Name' => 'InternalSerialNumber',
                 'PrintConv' => $f_6ee7ab933b,
+                'PrintConvInv' => $f_c7c979691b,
                 'Writable' => 'undef',
             ],
             38 => [
@@ -1224,7 +1300,9 @@ return [
             41 => [
                 'Name' => 'TimeSincePowerOn',
                 'PrintConv' => $f_927545250c,
+                'PrintConvInv' => $f_e566a96c5a,
                 'ValueConv' => $f_2beaacd6d4,
+                'ValueConvInv' => $f_509567a743,
                 'Writable' => 'int32u',
             ],
             42 => [
@@ -1383,6 +1461,7 @@ return [
             51 => [
                 'Name' => 'BabyAge',
                 'PrintConv' => $f_63c76786a6,
+                'PrintConvInv' => $f_590f7d2843,
                 'Writable' => 'string',
             ],
             52 => [
@@ -1398,6 +1477,7 @@ return [
             54 => [
                 'Name' => 'TravelDay',
                 'PrintConv' => $f_e4fd75d085,
+                'PrintConvInv' => $f_a9142e8a3b,
                 'Writable' => 'int16u',
             ],
             56 => [
@@ -1529,6 +1609,7 @@ return [
                 'Count' => 2,
                 'Name' => 'AFPointPosition',
                 'PrintConv' => $f_ea42e2f7d5,
+                'PrintConvInv' => $f_503c9eeb48,
                 'Writable' => 'rational64u',
             ],
             78 => [
@@ -1541,21 +1622,25 @@ return [
             81 => [
                 'Name' => 'LensType',
                 'ValueConv' => $f_fe5b177481,
+                'ValueConvInv' => $f_25924ee98a,
                 'Writable' => 'string',
             ],
             82 => [
                 'Name' => 'LensSerialNumber',
                 'ValueConv' => $f_fe5b177481,
+                'ValueConvInv' => $f_25924ee98a,
                 'Writable' => 'string',
             ],
             83 => [
                 'Name' => 'AccessoryType',
                 'ValueConv' => $f_fe5b177481,
+                'ValueConvInv' => $f_25924ee98a,
                 'Writable' => 'string',
             ],
             84 => [
                 'Name' => 'AccessorySerialNumber',
                 'ValueConv' => $f_fe5b177481,
+                'ValueConvInv' => $f_25924ee98a,
                 'Writable' => 'string',
             ],
             89 => [
@@ -1581,6 +1666,7 @@ return [
                 'Format' => 'int8u',
                 'Name' => 'LensFirmwareVersion',
                 'PrintConv' => $f_227aa4ff88,
+                'PrintConvInv' => $f_226ee11c90,
                 'Writable' => 'undef',
             ],
             97 => [
@@ -1673,8 +1759,10 @@ return [
             134 => [
                 'Name' => 'ManometerPressure',
                 'PrintConv' => $f_9c28ab02b4,
+                'PrintConvInv' => $f_77b2353cfe,
                 'RawConv' => $f_e317db8aab,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
                 'Writable' => 'int16u',
             ],
             137 => [
@@ -1738,12 +1826,14 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'RollAngle',
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
                 'Writable' => 'int16u',
             ],
             145 => [
                 'Format' => 'int16s',
                 'Name' => 'PitchAngle',
                 'ValueConv' => $f_30d7b4053c,
+                'ValueConvInv' => $f_4b0fa4ccf5,
                 'Writable' => 'int16u',
             ],
             146 => [
@@ -1851,6 +1941,8 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'TimeStamp',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
                 'Writable' => 'string',
             ],
             179 => [
@@ -1921,6 +2013,7 @@ return [
                 'Name' => 'LensTypeModel',
                 'RawConv' => $f_5ca75bdff8,
                 'ValueConv' => $f_74930d334f,
+                'ValueConvInv' => $f_152b354212,
                 'Writable' => 'int16u',
             ],
             202 => [
@@ -1951,6 +2044,7 @@ return [
                 'Count' => 2,
                 'Name' => 'AFAreaSize',
                 'PrintConv' => $f_d507e84afa,
+                'PrintConvInv' => $f_41ae5cdf43,
                 'Writable' => 'rational64u',
             ],
             228 => [
@@ -1958,6 +2052,7 @@ return [
                 'Name' => 'LensTypeModel',
                 'RawConv' => $f_5ca75bdff8,
                 'ValueConv' => $f_74930d334f,
+                'ValueConvInv' => $f_152b354212,
                 'Writable' => 'int16u',
             ],
             232 => [
@@ -2145,6 +2240,7 @@ return [
             32784 => [
                 'Name' => 'BabyAge',
                 'PrintConv' => $f_63c76786a6,
+                'PrintConvInv' => $f_590f7d2843,
                 'Writable' => 'string',
             ],
             32786 => [
@@ -2160,8 +2256,10 @@ return [
                 ],
                 'Writable' => 'undef',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Panasonic::PANA' => [
             0 => [
@@ -2338,11 +2436,13 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'FileIndex',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 1 => 'Leica', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'TAG_PREFIX' => 'Leica_ShotInfo',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Panasonic::Subdir' => [
             12298 => [
@@ -2430,29 +2530,36 @@ return [
             13314 => [
                 'Name' => 'CameraTemperature',
                 'PrintConv' => $f_98770fe8c4,
+                'PrintConvInv' => $f_1845a2bd14,
                 'Writable' => 'int32s',
             ],
             13317 => [
                 'Name' => 'LensType',
                 'PrintConv' => $d_1,
                 'ValueConv' => $f_8827ca3bf5,
+                'ValueConvInv' => 'Image\\ExifTool\\Panasonic::LensTypeConvInv',
                 'Writable' => 'int32u',
             ],
             13318 => [
                 'Name' => 'ApproximateFNumber',
                 'PrintConv' => $f_84cd9cb095,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'rational64u',
             ],
             13319 => [
                 'Name' => 'MeasuredLV',
                 'PrintConv' => $f_b7c22d6b90,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_d4c8346ab7,
+                'ValueConvInv' => $f_f7d23b0254,
                 'Writable' => 'int32s',
             ],
             13320 => [
                 'Name' => 'ExternalSensorBrightnessValue',
                 'PrintConv' => $f_b7c22d6b90,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_d4c8346ab7,
+                'ValueConvInv' => $f_f7d23b0254,
                 'Writable' => 'int32s',
             ],
             14593 => [
@@ -2467,9 +2574,11 @@ return [
                     'TagTable' => 'Image::ExifTool::Panasonic::Data2',
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 1 => 'Leica', 2 => 'Camera'],
             'TAG_PREFIX' => 'Leica_Subdir',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Panasonic::TimeInfo' => [
             0 => [
@@ -2477,17 +2586,22 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'PanasonicDateTime',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
                 'RawConv' => $f_429e3be357,
+                'Shift' => 'Time',
                 'ValueConv' => $f_fb22b883e3,
+                'ValueConvInv' => $f_588da68c9a,
             ],
             16 => [
                 'Format' => 'int32u',
                 'Name' => 'TimeLapseShotNumber',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 1 => 'Panasonic', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Panasonic::Type2' => [
             0 => [

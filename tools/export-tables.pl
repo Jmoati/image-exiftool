@@ -29,8 +29,8 @@ my $lib = shift || "$ENV{HOME}/exiftool/lib";
 my $project = shift || abs_path(dirname(abs_path($0)) . '/..');
 unshift @INC, $lib;
 
-# modules without tables to export (writing, documentation, translations; Geolocation and Shift are ported by hand)
-my %skipModule = map { $_ => 1 } qw(BuildTagLookup TagLookup TagInfoXML Geolocation HtmlDump Shift);
+# modules without tables to export (documentation, translations; Geolocation and Shift are ported by hand)
+my %skipModule = map { $_ => 1 } qw(BuildTagLookup TagInfoXML Geolocation HtmlDump Shift);
 
 # load-time actions recorded per module (AddCompositeTags calls)
 my %loadActions;
@@ -201,13 +201,14 @@ if (%translation) {
 # PHP emitters
 
 my %TagTableSpecial = %Image::ExifTool::specialTags;
-my %dropTagKey = map { $_ => 1 } qw(Notes PrintConvInv ValueConvInv RawConvInv WriteCondition
-    WriteCheck DelCheck WriteAlso WriteHook PrintConvColumns SeparateTable Table TagID Index
-    GotGroups NewTagID IsComposite Module AddedUnknown Shift);
-my %dropTableKey = map { $_ => 1 } qw(WRITE_PROC CHECK_PROC NOTES TABLE_NAME SHORT_NAME);
-my %dropSubdirKey = map { $_ => 1 } qw(WriteProc CheckProc);
+my %dropTagKey = map { $_ => 1 } qw(Notes PrintConvColumns SeparateTable Table TagID Index
+    GotGroups NewTagID IsComposite Module AddedUnknown);
+my %dropTableKey = map { $_ => 1 } qw(NOTES TABLE_NAME SHORT_NAME);
+my %dropSubdirKey = map { $_ => 1 } qw();
 # keys whose string values are Perl expressions
-my %exprKey = map { $_ => 1 } qw(Condition RawConv ValueConv PrintConv Hook);
+my %exprKey = map { $_ => 1 } qw(Condition RawConv ValueConv PrintConv Hook WriteCondition WriteCheck DelCheck);
+# conversions (string expression, code, list of conversions or lookup)
+my %convKey = map { $_ => 1 } qw(PrintConv ValueConv RawConv PrintConvInv ValueConvInv RawConvInv);
 my %subdirExprKey = map { $_ => 1 } qw(Start Base OffsetPt Validate ChangeBase WrongBase FixOffsets);
 
 my $deparse = B::Deparse->new('-sC', '-q');
@@ -216,6 +217,14 @@ my $sigs = {
     RawConv    => 'static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals)',
     ValueConv  => 'static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag)',
     PrintConv  => 'static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag)',
+    # writing (see the "#### eval" comments of Writer.pl and WriteExif.pl)
+    PrintConvInv => 'static function ($val, ExifTool $self, $wantGroup)',
+    ValueConvInv => 'static function ($val, ExifTool $self, $wantGroup)',
+    RawConvInv => 'static function ($val, ExifTool $self, ?TagInfo $tagInfo)',
+    WriteCheck => 'static function (ExifTool $self, TagInfo $tagInfo, $val)',
+    DelCheck   => 'static function (ExifTool $self, TagInfo $tagInfo, $wantGroup)',
+    WriteCondition => 'static function (ExifTool $self)',
+    WriteAlso  => 'static function ($val, array $opts)',
     Hook       => 'static function (ExifTool $self, &$format, &$varSize, $size, $dataPt, $pos): void',
     FormatCount=> 'static function (array $val, $size, $varSize, ExifTool $self)',
     Start      => 'static function ($valuePtr = null, $val = null, $dirStart = null, $dataPt = null)',
@@ -493,8 +502,12 @@ sub TagInfo
         next if $dropTagKey{$k};
         my $v = $$info{$k};
         my $php;
-        if ($k =~ /^(PrintConv|ValueConv|RawConv)$/) {
+        if ($convKey{$k}) {
             $php = Conv($k, $v, \%sub, $loc);
+        } elsif ($k eq 'WriteAlso' and ref $v eq 'HASH') {
+            # tag name => expression giving the value to write
+            $php = '[' . join(', ', map { PhpKey($_) . ' => ' . (ref $$v{$_} eq 'CODE' ?
+                CodeRef($$v{$_}, 'code', "$loc WriteAlso") : Code('WriteAlso', $$v{$_}, $loc)) } SortKeys($v)) . ']';
         } elsif ($exprKey{$k} and defined $v and not ref $v) {
             $php = Code($k, $v, $loc);
         } elsif ($k eq 'IsOffset' and defined $v and not ref $v and not IsNumber($v)) {
@@ -511,7 +524,7 @@ sub TagInfo
                     push @s, PhpKey($sk) . ' => ' . (IsNumber($sv) ? NumOf($sv) : Code($sk, $sv, $loc));
                 } elsif (ref $sv eq 'CODE') {
                     push @s, PhpKey($sk) . ' => ' . CodeRef($sv, $sk eq 'ProcessProc' ? 'code' : "code", $loc);
-                } elsif ($sk eq 'ProcessProc' and SubName($sv)) {
+                } elsif ($sk =~ /^(ProcessProc|WriteProc|CheckProc)$/ and SubName($sv)) {
                     push @s, PhpKey($sk) . ' => ' . SubName($sv);
                 } else {
                     push @s, PhpKey($sk) . ' => ' . Data($sv, { %sub, depth => $depth + 2 }, 0, $loc);

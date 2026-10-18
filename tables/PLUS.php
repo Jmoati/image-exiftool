@@ -7,9 +7,11 @@ namespace Image\ExifTool;
 $f_38d6cb803f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('{http://ns.useplus.org/ldf/vocab/}', '', Perl::str($val), 1);
 };
+$f_f5b97b2292 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv f5b97b2292'); };
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
+$f_289bae1164 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 289bae1164'); };
 $f_49a0ca9e42 = static function ($val, $inv, $conv) {
     $val = strtoupper(Perl::str($val));
     if ($inv) {
@@ -50,7 +52,9 @@ return [
             'AdultContentWarning' => [
                 'PrintConv' => ['CW-AWR' => 'Adult Content Warning Required', 'CW-NRQ' => 'Not Required', 'CW-UNK' => 'Unknown'],
                 'ValueConv' => $f_38d6cb803f,
+                'ValueConvInv' => $f_f5b97b2292,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'CopyrightOwner' => [
                 'FlatName' => '',
                 'List' => 'Seq',
@@ -70,6 +74,7 @@ return [
             'CopyrightStatus' => [
                 'PrintConv' => ['CS-PRO' => 'Protected', 'CS-PUB' => 'Public Domain', 'CS-UNK' => 'Unknown'],
                 'ValueConv' => $f_38d6cb803f,
+                'ValueConvInv' => $f_f5b97b2292,
             ],
             'CreditLineRequired' => [
                 'PrintConv' => [
@@ -79,6 +84,7 @@ return [
                     'CR-NRQ' => 'Not Required',
                 ],
                 'ValueConv' => $f_38d6cb803f,
+                'ValueConvInv' => $f_f5b97b2292,
             ],
             'Custom1' => [
                 'List' => 'Bag',
@@ -133,6 +139,7 @@ return [
                     'DMI-UNSPECIFIED' => 'Unspecified - no prohibition defined',
                 ],
                 'ValueConv' => $f_38d6cb803f,
+                'ValueConvInv' => $f_f5b97b2292,
             ],
             'EndUser' => [
                 'FlatName' => '',
@@ -151,6 +158,8 @@ return [
             'FirstPublicationDate' => [
                 'Groups' => [2 => 'Time'],
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_289bae1164,
+                'Shift' => 'Time',
                 'Validate' => 'ValidateXMPDate($val)',
                 'Writable' => 'date',
             ],
@@ -166,6 +175,7 @@ return [
                     'AL-RET' => 'No Retouching',
                 ],
                 'ValueConv' => $f_38d6cb803f,
+                'ValueConvInv' => $f_f5b97b2292,
             ],
             'ImageCreator' => [
                 'FlatName' => '',
@@ -188,6 +198,7 @@ return [
                     'DP-NOD' => 'No Duplication',
                 ],
                 'ValueConv' => $f_38d6cb803f,
+                'ValueConvInv' => $f_f5b97b2292,
             ],
             'ImageFileConstraints' => [
                 'List' => 'Bag',
@@ -198,6 +209,7 @@ return [
                     'IF-MMD' => 'Maintain Metadata',
                 ],
                 'ValueConv' => $f_38d6cb803f,
+                'ValueConvInv' => $f_f5b97b2292,
             ],
             'ImageFileFormatAsDelivered' => [
                 'PrintConv' => [
@@ -215,6 +227,7 @@ return [
                     'FF-WMP' => 'Windows Media Photo (HD Photo)',
                 ],
                 'ValueConv' => $f_38d6cb803f,
+                'ValueConvInv' => $f_f5b97b2292,
             ],
             'ImageFileSizeAsDelivered' => [
                 'PrintConv' => [
@@ -225,6 +238,7 @@ return [
                     'SZ-U50' => 'Up to 50 MB',
                 ],
                 'ValueConv' => $f_38d6cb803f,
+                'ValueConvInv' => $f_f5b97b2292,
             ],
             'ImageSupplier' => [
                 'FlatName' => '',
@@ -249,11 +263,14 @@ return [
                     'TY-VID' => 'Video',
                 ],
                 'ValueConv' => $f_38d6cb803f,
+                'ValueConvInv' => $f_f5b97b2292,
             ],
             'LANG_INFO' => 'Image\\ExifTool\\XMP::GetLangInfo',
             'LicenseEndDate' => [
                 'Groups' => [2 => 'Time'],
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_289bae1164,
+                'Shift' => 'Time',
                 'Validate' => 'ValidateXMPDate($val)',
                 'Writable' => 'date',
             ],
@@ -262,12 +279,16 @@ return [
             'LicenseStartDate' => [
                 'Groups' => [2 => 'Time'],
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_289bae1164,
+                'Shift' => 'Time',
                 'Validate' => 'ValidateXMPDate($val)',
                 'Writable' => 'date',
             ],
             'LicenseTransactionDate' => [
                 'Groups' => [2 => 'Time'],
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_289bae1164,
+                'Shift' => 'Time',
                 'Validate' => 'ValidateXMPDate($val)',
                 'Writable' => 'date',
             ],
@@ -323,10 +344,12 @@ return [
                     'LicensorTelephoneType1' => [
                         'PrintConv' => ['cell' => 'Cell', 'fax' => 'FAX', 'home' => 'Home', 'pager' => 'Pager', 'work' => 'Work'],
                         'ValueConv' => $f_38d6cb803f,
+                        'ValueConvInv' => $f_f5b97b2292,
                     ],
                     'LicensorTelephoneType2' => [
                         'PrintConv' => ['cell' => 'Cell', 'fax' => 'FAX', 'home' => 'Home', 'pager' => 'Pager', 'work' => 'Work'],
                         'ValueConv' => $f_38d6cb803f,
+                        'ValueConvInv' => $f_f5b97b2292,
                     ],
                     'LicensorURL' => [
                     ],
@@ -2511,6 +2534,7 @@ return [
                     'AG-UNK' => 'Age Unknown',
                 ],
                 'ValueConv' => $f_38d6cb803f,
+                'ValueConvInv' => $f_f5b97b2292,
             ],
             'ModelReleaseID' => [
                 'List' => 'Bag',
@@ -2523,6 +2547,7 @@ return [
                     'MR-UMR' => 'Unlimited Model Releases',
                 ],
                 'ValueConv' => $f_38d6cb803f,
+                'ValueConvInv' => $f_f5b97b2292,
             ],
             'NAMESPACE' => 'plus',
             'OtherConditions' => [
@@ -2557,6 +2582,7 @@ return [
                     'PR-UPR' => 'Unlimited Property Releases',
                 ],
                 'ValueConv' => $f_38d6cb803f,
+                'ValueConvInv' => $f_f5b97b2292,
             ],
             'RegionConstraints' => [
                 'Writable' => 'lang-alt',
@@ -2564,6 +2590,7 @@ return [
             'Reuse' => [
                 'PrintConv' => ['RE-NAP' => 'Not Applicable', 'RE-REU' => 'Repeat Use'],
                 'ValueConv' => $f_38d6cb803f,
+                'ValueConvInv' => $f_f5b97b2292,
             ],
             'TermsAndConditionsText' => [
                 'Writable' => 'lang-alt',
@@ -2574,6 +2601,7 @@ return [
                 'Name' => 'PLUSVersion',
             ],
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
         ],
     ],
 ];

@@ -139,6 +139,8 @@ $f_e0d109ce69 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_e3a9d89e8b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return QuickTime::CalcRotation($self);
 };
+$f_25924ee98a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 25924ee98a'); };
+$f_46dc82f5d8 = static function (mixed ...$args) { throw new NotPorted('WriteAlso 46dc82f5d8'); };
 $f_adf2a0012d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     // ignore if self-contained (flags bit 0 set)
     if ((Perl::unpack('N', $val)[0] ?? 0) & 0x01) {
@@ -252,6 +254,7 @@ $f_ba495a557b = static function ($val, ExifTool $self, array &$vals, array $prt,
     $a = Perl::unpack('x2nn', $val);
     return $a[1] ? implode(' of ', $a) : $a[0];
 };
+$f_30e5ad1bdf = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 30e5ad1bdf'); };
 $f_13ae0412d2 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     if (!preg_match('/^\d+$/', Perl::str($val))) {
         return $val;
@@ -259,18 +262,25 @@ $f_13ae0412d2 = static function ($val, ExifTool $self, array &$vals, array $prt,
     ExifTool::RequireModule('Image::ExifTool::ID3');
     return ID3::PrintGenre(Perl::num($val) - 1); // note the "- 1"
 };
+$f_3b7e6af9c4 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 3b7e6af9c4'); };
 $f_5655bf0414 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::unpack('n', $val)[0] ?? null;
 };
+$f_4fcb387ecd = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 4fcb387ecd'); };
+$f_ac9063ceb4 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv ac9063ceb4'); };
+$f_9f4b179b48 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 9f4b179b48'); };
+$f_b7788cdcc8 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv b7788cdcc8'); };
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
+$f_7329c61102 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 7329c61102'); };
 $f_68de8bf153 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     ExifTool::RequireModule('Image::ExifTool::XMP');
     $val = XMP::ConvertXMPDate($val);
     $val = preg_replace('/([-+]\d{2})(\d{2})$/', '$1:$2', Perl::str($val), 1); // add colon to timezone if necessary
     return $val;
 };
+$f_66f525a9e8 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 66f525a9e8'); };
 $f_dd731adca4 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     if (\strlen($val) < 4) {
         return null; // (Perl substr outside of string gives undef)
@@ -318,6 +328,7 @@ $f_ab51b9a8c7 = static function ($val, ExifTool $self, array &$vals, array $prt,
     }
     return implode(' ', array_map(Perl::str(...), $a));
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 $f_77d9b44969 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return implode(' ', array_map(Perl::str(...), Perl::unpack('VfVVf6c4lCCcclf4Vvv', $val)));
 };
@@ -327,6 +338,7 @@ $f_95afa1fe31 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_0322254fa6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), '-', ':');
 };
+$f_2445b87a54 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 2445b87a54'); };
 $f_6f748db70e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return \strlen($val) > 4 ? substr($val, 4) : $val;
 };
@@ -499,6 +511,7 @@ $f_10a579d316 = static function (ExifTool $self, &$format, &$varSize, $size, $da
         $varSize += 4;
     }
 };
+$f_063d7b3dfe = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 063d7b3dfe'); };
 $f_8532c7ce24 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     if ($val) {
         $offset = (66 * 365 + 17) * 24 * 3600;
@@ -512,9 +525,11 @@ $f_8532c7ce24 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     }
     return $val;
 };
+$f_1a6861cfb8 = static function (mixed ...$args) { throw new NotPorted('RawConvInv 1a6861cfb8'); };
 $f_cdcfe65934 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertUnixTime($val, $self->Options('QuickTimeUTC') ?: ($self->FileType === 'CR3'));
 };
+$f_4d0e7f391a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 4d0e7f391a'); };
 $f_53636c83c1 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->MediaTS = $val;
 };
@@ -564,18 +579,22 @@ $f_7bc20e93bf = static function (ExifTool $self, $valPt, $format, $count) {
 $f_30331f69a5 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->PrimaryItem = Perl::unpack('x4n', $val)[0] ?? null;
 };
+$f_3db422afcd = static function (mixed ...$args) { throw new NotPorted('code 3db422afcd'); };
 $f_8eddbf1a13 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->PrimaryItem = Perl::unpack('x4N', $val)[0] ?? null;
 };
+$f_9996e6763c = static function (mixed ...$args) { throw new NotPorted('code 9996e6763c'); };
 $f_59406ee77a = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^\x85\xc0\xb6\x87\x82\x0f\x11\xe0\x81\x11\xf4\xce\x46\x2b\x6a\x48/', $valPt);
 };
 $f_4c55654137 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return \strlen($val) >= 0x14 ? substr($val, 0x14) : null;
 };
+$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
 $f_189ecfcc6e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), '/', ':');
 };
+$f_6688bb1a42 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 6688bb1a42'); };
 $f_276f402ce2 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 'Priority '.Perl::str($val);
 };
@@ -586,9 +605,11 @@ $f_d6180891ca = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_091ba408a3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::TimeZoneString($val);
 };
+$f_3e34815331 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 3e34815331'); };
 $f_13c0e9b712 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return ExifTool::Get16s($val, 0);
 };
+$f_fdb18104a0 = static function (mixed ...$args) { throw new NotPorted('RawConvInv fdb18104a0'); };
 $f_1f48e0f097 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->MetaFormat = $val;
 };
@@ -864,12 +885,14 @@ $f_fe71d517c4 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     $self->ImageSizeLookahead = $val;
     return null;
 };
+$f_26d1cb8b69 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 26d1cb8b69'); };
 $f_eaa22b5bb6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 'Track '.Perl::str($val);
 };
 $f_a66fd04718 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/^1 /', '', Perl::str($val), 1);
 };
+$f_e83e94f256 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv e83e94f256'); };
 $f_141bbcf6d5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::unpack('H*', $val)[0];
 };
@@ -956,6 +979,7 @@ $f_b2c7f46a80 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_3d54e50e67 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace_callback('/^(.{4})(.{2})/i', static fn ($m) => "Entity=$m[1] Index=".(Perl::unpack('n', $m[2])[0] ?? null).' ', Perl::str($val), 1);
 };
+$f_b82879d4b4 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv b82879d4b4'); };
 $f_aa41b481df = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     $sep = $self->Options('ListSep');
     if (!preg_match('/^\0/', $val)) {
@@ -1030,6 +1054,7 @@ $f_e545b1e7f5 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     }
     return $str;
 };
+$f_f785d549ec = static function (mixed ...$args) { throw new NotPorted('RawConvInv f785d549ec'); };
 $f_956574d36f = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     $val = preg_replace('/^\0{4}../s', '', Perl::str($val), 1);
     $val = preg_replace('/\0.*/', '', $val, 1);
@@ -1045,9 +1070,11 @@ $f_a0b4bfa616 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     }
     return ExifTool::MakeTiffHeader($w, $h, 1, 8).substr($val, 8, $w * $h);
 };
+$f_1fda6744c7 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 1fda6744c7'); };
 $f_d1de5e8a77 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/^(.{4})(.{4})/i', 'Entity=$1 Criteria=$2 ', Perl::str($val), 1);
 };
+$f_c78dc1bb60 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv c78dc1bb60'); };
 $f_b627d4da65 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^.{4}\xff\xd8\xff\xdb/s', $valPt);
 };
@@ -1070,12 +1097,14 @@ $f_3ed28c0f5f = static function ($val, ExifTool $self, array &$vals, array $prt,
     }
     return Perl::unpack('x7C', $val)[0];
 };
+$f_bd0569d6db = static function (mixed ...$args) { throw new NotPorted('ValueConvInv bd0569d6db'); };
 $f_73c890b632 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^VIRBactioncamera/', $valPt);
 };
 $f_1534999519 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return substr($val, 16);
 };
+$f_03bb0f1596 = static function (mixed ...$args) { throw new NotPorted('RawConvInv 03bb0f1596'); };
 $f_280f55ec77 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^\xf7\x6c\xd7\x6a\x07\x5b\x4a\x1e\xb3\x1c\x0e\x7f\xab\x7e\x09\xd4/', $valPt);
 };
@@ -1096,12 +1125,15 @@ $f_d3427a7e7f = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_2e38360501 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return \strlen($val) >= 6 ? (Perl::unpack('x4n', $val)[0] ?? null) : '<err>';
 };
+$f_85a27b23e6 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 85a27b23e6'); };
 $f_548479ca90 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str(Perl::num($val) * 1e6).' microseconds';
 };
+$f_b2a44fdef9 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv b2a44fdef9'); };
 $f_438f87995e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) * 1e-6;
 };
+$f_d9720c295d = static function (mixed ...$args) { throw new NotPorted('ValueConvInv d9720c295d'); };
 $f_e47da47920 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', 'x');
 };
@@ -1372,11 +1404,13 @@ return [
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
         ],
         'Image::ExifTool::QuickTime::AudioKeys' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\QuickTime::CheckQTValue',
             'GROUPS' => [1 => 'AudioKeys', 2 => 'Audio'],
             'LANG_INFO' => 'Image\\ExifTool\\QuickTime::GetLangInfo',
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessKeys',
             'WRITABLE' => 1,
             'WRITE_GROUP' => 'AudioKeys',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteKeys',
             'player.movie.audio.balance' => 'Balance',
             'player.movie.audio.bass' => 'Bass',
             'player.movie.audio.gain' => 'AudioGain',
@@ -1955,7 +1989,9 @@ return [
                 'Protected' => 1,
                 'Require' => [0 => 'QuickTime:MatrixStructure', 1 => 'QuickTime:HandlerType'],
                 'ValueConv' => $f_e3a9d89e8b,
+                'ValueConvInv' => $f_25924ee98a,
                 'Writable' => 1,
+                'WriteAlso' => ['MatrixStructure' => $f_46dc82f5d8],
             ],
         ],
         'Image::ExifTool::QuickTime::ContentLightLevel' => [
@@ -1968,6 +2004,7 @@ return [
         ],
         'Image::ExifTool::QuickTime::DataInfo' => [
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessMOV',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             'dref' => [
                 'Name' => 'DataRef',
                 'SubDirectory' => [
@@ -1978,6 +2015,7 @@ return [
         ],
         'Image::ExifTool::QuickTime::DataRef' => [
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessMOV',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             "url\x00" => [
                 'Format' => 'undef',
                 'Name' => 'URL',
@@ -2680,9 +2718,11 @@ return [
         'Image::ExifTool::QuickTime::ItemInfo' => [
             'GROUPS' => [2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessMOV',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             'infe' => [
                 'Name' => 'ItemInfoEntry',
                 'RawConv' => 'Image\\ExifTool\\QuickTime::ParseItemInfoEntry',
+                'WriteHook' => 'Image\\ExifTool\\QuickTime::ParseItemInfoEntry',
             ],
         ],
         'Image::ExifTool::QuickTime::ItemList' => [
@@ -2710,6 +2750,7 @@ return [
                 'Name' => 'Unknown_CDET',
                 'Unknown' => 1,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\QuickTime::CheckQTValue',
             'FORMAT' => 'string',
             'GROUPS' => [1 => 'ItemList', 2 => 'Audio'],
             'GUID' => 'GUID',
@@ -2719,6 +2760,7 @@ return [
             'VERS' => 'ProductVersion',
             'WRITABLE' => 1,
             'WRITE_GROUP' => 'ItemList',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             'aART' => [
                 'Groups' => [2 => 'Author'],
                 'Name' => 'AlbumArtist',
@@ -2773,6 +2815,7 @@ return [
                 'Format' => 'undef',
                 'Name' => 'DiskNumber',
                 'ValueConv' => $f_ba495a557b,
+                'ValueConvInv' => $f_30e5ad1bdf,
             ],
             'dscp' => [
                 'Avoid' => 1,
@@ -5433,7 +5476,9 @@ return [
                 'Format' => 'undef',
                 'Name' => 'Genre',
                 'PrintConv' => $f_13ae0412d2,
+                'PrintConvInv' => $f_3b7e6af9c4,
                 'ValueConv' => $f_5655bf0414,
+                'ValueConvInv' => $f_4fcb387ecd,
             ],
             'grup' => [
                 'Avoid' => 1,
@@ -5463,7 +5508,9 @@ return [
                 'Format' => 'string',
                 'Name' => 'GoogleTrackDuration',
                 'PrintConv' => $f_b2e41c1595,
+                'PrintConvInv' => $f_ac9063ceb4,
                 'ValueConv' => $f_7b446e214d,
+                'ValueConvInv' => $f_9f4b179b48,
             ],
             'hdvd' => [
                 'Format' => 'int8u',
@@ -5729,6 +5776,7 @@ return [
                 'Format' => 'undef',
                 'Name' => 'TrackNumber',
                 'ValueConv' => $f_ba495a557b,
+                'ValueConvInv' => $f_b7788cdcc8,
             ],
             'tven' => 'TVEpisodeID',
             'tves' => [
@@ -5768,7 +5816,10 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'ContentCreateDate',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_7329c61102,
+                'Shift' => 'Time',
                 'ValueConv' => $f_68de8bf153,
+                'ValueConvInv' => $f_66f525a9e8,
             ],
             "\xa9des" => 'Description',
             "\xa9dir" => 'Director',
@@ -5804,12 +5855,15 @@ return [
                 'Groups' => [2 => 'Location'],
                 'Name' => 'GPSCoordinates',
                 'PrintConv' => 'Image\\ExifTool\\QuickTime::PrintGPSCoordinates',
+                'PrintConvInv' => 'Image\\ExifTool\\QuickTime::PrintInvGPSCoordinates',
                 'ValueConv' => 'Image\\ExifTool\\QuickTime::ConvertISO6709',
+                'ValueConvInv' => 'Image\\ExifTool\\QuickTime::ConvInvISO6709',
             ],
         ],
         'Image::ExifTool::QuickTime::ItemProp' => [
             'GROUPS' => [2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessMOV',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             'ipco' => [
                 'Name' => 'ItemPropertyContainer',
                 'SubDirectory' => [
@@ -5822,10 +5876,12 @@ return [
             ],
         ],
         'Image::ExifTool::QuickTime::ItemPropCont' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\QuickTime::CheckQTValue',
             'GROUPS' => [2 => 'Image'],
             'PERMANENT' => 1,
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessMOV',
             'VARS' => ['START_INDEX' => 1],
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             'auxC' => [
                 'Format' => 'undef',
                 'Name' => 'AuxiliaryImageType',
@@ -5910,6 +5966,7 @@ return [
         'Image::ExifTool::QuickTime::ItemRef' => [
             'GROUPS' => [2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessMOV',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             'auxl' => [
                 'Name' => 'AuxiliaryImageRef',
                 'RawConv' => $f_d169d7671a,
@@ -5917,10 +5974,12 @@ return [
             'cdsc' => [
                 'Name' => 'ContentDescribes',
                 'RawConv' => 'Image\\ExifTool\\QuickTime::ParseContentDescribes',
+                'WriteHook' => 'Image\\ExifTool\\QuickTime::ParseContentDescribes',
             ],
             'dimg' => [
                 'Name' => 'DerivedImageRef',
                 'RawConv' => 'Image\\ExifTool\\QuickTime::ParseContentDescribes',
+                'WriteHook' => 'Image\\ExifTool\\QuickTime::ParseContentDescribes',
             ],
             'thmb' => [
                 'Name' => 'ThumbnailRef',
@@ -5928,6 +5987,7 @@ return [
             ],
         ],
         'Image::ExifTool::QuickTime::Keys' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\QuickTime::CheckQTValue',
             'Encoded_With' => 'EncodedWith',
             'GROUPS' => [1 => 'Keys'],
             'LANG_INFO' => 'Image\\ExifTool\\QuickTime::GetLangInfo',
@@ -5935,6 +5995,7 @@ return [
             'VARS' => ['LONG_TAGS' => 9],
             'WRITABLE' => 1,
             'WRITE_GROUP' => 'Keys',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteKeys',
             'album' => 'Album',
             'apple.photos.variation-identifier' => [
                 'Name' => 'ApplePhotosVariationIdentifier',
@@ -5980,13 +6041,19 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'CreationTime',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_7329c61102,
+                'Shift' => 'Time',
                 'ValueConv' => $f_68de8bf153,
+                'ValueConvInv' => $f_66f525a9e8,
             ],
             'creationdate' => [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'CreationDate',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_7329c61102,
+                'Shift' => 'Time',
                 'ValueConv' => $f_68de8bf153,
+                'ValueConvInv' => $f_66f525a9e8,
             ],
             'description' => [
             ],
@@ -6000,6 +6067,7 @@ return [
             'detected-face.bounds' => [
                 'Name' => 'DetectedFaceBounds',
                 'PrintConv' => $f_ab51b9a8c7,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 0,
             ],
             'detected-face.face-id' => [
@@ -6057,7 +6125,9 @@ return [
                 'Groups' => [2 => 'Location'],
                 'Name' => 'GPSCoordinates',
                 'PrintConv' => 'Image\\ExifTool\\QuickTime::PrintGPSCoordinates',
+                'PrintConvInv' => 'Image\\ExifTool\\QuickTime::PrintInvGPSCoordinates',
                 'ValueConv' => 'Image\\ExifTool\\QuickTime::ConvertISO6709',
+                'ValueConvInv' => 'Image\\ExifTool\\QuickTime::ConvInvISO6709',
             ],
             'location.accuracy.horizontal' => [
                 'Name' => 'LocationAccuracyHorizontal',
@@ -6070,7 +6140,10 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'LocationDate',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_7329c61102,
+                'Shift' => 'Time',
                 'ValueConv' => $f_68de8bf153,
+                'ValueConvInv' => $f_66f525a9e8,
             ],
             'location.name' => [
                 'Groups' => [2 => 'Location'],
@@ -6235,7 +6308,10 @@ return [
                 'Name' => 'DateTimeOriginal',
                 'Permanent' => 1,
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_7329c61102,
+                'Shift' => 'Time',
                 'ValueConv' => $f_0322254fa6,
+                'ValueConvInv' => $f_2445b87a54,
                 'Writable' => 1,
             ],
             'PICT' => [
@@ -6250,6 +6326,7 @@ return [
                     'TagTable' => 'Image::ExifTool::XMP::SEAL',
                 ],
             ],
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             '_htc' => [
                 'Name' => 'HTCInfo',
                 'SubDirectory' => [
@@ -6609,6 +6686,7 @@ return [
         'Image::ExifTool::QuickTime::Media' => [
             'GROUPS' => [1 => 'Track#', 2 => 'Video'],
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessMOV',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             'elng' => 'ExtendedLanguageTag',
             'hdlr' => [
                 'Name' => 'Handler',
@@ -6641,8 +6719,12 @@ return [
                 'Name' => 'MediaCreateDate',
                 'Permanent' => 1,
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_063d7b3dfe,
                 'RawConv' => $f_8532c7ce24,
+                'RawConvInv' => $f_1a6861cfb8,
+                'Shift' => 'Time',
                 'ValueConv' => $f_cdcfe65934,
+                'ValueConvInv' => $f_4d0e7f391a,
                 'Writable' => 1,
             ],
             2 => [
@@ -6652,8 +6734,12 @@ return [
                 'Name' => 'MediaModifyDate',
                 'Permanent' => 1,
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_063d7b3dfe,
                 'RawConv' => $f_8532c7ce24,
+                'RawConvInv' => $f_1a6861cfb8,
+                'Shift' => 'Time',
                 'ValueConv' => $f_cdcfe65934,
+                'ValueConvInv' => $f_4d0e7f391a,
                 'Writable' => 1,
             ],
             3 => [
@@ -6673,14 +6759,17 @@ return [
                 'RawConv' => $f_273894f86a,
                 'ValueConv' => $f_83ee708772,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [0, 1, 2, 3, 4],
             'FORMAT' => 'int32u',
             'GROUPS' => [1 => 'Track#', 2 => 'Video'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::QuickTime::MediaInfo' => [
             'GROUPS' => [1 => 'Track#', 2 => 'Video'],
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessMOV',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             'dinf' => [
                 'Name' => 'DataInfo',
                 'SubDirectory' => [
@@ -6731,6 +6820,7 @@ return [
         'Image::ExifTool::QuickTime::Meta' => [
             'GROUPS' => [1 => 'Meta', 2 => 'Video'],
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessMOV',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             'bxml' => [
                 'Flags' => ['Binary', 'Unknown'],
                 'Name' => 'BinaryXML',
@@ -6783,6 +6873,7 @@ return [
             'iloc' => [
                 'Name' => 'ItemLocation',
                 'RawConv' => 'Image\\ExifTool\\QuickTime::ParseItemLocation',
+                'WriteHook' => 'Image\\ExifTool\\QuickTime::ParseItemLocation',
             ],
             'ilst' => [
                 'Name' => 'ItemList',
@@ -6840,10 +6931,12 @@ return [
                     'Condition' => $f_7bc20e93bf,
                     'Name' => 'PrimaryItemReference',
                     'RawConv' => $f_30331f69a5,
+                    'WriteHook' => $f_3db422afcd,
                 ],
                 [
                     'Name' => 'PrimaryItemReference',
                     'RawConv' => $f_8eddbf1a13,
+                    'WriteHook' => $f_9996e6763c,
                 ],
             ],
             'uuid' => [
@@ -6876,7 +6969,10 @@ return [
                 'Name' => 'ProductionDate',
                 'Permanent' => 1,
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
                 'ValueConv' => $f_189ecfcc6e,
+                'ValueConvInv' => $f_6688bb1a42,
                 'Writable' => 1,
             ],
             4 => 'Software',
@@ -6892,7 +6988,9 @@ return [
                 'Name' => 'TimeZone',
                 'Permanent' => 1,
                 'PrintConv' => $f_091ba408a3,
+                'PrintConvInv' => $f_3e34815331,
                 'RawConv' => $f_13c0e9b712,
+                'RawConvInv' => $f_fdb18104a0,
                 'Writable' => 1,
             ],
             12 => [
@@ -6901,7 +6999,10 @@ return [
                 'Name' => 'ModifyDate',
                 'Permanent' => 1,
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
                 'ValueConv' => $f_189ecfcc6e,
+                'ValueConvInv' => $f_6688bb1a42,
                 'Writable' => 1,
             ],
             'GROUPS' => [2 => 'Video'],
@@ -6943,6 +7044,7 @@ return [
         'Image::ExifTool::QuickTime::Movie' => [
             'GROUPS' => [2 => 'Video'],
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessMOV',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             'cmov' => [
                 'Name' => 'CompressedMovie',
                 'SubDirectory' => [
@@ -7041,6 +7143,7 @@ return [
         'Image::ExifTool::QuickTime::MovieFragment' => [
             'GROUPS' => [2 => 'Video'],
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessMOV',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             'meta' => [
                 'Name' => 'Meta',
                 'SubDirectory' => [
@@ -7073,8 +7176,12 @@ return [
                 'Name' => 'CreateDate',
                 'Permanent' => 1,
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_063d7b3dfe,
                 'RawConv' => $f_56c08517ec,
+                'RawConvInv' => $f_1a6861cfb8,
+                'Shift' => 'Time',
                 'ValueConv' => $f_cdcfe65934,
+                'ValueConvInv' => $f_4d0e7f391a,
                 'Writable' => 1,
             ],
             2 => [
@@ -7084,8 +7191,12 @@ return [
                 'Name' => 'ModifyDate',
                 'Permanent' => 1,
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_063d7b3dfe,
                 'RawConv' => $f_8532c7ce24,
+                'RawConvInv' => $f_1a6861cfb8,
+                'Shift' => 'Time',
                 'ValueConv' => $f_cdcfe65934,
+                'ValueConvInv' => $f_4d0e7f391a,
                 'Writable' => 1,
             ],
             3 => [
@@ -7144,10 +7255,12 @@ return [
                 'ValueConv' => $f_fe1379d374,
             ],
             24 => 'NextTrackID',
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [0, 1, 2, 3, 4],
             'FORMAT' => 'int32u',
             'GROUPS' => [2 => 'Video'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::QuickTime::Nextbase' => [
             '2nd Cam' => [
@@ -7281,6 +7394,7 @@ return [
             'VARS' => ['LONG_TAGS' => 3],
             'Video Length' => [
             ],
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteNextbase',
             'Wi-Fi MAC Address' => [
             ],
             'Wi-Fi Password' => [
@@ -7294,6 +7408,7 @@ return [
         'Image::ExifTool::QuickTime::OtherMeta' => [
             'GROUPS' => [2 => 'Video'],
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessMOV',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             'mere' => [
                 'Name' => 'MetaRelation',
                 'SubDirectory' => [
@@ -7395,8 +7510,12 @@ return [
                 'Name' => 'PreviewDate',
                 'Permanent' => 1,
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_063d7b3dfe,
                 'RawConv' => $f_8532c7ce24,
+                'RawConvInv' => $f_1a6861cfb8,
+                'Shift' => 'Time',
                 'ValueConv' => $f_cdcfe65934,
+                'ValueConvInv' => $f_4d0e7f391a,
                 'Writable' => 1,
             ],
             2 => 'PreviewVersion',
@@ -7405,9 +7524,11 @@ return [
                 'Name' => 'PreviewAtomType',
             ],
             5 => 'PreviewAtomIndex',
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FORMAT' => 'int16u',
             'GROUPS' => [2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::QuickTime::PreviewInfo' => [
             8 => [
@@ -7576,6 +7697,7 @@ return [
         'Image::ExifTool::QuickTime::SampleTable' => [
             'GROUPS' => [2 => 'Video'],
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessMOV',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             'co64' => [
                 'Flags' => ['Binary', 'Unknown'],
                 'Name' => 'ChunkOffset64',
@@ -8270,6 +8392,7 @@ return [
         'Image::ExifTool::QuickTime::Track' => [
             'GROUPS' => [1 => 'Track#', 2 => 'Video'],
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessMOV',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             'mdia' => [
                 'Name' => 'Media',
                 'SubDirectory' => [
@@ -8329,6 +8452,7 @@ return [
                         'ProcessProc' => 'Image\\ExifTool\\XMP::ProcessGSpherical',
                         'Start' => 16,
                         'TagTable' => 'Image::ExifTool::XMP::Main',
+                        'WriteProc' => 'Image\\ExifTool\\XMP::WriteGSpherical',
                     ],
                     'WriteGroup' => 'GSpherical',
                 ],
@@ -8367,6 +8491,7 @@ return [
         'Image::ExifTool::QuickTime::TrackFragment' => [
             'GROUPS' => [2 => 'Video'],
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessMOV',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             'meta' => [
                 'Name' => 'Meta',
                 'SubDirectory' => [
@@ -8388,9 +8513,13 @@ return [
                 'Name' => 'TrackCreateDate',
                 'Permanent' => 1,
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_063d7b3dfe,
                 'Priority' => 0,
                 'RawConv' => $f_8532c7ce24,
+                'RawConvInv' => $f_1a6861cfb8,
+                'Shift' => 'Time',
                 'ValueConv' => $f_cdcfe65934,
+                'ValueConvInv' => $f_4d0e7f391a,
                 'Writable' => 1,
             ],
             2 => [
@@ -8400,9 +8529,13 @@ return [
                 'Name' => 'TrackModifyDate',
                 'Permanent' => 1,
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_063d7b3dfe,
                 'Priority' => 0,
                 'RawConv' => $f_8532c7ce24,
+                'RawConvInv' => $f_1a6861cfb8,
+                'Shift' => 'Time',
                 'ValueConv' => $f_cdcfe65934,
+                'ValueConvInv' => $f_4d0e7f391a,
                 'Writable' => 1,
             ],
             3 => [
@@ -8439,7 +8572,9 @@ return [
                 'Name' => 'MatrixStructure',
                 'Permanent' => 1,
                 'Protected' => 1,
+                'RawConvInv' => 'Image\\ExifTool\\QuickTime::GetMatrixStructure',
                 'ValueConv' => $f_61ab59c3d9,
+                'ValueConvInv' => $f_26d1cb8b69,
                 'Writable' => 1,
             ],
             19 => [
@@ -8452,10 +8587,12 @@ return [
                 'Priority' => 0,
                 'RawConv' => 'Image\\ExifTool\\QuickTime::FixWrongFormat',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [0, 1, 2, 5, 7],
             'FORMAT' => 'int32u',
             'GROUPS' => [1 => 'Track#', 2 => 'Video'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::QuickTime::TrackRef' => [
             'GROUPS' => [1 => 'Track#', 2 => 'Video'],
@@ -8513,7 +8650,10 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'ContentCreateDate',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_7329c61102,
+                'Shift' => 'Time',
                 'ValueConv' => $f_68de8bf153,
+                'ValueConvInv' => $f_66f525a9e8,
             ],
             '@mak' => [
                 'Avoid' => 1,
@@ -8538,7 +8678,9 @@ return [
                 'Groups' => [2 => 'Location'],
                 'Name' => 'GPSCoordinates',
                 'PrintConv' => 'Image\\ExifTool\\QuickTime::PrintGPSCoordinates',
+                'PrintConvInv' => 'Image\\ExifTool\\QuickTime::PrintInvGPSCoordinates',
                 'ValueConv' => 'Image\\ExifTool\\QuickTime::ConvertISO6709',
+                'ValueConvInv' => 'Image\\ExifTool\\QuickTime::ConvInvISO6709',
             ],
             'AllF' => [
                 'Format' => 'int8u',
@@ -8548,7 +8690,9 @@ return [
                 'Description' => 'Camera Serial Number Hash',
                 'Name' => 'SerialNumberHash',
                 'ValueConv' => $f_06c813ca7a,
+                'ValueConvInv' => $f_e83e94f256,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\QuickTime::CheckQTValue',
             'CNCV' => [
                 'Format' => 'string',
                 'Name' => 'CompressorVersion',
@@ -8940,6 +9084,7 @@ return [
             ],
             'WRITABLE' => 1,
             'WRITE_GROUP' => 'UserData',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteQuickTime',
             'XMP_' => [
                 'Name' => 'XMP',
                 'SubDirectory' => [
@@ -9037,6 +9182,7 @@ return [
                 'IText' => 12,
                 'Name' => 'Classification',
                 'ValueConv' => $f_3d54e50e67,
+                'ValueConvInv' => $f_b82879d4b4,
                 'Writable' => 'undef',
             ],
             'cmid' => [
@@ -9067,7 +9213,10 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'DateTimeOriginal',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_7329c61102,
+                'Shift' => 'Time',
                 'ValueConv' => $f_68de8bf153,
+                'ValueConvInv' => $f_66f525a9e8,
             ],
             'dscp' => [
                 'Avoid' => 1,
@@ -9127,6 +9276,7 @@ return [
                 'Name' => 'LocationInformation',
                 'NoDecode' => 1,
                 'RawConv' => $f_e545b1e7f5,
+                'RawConvInv' => $f_f785d549ec,
                 'Writable' => 'undef',
             ],
             'lrcu' => 'LyricsURI',
@@ -9178,6 +9328,7 @@ return [
             'pmcc' => [
                 'Name' => 'GarminSettings',
                 'ValueConv' => $f_c35b02d9eb,
+                'ValueConvInv' => $f_1fda6744c7,
             ],
             'pose' => [
                 'Name' => 'pose',
@@ -9215,6 +9366,7 @@ return [
                 'IText' => 14,
                 'Name' => 'Rating',
                 'ValueConv' => $f_d1de5e8a77,
+                'ValueConvInv' => $f_c78dc1bb60,
                 'Writable' => 'undef',
             ],
             'scen' => [
@@ -9309,6 +9461,7 @@ return [
                 'Avoid' => 1,
                 'Name' => 'UserRating',
                 'ValueConv' => $f_3ed28c0f5f,
+                'ValueConvInv' => $f_bd0569d6db,
                 'Writable' => 'undef',
             ],
             'uuid' => [
@@ -9316,6 +9469,7 @@ return [
                     'Condition' => $f_73c890b632,
                     'Name' => 'GarminSoftware',
                     'RawConv' => $f_1534999519,
+                    'RawConvInv' => $f_03bb0f1596,
                 ],
                 [
                     'Condition' => $f_280f55ec77,
@@ -9341,6 +9495,7 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'Year',
                 'ValueConv' => $f_2e38360501,
+                'ValueConvInv' => $f_85a27b23e6,
                 'Writable' => 'undef',
             ],
             "\xa9ART" => 'Artist',
@@ -9361,7 +9516,10 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'ContentCreateDate',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_7329c61102,
+                'Shift' => 'Time',
                 'ValueConv' => $f_68de8bf153,
+                'ValueConvInv' => $f_66f525a9e8,
             ],
             "\xa9dir" => 'Director',
             "\xa9dji" => [
@@ -9442,7 +9600,9 @@ return [
                 'Groups' => [2 => 'Location'],
                 'Name' => 'GPSCoordinates',
                 'PrintConv' => 'Image\\ExifTool\\QuickTime::PrintGPSCoordinates',
+                'PrintConvInv' => 'Image\\ExifTool\\QuickTime::PrintInvGPSCoordinates',
                 'ValueConv' => 'Image\\ExifTool\\QuickTime::ConvertISO6709',
+                'ValueConvInv' => 'Image\\ExifTool\\QuickTime::ConvInvISO6709',
             ],
             "\xa9ysp" => 'SpeedY',
             "\xa9zsp" => 'SpeedZ',
@@ -9484,17 +9644,21 @@ return [
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
         ],
         'Image::ExifTool::QuickTime::VideoKeys' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\QuickTime::CheckQTValue',
             'GROUPS' => [1 => 'VideoKeys', 2 => 'Camera'],
             'LANG_INFO' => 'Image\\ExifTool\\QuickTime::GetLangInfo',
             'PROCESS_PROC' => 'Image\\ExifTool\\QuickTime::ProcessKeys',
             'VARS' => ['LONG_TAGS' => 2],
             'WRITABLE' => 1,
             'WRITE_GROUP' => 'VideoKeys',
+            'WRITE_PROC' => 'Image\\ExifTool\\QuickTime::WriteKeys',
             'camera.focal_length.35mm_equivalent' => 'FocalLengthIn35mmFormat',
             'camera.framereadouttimeinmicroseconds' => [
                 'Name' => 'FrameReadoutTime',
                 'PrintConv' => $f_548479ca90,
+                'PrintConvInv' => $f_b2a44fdef9,
                 'ValueConv' => $f_438f87995e,
+                'ValueConvInv' => $f_d9720c295d,
             ],
             'camera.identifier' => 'CameraIdentifier',
             'camera.lens_model' => 'LensModel',

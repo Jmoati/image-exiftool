@@ -230,6 +230,7 @@ return [
                     'Protected' => 1,
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [0],
             'FORMAT' => 'int8s',
             'GROUPS' => [2 => 'Image'],
@@ -237,6 +238,7 @@ return [
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
             'WRITE_GROUP' => 'colr',
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Jpeg2000::DisplayResolution' => [
             0 => [
@@ -354,11 +356,13 @@ return [
                     'ProcessProc' => 'Image\\ExifTool\\ExifTool::ProcessTIFF',
                     'Start' => $f_29620c6b1a,
                     'TagTable' => 'Image::ExifTool::Exif::Main',
+                    'WriteProc' => 'Image\\ExifTool\\ExifTool::WriteTIFF',
                 ],
             ],
             'GROUPS' => [2 => 'Image'],
             'PREFERRED' => 1,
             'PROCESS_PROC' => 'Image\\ExifTool\\Jpeg2000::ProcessJpeg2000Box',
+            'WRITE_PROC' => 'Image\\ExifTool\\Jpeg2000::ProcessJpeg2000Box',
             'asoc' => [
                 'Name' => 'Association',
                 'SubDirectory' => [
@@ -386,6 +390,7 @@ return [
                     'SubDirectory' => [
                         'ProcessProc' => 'Image\\ExifTool\\Jpeg2000::ProcessBrotli',
                         'TagTable' => 'Image::ExifTool::XMP::Main',
+                        'WriteProc' => 'Image\\ExifTool\\Jpeg2000::ProcessBrotli',
                     ],
                 ],
                 [
@@ -394,6 +399,7 @@ return [
                     'SubDirectory' => [
                         'ProcessProc' => 'Image\\ExifTool\\Jpeg2000::ProcessBrotli',
                         'TagTable' => 'Image::ExifTool::Exif::Main',
+                        'WriteProc' => 'Image\\ExifTool\\Jpeg2000::ProcessBrotli',
                     ],
                 ],
                 [
@@ -573,6 +579,7 @@ return [
                         'ProcessProc' => 'Image\\ExifTool\\ExifTool::ProcessTIFF',
                         'Start' => $f_5b6168b99f,
                         'TagTable' => 'Image::ExifTool::Exif::Main',
+                        'WriteProc' => 'Image\\ExifTool\\ExifTool::WriteTIFF',
                     ],
                 ],
                 [
@@ -583,6 +590,7 @@ return [
                         'ProcessProc' => 'Image\\ExifTool\\ExifTool::ProcessTIFF',
                         'Start' => $f_5b6168b99f,
                         'TagTable' => 'Image::ExifTool::Exif::Main',
+                        'WriteProc' => 'Image\\ExifTool\\ExifTool::WriteTIFF',
                     ],
                 ],
                 [
@@ -593,6 +601,7 @@ return [
                         'ProcessProc' => 'Image\\ExifTool\\ExifTool::ProcessTIFF',
                         'Start' => $f_fa11a49171,
                         'TagTable' => 'Image::ExifTool::Exif::Main',
+                        'WriteProc' => 'Image\\ExifTool\\ExifTool::WriteTIFF',
                     ],
                 ],
                 [

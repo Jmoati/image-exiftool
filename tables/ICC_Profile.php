@@ -643,6 +643,7 @@ return [
             'M2S3' => 'MToS3',
             'MS00' => 'WCSProfiles',
             'PROCESS_PROC' => 'Image\\ExifTool\\ICC_Profile::ProcessICC_Profile',
+            'WRITE_PROC' => 'Image\\ExifTool\\ICC_Profile::WriteICC_Profile',
             'bAB0' => 'BRDFAToB0',
             'bAB1' => 'BRDFAToB1',
             'bAB2' => 'BRDFAToB2',

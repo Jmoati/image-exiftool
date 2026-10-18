@@ -38,8 +38,10 @@ return [
                 'Name' => 'ManufactureDate',
                 'Writable' => 'string',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
     ],
 ];

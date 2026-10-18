@@ -7,12 +7,16 @@ namespace Image\ExifTool;
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
+$f_289bae1164 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 289bae1164'); };
+$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
+$f_814d5be385 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 814d5be385'); };
 
 return [
     'load' => [
     ],
     'tables' => [
         'Image::ExifTool::Microsoft::MP' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'GROUPS' => [0 => 'XMP', 1 => 'XMP-MP', 2 => 'Image'],
             'LANG_INFO' => 'Image\\ExifTool\\XMP::GetLangInfo',
             'NAMESPACE' => 'MP',
@@ -22,6 +26,8 @@ return [
                     'DateRegionsValid' => [
                         'Groups' => [2 => 'Time'],
                         'PrintConv' => $f_ae2db35ce3,
+                        'PrintConvInv' => $f_289bae1164,
+                        'Shift' => 'Time',
                         'Writable' => 'date',
                     ],
                     'NAMESPACE' => 'MPRI',
@@ -77,11 +83,13 @@ return [
             'TABLE_DESC' => 'XMP Microsoft Photo',
             'VARS' => ['ID_FMT' => 'none'],
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
         ],
         'Image::ExifTool::Microsoft::MP1' => [
             'Brightness' => [
                 'Avoid' => 1,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'CameraModelID' => [
                 'Avoid' => 1,
             ],
@@ -130,6 +138,7 @@ return [
             'TABLE_DESC' => 'XMP Microsoft Photo',
             'VARS' => ['ID_FMT' => 'none'],
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
             'WhiteBalance0' => [
                 'Writable' => 'real',
             ],
@@ -165,13 +174,16 @@ return [
             4 => 'PanoramicStitchTheta1',
             5 => 'PanoramicStitchPhi0',
             6 => 'PanoramicStitchPhi1',
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'float',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Microsoft::XMP' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'CameraSerialNumber' => [
             ],
             'CreatorAppId' => [
@@ -182,6 +194,8 @@ return [
             'DateAcquired' => [
                 'Groups' => [2 => 'Time'],
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_289bae1164,
+                'Shift' => 'Time',
                 'Validate' => 'ValidateXMPDate($val)',
                 'Writable' => 'date',
             ],
@@ -211,6 +225,7 @@ return [
             'TABLE_DESC' => 'XMP Microsoft',
             'VARS' => ['ID_FMT' => 'none'],
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
         ],
         'Image::ExifTool::Microsoft::Xtra' => [
             'AVOID' => 1,
@@ -263,6 +278,7 @@ return [
             ],
             'CDTrackEnabled' => [
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Microsoft::CheckXtra',
             'CallLetters' => [
             ],
             'CameraManufacturer' => [
@@ -535,6 +551,8 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'EncodingTime',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
                 'Writable' => 'date',
             ],
             'WM/Genre' => 'Genre',
@@ -659,6 +677,7 @@ return [
                 'Name' => 'Year',
             ],
             'WRITE_GROUP' => 'Microsoft',
+            'WRITE_PROC' => 'Image\\ExifTool\\Microsoft::WriteXtra',
             'chapterNum' => [
             ],
             'titleNum' => [
@@ -732,6 +751,8 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'DateAcquired',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_814d5be385,
+                'Shift' => 'Time',
                 'Writable' => 'vt_filetime',
             ],
             '{2E4B640D-5019-46D8-8881-55414CC5CAA0} 100' => 'MediaCreated',

@@ -7,21 +7,27 @@ namespace Image\ExifTool;
 $f_40a730c975 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) * 50;
 };
+$f_08a51acc77 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 08a51acc77'); };
 $f_75416aa93f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 2;
 };
+$f_b1b26b5f04 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv b1b26b5f04'); };
 $f_2beaacd6d4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 100;
 };
+$f_509567a743 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 509567a743'); };
 $f_e2582d25e8 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.4f', $val);
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 $f_05a61fd4e2 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) - 128;
 };
+$f_0f5557b641 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 0f5557b641'); };
 $f_e1b21e5266 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? Perl::num($val) - 128 : 'Auto';
 };
+$f_2c2749a11f = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 2c2749a11f'); };
 
 $d_1 = [0 => 'Off', 1 => 'On'];
 $d_2 = [0 => 'No', 1 => 'Yes'];
@@ -36,16 +42,19 @@ return [
                 'Format' => 'double',
                 'Name' => 'BrightnessAdj',
                 'ValueConv' => $f_40a730c975,
+                'ValueConvInv' => $f_08a51acc77,
             ],
             8 => [
                 'Name' => 'EnhanceDarkTones',
                 'PrintConv' => $d_1,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCapture::ColorBoost' => [
             0 => [
@@ -56,32 +65,38 @@ return [
                 'Format' => 'int32u',
                 'Name' => 'ColorBoostLevel',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCapture::CropData' => [
             30 => [
                 'Format' => 'double',
                 'Name' => 'CropLeft',
                 'ValueConv' => $f_75416aa93f,
+                'ValueConvInv' => $f_b1b26b5f04,
             ],
             38 => [
                 'Format' => 'double',
                 'Name' => 'CropTop',
                 'ValueConv' => $f_75416aa93f,
+                'ValueConvInv' => $f_b1b26b5f04,
             ],
             46 => [
                 'Format' => 'double',
                 'Name' => 'CropRight',
                 'ValueConv' => $f_75416aa93f,
+                'ValueConvInv' => $f_b1b26b5f04,
             ],
             54 => [
                 'Format' => 'double',
                 'Name' => 'CropBottom',
                 'ValueConv' => $f_75416aa93f,
+                'ValueConvInv' => $f_b1b26b5f04,
             ],
             142 => [
                 'Format' => 'double',
@@ -99,6 +114,7 @@ return [
                 'Format' => 'double',
                 'Name' => 'CropSourceResolution',
                 'ValueConv' => $f_75416aa93f,
+                'ValueConvInv' => $f_b1b26b5f04,
             ],
             182 => [
                 'Format' => 'double',
@@ -120,41 +136,49 @@ return [
                 'Format' => 'double',
                 'Name' => 'CropOutputPixels',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCapture::DLightingHQ' => [
             0 => 'D-LightingHQShadow',
             1 => 'D-LightingHQHighlight',
             2 => 'D-LightingHQColorBoost',
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int32u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCapture::DLightingHS' => [
             0 => 'D-LightingHSAdjustment',
             1 => 'D-LightingHSColorBoost',
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int32u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCapture::Exposure' => [
             0 => [
                 'Format' => 'int16s',
                 'Name' => 'ExposureAdj',
                 'ValueConv' => $f_2beaacd6d4,
+                'ValueConvInv' => $f_509567a743,
             ],
             18 => [
                 'Format' => 'double',
                 'Name' => 'ExposureAdj2',
                 'PrintConv' => $f_e2582d25e8,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             36 => [
                 'Name' => 'ActiveD-Lighting',
@@ -173,21 +197,25 @@ return [
                     8 => 'Extra High 2',
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCapture::HighlightData' => [
             0 => 'ShadowProtection',
             1 => 'SaturationAdj',
             6 => 'HighlightProtection',
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8s',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCapture::Main' => [
             9103454 => [
@@ -396,8 +424,10 @@ return [
                 'PrintConv' => $d_1,
                 'Writable' => 'int8u',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\NikonCapture::ProcessNikonCapture',
+            'WRITE_PROC' => 'Image\\ExifTool\\NikonCapture::WriteNikonCapture',
         ],
         'Image::ExifTool::NikonCapture::NoiseReduction' => [
             4 => [
@@ -437,11 +467,13 @@ return [
                 'Format' => 'int32u',
                 'Name' => 'ColorNoiseReductionSharpness',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCapture::PhotoEffects' => [
             0 => [
@@ -460,11 +492,13 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'PhotoEffectsBlue',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCapture::PictureCtrl' => [
             0 => [
@@ -478,43 +512,53 @@ return [
             42 => [
                 'Name' => 'QuickAdjust',
                 'ValueConv' => $f_05a61fd4e2,
+                'ValueConvInv' => $f_0f5557b641,
             ],
             43 => [
                 'Name' => 'SharpeningAdj',
                 'ValueConv' => $f_e1b21e5266,
+                'ValueConvInv' => $f_2c2749a11f,
             ],
             44 => [
                 'Name' => 'ContrastAdj',
                 'ValueConv' => $f_e1b21e5266,
+                'ValueConvInv' => $f_2c2749a11f,
             ],
             45 => [
                 'Name' => 'BrightnessAdj',
                 'ValueConv' => $f_e1b21e5266,
+                'ValueConvInv' => $f_2c2749a11f,
             ],
             46 => [
                 'Name' => 'SaturationAdj',
                 'ValueConv' => $f_e1b21e5266,
+                'ValueConvInv' => $f_2c2749a11f,
             ],
             47 => [
                 'Name' => 'HueAdj',
                 'ValueConv' => $f_05a61fd4e2,
+                'ValueConvInv' => $f_0f5557b641,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCapture::RedEyeData' => [
             0 => [
                 'Name' => 'RedEyeCorrection',
                 'PrintConv' => [0 => 'Off', 1 => 'Automatic', 2 => 'Click on Eyes'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCapture::UnsharpData' => [
             0 => 'UnsharpCount',
@@ -574,11 +618,13 @@ return [
                 'Name' => 'Unsharp4HaloWidth',
             ],
             108 => 'Unsharp4Threshold',
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCapture::WBAdjData' => [
             0 => [
@@ -638,11 +684,13 @@ return [
                 'Format' => 'int32s',
                 'Name' => 'WBAdjTint',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
     ],
 ];

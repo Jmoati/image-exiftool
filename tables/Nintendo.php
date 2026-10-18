@@ -7,15 +7,19 @@ namespace Image\ExifTool;
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
+$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
 $f_68b3a6dab5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertUnixTime(Perl::num($val) + 10957 * 24 * 3600);
 };
+$f_c9aab2f102 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv c9aab2f102'); };
 $f_bb47503b17 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return '0x'.Perl::unpack('H*', $val)[0];
 };
+$f_fd81d16aa7 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv fd81d16aa7'); };
 $f_b7c22d6b90 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.2f', $val);
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 
 return [
     'load' => [
@@ -31,18 +35,23 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'TimeStamp',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
                 'ValueConv' => $f_68b3a6dab5,
+                'ValueConvInv' => $f_c9aab2f102,
             ],
             24 => [
                 'Format' => 'undef[4]',
                 'Groups' => [2 => 'Camera'],
                 'Name' => 'InternalSerialNumber',
                 'ValueConv' => $f_bb47503b17,
+                'ValueConvInv' => $f_fd81d16aa7,
             ],
             40 => [
                 'Format' => 'float',
                 'Name' => 'Parallax',
                 'PrintConv' => $f_b7c22d6b90,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             48 => [
                 'Format' => 'int16u',
@@ -50,12 +59,14 @@ return [
                 'PrintConv' => [0 => '(none)', 4096 => 'Mii', 8192 => 'Man', 16384 => 'Woman'],
                 'PrintHex' => 1,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Nintendo::Main' => [
             4353 => [
@@ -65,8 +76,10 @@ return [
                     'TagTable' => 'Image::ExifTool::Nintendo::CameraInfo',
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
     ],
 ];

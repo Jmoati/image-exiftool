@@ -7,6 +7,7 @@ namespace Image\ExifTool;
 $f_7ae83d5506 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('0x%.4x', $val);
 };
+$f_1754de4886 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1754de4886'); };
 $f_227aa4ff88 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $val = strtr(Perl::str($val), ' ', '.');
     return $val;
@@ -15,16 +16,20 @@ $f_256c0c6579 = static function ($val, ExifTool $self, array &$vals, array $prt,
     $v = Perl::split(' ', $val);
     return Perl::sprintf('%.4x:%.2x:%.2x', $v[0] ?? null, (Perl::int($v[1] ?? null) >> 8) & 0x00FFFFFFFFFFFFFF, Perl::int($v[1] ?? null) & 0xff);
 };
+$f_6001d7d9fe = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 6001d7d9fe'); };
 $f_6e58ee2654 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/ /', ' of ', Perl::str($val), 1);
 };
+$f_fa36026ce3 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv fa36026ce3'); };
 $f_b6f107c4d0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $v = Perl::split(' ', $val);
     return (Perl::int($v[0] ?? null) << 16) + Perl::num($v[1] ?? null);
 };
+$f_e3a6e334a8 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv e3a6e334a8'); };
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
+$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
 $f_b13f70ef16 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::split(' ', $val);
     // have seen these values written big-endian when everything else is little-endian
@@ -36,21 +41,26 @@ $f_b13f70ef16 = static function ($val, ExifTool $self, array &$vals, array $prt,
     }
     return Perl::sprintf('%.4d:%.2d:%.2d %.2d:%.2d:%.2d', $a[5] ?? null, $a[3] ?? null, $a[4] ?? null, $a[2] ?? null, $a[1] ?? null, $a[0] ?? null);
 };
+$f_f737142699 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv f737142699'); };
 $f_8ec8a3c511 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' F';
 };
+$f_1b6e6838f9 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1b6e6838f9'); };
 $f_98770fe8c4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' C';
 };
 $f_0128eb5b86 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->Decode($val, 'UTF16', 'II');
 };
+$f_c4c8dec721 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv c4c8dec721'); };
 $f_3fbe14a0d1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).' V';
 };
+$f_31bffda0da = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 31bffda0da'); };
 $f_7b446e214d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1000;
 };
+$f_9f4b179b48 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 9f4b179b48'); };
 $f_8b477f5bd4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::split('/ /', $val);
     $a0 = Perl::int($a[0] ?? null);
@@ -64,28 +74,36 @@ $f_8b477f5bd4 = static function ($val, ExifTool $self, array &$vals, array $prt,
         ($a1 & 0x1f) * 2, // second
     );
 };
+$f_e23a7482d5 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv e23a7482d5'); };
 $f_dba4edfcea = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::split(' ', $val);
     return Perl::sprintf('%d.%d%c', ...$a);
 };
+$f_ab7be67c75 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv ab7be67c75'); };
 $f_f04d374b61 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     [$y, $d] = array_pad(Perl::split(' ', $val), 2, null);
     return Perl::sprintf('%.4x:%.2x:%.2x', $y, (Perl::int($d) >> 8) & 0x00FFFFFFFFFFFFFF, Perl::int($d) & 0xff);
 };
+$f_072ee8344d = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 072ee8344d'); };
 $f_f8881d9428 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::split(' ', $val);
     return (Perl::int($a[0] ?? null) << 16) + Perl::num($a[1] ?? null);
 };
+$f_0b7f826faf = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 0b7f826faf'); };
 $f_15691a3b4e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::split(' ', $val);
     return Perl::sprintf('%.4d:%.2d:%.2d %.2d:%.2d:%.2d', ...array_reverse($a));
 };
+$f_3a9e0ef91d = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 3a9e0ef91d'); };
 $f_de84e083f4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.2x.%.2x %.4x:%.2x:%.2x Rev.%s', ...Perl::unpack('CCvCCa', $val));
 };
+$f_fed5311263 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv fed5311263'); };
 $f_58b3ca5cb2 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.4d:%.2d:%.2d %.2d:%.2d:%.2d', ...array_reverse(Perl::unpack('C5v', $val)));
 };
+$f_bd916c7ba4 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv bd916c7ba4'); };
+$f_3d06a9ba04 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 3d06a9ba04'); };
 $f_f2b9022b60 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return implode('-', array_map(static fn ($_) => Perl::sprintf('%.4x', $_), Perl::split('/ /', $val)));
 };
@@ -96,6 +114,7 @@ $f_5feb0860b4 = static function ($val, ExifTool $self, array &$vals, array $prt,
         Perl::int($val) & 0x1f, // day
     );
 };
+$f_9adcc9a69a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 9adcc9a69a'); };
 $f_f8ccc22656 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::split(' ', $val);
     return Perl::sprintf('%.4d:%.2d:%.2d %.2d:%.2d:%.2d', $a[5] ?? null, $a[3] ?? null, $a[4] ?? null, $a[2] ?? null, $a[1] ?? null, $a[0] ?? null);
@@ -138,6 +157,7 @@ return [
             0 => [
                 'Name' => 'MakerNoteVersion',
                 'PrintConv' => $f_7ae83d5506,
+                'PrintConvInv' => $f_1754de4886,
                 'Writable' => 0,
             ],
             1 => [
@@ -150,6 +170,7 @@ return [
                 'Format' => 'int16u[2]',
                 'Name' => 'FirmwareDate',
                 'ValueConv' => $f_256c0c6579,
+                'ValueConvInv' => $f_6001d7d9fe,
             ],
             6 => [
                 'Format' => 'string[2]',
@@ -165,11 +186,13 @@ return [
                 'Format' => 'int16u[2]',
                 'Name' => 'Sequence',
                 'PrintConv' => $f_6e58ee2654,
+                'PrintConvInv' => $f_fa36026ce3,
             ],
             9 => [
                 'Format' => 'int16u[2]',
                 'Name' => 'EventNumber',
                 'ValueConv' => $f_b6f107c4d0,
+                'ValueConvInv' => $f_e3a6e334a8,
             ],
             11 => [
                 'Description' => 'Date/Time Original',
@@ -177,8 +200,11 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'DateTimeOriginal',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
                 'Priority' => 0,
+                'Shift' => 'Time',
                 'ValueConv' => $f_b13f70ef16,
+                'ValueConvInv' => $f_f737142699,
             ],
             18 => [
                 'Groups' => [2 => 'Time'],
@@ -189,16 +215,19 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'AmbientTemperatureFahrenheit',
                 'PrintConv' => $f_8ec8a3c511,
+                'PrintConvInv' => $f_1b6e6838f9,
             ],
             20 => [
                 'Format' => 'int16s',
                 'Name' => 'AmbientTemperature',
                 'PrintConv' => $f_98770fe8c4,
+                'PrintConvInv' => $f_1b6e6838f9,
             ],
             21 => [
                 'Format' => 'unicode[15]',
                 'Name' => 'SerialNumber',
                 'ValueConv' => $f_0128eb5b86,
+                'ValueConvInv' => $f_c4c8dec721,
             ],
             36 => 'Contrast',
             37 => 'Brightness',
@@ -212,18 +241,22 @@ return [
             42 => [
                 'Name' => 'BatteryVoltage',
                 'PrintConv' => $f_3fbe14a0d1,
+                'PrintConvInv' => $f_31bffda0da,
                 'ValueConv' => $f_7b446e214d,
+                'ValueConvInv' => $f_9f4b179b48,
             ],
             43 => [
                 'Format' => 'string[22]',
                 'Name' => 'UserLabel',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'TAG_PREFIX' => 'Reconyx',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Reconyx::HyperFire2' => [
             16 => [
@@ -239,17 +272,22 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'DirectoryCreateDate',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
                 'ValueConv' => $f_8b477f5bd4,
+                'ValueConvInv' => $f_e23a7482d5,
             ],
             42 => [
                 'Format' => 'int16u[3]',
                 'Name' => 'FirmwareVersion',
                 'ValueConv' => $f_dba4edfcea,
+                'ValueConvInv' => $f_ab7be67c75,
             ],
             48 => [
                 'Format' => 'int16u[2]',
                 'Name' => 'FirmwareDate',
                 'ValueConv' => $f_f04d374b61,
+                'ValueConvInv' => $f_072ee8344d,
             ],
             52 => [
                 'Format' => 'string[2]',
@@ -260,11 +298,13 @@ return [
                 'Format' => 'int16u[2]',
                 'Name' => 'Sequence',
                 'PrintConv' => $f_6e58ee2654,
+                'PrintConvInv' => $f_fa36026ce3,
             ],
             58 => [
                 'Format' => 'int16u[2]',
                 'Name' => 'EventNumber',
                 'ValueConv' => $f_f8881d9428,
+                'ValueConvInv' => $f_0b7f826faf,
             ],
             62 => [
                 'Description' => 'Date/Time Original',
@@ -272,8 +312,11 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'DateTimeOriginal',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
                 'Priority' => 0,
+                'Shift' => 'Time',
                 'ValueConv' => $f_15691a3b4e,
+                'ValueConvInv' => $f_3a9e0ef91d,
             ],
             74 => [
                 'Format' => 'int16u',
@@ -291,11 +334,13 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'AmbientTemperatureFahrenheit',
                 'PrintConv' => $f_8ec8a3c511,
+                'PrintConvInv' => $f_1b6e6838f9,
             ],
             80 => [
                 'Format' => 'int16s',
                 'Name' => 'AmbientTemperature',
                 'PrintConv' => $f_98770fe8c4,
+                'PrintConvInv' => $f_1b6e6838f9,
             ],
             82 => [
                 'Format' => 'int16u',
@@ -350,23 +395,28 @@ return [
                 'Format' => 'unicode[15]',
                 'Name' => 'SerialNumber',
                 'ValueConv' => $f_0128eb5b86,
+                'ValueConvInv' => $f_c4c8dec721,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'TAG_PREFIX' => 'Reconyx',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Reconyx::HyperFire4K' => [
             26 => [
                 'Format' => 'undef[7]',
                 'Name' => 'FirmwareVersion',
                 'ValueConv' => $f_de84e083f4,
+                'ValueConvInv' => $f_fed5311263,
             ],
             33 => [
                 'Format' => 'undef[7]',
                 'Name' => 'UIBFirmwareVersion',
                 'ValueConv' => $f_de84e083f4,
+                'ValueConvInv' => $f_fed5311263,
             ],
             40 => [
                 'Format' => 'undef[1]',
@@ -384,6 +434,7 @@ return [
                 'Format' => 'int8u[2]',
                 'Name' => 'Sequence',
                 'PrintConv' => $f_6e58ee2654,
+                'PrintConvInv' => $f_fa36026ce3,
             ],
             43 => [
                 'Format' => 'int32u',
@@ -395,8 +446,11 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'DateTimeOriginal',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
                 'Priority' => 0,
+                'Shift' => 'Time',
                 'ValueConv' => $f_58b3ca5cb2,
+                'ValueConvInv' => $f_bd916c7ba4,
             ],
             54 => [
                 'Groups' => [2 => 'Time'],
@@ -412,11 +466,13 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'AmbientTemperatureFahrenheit',
                 'PrintConv' => $f_8ec8a3c511,
+                'PrintConvInv' => $f_1b6e6838f9,
             ],
             58 => [
                 'Format' => 'int16s',
                 'Name' => 'AmbientTemperature',
                 'PrintConv' => $f_98770fe8c4,
+                'PrintConvInv' => $f_1b6e6838f9,
             ],
             60 => [
                 'Format' => 'int16u',
@@ -451,11 +507,13 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'BatteryVoltage',
                 'ValueConv' => $f_7b446e214d,
+                'ValueConvInv' => $f_9f4b179b48,
             ],
             77 => [
                 'Format' => 'int16u',
                 'Name' => 'BatteryVoltageAvg',
                 'ValueConv' => $f_7b446e214d,
+                'ValueConvInv' => $f_9f4b179b48,
             ],
             79 => [
                 'Format' => 'int16u',
@@ -478,11 +536,13 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'FileNumber',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'TAG_PREFIX' => 'Reconyx',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Reconyx::MicroFire' => [
             16 => [
@@ -498,7 +558,10 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'DirectoryCreateDate',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
                 'ValueConv' => $f_8b477f5bd4,
+                'ValueConvInv' => $f_3d06a9ba04,
             ],
             24 => [
                 'Format' => 'int16u[8]',
@@ -509,31 +572,37 @@ return [
                 'Format' => 'int16u[3]',
                 'Name' => 'FirmwareVersion',
                 'ValueConv' => $f_dba4edfcea,
+                'ValueConvInv' => $f_ab7be67c75,
             ],
             48 => [
                 'Format' => 'int16u[2]',
                 'Name' => 'FirmwareDate',
                 'ValueConv' => $f_f04d374b61,
+                'ValueConvInv' => $f_072ee8344d,
             ],
             52 => [
                 'Format' => 'int16u[3]',
                 'Name' => 'BluetoothFirmwareVersion',
                 'ValueConv' => $f_dba4edfcea,
+                'ValueConvInv' => $f_ab7be67c75,
             ],
             58 => [
                 'Format' => 'int16u',
                 'Name' => 'BluetoothFirmwareDate',
                 'ValueConv' => $f_5feb0860b4,
+                'ValueConvInv' => $f_9adcc9a69a,
             ],
             60 => [
                 'Format' => 'int16u[3]',
                 'Name' => 'WifiFirmwareVersion',
                 'ValueConv' => $f_dba4edfcea,
+                'ValueConvInv' => $f_ab7be67c75,
             ],
             66 => [
                 'Format' => 'int16u',
                 'Name' => 'WifiFirmwareDate',
                 'ValueConv' => $f_5feb0860b4,
+                'ValueConvInv' => $f_9adcc9a69a,
             ],
             68 => [
                 'Format' => 'string[2]',
@@ -549,11 +618,13 @@ return [
                 'Format' => 'int16u[2]',
                 'Name' => 'Sequence',
                 'PrintConv' => $f_6e58ee2654,
+                'PrintConvInv' => $f_fa36026ce3,
             ],
             74 => [
                 'Format' => 'int16u[2]',
                 'Name' => 'EventNumber',
                 'ValueConv' => $f_f8881d9428,
+                'ValueConvInv' => $f_0b7f826faf,
             ],
             78 => [
                 'Description' => 'Date/Time Original',
@@ -561,8 +632,11 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'DateTimeOriginal',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
                 'Priority' => 0,
+                'Shift' => 'Time',
                 'ValueConv' => $f_f8ccc22656,
+                'ValueConvInv' => $f_f737142699,
             ],
             90 => [
                 'Format' => 'int16u',
@@ -580,11 +654,13 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'AmbientTemperatureFahrenheit',
                 'PrintConv' => $f_8ec8a3c511,
+                'PrintConvInv' => $f_1b6e6838f9,
             ],
             96 => [
                 'Format' => 'int16s',
                 'Name' => 'AmbientTemperature',
                 'PrintConv' => $f_98770fe8c4,
+                'PrintConvInv' => $f_1b6e6838f9,
             ],
             98 => [
                 'Format' => 'int16u',
@@ -623,6 +699,7 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'BatteryVoltage',
                 'ValueConv' => $f_7b446e214d,
+                'ValueConvInv' => $f_9f4b179b48,
             ],
             116 => [
                 'Format' => 'int16u',
@@ -637,33 +714,40 @@ return [
                 'Format' => 'unicode[15]',
                 'Name' => 'SerialNumber',
                 'ValueConv' => $f_0128eb5b86,
+                'ValueConvInv' => $f_c4c8dec721,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'TAG_PREFIX' => 'Reconyx',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Reconyx::UltraFire' => [
             24 => [
                 'Format' => 'undef[7]',
                 'Name' => 'FirmwareVersion',
                 'ValueConv' => $f_de84e083f4,
+                'ValueConvInv' => $f_fed5311263,
             ],
             31 => [
                 'Format' => 'undef[7]',
                 'Name' => 'Micro1Version',
                 'ValueConv' => $f_de84e083f4,
+                'ValueConvInv' => $f_fed5311263,
             ],
             38 => [
                 'Format' => 'undef[7]',
                 'Name' => 'BootLoaderVersion',
                 'ValueConv' => $f_de84e083f4,
+                'ValueConvInv' => $f_fed5311263,
             ],
             45 => [
                 'Format' => 'undef[7]',
                 'Name' => 'Micro2Version',
                 'ValueConv' => $f_de84e083f4,
+                'ValueConvInv' => $f_fed5311263,
             ],
             52 => [
                 'Format' => 'undef[1]',
@@ -674,6 +758,7 @@ return [
                 'Format' => 'int8u[2]',
                 'Name' => 'Sequence',
                 'PrintConv' => $f_6e58ee2654,
+                'PrintConvInv' => $f_fa36026ce3,
             ],
             55 => [
                 'Format' => 'int32u',
@@ -685,8 +770,11 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'DateTimeOriginal',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
                 'Priority' => 0,
+                'Shift' => 'Time',
                 'ValueConv' => $f_58b3ca5cb2,
+                'ValueConvInv' => $f_bd916c7ba4,
             ],
             66 => [
                 'Groups' => [2 => 'Time'],
@@ -702,11 +790,13 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'AmbientTemperatureFahrenheit',
                 'PrintConv' => $f_8ec8a3c511,
+                'PrintConvInv' => $f_1b6e6838f9,
             ],
             70 => [
                 'Format' => 'int16s',
                 'Name' => 'AmbientTemperature',
                 'PrintConv' => $f_98770fe8c4,
+                'PrintConvInv' => $f_1b6e6838f9,
             ],
             72 => [
                 'Name' => 'Illumination',
@@ -716,7 +806,9 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'BatteryVoltage',
                 'PrintConv' => $f_3fbe14a0d1,
+                'PrintConvInv' => $f_31bffda0da,
                 'ValueConv' => $f_7b446e214d,
+                'ValueConvInv' => $f_9f4b179b48,
             ],
             75 => [
                 'Format' => 'string[15]',
@@ -726,11 +818,13 @@ return [
                 'Format' => 'string[21]',
                 'Name' => 'UserLabel',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'TAG_PREFIX' => 'Reconyx',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
     ],
 ];

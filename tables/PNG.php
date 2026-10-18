@@ -31,6 +31,7 @@ $f_a3972b70a2 = static function ($val, ExifTool $self, array &$vals, array $prt,
     $a = Perl::unpack('N', $val)[0] ?? null;
     return $a ? Perl::int(1e9 / $a + 0.5) / 1e4 : $val;
 };
+$f_4f6de32cdf = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 4f6de32cdf'); };
 $f_2275c08708 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::unpack('NNC', $val);
     $a[2] = ($a[2] ?? null) ? 'microns' : 'pixels';
@@ -45,12 +46,15 @@ $f_24eebf3aff = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_e9f5acccb2 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::unpack('C', $val)[0] ?? null;
 };
+$f_bf7df0127e = static function (mixed ...$args) { throw new NotPorted('ValueConvInv bf7df0127e'); };
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
+$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
 $f_ff909df216 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.4d:%.2d:%.2d %.2d:%.2d:%.2d', ...Perl::unpack('nC5', $val));
 };
+$f_f2396d0cf1 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv f2396d0cf1'); };
 $f_1b487e7ccb = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     if (\strlen($val) > 6) {
         return new ScalarRef($val);
@@ -60,10 +64,12 @@ $f_1b487e7ccb = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_dbc5622757 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 100000;
 };
+$f_289bae1164 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 289bae1164'); };
 $f_cf49427e8a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     ExifTool::RequireModule('Image::ExifTool::XMP');
     return XMP::ConvertXMPDate($val);
 };
+$f_f93e852c17 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv f93e852c17'); };
 
 return [
     'load' => [
@@ -191,6 +197,7 @@ return [
                 'ValueConv' => $f_94f2c7bffb,
             ],
             'PREFERRED' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::DummyWriteProc',
             'acTL' => [
                 'Name' => 'AnimationControl',
                 'SubDirectory' => [
@@ -248,6 +255,7 @@ return [
                 'Name' => 'Gamma',
                 'Protected' => 1,
                 'ValueConv' => $f_a3972b70a2,
+                'ValueConvInv' => $f_4f6de32cdf,
                 'Writable' => 1,
             ],
             'gIFg' => [
@@ -335,6 +343,7 @@ return [
                 'PrintConv' => [0 => 'Perceptual', 1 => 'Relative Colorimetric', 2 => 'Saturation', 3 => 'Absolute Colorimetric'],
                 'Protected' => 1,
                 'ValueConv' => $f_e9f5acccb2,
+                'ValueConvInv' => $f_bf7df0127e,
                 'Writable' => 1,
             ],
             'sTER' => [
@@ -359,7 +368,10 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'ModifyDate',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
                 'ValueConv' => $f_ff909df216,
+                'ValueConvInv' => $f_f2396d0cf1,
                 'Writable' => 1,
             ],
             'tRNS' => [
@@ -409,10 +421,12 @@ return [
                 'Name' => 'PixelUnits',
                 'PrintConv' => [0 => 'Unknown', 1 => 'meters'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'GROUPS' => [1 => 'PNG-pHYs', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
             'WRITE_GROUP' => 'PNG-pHYs',
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::PNG::PrimaryChromaticities' => [
             0 => [
@@ -493,7 +507,10 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'CreationTime',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_289bae1164,
                 'RawConv' => 'Image\\ExifTool\\PNG::ConvertPNGDate',
+                'Shift' => 'Time',
+                'ValueConvInv' => 'Image\\ExifTool\\PNG::InversePNGDate',
             ],
             'Description' => [
             ],
@@ -581,12 +598,14 @@ return [
             ],
             'TimeStamp' => [
                 'Groups' => [2 => 'Time'],
+                'Shift' => 'Time',
             ],
             'Title' => [
             ],
             'URL' => [
             ],
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::DummyWriteProc',
             'Warning' => [
                 'Name' => 'PNGWarning',
             ],
@@ -603,13 +622,19 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'CreateDate',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_289bae1164,
+                'Shift' => 'Time',
                 'ValueConv' => $f_cf49427e8a,
+                'ValueConvInv' => $f_f93e852c17,
             ],
             'modify-date' => [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'ModDate',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_289bae1164,
+                'Shift' => 'Time',
                 'ValueConv' => $f_cf49427e8a,
+                'ValueConvInv' => $f_f93e852c17,
             ],
             'parameters' => [
             ],

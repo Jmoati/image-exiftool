@@ -11,33 +11,41 @@ $f_7e2cb6f147 = static function ($val, ExifTool $self, array &$vals, array $prt,
     $a = array_map(static fn ($_) => Perl::sprintf('%.3f', $_), Perl::split(' ', $val));
     return implode(' ', $a);
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
+$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
 $f_2a20e62bf5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertUnixTime($val);
 };
+$f_8b8cfb0849 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 8b8cfb0849'); };
 $f_b83b0ea072 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.2f C', $val);
 };
+$f_1845a2bd14 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1845a2bd14'); };
 $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintExposureTime($val);
 };
+$f_153707d441 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 153707d441'); };
 $f_d2cf720ed7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return abs(Perl::num($val)) < 100 ? 2 ** (-Perl::num($val)) : 0;
 };
+$f_673fbe2bf7 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 673fbe2bf7'); };
 $f_9c98df8b6c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f', $val);
 };
 $f_eb246ca11c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 2 ** (Perl::num($val) / 2);
 };
+$f_f7269b80bc = static function (mixed ...$args) { throw new NotPorted('ValueConvInv f7269b80bc'); };
 $f_425cb343e9 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.3f', $val);
 };
 $f_8f0e71a82a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f mm', $val);
 };
+$f_c74468af9a = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c74468af9a'); };
 $f_040a06a4fe = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $order = ExifTool::GetByteOrder();
     if (\strlen(Perl::str($val)) >= 8 && ExifTool::SetByteOrder(substr($val, 0, 2))) {
@@ -72,6 +80,7 @@ return [
                 'Format' => 'float',
                 'Name' => 'ColorMatrix1',
                 'PrintConv' => $f_7e2cb6f147,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             263 => [
                 'Count' => 3,
@@ -117,8 +126,11 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'DateTimeOriginal',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
                 'Priority' => 0,
+                'Shift' => 'Time',
                 'ValueConv' => $f_2a20e62bf5,
+                'ValueConvInv' => $f_8b8cfb0849,
                 'Writable' => 0,
             ],
             275 => 'ImageNumber',
@@ -134,19 +146,24 @@ return [
                 'Format' => 'float',
                 'Name' => 'SensorTemperature',
                 'PrintConv' => $f_b83b0ea072,
+                'PrintConvInv' => $f_1845a2bd14,
             ],
             529 => [
                 'Format' => 'float',
                 'Name' => 'SensorTemperature2',
                 'PrintConv' => $f_b83b0ea072,
+                'PrintConvInv' => $f_1845a2bd14,
             ],
             530 => [
                 'Format' => 'int32u',
                 'Groups' => [2 => 'Time'],
                 'Name' => 'UnknownDate',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
                 'Unknown' => 1,
                 'ValueConv' => $f_2a20e62bf5,
+                'ValueConvInv' => $f_8b8cfb0849,
             ],
             540 => [
                 'Binary' => 1,
@@ -173,6 +190,7 @@ return [
                 'Format' => 'float',
                 'Name' => 'ColorMatrix2',
                 'PrintConv' => $f_7e2cb6f147,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             555 => [
                 'Flags' => ['Unknown', 'Hidden'],
@@ -206,6 +224,7 @@ return [
                     5 => 'HDR',
                     6 => 'Focus Stacking',
                 ],
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             612 => 'SequenceFrameNumber',
             613 => 'SequenceFrameCount',
@@ -221,23 +240,29 @@ return [
                 'Format' => 'float',
                 'Name' => 'ShutterSpeedValue',
                 'PrintConv' => $f_a941801118,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_d2cf720ed7,
+                'ValueConvInv' => $f_673fbe2bf7,
             ],
             1025 => [
                 'Format' => 'float',
                 'Name' => 'ApertureValue',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_eb246ca11c,
+                'ValueConvInv' => $f_f7269b80bc,
             ],
             1026 => [
                 'Format' => 'float',
                 'Name' => 'ExposureCompensation',
                 'PrintConv' => $f_425cb343e9,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             1027 => [
                 'Format' => 'float',
                 'Name' => 'FocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_c74468af9a,
             ],
             1040 => [
                 'Format' => 'string',
@@ -251,23 +276,29 @@ return [
                 'Format' => 'float',
                 'Name' => 'MaxApertureValue',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_eb246ca11c,
+                'ValueConvInv' => $f_f7269b80bc,
             ],
             1045 => [
                 'Format' => 'float',
                 'Name' => 'MinApertureValue',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_eb246ca11c,
+                'ValueConvInv' => $f_f7269b80bc,
             ],
             1109 => [
                 'Format' => 'string',
                 'Name' => 'Viewfinder',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'FORMAT' => 'int32s',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\PhaseOne::ProcessPhaseOne',
             'VARS' => ['ENTRY_SIZE' => 16],
             'WRITABLE' => '1',
+            'WRITE_PROC' => 'Image\\ExifTool\\PhaseOne::WritePhaseOne',
         ],
         'Image::ExifTool::PhaseOne::SensorCalibration' => [
             1024 => [
@@ -362,11 +393,13 @@ return [
                 'Name' => 'SensorCalibration_0x041e',
                 'ValueConv' => $f_040a06a4fe,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\PhaseOne::ProcessPhaseOne',
             'TAG_PREFIX' => 'SensorCalibration',
             'VARS' => ['ENTRY_SIZE' => 12],
             'WRITE_GROUP' => 'PhaseOne',
+            'WRITE_PROC' => 'Image\\ExifTool\\PhaseOne::WritePhaseOne',
         ],
     ],
 ];

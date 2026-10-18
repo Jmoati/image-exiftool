@@ -7,12 +7,15 @@ namespace Image\ExifTool;
 $f_0a6503c132 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).'%';
 };
+$f_1bc9b98957 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1bc9b98957'); };
 $f_770b7e2b24 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::unpack('N', $val)[0] ?? null;
 };
+$f_8fe06f8e1e = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 8fe06f8e1e'); };
 $f_c8863b2298 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->Decode(\strlen($val) < 4 ? null : substr($val, 4), 'UTF16', 'MM');
 };
+$f_23408319fe = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 23408319fe'); };
 $f_9c98df8b6c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f', $val);
 };
@@ -47,8 +50,10 @@ return [
                 'Avoid' => 1,
                 'Name' => 'Quality',
                 'PrintConv' => $f_0a6503c132,
+                'PrintConvInv' => $f_1bc9b98957,
                 'Priority' => 0,
                 'ValueConv' => $f_770b7e2b24,
+                'ValueConvInv' => $f_8fe06f8e1e,
                 'Writable' => 'int32u',
             ],
             2 => [
@@ -56,6 +61,7 @@ return [
                 'Name' => 'Comment',
                 'Priority' => 0,
                 'ValueConv' => $f_c8863b2298,
+                'ValueConvInv' => $f_23408319fe,
             ],
             3 => [
                 'Avoid' => 1,
@@ -63,10 +69,12 @@ return [
                 'Name' => 'Copyright',
                 'Priority' => 0,
                 'ValueConv' => $f_c8863b2298,
+                'ValueConvInv' => $f_23408319fe,
             ],
             'GROUPS' => [0 => 'Ducky', 1 => 'Ducky', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\APP12::ProcessDucky',
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\APP12::WriteDucky',
         ],
         'Image::ExifTool::APP12::PictureInfo' => [
             'Aperture' => [

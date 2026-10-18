@@ -13,6 +13,7 @@ $f_0ba4b3ba90 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
+$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
 
 return [
     'load' => [
@@ -95,6 +96,7 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'CreateDate',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
                 'Priority' => 0,
                 'Writable' => 'string',
             ],
@@ -120,6 +122,7 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'ModifyDate',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
                 'Priority' => 0,
                 'Writable' => 'string',
             ],
@@ -148,6 +151,7 @@ return [
                 'Priority' => 0,
                 'Writable' => 'string',
             ],
+            'WRITE_PROC' => 'Image\\ExifTool\\PostScript::WritePS',
             'begin_xml_packet' => [
                 'Name' => 'XMP',
                 'SubDirectory' => [

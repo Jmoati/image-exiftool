@@ -16,9 +16,11 @@ $f_b65fa03351 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_81c40c5c49 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('Min %.0f', $val);
 };
+$f_f58795f79e = static function (mixed ...$args) { throw new NotPorted('PrintConvInv f58795f79e'); };
 $f_57c35c4389 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) < 2 ? $val : (Perl::num($val) < 1000 ? exp((Perl::num($val) / 8 - 9) * log(2)) * 100 : 0);
 };
+$f_6af727d742 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 6af727d742'); };
 $f_865c44b95d = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/\b90D\b/', Perl::str($self->Model));
 };
@@ -28,6 +30,7 @@ $f_879da8366e = static function (ExifTool $self, $valPt, $format, $count) {
 $f_65dce64847 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('Flags 0x%x', $val);
 };
+$f_c7922760f0 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c7922760f0'); };
 $f_f5d1c620fc = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::num($count) == 3;
 };
@@ -37,9 +40,11 @@ $f_19be2a4a85 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_e3548bcb4c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 'Lo '.Perl::str(Exif::PrintExposureTime($val));
 };
+$f_967a809307 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 967a809307'); };
 $f_771048c894 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return exp(-(Perl::num($val) / 8 - 7) * log(2));
 };
+$f_f7cd287e0e = static function (mixed ...$args) { throw new NotPorted('ValueConvInv f7cd287e0e'); };
 $f_25aacc7a3f = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::num($count) == 4;
 };
@@ -52,15 +57,18 @@ $f_12b4ad6bd7 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_029251059d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return exp(-Perl::num($val) / (1600 * log(2)));
 };
+$f_a95f050be4 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv a95f050be4'); };
 $f_21f407a849 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('Closed %.2g', $val);
 };
 $f_0ce70502d2 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('Open %.2g', $val);
 };
+$f_6b055d65d8 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 6b055d65d8'); };
 $f_720953198c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return exp((Perl::num($val) / 8 - 1) * log(2) / 2);
 };
+$f_acb7175dfc = static function (mixed ...$args) { throw new NotPorted('ValueConvInv acb7175dfc'); };
 $f_d6e867c12a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('Manual: Closed %.2g', $val);
 };
@@ -70,6 +78,7 @@ $f_371203d348 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_0e19204823 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return exp(Perl::num($val) / 2400);
 };
+$f_a6bac7eadf = static function (mixed ...$args) { throw new NotPorted('ValueConvInv a6bac7eadf'); };
 $f_6dae69e419 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/\b(40D|1Ds Mark III)\b/', Perl::str($self->Model));
 };
@@ -137,6 +146,7 @@ $f_073336b0d3 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_fed9eb19bc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 'Soft LS '.Perl::str($val);
 };
+$f_8fb65bcfb5 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 8fb65bcfb5'); };
 $f_0aabebce8b = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::num($count) == 5;
 };
@@ -189,21 +199,26 @@ $f_3db21e9047 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_4a34856750 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 'After release: '.Perl::str($val);
 };
+$f_a2cc1f73f2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv a2cc1f73f2'); };
 $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintExposureTime($val);
 };
+$f_153707d441 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 153707d441'); };
 $f_4a32ad4088 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Perl::num($val) > 0 ? $val : 0;
 };
 $f_877710ad68 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return exp(-Perl::num(Canon::CanonEv(Perl::num($val) * 4)) * log(2)) * 1000 / 8;
 };
+$f_0a0801ad38 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 0a0801ad38'); };
 $f_6e8113b609 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.2g', $val);
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 $f_c00e49c694 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return exp(Perl::num(Canon::CanonEv(Perl::num($val) * 4 - 32)) * log(2) / 2);
 };
+$f_a9afffc453 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv a9afffc453'); };
 
 $d_1 = [0 => 'On', 1 => 'Off'];
 $d_2 = [0 => 'Disable', 1 => 'Enable'];
@@ -330,9 +345,11 @@ return [
                     5 => 'IS start',
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\CanonCustom::CheckCanonCustom',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\CanonCustom::ProcessCanonCustom',
             'WRITABLE' => 'int8u',
+            'WRITE_PROC' => 'Image\\ExifTool\\CanonCustom::WriteCanonCustom',
         ],
         'Image::ExifTool::CanonCustom::Functions1D' => [
             0 => [
@@ -470,9 +487,11 @@ return [
                 'Name' => 'AIServoContinuousShooting',
                 'PrintConv' => [0 => 'Shooting not possible without focus', 1 => 'Shooting possible without focus'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\CanonCustom::CheckCanonCustom',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\CanonCustom::ProcessCanonCustom',
             'WRITABLE' => 'int8u',
+            'WRITE_PROC' => 'Image\\ExifTool\\CanonCustom::WriteCanonCustom',
         ],
         'Image::ExifTool::CanonCustom::Functions2' => [
             257 => [
@@ -500,7 +519,9 @@ return [
                     'Count' => 3,
                     'Name' => 'ISOSpeedRange',
                     'PrintConv' => new ConvList([$d_2, $f_b65fa03351, $f_81c40c5c49]),
+                    'PrintConvInv' => new ConvList([null, $f_f58795f79e, $f_f58795f79e]),
                     'ValueConv' => new ConvList([null, $f_57c35c4389, $f_57c35c4389]),
+                    'ValueConvInv' => new ConvList([null, $f_6af727d742, $f_6af727d742]),
                 ],
                 [
                     'Name' => 'ISOExpansion',
@@ -546,11 +567,13 @@ return [
                     'Count' => 1,
                     'Name' => 'UsableShootingModes',
                     'PrintConv' => $f_65dce64847,
+                    'PrintConvInv' => $f_c7922760f0,
                 ],
                 [
                     'Count' => 2,
                     'Name' => 'UsableShootingModes',
                     'PrintConv' => new ConvList([$d_2, $f_65dce64847]),
+                    'PrintConvInv' => new ConvList([null, $f_c7922760f0]),
                 ],
             ],
             266 => [
@@ -559,11 +582,13 @@ return [
                     'Count' => 1,
                     'Name' => 'UsableMeteringModes',
                     'PrintConv' => $f_65dce64847,
+                    'PrintConvInv' => $f_c7922760f0,
                 ],
                 [
                     'Count' => 2,
                     'Name' => 'UsableMeteringModes',
                     'PrintConv' => new ConvList([$d_2, $f_65dce64847]),
+                    'PrintConvInv' => new ConvList([null, $f_c7922760f0]),
                 ],
             ],
             267 => [
@@ -582,14 +607,18 @@ return [
                     'Count' => 3,
                     'Name' => 'ShutterSpeedRange',
                     'PrintConv' => new ConvList([$d_2, $f_19be2a4a85, $f_e3548bcb4c]),
+                    'PrintConvInv' => new ConvList([null, $f_967a809307, $f_967a809307]),
                     'ValueConv' => new ConvList([null, $f_771048c894, $f_771048c894]),
+                    'ValueConvInv' => new ConvList([null, $f_f7cd287e0e, $f_f7cd287e0e]),
                 ],
                 [
                     'Condition' => $f_25aacc7a3f,
                     'Count' => 4,
                     'Name' => 'ShutterSpeedRange',
                     'PrintConv' => new ConvList([$f_6ddd031646, $f_e3548bcb4c, $f_12b4ad6bd7, $f_e3548bcb4c]),
+                    'PrintConvInv' => new ConvList([$f_967a809307, $f_967a809307, $f_967a809307, $f_967a809307]),
                     'ValueConv' => new ConvList([$f_029251059d, $f_029251059d, $f_029251059d, $f_029251059d]),
+                    'ValueConvInv' => new ConvList([$f_a95f050be4, $f_a95f050be4, $f_a95f050be4, $f_a95f050be4]),
                 ],
             ],
             269 => [
@@ -598,14 +627,18 @@ return [
                     'Count' => 3,
                     'Name' => 'ApertureRange',
                     'PrintConv' => new ConvList([$d_2, $f_21f407a849, $f_0ce70502d2]),
+                    'PrintConvInv' => new ConvList([null, $f_6b055d65d8, $f_6b055d65d8]),
                     'ValueConv' => new ConvList([null, $f_720953198c, $f_720953198c]),
+                    'ValueConvInv' => new ConvList([null, $f_acb7175dfc, $f_acb7175dfc]),
                 ],
                 [
                     'Condition' => $f_25aacc7a3f,
                     'Count' => 4,
                     'Name' => 'ApertureRange',
                     'PrintConv' => new ConvList([$f_d6e867c12a, $f_0ce70502d2, $f_371203d348, $f_0ce70502d2]),
+                    'PrintConvInv' => new ConvList([$f_6b055d65d8, $f_6b055d65d8, $f_6b055d65d8, $f_6b055d65d8]),
                     'ValueConv' => new ConvList([$f_0e19204823, $f_0e19204823, $f_0e19204823, $f_0e19204823]),
+                    'ValueConvInv' => new ConvList([$f_a6bac7eadf, $f_a6bac7eadf, $f_a6bac7eadf, $f_a6bac7eadf]),
                 ],
             ],
             270 => [
@@ -938,6 +971,7 @@ return [
             1298 => [
                 'Name' => 'SelectAFAreaSelectMode',
                 'PrintConv' => new ConvList([[0 => 'Disable', 1 => 'Enable', 2 => 'Register', 3 => 'Select AF-modes'], $f_65dce64847]),
+                'PrintConvInv' => new ConvList([null, $f_c7922760f0]),
             ],
             1299 => [
                 'Name' => 'ManualAFPointSelectPattern',
@@ -996,23 +1030,27 @@ return [
                     'Count' => 6,
                     'Name' => 'ContinuousShootingSpeed',
                     'PrintConv' => new ConvList([$d_2, $f_47556daa49, $f_ccb6c8a950, $f_42f734b578, $f_073336b0d3, $f_fed9eb19bc]),
+                    'PrintConvInv' => new ConvList([null, $f_8fb65bcfb5, $f_8fb65bcfb5, $f_8fb65bcfb5, $f_8fb65bcfb5, $f_8fb65bcfb5]),
                 ],
                 [
                     'Condition' => $f_0aabebce8b,
                     'Count' => 5,
                     'Name' => 'ContinuousShootingSpeed',
                     'PrintConv' => new ConvList([$f_47556daa49, $f_ccb6c8a950, $f_42f734b578, $f_073336b0d3, $f_fed9eb19bc]),
+                    'PrintConvInv' => new ConvList([$f_8fb65bcfb5, $f_8fb65bcfb5, $f_8fb65bcfb5, $f_8fb65bcfb5, $f_8fb65bcfb5]),
                 ],
                 [
                     'Count' => 3,
                     'Name' => 'ContinuousShootingSpeed',
                     'PrintConv' => new ConvList([$d_2, $f_47556daa49, $f_42f734b578]),
+                    'PrintConvInv' => new ConvList([null, $f_8fb65bcfb5, $f_8fb65bcfb5]),
                 ],
             ],
             1553 => [
                 'Count' => 2,
                 'Name' => 'ContinuousShotLimit',
                 'PrintConv' => new ConvList([$d_2, $f_db8d959ce4]),
+                'PrintConvInv' => new ConvList([null, $f_8fb65bcfb5]),
             ],
             1554 => [
                 [
@@ -1020,11 +1058,13 @@ return [
                     'Count' => 1,
                     'Name' => 'RestrictDriveModes',
                     'PrintConv' => $f_65dce64847,
+                    'PrintConvInv' => $f_c7922760f0,
                 ],
                 [
                     'Count' => 2,
                     'Name' => 'RestrictDriveModes',
                     'PrintConv' => new ConvList([$d_2, $f_65dce64847]),
+                    'PrintConvInv' => new ConvList([null, $f_c7922760f0]),
                 ],
             ],
             1793 => [
@@ -1291,11 +1331,13 @@ return [
                     'Count' => 3,
                     'Name' => 'TimerLength',
                     'PrintConv' => new ConvList([$f_018505f5f1, $f_3db21e9047, $f_4a34856750]),
+                    'PrintConvInv' => new ConvList([$f_a2cc1f73f2, $f_a2cc1f73f2, $f_a2cc1f73f2]),
                 ],
                 [
                     'Count' => 4,
                     'Name' => 'TimerLength',
                     'PrintConv' => new ConvList([$d_2, $f_018505f5f1, $f_3db21e9047, $f_4a34856750]),
+                    'PrintConvInv' => new ConvList([null, $f_a2cc1f73f2, $f_a2cc1f73f2, $f_a2cc1f73f2]),
                 ],
             ],
             2061 => [
@@ -1343,9 +1385,11 @@ return [
                 'Name' => 'AudioCompression',
                 'PrintConv' => $d_3,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\CanonCustom::ProcessCanonCustom2',
             'WRITABLE' => 'int32s',
+            'WRITE_PROC' => 'Image\\ExifTool\\CanonCustom::WriteCanonCustom2',
         ],
         'Image::ExifTool::CanonCustom::Functions20D' => [
             0 => [
@@ -1435,9 +1479,11 @@ return [
                 'Name' => 'AddOriginalDecisionData',
                 'PrintConv' => $d_4,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\CanonCustom::CheckCanonCustom',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\CanonCustom::ProcessCanonCustom',
             'WRITABLE' => 'int8u',
+            'WRITE_PROC' => 'Image\\ExifTool\\CanonCustom::WriteCanonCustom',
         ],
         'Image::ExifTool::CanonCustom::Functions30D' => [
             1 => [
@@ -1531,9 +1577,11 @@ return [
                 'Name' => 'AddOriginalDecisionData',
                 'PrintConv' => $d_4,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\CanonCustom::CheckCanonCustom',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\CanonCustom::ProcessCanonCustom',
             'WRITABLE' => 'int8u',
+            'WRITE_PROC' => 'Image\\ExifTool\\CanonCustom::WriteCanonCustom',
         ],
         'Image::ExifTool::CanonCustom::Functions350D' => [
             0 => [
@@ -1579,9 +1627,11 @@ return [
                 'Name' => 'ShutterCurtainSync',
                 'PrintConv' => [0 => '1st-curtain sync', 1 => '2nd-curtain sync'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\CanonCustom::CheckCanonCustom',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\CanonCustom::ProcessCanonCustom',
             'WRITABLE' => 'int8u',
+            'WRITE_PROC' => 'Image\\ExifTool\\CanonCustom::WriteCanonCustom',
         ],
         'Image::ExifTool::CanonCustom::Functions400D' => [
             0 => [
@@ -1635,9 +1685,11 @@ return [
                 'Name' => 'LCDDisplayAtPowerOn',
                 'PrintConv' => [0 => 'Display', 1 => 'Retain power off status'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\CanonCustom::CheckCanonCustom',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\CanonCustom::ProcessCanonCustom',
             'WRITABLE' => 'int8u',
+            'WRITE_PROC' => 'Image\\ExifTool\\CanonCustom::WriteCanonCustom',
         ],
         'Image::ExifTool::CanonCustom::Functions5D' => [
             0 => [
@@ -1739,9 +1791,11 @@ return [
                 'Name' => 'AddOriginalDecisionData',
                 'PrintConv' => $d_4,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\CanonCustom::CheckCanonCustom',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\CanonCustom::ProcessCanonCustom',
             'WRITABLE' => 'int8u',
+            'WRITE_PROC' => 'Image\\ExifTool\\CanonCustom::WriteCanonCustom',
         ],
         'Image::ExifTool::CanonCustom::FunctionsD30' => [
             1 => [
@@ -1816,9 +1870,11 @@ return [
                 'Name' => 'ShutterReleaseNoCFCard',
                 'PrintConv' => [0 => 'Yes', 1 => 'No'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\CanonCustom::CheckCanonCustom',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\CanonCustom::ProcessCanonCustom',
             'WRITABLE' => 'int8u',
+            'WRITE_PROC' => 'Image\\ExifTool\\CanonCustom::WriteCanonCustom',
         ],
         'Image::ExifTool::CanonCustom::PersonalFuncValues' => [
             1 => 'PF1Value',
@@ -1827,26 +1883,34 @@ return [
             4 => [
                 'Name' => 'PF4ExposureTimeMin',
                 'PrintConv' => $f_a941801118,
+                'PrintConvInv' => $f_153707d441,
                 'RawConv' => $f_4a32ad4088,
                 'ValueConv' => $f_877710ad68,
+                'ValueConvInv' => $f_0a0801ad38,
             ],
             5 => [
                 'Name' => 'PF4ExposureTimeMax',
                 'PrintConv' => $f_a941801118,
+                'PrintConvInv' => $f_153707d441,
                 'RawConv' => $f_4a32ad4088,
                 'ValueConv' => $f_877710ad68,
+                'ValueConvInv' => $f_0a0801ad38,
             ],
             6 => [
                 'Name' => 'PF5ApertureMin',
                 'PrintConv' => $f_6e8113b609,
+                'PrintConvInv' => $f_1d8918cb54,
                 'RawConv' => $f_4a32ad4088,
                 'ValueConv' => $f_c00e49c694,
+                'ValueConvInv' => $f_a9afffc453,
             ],
             7 => [
                 'Name' => 'PF5ApertureMax',
                 'PrintConv' => $f_6e8113b609,
+                'PrintConvInv' => $f_1d8918cb54,
                 'RawConv' => $f_4a32ad4088,
                 'ValueConv' => $f_c00e49c694,
+                'ValueConvInv' => $f_a9afffc453,
             ],
             8 => 'PF8BracketShots',
             9 => 'PF19ShootingSpeedLow',
@@ -1865,134 +1929,167 @@ return [
             22 => 'PF25Parameters',
             23 => 'PF25ColorMatrix',
             24 => 'PF27Value',
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 1,
             'FORMAT' => 'int16u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::CanonCustom::PersonalFuncs' => [
             1 => [
                 'Name' => 'PF0CustomFuncRegistration',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             2 => [
                 'Name' => 'PF1DisableShootingModes',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             3 => [
                 'Name' => 'PF2DisableMeteringModes',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             4 => [
                 'Name' => 'PF3ManualExposureMetering',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             5 => [
                 'Name' => 'PF4ExposureTimeLimits',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             6 => [
                 'Name' => 'PF5ApertureLimits',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             7 => [
                 'Name' => 'PF6PresetShootingModes',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             8 => [
                 'Name' => 'PF7BracketContinuousShoot',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             9 => [
                 'Name' => 'PF8SetBracketShots',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             10 => [
                 'Name' => 'PF9ChangeBracketSequence',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             11 => [
                 'Name' => 'PF10RetainProgramShift',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             14 => [
                 'Name' => 'PF13DrivePriority',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             15 => [
                 'Name' => 'PF14DisableFocusSearch',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             16 => [
                 'Name' => 'PF15DisableAFAssistBeam',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             17 => [
                 'Name' => 'PF16AutoFocusPointShoot',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             18 => [
                 'Name' => 'PF17DisableAFPointSel',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             19 => [
                 'Name' => 'PF18EnableAutoAFPointSel',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             20 => [
                 'Name' => 'PF19ContinuousShootSpeed',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             21 => [
                 'Name' => 'PF20LimitContinousShots',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             22 => [
                 'Name' => 'PF21EnableQuietOperation',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             24 => [
                 'Name' => 'PF23SetTimerLengths',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             25 => [
                 'Name' => 'PF24LightLCDDuringBulb',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             26 => [
                 'Name' => 'PF25DefaultClearSettings',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             27 => [
                 'Name' => 'PF26ShortenReleaseLag',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             28 => [
                 'Name' => 'PF27ReverseDialRotation',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             29 => [
                 'Name' => 'PF28NoQuickDialExpComp',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             30 => [
                 'Name' => 'PF29QuickDialSwitchOff',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             31 => [
                 'Name' => 'PF30EnlargementMode',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
             32 => [
                 'Name' => 'PF31OriginalDecisionData',
                 'PrintConv' => 'Image\\ExifTool\\CanonCustom::ConvertPfn',
+                'PrintConvInv' => 'Image\\ExifTool\\CanonCustom::ConvertPfnInv',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 1,
             'FORMAT' => 'int16u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
     ],
 ];

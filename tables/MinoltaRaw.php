@@ -35,12 +35,14 @@ $f_22935065a3 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_b94c7bf60c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) * 100;
 };
+$f_b2e9e0be57 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv b2e9e0be57'); };
 $f_bcf0582141 = static function (ExifTool $self, $valPt, $format, $count) {
     return (bool) preg_match('/^SONY/', Perl::str($self->Make));
 };
 $f_bd1a8a43d0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? $val : 'Auto';
 };
+$f_0005d99e19 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 0005d99e19'); };
 $f_db49c4f56d = static function (ExifTool $self, $valPt, $format, $count) {
     return (bool) preg_match('/^DSLR-A(200|700)$/', Perl::str($self->Model));
 };
@@ -70,6 +72,7 @@ return [
                 'SubDirectory' => [
                     'ProcessProc' => 'Image\\ExifTool\\ExifTool::ProcessTIFF',
                     'TagTable' => 'Image::ExifTool::Exif::Main',
+                    'WriteProc' => 'Image\\ExifTool\\ExifTool::WriteTIFF',
                 ],
             ],
             "\x00WBG" => [
@@ -80,6 +83,7 @@ return [
             ],
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\MinoltaRaw::ProcessMRW',
+            'WRITE_PROC' => 'Image\\ExifTool\\MinoltaRaw::WriteMRW',
         ],
         'Image::ExifTool::MinoltaRaw::PRD' => [
             0 => [
@@ -121,11 +125,13 @@ return [
                 'Name' => 'BayerPattern',
                 'PrintConv' => [1 => 'RGGB', 4 => 'GBRG'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [0],
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::MinoltaRaw::RIF' => [
             1 => [
@@ -295,6 +301,7 @@ return [
                 'Condition' => $f_6f13ad7ab9,
                 'Name' => 'ColorTemperature',
                 'ValueConv' => $f_b94c7bf60c,
+                'ValueConvInv' => $f_b2e9e0be57,
             ],
             74 => [
                 'Condition' => $f_bcf0582141,
@@ -306,7 +313,9 @@ return [
                 'Condition' => $f_bfa0c2c3d6,
                 'Name' => 'ColorTemperature',
                 'PrintConv' => $f_bd1a8a43d0,
+                'PrintConvInv' => $f_0005d99e19,
                 'ValueConv' => $f_b94c7bf60c,
+                'ValueConvInv' => $f_b2e9e0be57,
             ],
             77 => [
                 'Condition' => $f_bfa0c2c3d6,
@@ -316,7 +325,9 @@ return [
                 'Condition' => $f_db49c4f56d,
                 'Name' => 'ColorTemperature',
                 'PrintConv' => $f_bd1a8a43d0,
+                'PrintConvInv' => $f_0005d99e19,
                 'ValueConv' => $f_b94c7bf60c,
+                'ValueConvInv' => $f_b2e9e0be57,
             ],
             79 => [
                 'Condition' => $f_db49c4f56d,
@@ -328,10 +339,12 @@ return [
                 'Name' => 'RawDataLength',
                 'Writable' => 0,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::MinoltaRaw::WBG' => [
             0 => [
@@ -349,10 +362,12 @@ return [
                     'Name' => 'WB_RGGBLevels',
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
     ],
 ];

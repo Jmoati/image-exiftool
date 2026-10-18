@@ -43,9 +43,11 @@ $f_765073a841 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_d9fec15555 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).' m';
 };
+$f_d68fc876a9 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv d68fc876a9'); };
 $f_7b446e214d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1000;
 };
+$f_9f4b179b48 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 9f4b179b48'); };
 $f_1c903b7f4e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $_ = Perl::str($val);
     if (preg_match('/^(\d{2})(\d{2})\0\0(\d{2})(\d{2})\0\0(\d{2})(.{2})\0{2}$/', $_, $m)) {
@@ -61,6 +63,7 @@ $f_1c903b7f4e = static function ($val, ExifTool $self, array &$vals, array $prt,
     $_ = preg_replace('/\.+$/', '', $_, 1);
     return "Unknown ($_)";
 };
+$f_e122286ae9 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv e122286ae9'); };
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
@@ -72,12 +75,16 @@ $f_7fe5af4688 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_32fa794234 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', 'x');
 };
+$f_4f4b756712 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 4f4b756712'); };
 $f_8f0e71a82a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f mm', $val);
 };
+$f_c74468af9a = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c74468af9a'); };
 $f_0ba968218d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->ValidateImage((is_object($val) || is_array($val)) ? $val : new ScalarRef($val), $tag);
 };
+$f_a9e5ca28a7 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv a9e5ca28a7'); };
+$f_93f659a56e = static function (mixed ...$args) { throw new NotPorted('WriteCheck 93f659a56e'); };
 $f_8f39d73f6e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $_ = Perl::str($val);
     if (preg_match('/^(\d{2})(\d{2})\0\0(\d{2})(\d{2})\0\0(\d{2})\0{4}$/', $_, $m)) {
@@ -101,6 +108,7 @@ $f_8c7544bff1 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_48a49eb03c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) >= 0x20000000 ? 'inf' : Perl::num($val) / 1000;
 };
+$f_3a3d8b301f = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 3a3d8b301f'); };
 $f_d588c51834 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^(\0\0|.\x02\x80\x01\xe0)/s', $valPt);
 };
@@ -188,6 +196,7 @@ $f_be50272027 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_c50ae3b548 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? $val : 'Off';
 };
+$f_8fb65bcfb5 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 8fb65bcfb5'); };
 $f_2f4a2023c8 = static function ($val, $inv, $conv) {
     if ($inv) {
         return preg_match('/(\d+)/', Perl::str($val), $m) ? $m[1] : null;
@@ -201,6 +210,7 @@ $f_865d427e84 = static function ($val, ExifTool $self, array &$vals, array $prt,
     }
     return ($v[1] ?? null) ? $v[1].'-'.$v[0] : (Perl::num($v[0] ?? null) > 10000 ? Perl::num($v[0]) / 1000 : ($v[0] ?? null));
 };
+$f_e8322fcf74 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv e8322fcf74'); };
 
 return [
     'load' => [
@@ -276,11 +286,13 @@ return [
                 'Format' => 'int16u[4]',
                 'Name' => 'Face10Position',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [0],
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Casio::FaceInfo2' => [
             2 => [
@@ -348,11 +360,13 @@ return [
                 'Format' => 'int16u[4]',
                 'Name' => 'Face10Position',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [2],
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Casio::Main' => [
             1 => [
@@ -401,7 +415,9 @@ return [
             6 => [
                 'Name' => 'ObjectDistance',
                 'PrintConv' => $f_d9fec15555,
+                'PrintConvInv' => $f_d68fc876a9,
                 'ValueConv' => $f_7b446e214d,
+                'ValueConvInv' => $f_9f4b179b48,
                 'Writable' => 'int32u',
             ],
             7 => [
@@ -440,6 +456,7 @@ return [
                 'Format' => 'undef',
                 'Name' => 'FirmwareDate',
                 'PrintConv' => $f_1c903b7f4e,
+                'PrintConvInv' => $f_e122286ae9,
                 'Writable' => 'string',
             ],
             22 => [
@@ -498,8 +515,10 @@ return [
                     'TagTable' => 'Image::ExifTool::PrintIM::Main',
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Casio::QVCI' => [
             44 => [
@@ -540,6 +559,7 @@ return [
                 'Groups' => [2 => 'Image'],
                 'Name' => 'PreviewImageSize',
                 'PrintConv' => $f_32fa794234,
+                'PrintConvInv' => $f_4f4b756712,
                 'Writable' => 'int16u',
             ],
             3 => [
@@ -599,6 +619,7 @@ return [
             29 => [
                 'Name' => 'FocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_c74468af9a,
                 'Writable' => 'rational64u',
             ],
             31 => [
@@ -629,13 +650,16 @@ return [
                 'Groups' => [2 => 'Preview'],
                 'Name' => 'PreviewImage',
                 'RawConv' => $f_0ba968218d,
+                'ValueConvInv' => $f_a9e5ca28a7,
                 'Writable' => 'undef',
+                'WriteCheck' => $f_93f659a56e,
             ],
             8193 => [
                 'Count' => 18,
                 'Format' => 'undef',
                 'Name' => 'FirmwareDate',
                 'PrintConv' => $f_8f39d73f6e,
+                'PrintConvInv' => $f_e122286ae9,
                 'Writable' => 'string',
             ],
             8209 => [
@@ -667,7 +691,9 @@ return [
             8226 => [
                 'Name' => 'ObjectDistance',
                 'PrintConv' => $f_8c7544bff1,
+                'PrintConvInv' => $f_d68fc876a9,
                 'ValueConv' => $f_48a49eb03c,
+                'ValueConvInv' => $f_3a3d8b301f,
                 'Writable' => 'int32u',
             ],
             8244 => [
@@ -1692,6 +1718,7 @@ return [
                 [
                     'Name' => 'BestShotMode',
                     'PrintConv' => $f_c50ae3b548,
+                    'PrintConvInv' => $f_8fb65bcfb5,
                     'Writable' => 'int16u',
                 ],
             ],
@@ -1837,6 +1864,7 @@ return [
                 'Count' => -1,
                 'Name' => 'CaptureFrameRate',
                 'ValueConv' => $f_865d427e84,
+                'ValueConvInv' => $f_e8322fcf74,
                 'Writable' => 'int16u',
             ],
             16387 => [
@@ -1844,8 +1872,10 @@ return [
                 'PrintConv' => [1 => 'Standard', 3 => 'HD (720p)', 4 => 'Full HD (1080p)', 5 => 'Low'],
                 'Writable' => 'int16u',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
     ],
 ];

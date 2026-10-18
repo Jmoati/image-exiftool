@@ -12,15 +12,19 @@ $f_a32435b63c = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_b6c0baa5a0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.2f', Perl::num($val) / 300);
 };
+$f_dd102c17a8 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv dd102c17a8'); };
 $f_8f4757174a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return (Perl::num($val) + 100) / 2;
 };
+$f_9b29086c84 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 9b29086c84'); };
 $f_28f4f642f1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f deg', Perl::num($val) / 1000);
 };
+$f_a889049cd9 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv a889049cd9'); };
 $f_a2edd7d09b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f', Perl::num($val) / 10);
 };
+$f_6bb94a816c = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 6bb94a816c'); };
 $f_776710f713 = static function ($start, $base = 0) {
     return $start;
 };
@@ -30,6 +34,7 @@ $f_5879ccff58 = static function ($valuePtr = null, $val = null, $dirStart = null
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
+$f_9183f2970f = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 9183f2970f'); };
 
 return [
     'load' => [
@@ -142,6 +147,7 @@ return [
                 'Name' => 'BrightnessAdj',
                 'Permanent' => 1,
                 'PrintConv' => $f_b6c0baa5a0,
+                'PrintConvInv' => $f_dd102c17a8,
                 'Writable' => 'int32s',
             ],
             32793 => [
@@ -207,18 +213,21 @@ return [
                 'Name' => 'NoiseReductionValue',
                 'Permanent' => 1,
                 'ValueConv' => $f_8f4757174a,
+                'ValueConvInv' => $f_9b29086c84,
                 'Writable' => 'int32s',
             ],
             32808 => [
                 'Name' => 'EdgeNoiseReduction',
                 'Permanent' => 1,
                 'ValueConv' => $f_8f4757174a,
+                'ValueConvInv' => $f_9b29086c84,
                 'Writable' => 'int32s',
             ],
             32809 => [
                 'Name' => 'ColorNoiseReduction',
                 'Permanent' => 1,
                 'ValueConv' => $f_8f4757174a,
+                'ValueConvInv' => $f_9b29086c84,
                 'Writable' => 'int32s',
             ],
             32813 => [
@@ -311,6 +320,7 @@ return [
                 'Name' => 'InclinationAngle',
                 'Permanent' => 1,
                 'PrintConv' => $f_28f4f642f1,
+                'PrintConvInv' => $f_a889049cd9,
                 'Writable' => 'int32s',
             ],
             36880 => [
@@ -341,6 +351,7 @@ return [
                 'Name' => 'PxShiftPeriphEdgeNRValue',
                 'Permanent' => 1,
                 'PrintConv' => $f_a2edd7d09b,
+                'PrintConvInv' => $f_6bb94a816c,
                 'Writable' => 'int32s',
             ],
             36887 => [
@@ -387,6 +398,8 @@ return [
                 'Name' => 'VersionCreateDate',
                 'Permanent' => 1,
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_9183f2970f,
+                'Shift' => 'Time',
                 'Writable' => 'string',
             ],
             53505 => [
@@ -394,10 +407,14 @@ return [
                 'Name' => 'VersionModifyDate',
                 'Permanent' => 1,
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_9183f2970f,
+                'Shift' => 'Time',
                 'Writable' => 'string',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'SET_GROUP1' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
     ],
 ];

@@ -19,24 +19,31 @@ $f_74930d334f = static function ($val, ExifTool $self, array &$vals, array $prt,
     $_ = preg_replace('/(..)(..)/', '$2 $1', $_, 1);
     return $_;
 };
+$f_152b354212 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 152b354212'); };
 $f_be71053a96 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' mm';
 };
+$f_c74468af9a = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c74468af9a'); };
 $f_9c98df8b6c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f', $val);
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 $f_9c63c6ef84 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 2.0 ** (Perl::num($val) / 512);
 };
+$f_0c4acef443 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 0c4acef443'); };
 $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintExposureTime($val);
 };
+$f_153707d441 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 153707d441'); };
 $f_4c2259640e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return abs(Perl::num($val) / 256) < 100 ? 2.0 ** (-Perl::num($val) / 256) : 0;
 };
+$f_64232c0fc2 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 64232c0fc2'); };
 $f_797e422167 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 256;
 };
+$f_89b6557e7a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 89b6557e7a'); };
 $f_3ab71eb818 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $val ?: null;
 };
@@ -46,12 +53,16 @@ $f_db103e1dfc = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_23e7bf3bd0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 32768;
 };
+$f_d98cb5e8c4 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv d98cb5e8c4'); };
 $f_5741fef021 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 1 / (1 + Perl::num($val) / 32768);
 };
+$f_f213e1be9f = static function (mixed ...$args) { throw new NotPorted('ValueConvInv f213e1be9f'); };
+$f_6a51fad7be = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 6a51fad7be'); };
 $f_1f2667c7fa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->ValidateImage(new ScalarRef($val), $tag);
 };
+$f_93f659a56e = static function (mixed ...$args) { throw new NotPorted('WriteCheck 93f659a56e'); };
 $f_43bee149a1 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->Make = $val;
 };
@@ -73,6 +84,7 @@ $f_776710f713 = static function ($start, $base = 0) {
 $f_9b97315bf7 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return preg_replace('/\s+$/', '', Perl::str($val), 1);
 };
+$f_72fd7f4f55 = static function (mixed ...$args) { throw new NotPorted('code:conv 72fd7f4f55'); };
 $f_a312129faf = static function ($val, $self) {
     $val = preg_replace('/ *\0/', "\n", Perl::str($val), 1);
     $val = preg_replace('/ *\0.*/s', '', $val, 1);
@@ -83,6 +95,7 @@ $f_a312129faf = static function ($val, $self) {
     }
     return $val;
 };
+$f_b50fc3d661 = static function (mixed ...$args) { throw new NotPorted('RawConvInv b50fc3d661'); };
 $f_5879ccff58 = static function ($valuePtr = null, $val = null, $dirStart = null, $dataPt = null) {
     return $val;
 };
@@ -192,30 +205,37 @@ return [
                 'Name' => 'LensTypeModel',
                 'RawConv' => $f_5ca75bdff8,
                 'ValueConv' => $f_74930d334f,
+                'ValueConvInv' => $f_152b354212,
                 'Writable' => 'int16u',
             ],
             4611 => [
                 'Name' => 'FocalLengthIn35mmFormat',
                 'PrintConv' => $f_be71053a96,
+                'PrintConvInv' => $f_c74468af9a,
                 'Writable' => 'int16u',
             ],
             4865 => [
                 'Name' => 'ApertureValue',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Priority' => 0,
                 'ValueConv' => $f_9c63c6ef84,
+                'ValueConvInv' => $f_0c4acef443,
                 'Writable' => 'int16s',
             ],
             4866 => [
                 'Name' => 'ShutterSpeedValue',
                 'PrintConv' => $f_a941801118,
+                'PrintConvInv' => $f_153707d441,
                 'Priority' => 0,
                 'ValueConv' => $f_4c2259640e,
+                'ValueConvInv' => $f_64232c0fc2,
                 'Writable' => 'int16s',
             ],
             4867 => [
                 'Name' => 'SensitivityValue',
                 'ValueConv' => $f_797e422167,
+                'ValueConvInv' => $f_89b6557e7a,
                 'Writable' => 'int16s',
             ],
             4869 => [
@@ -290,14 +310,17 @@ return [
             2 => [
                 'Name' => 'DistortionParam02',
                 'ValueConv' => $f_23e7bf3bd0,
+                'ValueConvInv' => $f_d98cb5e8c4,
             ],
             4 => [
                 'Name' => 'DistortionParam04',
                 'ValueConv' => $f_23e7bf3bd0,
+                'ValueConvInv' => $f_d98cb5e8c4,
             ],
             5 => [
                 'Name' => 'DistortionScale',
                 'ValueConv' => $f_5741fef021,
+                'ValueConvInv' => $f_f213e1be9f,
             ],
             '7.1' => [
                 'Mask' => 15,
@@ -307,24 +330,29 @@ return [
             8 => [
                 'Name' => 'DistortionParam08',
                 'ValueConv' => $f_23e7bf3bd0,
+                'ValueConvInv' => $f_d98cb5e8c4,
             ],
             9 => [
                 'Name' => 'DistortionParam09',
                 'ValueConv' => $f_23e7bf3bd0,
+                'ValueConvInv' => $f_d98cb5e8c4,
             ],
             11 => [
                 'Name' => 'DistortionParam11',
                 'ValueConv' => $f_23e7bf3bd0,
+                'ValueConvInv' => $f_d98cb5e8c4,
             ],
             12 => [
                 'Name' => 'DistortionN',
                 'Unknown' => 1,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16s',
             'GROUPS' => [0 => 'PanasonicRaw', 1 => 'PanasonicRaw', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\PanasonicRaw::ProcessDistortionInfo',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\PanasonicRaw::WriteDistortionInfo',
         ],
         'Image::ExifTool::PanasonicRaw::Main' => [
             1 => [
@@ -385,11 +413,13 @@ return [
             17 => [
                 'Name' => 'RedBalance',
                 'ValueConv' => $f_797e422167,
+                'ValueConvInv' => $f_6a51fad7be,
                 'Writable' => 'int16u',
             ],
             18 => [
                 'Name' => 'BlueBalance',
                 'ValueConv' => $f_797e422167,
+                'ValueConvInv' => $f_6a51fad7be,
                 'Writable' => 'int16u',
             ],
             19 => [
@@ -405,16 +435,19 @@ return [
             24 => [
                 'Name' => 'HighISOMultiplierRed',
                 'ValueConv' => $f_797e422167,
+                'ValueConvInv' => $f_6a51fad7be,
                 'Writable' => 'int16u',
             ],
             25 => [
                 'Name' => 'HighISOMultiplierGreen',
                 'ValueConv' => $f_797e422167,
+                'ValueConvInv' => $f_6a51fad7be,
                 'Writable' => 'int16u',
             ],
             26 => [
                 'Name' => 'HighISOMultiplierBlue',
                 'ValueConv' => $f_797e422167,
+                'ValueConvInv' => $f_6a51fad7be,
                 'Writable' => 'int16u',
             ],
             27 => [
@@ -468,8 +501,10 @@ return [
                 'SubDirectory' => [
                     'ProcessProc' => 'Image\\ExifTool\\PanasonicRaw::ProcessJpgFromRaw',
                     'TagTable' => 'Image::ExifTool::JPEG::Main',
+                    'WriteProc' => 'Image\\ExifTool\\PanasonicRaw::WriteJpgFromRaw',
                 ],
                 'Writable' => 'undef',
+                'WriteCheck' => $f_93f659a56e,
             ],
             47 => [
                 'Name' => 'CropTop',
@@ -544,6 +579,7 @@ return [
             284 => [
                 'Name' => 'Gamma',
                 'ValueConv' => $f_16d19bedee,
+                'ValueConvInv' => $f_6a51fad7be,
                 'Writable' => 'int16u',
             ],
             288 => [
@@ -588,7 +624,9 @@ return [
                 'Groups' => [2 => 'Author'],
                 'Name' => 'Copyright',
                 'Permanent' => 1,
+                'PrintConvInv' => $f_72fd7f4f55,
                 'RawConv' => $f_a312129faf,
+                'RawConvInv' => $f_b50fc3d661,
                 'Writable' => 'string',
                 'WriteGroup' => 'IFD0',
             ],
@@ -623,8 +661,10 @@ return [
                     'TagTable' => 'Image::ExifTool::GPS::Main',
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'EXIF', 1 => 'IFD0', 2 => 'Image'],
             'WRITE_GROUP' => 'IFD0',
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::PanasonicRaw::WBInfo' => [
             0 => 'NumWBEntries',
@@ -684,10 +724,12 @@ return [
                 'Format' => 'int16u[2]',
                 'Name' => 'WB_RBLevels7',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16u',
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::PanasonicRaw::WBInfo2' => [
             0 => 'NumWBEntries',
@@ -747,10 +789,12 @@ return [
                 'Format' => 'int16u[3]',
                 'Name' => 'WB_RGBLevels7',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16u',
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
     ],
 ];

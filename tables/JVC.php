@@ -23,7 +23,9 @@ return [
                 'Name' => 'Quality',
                 'PrintConv' => [0 => 'Low', 1 => 'Normal', 2 => 'Fine'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::JVC::Text' => [
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],

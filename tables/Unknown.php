@@ -16,7 +16,9 @@ return [
                     'TagTable' => 'Image::ExifTool::PrintIM::Main',
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 1 => 'MakerUnknown', 2 => 'Camera'],
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
     ],
 ];

@@ -48,9 +48,15 @@ $f_5817105f7a = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_732e29c6b9 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_match('/^W/i', Perl::str($vals[1])) ? -Perl::num($vals[0]) : $vals[0];
 };
+$f_cb54e897d7 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv cb54e897d7'); };
+$f_dc0ae2b70f = static function (mixed ...$args) { throw new NotPorted('WriteAlso dc0ae2b70f'); };
+$f_ca8a5de2f1 = static function (mixed ...$args) { throw new NotPorted('WriteAlso ca8a5de2f1'); };
+$f_c94d243322 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c94d243322'); };
+$f_7bd1afa45c = static function (mixed ...$args) { throw new NotPorted('WriteAlso 7bd1afa45c'); };
 $f_870d813f22 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', '.');
 };
+$f_55164c9509 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 55164c9509'); };
 $f_6fef8e6758 = static function ($val, $inv, $conv) {
     if (!$inv) return null;
     if (preg_match('/(^|[^A-Z])([NS])(orth|outh)?\b/i', Perl::str($val), $m)) return strtoupper($m[2]);
@@ -60,15 +66,18 @@ $f_6fef8e6758 = static function ($val, $inv, $conv) {
 $f_017f96b76a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1);
 };
+$f_bcfafdb1c8 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv bcfafdb1c8'); };
 $f_d721e23504 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDegrees($val);
 };
+$f_3c8333f6a7 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 3c8333f6a7'); };
 $f_50c8d94b43 = static function ($val, $inv, $conv) {
     if (!$inv) return null;
     if (preg_match('/(^|[^A-Z])([EW])(ast|est)?\b/i', Perl::str($val), $m)) return strtoupper($m[2]);
     if (preg_match('/([-+]?)\d+/', Perl::str($val), $m)) return $m[1] === '-' ? 'W' : 'E';
     return null;
 };
+$f_59a90d20b7 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 59a90d20b7'); };
 $f_eae5f4d018 = static function ($val, $inv, $conv) {
     if (!($inv && preg_match('/^([-+0-9])/', Perl::str($val), $m))) {
         return null;
@@ -78,24 +87,32 @@ $f_eae5f4d018 = static function ($val, $inv, $conv) {
 $f_59af52397a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_match('/^(inf|undef)$/', Perl::str($val)) ? $val : Perl::str($val).' m';
 };
+$f_d68fc876a9 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv d68fc876a9'); };
+$f_948ab7b9c4 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 948ab7b9c4'); };
 $f_1f57b9342a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::PrintTimeStamp($val);
 };
+$f_e715335bd6 = static function (mixed ...$args) { throw new NotPorted('code:conv e715335bd6'); };
 $f_20f3ea07a3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ConvertTimeStamp($val);
 };
+$f_20a9c38ee2 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 20a9c38ee2'); };
 $f_e518854124 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Exif::ConvertExifText($self, $val, 1, $tag);
 };
+$f_78c42a32a3 = static function (mixed ...$args) { throw new NotPorted('RawConvInv 78c42a32a3'); };
+$f_0cc0132acc = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 0cc0132acc'); };
 $f_6c1b7c7113 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return preg_replace('/\0+$/', '', Perl::str($val));
 };
 $f_ea51c8e58d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::ExifDate($val);
 };
+$f_25924ee98a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 25924ee98a'); };
 $f_d9fec15555 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).' m';
 };
+$f_18ae0c4c5d = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 18ae0c4c5d'); };
 
 $d_1 = ['N' => 'North', 'OTHER' => $f_6fef8e6758, 'S' => 'South'];
 $d_2 = ['E' => 'East', 'OTHER' => $f_50c8d94b43, 'W' => 'West'];
@@ -149,22 +166,26 @@ return [
                 'Groups' => [0 => 'Composite', 1 => 'Composite', 2 => 'Location'],
                 'Name' => 'GPSLatitude',
                 'PrintConv' => $f_5f55a3e4a5,
+                'PrintConvInv' => $f_cb54e897d7,
                 'Priority' => 1,
                 'Require' => [0 => 'GPS:GPSLatitude', 1 => 'GPS:GPSLatitudeRef'],
                 'SubDoc' => 1,
                 'ValueConv' => $f_48cf7ca76b,
                 'Writable' => 1,
+                'WriteAlso' => ['GPS:GPSLatitude' => $f_dc0ae2b70f, 'GPS:GPSLatitudeRef' => $f_ca8a5de2f1],
             ],
             'GPSLongitude' => [
                 'Avoid' => 1,
                 'Groups' => [0 => 'Composite', 1 => 'Composite', 2 => 'Location'],
                 'Name' => 'GPSLongitude',
                 'PrintConv' => $f_5817105f7a,
+                'PrintConvInv' => $f_c94d243322,
                 'Priority' => 1,
                 'Require' => [0 => 'GPS:GPSLongitude', 1 => 'GPS:GPSLongitudeRef'],
                 'SubDoc' => 1,
                 'ValueConv' => $f_732e29c6b9,
                 'Writable' => 1,
+                'WriteAlso' => ['GPS:GPSLongitude' => $f_dc0ae2b70f, 'GPS:GPSLongitudeRef' => $f_7bd1afa45c],
             ],
             'GROUPS' => [0 => 'Composite', 1 => 'Composite', 2 => 'Location'],
         ],
@@ -174,6 +195,7 @@ return [
                 'Mandatory' => 1,
                 'Name' => 'GPSVersionID',
                 'PrintConv' => $f_870d813f22,
+                'PrintConvInv' => $f_55164c9509,
                 'Writable' => 'int8u',
             ],
             1 => [
@@ -186,7 +208,9 @@ return [
                 'Count' => 3,
                 'Name' => 'GPSLatitude',
                 'PrintConv' => $f_017f96b76a,
+                'PrintConvInv' => $f_bcfafdb1c8,
                 'ValueConv' => $f_d721e23504,
+                'ValueConvInv' => $f_3c8333f6a7,
                 'Writable' => 'rational64u',
             ],
             3 => [
@@ -199,7 +223,9 @@ return [
                 'Count' => 3,
                 'Name' => 'GPSLongitude',
                 'PrintConv' => $f_017f96b76a,
+                'PrintConvInv' => $f_59a90d20b7,
                 'ValueConv' => $f_d721e23504,
+                'ValueConvInv' => $f_3c8333f6a7,
                 'Writable' => 'rational64u',
             ],
             5 => [
@@ -216,6 +242,8 @@ return [
             6 => [
                 'Name' => 'GPSAltitude',
                 'PrintConv' => $f_59af52397a,
+                'PrintConvInv' => $f_d68fc876a9,
+                'ValueConvInv' => $f_948ab7b9c4,
                 'Writable' => 'rational64u',
             ],
             7 => [
@@ -223,7 +251,10 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'GPSTimeStamp',
                 'PrintConv' => $f_1f57b9342a,
+                'PrintConvInv' => $f_e715335bd6,
+                'Shift' => 'Time',
                 'ValueConv' => $f_20f3ea07a3,
+                'ValueConvInv' => $f_20a9c38ee2,
                 'Writable' => 'rational64u',
             ],
             8 => [
@@ -291,7 +322,9 @@ return [
                 'Count' => 3,
                 'Name' => 'GPSDestLatitude',
                 'PrintConv' => $f_017f96b76a,
+                'PrintConvInv' => $f_bcfafdb1c8,
                 'ValueConv' => $f_d721e23504,
+                'ValueConvInv' => $f_3c8333f6a7,
                 'Writable' => 'rational64u',
             ],
             21 => [
@@ -304,7 +337,9 @@ return [
                 'Count' => 3,
                 'Name' => 'GPSDestLongitude',
                 'PrintConv' => $f_017f96b76a,
+                'PrintConvInv' => $f_59a90d20b7,
                 'ValueConv' => $f_d721e23504,
+                'ValueConvInv' => $f_3c8333f6a7,
                 'Writable' => 'rational64u',
             ],
             23 => [
@@ -330,11 +365,13 @@ return [
             27 => [
                 'Name' => 'GPSProcessingMethod',
                 'RawConv' => $f_e518854124,
+                'RawConvInv' => $f_78c42a32a3,
                 'Writable' => 'undef',
             ],
             28 => [
                 'Name' => 'GPSAreaInformation',
                 'RawConv' => $f_e518854124,
+                'RawConvInv' => $f_78c42a32a3,
                 'Writable' => 'undef',
             ],
             29 => [
@@ -342,8 +379,11 @@ return [
                 'Format' => 'undef',
                 'Groups' => [2 => 'Time'],
                 'Name' => 'GPSDateStamp',
+                'PrintConvInv' => $f_0cc0132acc,
                 'RawConv' => $f_6c1b7c7113,
+                'Shift' => 'Time',
                 'ValueConv' => $f_ea51c8e58d,
+                'ValueConvInv' => $f_25924ee98a,
                 'Writable' => 'string',
             ],
             30 => [
@@ -355,11 +395,14 @@ return [
                 'Description' => 'GPS Horizontal Positioning Error',
                 'Name' => 'GPSHPositioningError',
                 'PrintConv' => $f_d9fec15555,
+                'PrintConvInv' => $f_18ae0c4c5d,
                 'Writable' => 'rational64u',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'EXIF', 1 => 'GPS', 2 => 'Location'],
             'WRITABLE' => 1,
             'WRITE_GROUP' => 'GPS',
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
     ],
 ];

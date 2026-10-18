@@ -76,6 +76,7 @@ $f_f35ab42c3c = static function (array $val, $size, $varSize, ExifTool $self) {
 $f_96e91196b7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) - 4;
 };
+$f_17067bed8c = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 17067bed8c'); };
 $f_ea67e5c065 = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::str($self->SamsungTagName) !== 'DualShot_2';
 };
@@ -111,6 +112,7 @@ $f_f083d1874f = static function ($val, ExifTool $self, array &$vals, array $prt,
     $val = preg_replace('/\x00 */', "\n", $val);
     return $val;
 };
+$f_a07cf94401 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv a07cf94401'); };
 $f_8850269b88 = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::str($self->TIFF_TYPE) === 'SRW' && Perl::str($self->Model) !== 'EK-GN120';
 };
@@ -126,18 +128,23 @@ $f_5396013a83 = static function ($valuePtr = null, $val = null, $dirStart = null
 $f_6a8f5fe893 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_match('/\d/', Perl::str($val)) ? Perl::str($val) . ' C' : $val;
 };
+$f_1845a2bd14 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1845a2bd14'); };
 $f_3d594e1db3 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^\w{5}/', $valPt);
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 $f_c4ce3b175c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/ .*/', '', Perl::str($val), 1);
 };
+$f_25924ee98a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 25924ee98a'); };
 $f_be71053a96 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' mm';
 };
+$f_c74468af9a = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c74468af9a'); };
 $f_ddae2f7edc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 10;
 };
+$f_8f9dd09855 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 8f9dd09855'); };
 $f_edc9eab8c2 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     $self->EncryptionKey = Perl::split(' ', $val);
     return $val;
@@ -145,39 +152,51 @@ $f_edc9eab8c2 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_aeb24e1832 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, '-0');
 };
+$f_af6158172c = static function (mixed ...$args) { throw new NotPorted('RawConvInv af6158172c'); };
 $f_4a447f69fa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, -4);
 };
+$f_3f12b36c39 = static function (mixed ...$args) { throw new NotPorted('RawConvInv 3f12b36c39'); };
 $f_2e02341390 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, -8);
 };
+$f_eaa505fcee = static function (mixed ...$args) { throw new NotPorted('RawConvInv eaa505fcee'); };
 $f_321d502259 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, -1);
 };
+$f_7d7475869f = static function (mixed ...$args) { throw new NotPorted('RawConvInv 7d7475869f'); };
 $f_5b0cbfc5f8 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, 0);
 };
+$f_96c28960ae = static function (mixed ...$args) { throw new NotPorted('RawConvInv 96c28960ae'); };
 $f_d2d2b2f154 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, 4);
 };
+$f_9cbda3dbeb = static function (mixed ...$args) { throw new NotPorted('RawConvInv 9cbda3dbeb'); };
 $f_f326ec0de6 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, -2);
 };
+$f_c66a252e8c = static function (mixed ...$args) { throw new NotPorted('RawConvInv c66a252e8c'); };
 $f_3549cbfabe = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, 0, '-0');
 };
+$f_6c0092b766 = static function (mixed ...$args) { throw new NotPorted('RawConvInv 6c0092b766'); };
 $f_6e0f95f235 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, '-0', -7, -3);
 };
+$f_8e89c1a6d9 = static function (mixed ...$args) { throw new NotPorted('RawConvInv 8e89c1a6d9'); };
 $f_ec4e1c9650 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, 8);
 };
+$f_07637bfd78 = static function (mixed ...$args) { throw new NotPorted('RawConvInv 07637bfd78'); };
 $f_45f65bceae = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, 5);
 };
+$f_11a31d593d = static function (mixed ...$args) { throw new NotPorted('RawConvInv 11a31d593d'); };
 $f_c4d170ca95 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Samsung::Crypt($self, $val, $tagInfo, 2);
 };
+$f_c9186d7902 = static function (mixed ...$args) { throw new NotPorted('RawConvInv c9186d7902'); };
 $f_588a82f62f = static function (array $val, $size, $varSize, ExifTool $self) {
     return $val[0x208] ?? null;
 };
@@ -388,6 +407,7 @@ return [
                     'TagTable' => 'Image::ExifTool::Samsung::IFD',
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int32u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
@@ -395,6 +415,7 @@ return [
             'IS_SUBDIR' => [11],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Samsung::WriteSTMN',
         ],
         'Image::ExifTool::Samsung::OrientationInfo' => [
             0 => [
@@ -407,11 +428,13 @@ return [
             2 => [
                 'Name' => 'RollAngle',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'rational64s',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Samsung::PEgInfo' => [
             'GROUPS' => [0 => 'JSON', 2 => 'Image'],
@@ -444,20 +467,25 @@ return [
             2 => [
                 'Name' => 'PictureWizardSaturation',
                 'ValueConv' => $f_96e91196b7,
+                'ValueConvInv' => $f_17067bed8c,
             ],
             3 => [
                 'Name' => 'PictureWizardSharpness',
                 'ValueConv' => $f_96e91196b7,
+                'ValueConvInv' => $f_17067bed8c,
             ],
             4 => [
                 'Name' => 'PictureWizardContrast',
                 'ValueConv' => $f_96e91196b7,
+                'ValueConvInv' => $f_17067bed8c,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Samsung::PortraitEffect' => [
             'GROUPS' => [0 => 'JSON', 2 => 'Image'],
@@ -1164,6 +1192,7 @@ return [
                 'Groups' => [2 => 'Location'],
                 'Name' => 'LocalLocationName',
                 'ValueConv' => $f_f083d1874f,
+                'ValueConvInv' => $f_a07cf94401,
                 'Writable' => 'string',
             ],
             49 => [
@@ -1208,6 +1237,7 @@ return [
                 'Groups' => [2 => 'Camera'],
                 'Name' => 'CameraTemperature',
                 'PrintConv' => $f_6a8f5fe893,
+                'PrintConvInv' => $f_1845a2bd14,
                 'Writable' => 'rational64s',
             ],
             80 => [
@@ -1302,14 +1332,18 @@ return [
             40984 => [
                 'Name' => 'ExposureTime',
                 'PrintConv' => $f_a941801118,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_c4ce3b175c,
+                'ValueConvInv' => $f_25924ee98a,
                 'Writable' => 'rational64u',
             ],
             40985 => [
                 'Name' => 'FNumber',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Priority' => 0,
                 'ValueConv' => $f_c4ce3b175c,
+                'ValueConvInv' => $f_25924ee98a,
                 'Writable' => 'rational64u',
             ],
             40986 => [
@@ -1317,8 +1351,10 @@ return [
                 'Groups' => [2 => 'Camera'],
                 'Name' => 'FocalLengthIn35mmFormat',
                 'PrintConv' => $f_be71053a96,
+                'PrintConvInv' => $f_c74468af9a,
                 'Priority' => 0,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             40992 => [
                 'Count' => 11,
@@ -1332,24 +1368,28 @@ return [
                 'Count' => 4,
                 'Name' => 'WB_RGGBLevelsUncorrected',
                 'RawConv' => $f_aeb24e1832,
+                'RawConvInv' => $f_af6158172c,
                 'Writable' => 'int32u',
             ],
             40994 => [
                 'Count' => 4,
                 'Name' => 'WB_RGGBLevelsAuto',
                 'RawConv' => $f_4a447f69fa,
+                'RawConvInv' => $f_3f12b36c39,
                 'Writable' => 'int32u',
             ],
             40995 => [
                 'Count' => 4,
                 'Name' => 'WB_RGGBLevelsIlluminator1',
                 'RawConv' => $f_2e02341390,
+                'RawConvInv' => $f_eaa505fcee,
                 'Writable' => 'int32u',
             ],
             40996 => [
                 'Count' => 4,
                 'Name' => 'WB_RGGBLevelsIlluminator2',
                 'RawConv' => $f_321d502259,
+                'RawConvInv' => $f_7d7475869f,
                 'Writable' => 'int32u',
             ],
             40997 => [
@@ -1360,78 +1400,91 @@ return [
                 'Count' => 4,
                 'Name' => 'WB_RGGBLevelsBlack',
                 'RawConv' => $f_aeb24e1832,
+                'RawConvInv' => $f_af6158172c,
                 'Writable' => 'int32s',
             ],
             41008 => [
                 'Count' => 9,
                 'Name' => 'ColorMatrix',
                 'RawConv' => $f_5b0cbfc5f8,
+                'RawConvInv' => $f_96c28960ae,
                 'Writable' => 'int32s',
             ],
             41009 => [
                 'Count' => 9,
                 'Name' => 'ColorMatrixSRGB',
                 'RawConv' => $f_5b0cbfc5f8,
+                'RawConvInv' => $f_96c28960ae,
                 'Writable' => 'int32s',
             ],
             41010 => [
                 'Count' => 9,
                 'Name' => 'ColorMatrixAdobeRGB',
                 'RawConv' => $f_5b0cbfc5f8,
+                'RawConvInv' => $f_96c28960ae,
                 'Writable' => 'int32s',
             ],
             41011 => [
                 'Count' => 4,
                 'Name' => 'CbCrMatrixDefault',
                 'RawConv' => $f_5b0cbfc5f8,
+                'RawConvInv' => $f_96c28960ae,
                 'Writable' => 'int32s',
             ],
             41012 => [
                 'Count' => 4,
                 'Name' => 'CbCrMatrix',
                 'RawConv' => $f_d2d2b2f154,
+                'RawConvInv' => $f_9cbda3dbeb,
                 'Writable' => 'int32s',
             ],
             41013 => [
                 'Count' => 2,
                 'Name' => 'CbCrGainDefault',
                 'RawConv' => $f_aeb24e1832,
+                'RawConvInv' => $f_af6158172c,
                 'Writable' => 'int32u',
             ],
             41014 => [
                 'Count' => 2,
                 'Name' => 'CbCrGain',
                 'RawConv' => $f_f326ec0de6,
+                'RawConvInv' => $f_c66a252e8c,
                 'Writable' => 'int32u',
             ],
             41024 => [
                 'Count' => 23,
                 'Name' => 'ToneCurveSRGBDefault',
                 'RawConv' => $f_3549cbfabe,
+                'RawConvInv' => $f_6c0092b766,
                 'Writable' => 'int32u',
             ],
             41025 => [
                 'Count' => 23,
                 'Name' => 'ToneCurveAdobeRGBDefault',
                 'RawConv' => $f_3549cbfabe,
+                'RawConvInv' => $f_6c0092b766,
                 'Writable' => 'int32u',
             ],
             41026 => [
                 'Count' => 23,
                 'Name' => 'ToneCurveSRGB',
                 'RawConv' => $f_3549cbfabe,
+                'RawConvInv' => $f_6c0092b766,
                 'Writable' => 'int32u',
             ],
             41027 => [
                 'Count' => 23,
                 'Name' => 'ToneCurveAdobeRGB',
                 'RawConv' => $f_3549cbfabe,
+                'RawConvInv' => $f_6c0092b766,
                 'Writable' => 'int32u',
             ],
             41032 => [
                 'Count' => 12,
                 'Name' => 'RawData',
                 'RawConv' => $f_5b0cbfc5f8,
+                'RawConvInv' => $f_96c28960ae,
                 'Unknown' => 1,
                 'Writable' => 'int32s',
             ],
@@ -1439,6 +1492,7 @@ return [
                 'Count' => 8,
                 'Name' => 'Distortion',
                 'RawConv' => $f_5b0cbfc5f8,
+                'RawConvInv' => $f_96c28960ae,
                 'Unknown' => 1,
                 'Writable' => 'int32s',
             ],
@@ -1446,6 +1500,7 @@ return [
                 'Count' => 22,
                 'Name' => 'ChromaticAberration',
                 'RawConv' => $f_6e0f95f235,
+                'RawConvInv' => $f_8e89c1a6d9,
                 'Unknown' => 1,
                 'Writable' => 'int16u',
             ],
@@ -1453,6 +1508,7 @@ return [
                 'Count' => 15,
                 'Name' => 'Vignetting',
                 'RawConv' => $f_3549cbfabe,
+                'RawConvInv' => $f_6c0092b766,
                 'Unknown' => 1,
                 'Writable' => 'int16u',
             ],
@@ -1460,6 +1516,7 @@ return [
                 'Count' => 15,
                 'Name' => 'VignettingCorrection',
                 'RawConv' => $f_3549cbfabe,
+                'RawConvInv' => $f_6c0092b766,
                 'Unknown' => 1,
                 'Writable' => 'int16u',
             ],
@@ -1467,6 +1524,7 @@ return [
                 'Count' => 15,
                 'Name' => 'VignettingSetting',
                 'RawConv' => $f_3549cbfabe,
+                'RawConvInv' => $f_6c0092b766,
                 'Unknown' => 1,
                 'Writable' => 'int16u',
             ],
@@ -1475,6 +1533,7 @@ return [
                 'Hidden' => 1,
                 'Name' => 'Samsung_Type2_0xa055',
                 'RawConv' => $f_ec4e1c9650,
+                'RawConvInv' => $f_07637bfd78,
                 'Unknown' => 1,
                 'Writable' => 'int32s',
             ],
@@ -1483,6 +1542,7 @@ return [
                 'Hidden' => 1,
                 'Name' => 'Samsung_Type2_0xa056',
                 'RawConv' => $f_45f65bceae,
+                'RawConvInv' => $f_11a31d593d,
                 'Unknown' => 1,
                 'Writable' => 'int32s',
             ],
@@ -1491,11 +1551,14 @@ return [
                 'Hidden' => 1,
                 'Name' => 'Samsung_Type2_0xa057',
                 'RawConv' => $f_c4d170ca95,
+                'RawConvInv' => $f_c9186d7902,
                 'Unknown' => 1,
                 'Writable' => 'int32s',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Samsung::sec' => [
             0 => [

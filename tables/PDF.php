@@ -16,9 +16,11 @@ $f_04e4c19583 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
+$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
 $f_a0310d8df4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/^\//', '', Perl::str($val));
 };
+$f_542f2e7986 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 542f2e7986'); };
 $f_986101391e = static function (ExifTool $self, $valPt, $format, $count) {
     return $self->Options('ExtractEmbedded');
 };
@@ -218,11 +220,14 @@ return [
             'Author' => [
                 'Groups' => [2 => 'Author'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\PDF::CheckPDF',
             'CreationDate' => [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'CreateDate',
                 'PDF2' => 1,
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
                 'Writable' => 'date',
             ],
             'Creator' => [
@@ -237,6 +242,8 @@ return [
                 'Name' => 'ModifyDate',
                 'PDF2' => 1,
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
                 'Writable' => 'date',
             ],
             'PRIORITY' => 0,
@@ -247,6 +254,8 @@ return [
                 'Name' => 'SourceModified',
                 'PDF2' => 1,
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
                 'Writable' => 'date',
             ],
             'Subject' => [
@@ -256,9 +265,11 @@ return [
             'Trapped' => [
                 'Protected' => 1,
                 'ValueConv' => $f_a0310d8df4,
+                'ValueConvInv' => $f_542f2e7986,
             ],
             'VARS' => ['CAPTURE' => ['Info']],
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::DummyWriteProc',
         ],
         'Image::ExifTool::PDF::Kids' => [
             'Kids' => [

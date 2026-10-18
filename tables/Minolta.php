@@ -18,87 +18,111 @@ $f_289c9037c6 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_b9974209cd = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::int(Perl::num($val) + 0.5);
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 $f_8ec96387d1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 2.0 ** ((Perl::num($val) - 48) / 8) * 100;
 };
+$f_d1d1df232b = static function (mixed ...$args) { throw new NotPorted('ValueConvInv d1d1df232b'); };
 $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintExposureTime($val);
 };
+$f_153707d441 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 153707d441'); };
 $f_1c2bd4641c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 2.0 ** ((48 - Perl::num($val)) / 8);
 };
+$f_6dac221b88 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 6dac221b88'); };
 $f_9c98df8b6c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f', $val);
 };
 $f_1beaf7c2c1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 2.0 ** ((Perl::num($val) - 8) / 16);
 };
+$f_7bf53fd80d = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 7bf53fd80d'); };
 $f_811b111291 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintFraction($val);
 };
 $f_bb1bcb270a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 3 - 2;
 };
+$f_7f1867f95f = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 7f1867f95f'); };
 $f_8f0e71a82a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f mm', $val);
 };
+$f_c74468af9a = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c74468af9a'); };
 $f_797e422167 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 256;
 };
+$f_b3a5a6c46b = static function (mixed ...$args) { throw new NotPorted('ValueConvInv b3a5a6c46b'); };
 $f_e662e9c143 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? Perl::str($val) . ' m' : 'inf';
 };
+$f_83023e2fde = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 83023e2fde'); };
 $f_7b446e214d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1000;
 };
+$f_9f4b179b48 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 9f4b179b48'); };
 $f_068d592573 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%4d:%.2d:%.2d', (Perl::int($val) >> 16) & 0x0000FFFFFFFFFFFF, (Perl::int($val) & 0xff00) >> 8, Perl::int($val) & 0xff);
 };
+$f_4cd193f991 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 4cd193f991'); };
 $f_50ee14545a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.2d:%.2d:%.2d', (Perl::int($val) >> 16) & 0x0000FFFFFFFFFFFF, (Perl::int($val) & 0xff00) >> 8, Perl::int($val) & 0xff);
 };
 $f_7152aa499b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) - (preg_match('/DiMAGE A2/', Perl::str($self->Model)) ? 5 : 3);
 };
+$f_be90c1e08f = static function (mixed ...$args) { throw new NotPorted('ValueConvInv be90c1e08f'); };
 $f_4d5f302656 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return (Perl::num($val) - 6) / 3;
 };
+$f_45097ede21 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 45097ede21'); };
 $f_54489dbfd4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 8 - 6;
 };
+$f_13fedd9e8e = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 13fedd9e8e'); };
 $f_d3073d1e77 = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::str($self->Model) === 'DiMAGE 7Hi';
 };
 $f_e44c9514cb = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) - 10;
 };
+$f_7f762f40c8 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 7f762f40c8'); };
 $f_b94c7bf60c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) * 100;
 };
+$f_b2e9e0be57 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv b2e9e0be57'); };
 $f_4a1333cef3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 100 - 3;
 };
+$f_c45f046b19 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv c45f046b19'); };
 $f_4828c7c932 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) + 1;
 };
+$f_1c538804b4 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 1c538804b4'); };
 $f_0f31390e2e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 24;
 };
+$f_8034d57c51 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 8034d57c51'); };
+$f_978b58e5ba = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 978b58e5ba'); };
 $f_a63541d7d7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? Exif::PrintExposureTime($val) : 'Bulb';
 };
+$f_016bd30b33 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 016bd30b33'); };
 $f_d18cb03143 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? 2.0 ** (6 - Perl::num($val) / 8) : 0;
 };
+$f_b741ab304b = static function (mixed ...$args) { throw new NotPorted('ValueConvInv b741ab304b'); };
 $f_02272264af = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintFNumber($val);
 };
 $f_da8878109c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 2.0 ** ((Perl::num($val) / 8 - 1) / 2);
 };
+$f_e07886ab98 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv e07886ab98'); };
 $f_22d6c61b16 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' s';
 };
+$f_995d29c08f = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 995d29c08f'); };
 $f_4b82d7ad40 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? 10 / Perl::num($val) : 0;
 };
@@ -120,6 +144,8 @@ $f_4ba3eec248 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_0ba968218d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->ValidateImage((is_object($val) || is_array($val)) ? $val : new ScalarRef($val), $tag);
 };
+$f_a9e5ca28a7 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv a9e5ca28a7'); };
+$f_93f659a56e = static function (mixed ...$args) { throw new NotPorted('WriteCheck 93f659a56e'); };
 $f_a7559f737e = static function (ExifTool $self, $valPt, $format, $count) {
     return !preg_match('/^SONY/', Perl::str($self->Make));
 };
@@ -148,15 +174,18 @@ $f_f77455784a = static function ($val, $inv, $conv) {
     }
     return null;
 };
+$f_c4336cad0c = static function (mixed ...$args) { throw new NotPorted('ValueConvInv c4336cad0c'); };
 $f_d11596abe8 = static function (ExifTool $self, $valPt, $format, $count) {
     return (bool) preg_match('/^(DYNAX 5D|MAXXUM 5D|ALPHA SWEET)/', Perl::str($self->Model));
 };
 $f_fafc4e62b1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return (Perl::num($val) - 106) / 8;
 };
+$f_f16262a420 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv f16262a420'); };
 $f_4bfda33963 = static function ($val) {
     return implode(' ', array_map(static fn ($_) => Perl::str((Perl::num($_) - 106) / 8), Perl::split(' ', $val, 0)));
 };
+$f_ce83ca458d = static function (mixed ...$args) { throw new NotPorted('code:conv ce83ca458d'); };
 $f_6353e38b07 = static function ($val, $et) {
     if (!(\strlen($val) >= 9600)) {
         return null;
@@ -176,15 +205,18 @@ $f_6353e38b07 = static function ($val, $et) {
 $f_70a17dc7b8 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) > 266 ? 'inf' : Perl::sprintf('%.2f m', $val);
 };
+$f_fd94f0bdd6 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv fd94f0bdd6'); };
 $f_fe2483adbd = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 2.0 ** ((Perl::num($val) - 126) / 16);
 };
+$f_69a7e7ad41 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 69a7e7ad41'); };
 $f_3517b56753 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? Perl::sprintf('%+.1f', $val) : 0;
 };
 $f_854a53c15e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 8;
 };
+$f_3c29a897ef = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 3c29a897ef'); };
 
 $d_1 = [-32768 => 'Out of Focus', 0 => 'In Focus', 'OTHER' => $f_b02e7333a4];
 $d_2 = [0 => 'Off', 1 => 'On'];
@@ -619,11 +651,13 @@ return [
                 'Name' => 'AFAreaMode',
                 'PrintConv' => [0 => 'Wide', 1 => 'Local', 2 => 'Spot'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Minolta::CameraSettings' => [
             1 => [
@@ -673,17 +707,23 @@ return [
             8 => [
                 'Name' => 'ISO',
                 'PrintConv' => $f_b9974209cd,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_8ec96387d1,
+                'ValueConvInv' => $f_d1d1df232b,
             ],
             9 => [
                 'Name' => 'ExposureTime',
                 'PrintConv' => $f_a941801118,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_1c2bd4641c,
+                'ValueConvInv' => $f_6dac221b88,
             ],
             10 => [
                 'Name' => 'FNumber',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1beaf7c2c1,
+                'ValueConvInv' => $f_7bf53fd80d,
             ],
             11 => [
                 'Name' => 'MacroMode',
@@ -696,7 +736,9 @@ return [
             13 => [
                 'Name' => 'ExposureCompensation',
                 'PrintConv' => $f_811b111291,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_bb1bcb270a,
+                'ValueConvInv' => $f_7f1867f95f,
             ],
             14 => [
                 'Name' => 'BracketStep',
@@ -707,12 +749,16 @@ return [
             18 => [
                 'Name' => 'FocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_c74468af9a,
                 'ValueConv' => $f_797e422167,
+                'ValueConvInv' => $f_b3a5a6c46b,
             ],
             19 => [
                 'Name' => 'FocusDistance',
                 'PrintConv' => $f_e662e9c143,
+                'PrintConvInv' => $f_83023e2fde,
                 'ValueConv' => $f_7b446e214d,
+                'ValueConvInv' => $f_9f4b179b48,
             ],
             20 => [
                 'Name' => 'FlashFired',
@@ -721,17 +767,23 @@ return [
             21 => [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'MinoltaDate',
+                'Shift' => 'Time',
                 'ValueConv' => $f_068d592573,
+                'ValueConvInv' => $f_4cd193f991,
             ],
             22 => [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'MinoltaTime',
+                'Shift' => 'Time',
                 'ValueConv' => $f_50ee14545a,
+                'ValueConvInv' => $f_4cd193f991,
             ],
             23 => [
                 'Name' => 'MaxAperture',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1beaf7c2c1,
+                'ValueConvInv' => $f_7bf53fd80d,
             ],
             26 => [
                 'Name' => 'FileNumberMemory',
@@ -741,24 +793,29 @@ return [
             28 => [
                 'Name' => 'ColorBalanceRed',
                 'ValueConv' => $f_797e422167,
+                'ValueConvInv' => $f_b3a5a6c46b,
             ],
             29 => [
                 'Name' => 'ColorBalanceGreen',
                 'ValueConv' => $f_797e422167,
+                'ValueConvInv' => $f_b3a5a6c46b,
             ],
             30 => [
                 'Name' => 'ColorBalanceBlue',
                 'ValueConv' => $f_797e422167,
+                'ValueConvInv' => $f_b3a5a6c46b,
             ],
             31 => [
                 'Name' => 'Saturation',
                 'PrintConv' => $d_3,
                 'ValueConv' => $f_7152aa499b,
+                'ValueConvInv' => $f_be90c1e08f,
             ],
             32 => [
                 'Name' => 'Contrast',
                 'PrintConv' => $d_3,
                 'ValueConv' => $f_7152aa499b,
+                'ValueConvInv' => $f_be90c1e08f,
             ],
             33 => [
                 'Name' => 'Sharpness',
@@ -779,7 +836,9 @@ return [
                 'Description' => 'Flash Exposure Compensation',
                 'Name' => 'FlashExposureComp',
                 'PrintConv' => $f_811b111291,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4d5f302656,
+                'ValueConvInv' => $f_45097ede21,
             ],
             36 => [
                 'Name' => 'ISOSetting',
@@ -819,6 +878,7 @@ return [
             41 => [
                 'Name' => 'ColorFilter',
                 'ValueConv' => $f_7152aa499b,
+                'ValueConvInv' => $f_be90c1e08f,
             ],
             42 => 'BWFilter',
             43 => [
@@ -828,6 +888,7 @@ return [
             44 => [
                 'Name' => 'Brightness',
                 'ValueConv' => $f_54489dbfd4,
+                'ValueConvInv' => $f_13fedd9e8e,
             ],
             45 => 'SpotFocusPointX',
             46 => 'SpotFocusPointY',
@@ -867,12 +928,14 @@ return [
                 'Name' => 'FlashMetering',
                 'PrintConv' => [0 => 'ADI (Advanced Distance Integration)', 1 => 'Pre-flash TTL', 2 => 'Manual flash control'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int32u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Minolta::CameraSettings5D' => [
             10 => [
@@ -947,34 +1010,43 @@ return [
             48 => [
                 'Name' => 'Sharpness',
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             49 => [
                 'Name' => 'Contrast',
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             50 => [
                 'Name' => 'Saturation',
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             53 => [
                 'Name' => 'ExposureTime',
                 'PrintConv' => $f_a941801118,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_1c2bd4641c,
+                'ValueConvInv' => $f_6dac221b88,
             ],
             54 => [
                 'Name' => 'FNumber',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1beaf7c2c1,
+                'ValueConvInv' => $f_7bf53fd80d,
             ],
             55 => 'FreeMemoryCardImages',
             73 => [
                 'Format' => 'int16s',
                 'Name' => 'ColorTemperature',
                 'ValueConv' => $f_b94c7bf60c,
+                'ValueConvInv' => $f_b2e9e0be57,
             ],
             74 => [
                 'Name' => 'HueAdjustment',
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             80 => [
                 'Name' => 'Rotation',
@@ -983,7 +1055,9 @@ return [
             83 => [
                 'Name' => 'ExposureCompensation',
                 'PrintConv' => $f_811b111291,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4a1333cef3,
+                'ValueConvInv' => $f_c45f046b19,
             ],
             84 => 'FreeMemoryCardImages',
             101 => [
@@ -994,6 +1068,7 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'ColorTemperature',
                 'ValueConv' => $f_b94c7bf60c,
+                'ValueConvInv' => $f_b2e9e0be57,
             ],
             113 => [
                 'Name' => 'PictureFinish',
@@ -1013,6 +1088,7 @@ return [
             174 => [
                 'Name' => 'ImageNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             176 => [
                 'Name' => 'NoiseReduction',
@@ -1022,12 +1098,14 @@ return [
                 'Name' => 'ImageStabilization',
                 'PrintConv' => $d_2,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Minolta::CameraSettings7D' => [
             0 => [
@@ -1100,7 +1178,9 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'ExposureCompensation',
                 'PrintConv' => $f_811b111291,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_0f31390e2e,
+                'ValueConvInv' => $f_8034d57c51,
             ],
             37 => [
                 'Name' => 'ColorSpace',
@@ -1109,24 +1189,29 @@ return [
             38 => [
                 'Name' => 'Sharpness',
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             39 => [
                 'Name' => 'Contrast',
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             40 => [
                 'Name' => 'Saturation',
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             45 => 'FreeMemoryCardImages',
             63 => [
                 'Format' => 'int16s',
                 'Name' => 'ColorTemperature',
                 'ValueConv' => $f_b94c7bf60c,
+                'ValueConvInv' => $f_b2e9e0be57,
             ],
             64 => [
                 'Name' => 'HueAdjustment',
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             70 => [
                 'Name' => 'Rotation',
@@ -1135,17 +1220,22 @@ return [
             71 => [
                 'Name' => 'FNumber',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1beaf7c2c1,
+                'ValueConvInv' => $f_7bf53fd80d,
             ],
             72 => [
                 'Name' => 'ExposureTime',
                 'PrintConv' => $f_a941801118,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_1c2bd4641c,
+                'ValueConvInv' => $f_6dac221b88,
             ],
             74 => 'FreeMemoryCardImages',
             94 => [
                 'Name' => 'ImageNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             96 => [
                 'Name' => 'NoiseReduction',
@@ -1154,6 +1244,7 @@ return [
             98 => [
                 'Name' => 'ImageNumber2',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             113 => [
                 'Name' => 'ImageStabilization',
@@ -1163,12 +1254,14 @@ return [
                 'Name' => 'ZoneMatchingOn',
                 'PrintConv' => $d_2,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Minolta::CameraSettingsA100' => [
             0 => [
@@ -1193,6 +1286,7 @@ return [
             1 => [
                 'Name' => 'ExposureCompensationSetting',
                 'ValueConv' => $f_4a1333cef3,
+                'ValueConvInv' => $f_978b58e5ba,
             ],
             5 => [
                 'Name' => 'HighSpeedSync',
@@ -1201,22 +1295,30 @@ return [
             6 => [
                 'Name' => 'ShutterSpeedSetting',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_016bd30b33,
                 'ValueConv' => $f_d18cb03143,
+                'ValueConvInv' => $f_b741ab304b,
             ],
             7 => [
                 'Name' => 'ApertureSetting',
                 'PrintConv' => $f_02272264af,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_da8878109c,
+                'ValueConvInv' => $f_e07886ab98,
             ],
             8 => [
                 'Name' => 'ExposureTime',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_016bd30b33,
                 'ValueConv' => $f_d18cb03143,
+                'ValueConvInv' => $f_b741ab304b,
             ],
             9 => [
                 'Name' => 'FNumber',
                 'PrintConv' => $f_02272264af,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_da8878109c,
+                'ValueConvInv' => $f_e07886ab98,
             ],
             10 => [
                 'Name' => 'DriveMode2',
@@ -1279,6 +1381,7 @@ return [
                 'Description' => 'Flash Exposure Comp. Setting',
                 'Name' => 'FlashExposureCompSet',
                 'ValueConv' => $f_4a1333cef3,
+                'ValueConvInv' => $f_978b58e5ba,
             ],
             18 => [
                 'Name' => 'MeteringMode',
@@ -1326,16 +1429,19 @@ return [
                 'Name' => 'Sharpness',
                 'PrintConv' => $d_3,
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             25 => [
                 'Name' => 'Contrast',
                 'PrintConv' => $d_3,
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             26 => [
                 'Name' => 'Saturation',
                 'PrintConv' => $d_3,
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             28 => [
                 'Name' => 'FlashMetering',
@@ -1419,6 +1525,7 @@ return [
             57 => [
                 'Name' => 'ColorTemperature',
                 'ValueConv' => $f_b94c7bf60c,
+                'ValueConvInv' => $f_b2e9e0be57,
             ],
             58 => [
                 'Format' => 'int16s',
@@ -1435,6 +1542,7 @@ return [
             61 => [
                 'Name' => 'InstantPlaybackTime',
                 'PrintConv' => $f_22d6c61b16,
+                'PrintConvInv' => $f_995d29c08f,
             ],
             62 => [
                 'Name' => 'InstantPlaybackSetup',
@@ -1555,6 +1663,7 @@ return [
             94 => [
                 'Name' => 'ColorTemperature',
                 'ValueConv' => $f_b94c7bf60c,
+                'ValueConvInv' => $f_b2e9e0be57,
             ],
             95 => [
                 'Format' => 'int16s',
@@ -1564,12 +1673,14 @@ return [
                 'Name' => 'BatteryState',
                 'PrintConv' => [3 => 'Very Low', 4 => 'Low', 5 => 'Half Full', 6 => 'Sufficient Power Remaining'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Minolta::ISInfoA100' => [
             0 => [
@@ -1578,11 +1689,13 @@ return [
                 'PrintConv' => [0 => 'Off', 10116 => 'On'],
                 'PrintHex' => 1,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Minolta::MMA' => [
             0 => [
@@ -1733,7 +1846,9 @@ return [
                 'Name' => 'PreviewImage',
                 'Permanent' => 1,
                 'RawConv' => $f_0ba968218d,
+                'ValueConvInv' => $f_a9e5ca28a7,
                 'Writable' => 'undef',
+                'WriteCheck' => $f_93f659a56e,
             ],
             136 => [
                 'DataTag' => 'PreviewImage',
@@ -1913,6 +2028,7 @@ return [
                 'Name' => 'LensType',
                 'PrintConv' => $d_6,
                 'PrintInt' => 1,
+                'ValueConvInv' => $f_c4336cad0c,
                 'Writable' => 'int32u',
             ],
             273 => [
@@ -1977,8 +2093,10 @@ return [
                 'Name' => 'MinoltaCameraSettings2',
                 'Writable' => 0,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Minolta::WBInfoA100' => [
             14 => [
@@ -2071,6 +2189,7 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'AverageLV',
                 'ValueConv' => $f_fafc4e62b1,
+                'ValueConvInv' => $f_f16262a420,
             ],
             60 => [
                 'Name' => 'FrameNumber',
@@ -2223,14 +2342,17 @@ return [
                 'Format' => 'int8u[40]',
                 'Name' => 'AEMeteringSegments',
                 'ValueConv' => $f_4bfda33963,
+                'ValueConvInv' => $f_ce83ca458d,
             ],
             1680 => [
                 'Name' => 'MeasuredLV',
                 'ValueConv' => $f_fafc4e62b1,
+                'ValueConvInv' => $f_f16262a420,
             ],
             1681 => [
                 'Name' => 'BrightnessValue',
                 'ValueConv' => $f_fafc4e62b1,
+                'ValueConvInv' => $f_f16262a420,
             ],
             4172 => [
                 'Format' => 'undef[9600]',
@@ -2240,36 +2362,47 @@ return [
             18872 => [
                 'Name' => 'ExposureTime',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_016bd30b33,
                 'ValueConv' => $f_d18cb03143,
+                'ValueConvInv' => $f_b741ab304b,
             ],
             18874 => [
                 'Name' => 'ISO',
                 'PrintConv' => $f_b9974209cd,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_8ec96387d1,
+                'ValueConvInv' => $f_d1d1df232b,
             ],
             18875 => [
                 'Name' => 'FocusDistance',
                 'PrintConv' => $f_70a17dc7b8,
+                'PrintConvInv' => $f_fd94f0bdd6,
                 'ValueConv' => $f_fe2483adbd,
+                'ValueConvInv' => $f_69a7e7ad41,
             ],
             18877 => [
                 'Format' => 'int16uRev',
                 'Name' => 'LensType',
                 'PrintConv' => $d_6,
                 'PrintInt' => 1,
+                'ValueConvInv' => $f_c4336cad0c,
             ],
             18880 => [
                 'Format' => 'int8s',
                 'Name' => 'ExposureCompensation',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_854a53c15e,
+                'ValueConvInv' => $f_3c29a897ef,
             ],
             18881 => [
                 'Description' => 'Flash Exposure Compensation',
                 'Format' => 'int8s',
                 'Name' => 'FlashExposureComp',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_854a53c15e,
+                'ValueConvInv' => $f_3c29a897ef,
             ],
             18882 => [
                 'Name' => 'ImageStabilization',
@@ -2278,26 +2411,33 @@ return [
             18883 => [
                 'Name' => 'BrightnessValue',
                 'ValueConv' => $f_fafc4e62b1,
+                'ValueConvInv' => $f_f16262a420,
             ],
             18885 => [
                 'Name' => 'MaxAperture',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1beaf7c2c1,
+                'ValueConvInv' => $f_7bf53fd80d,
             ],
             18887 => [
                 'Name' => 'FNumber',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1beaf7c2c1,
+                'ValueConvInv' => $f_7bf53fd80d,
             ],
             18908 => [
                 'Format' => 'string[12]',
                 'Name' => 'InternalSerialNumber',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
     ],
 ];

@@ -7,9 +7,12 @@ namespace Image\ExifTool;
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
+$f_289bae1164 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 289bae1164'); };
+$f_8cc8f4a94f = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 8cc8f4a94f'); };
 $f_67d4f92774 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return XMP::ConvertXMPDate($val);
 };
+$f_e344555497 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv e344555497'); };
 
 $d_1 = [
     'NAMESPACE' => 'dwc',
@@ -21,6 +24,8 @@ $d_1 = [
     'earliestDate' => [
         'Groups' => [2 => 'Time'],
         'PrintConv' => $f_ae2db35ce3,
+        'PrintConvInv' => $f_289bae1164,
+        'Shift' => 'Time',
         'Writable' => 'date',
     ],
     'endDayOfYear' => [
@@ -30,6 +35,8 @@ $d_1 = [
     'eventDate' => [
         'Groups' => [2 => 'Time'],
         'PrintConv' => $f_ae2db35ce3,
+        'PrintConvInv' => $f_289bae1164,
+        'Shift' => 'Time',
         'Writable' => 'date',
     ],
     'eventID' => [
@@ -41,7 +48,10 @@ $d_1 = [
     'eventTime' => [
         'Groups' => [2 => 'Time'],
         'PrintConv' => $f_ae2db35ce3,
+        'PrintConvInv' => $f_8cc8f4a94f,
+        'Shift' => 'Time',
         'ValueConv' => $f_67d4f92774,
+        'ValueConvInv' => $f_e344555497,
         'Writable' => 'string',
     ],
     'eventType' => [
@@ -55,6 +65,8 @@ $d_1 = [
     'latestDate' => [
         'Groups' => [2 => 'Time'],
         'PrintConv' => $f_ae2db35ce3,
+        'PrintConvInv' => $f_289bae1164,
+        'Shift' => 'Time',
         'Writable' => 'date',
     ],
     'month' => [
@@ -190,6 +202,8 @@ return [
                     'dateIdentified' => [
                         'Groups' => [2 => 'Time'],
                         'PrintConv' => $f_ae2db35ce3,
+                        'PrintConvInv' => $f_289bae1164,
+                        'Shift' => 'Time',
                         'Writable' => 'date',
                     ],
                     'identificationID' => [
@@ -238,6 +252,8 @@ return [
                     'measurementDeterminedDate' => [
                         'Groups' => [2 => 'Time'],
                         'PrintConv' => $f_ae2db35ce3,
+                        'PrintConvInv' => $f_289bae1164,
+                        'Shift' => 'Time',
                         'Writable' => 'date',
                     ],
                     'measurementID' => [
@@ -420,6 +436,8 @@ return [
                     'relationshipEstablishedDate' => [
                         'Groups' => [2 => 'Time'],
                         'PrintConv' => $f_ae2db35ce3,
+                        'PrintConvInv' => $f_289bae1164,
+                        'Shift' => 'Time',
                         'Writable' => 'date',
                     ],
                     'relationshipOfResource' => [

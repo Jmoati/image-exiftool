@@ -10,6 +10,8 @@ $f_13aa3b925b = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_0ba968218d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->ValidateImage((is_object($val) || is_array($val)) ? $val : new ScalarRef($val), $tag);
 };
+$f_a9e5ca28a7 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv a9e5ca28a7'); };
+$f_93f659a56e = static function (mixed ...$args) { throw new NotPorted('WriteCheck 93f659a56e'); };
 
 return [
     'load' => [
@@ -269,7 +271,9 @@ return [
                 'Groups' => [2 => 'Preview'],
                 'Name' => 'PreviewImage',
                 'RawConv' => $f_0ba968218d,
+                'ValueConvInv' => $f_a9e5ca28a7,
                 'Writable' => 'undef',
+                'WriteCheck' => $f_93f659a56e,
             ],
             'JPEG_preview_info' => 'PreviewInfo',
             'PDA_histogram_data' => [
@@ -520,6 +524,7 @@ return [
         ],
         'Image::ExifTool::Leaf::SubIFD' => [
             'GROUPS' => [0 => 'MakerNotes', 1 => 'LeafSubIFD', 2 => 'Image'],
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Leaf::ToneCurve' => [
             'GROUPS' => [0 => 'Leaf', 2 => 'Image'],

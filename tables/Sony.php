@@ -33,12 +33,14 @@ $f_b083150a3d = static function (ExifTool $self, $valPt, $format, $count) {
 $f_69d60e50e1 = static function ($val, $et) {
     return Sony::ConvLensSpec(Perl::pack('v*', ...Perl::unpack('n*', $val)));
 };
+$f_88f8860c84 = static function (mixed ...$args) { throw new NotPorted('code:conv 88f8860c84'); };
 $f_ed3a9f8f3a = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^DSLR-A(850|900)\b/', Perl::str($self->Model));
 };
 $f_6301d15a00 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) - 20;
 };
+$f_fbd1c80303 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv fbd1c80303'); };
 $f_795bebfb5b = static function (ExifTool $self, $valPt, $format, $count) {
     return !preg_match('/^NEX-5C/', Perl::str($self->Model));
 };
@@ -48,12 +50,15 @@ $f_6505917baf = static function (ExifTool $self, $valPt, $format, $count) {
 $f_8f0e71a82a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f mm', $val);
 };
+$f_ce7c2b5724 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv ce7c2b5724'); };
 $f_ddae2f7edc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 10;
 };
+$f_8f9dd09855 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 8f9dd09855'); };
 $f_1f2e32b0e0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) * 2 / 3;
 };
+$f_abeab2adfa = static function (mixed ...$args) { throw new NotPorted('ValueConvInv abeab2adfa'); };
 $f_85d0518a81 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^(DSLR-A(450|500|550))\b/', Perl::str($self->Model));
 };
@@ -66,45 +71,58 @@ $f_8912cea184 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_a63541d7d7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? Exif::PrintExposureTime($val) : 'Bulb';
 };
+$f_016bd30b33 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 016bd30b33'); };
 $f_d18cb03143 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? 2.0 ** (6 - Perl::num($val) / 8) : 0;
 };
+$f_b741ab304b = static function (mixed ...$args) { throw new NotPorted('ValueConvInv b741ab304b'); };
 $f_02272264af = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintFNumber($val);
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 $f_da8878109c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 2.0 ** ((Perl::num($val) / 8 - 1) / 2);
 };
+$f_e07886ab98 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv e07886ab98'); };
 $f_3517b56753 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? Perl::sprintf('%+.1f', $val) : 0;
 };
+$f_153707d441 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 153707d441'); };
 $f_a73bfc622c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return (Perl::num($val) - 128) / 24;
 };
+$f_c7ff64fd34 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv c7ff64fd34'); };
 $f_d618d74d93 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) > 128 ? Perl::num($val) - 256 : $val;
 };
+$f_409c8d67d9 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 409c8d67d9'); };
 $f_555d882e03 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).' K';
 };
+$f_3b614a939a = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 3b614a939a'); };
 $f_b94c7bf60c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) * 100;
 };
+$f_b2e9e0be57 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv b2e9e0be57'); };
 $f_9022e09426 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) > 0 ? '+'.Perl::str($val) : $val;
 };
 $f_ec8e3ed1f0 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? Perl::sprintf('%.0f', $val) : 'Auto';
 };
+$f_9ff4f4a8c6 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 9ff4f4a8c6'); };
 $f_5f093464fd = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? exp((Perl::num($val) / 8 - 6) * log(2)) * 100 : $val;
 };
+$f_16a8e8deef = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 16a8e8deef'); };
 $f_e44c9514cb = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) - 10;
 };
+$f_7f762f40c8 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 7f762f40c8'); };
 $f_0a6503c132 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).'%';
 };
+$f_0f1ec7d68b = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 0f1ec7d68b'); };
 $f_12acbf71af = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.3d', $val);
 };
@@ -120,6 +138,7 @@ $f_b8580420d5 = static function ($val, $inv, $conv) {
 $f_082322c970 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ($val && Perl::num($val) < 254) ? exp((Perl::num($val) / 8 - 6) * log(2)) * 100 : $val;
 };
+$f_12f069a5f1 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 12f069a5f1'); };
 $f_00ba72be12 = static function (ExifTool $self, $valPt, $format, $count) {
     return !preg_match('/^(NEX-|DSLR-(A450|A500|A550)$)/', Perl::str($self->Model));
 };
@@ -141,6 +160,7 @@ $f_21afe3c4d9 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_0a6df780cd = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%x.%.2x', Perl::int($val) >> 8, Perl::int($val) & 0xff);
 };
+$f_a6beb8215b = static function (mixed ...$args) { throw new NotPorted('PrintConvInv a6beb8215b'); };
 $f_f14da4a392 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('Ver.%.2x.%.3d', Perl::int($val) >> 8, Perl::int($val) & 0xff);
 };
@@ -203,9 +223,11 @@ $f_62e1468737 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_a928b39f8a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.1f C', $val);
 };
+$f_76d0f0c35f = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 76d0f0c35f'); };
 $f_72246fafe6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return (Perl::num($val) - 32) / 1.8;
 };
+$f_6e8ced977c = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 6e8ced977c'); };
 $f_98967cba76 = static function ($val, $et) {
     $a = Perl::unpack('CvC', Perl::pack('v*', ...Perl::unpack('n*', $val)));
     return $a[1] ?? null;
@@ -221,12 +243,15 @@ $f_227aa4ff88 = static function ($val, ExifTool $self, array &$vals, array $prt,
     $val = strtr(Perl::str($val), ' ', '.');
     return $val;
 };
+$f_226ee11c90 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 226ee11c90'); };
 $f_b4a7963959 = static function (ExifTool $self, $valPt, $format, $count) {
     return !preg_match('/^(NEX-(3|5|5C|C3|VG10|VG10E))\b/', Perl::str($self->Model));
 };
+$f_80f91b40d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 80f91b40d2'); };
 $f_a1aaa6b70c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 128;
 };
+$f_57b7279a3e = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 57b7279a3e'); };
 $f_ac5d1fd7e4 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^SLT-/', Perl::str($self->Model));
 };
@@ -254,6 +279,7 @@ $f_7b321057ff = static function ($val, ExifTool $self, array &$vals, array $prt,
     unset($_);
     return Perl::str($v[1] ?? null).' '.Perl::str($v[0] ?? null).' '.Perl::str($v[3] ?? null).' '.Perl::str($v[2] ?? null);
 };
+$f_7e490b8006 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 7e490b8006'); };
 $f_d89bc7fe52 = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::num($self->FacesDetected) >= 2;
 };
@@ -341,6 +367,7 @@ $f_7fd0cc74a1 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_a73b44f9f0 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^DSLR-A(230|290|330|380|390)$/', Perl::str($self->Model));
 };
+$f_25924ee98a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 25924ee98a'); };
 $f_3841411efb = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^DSLR-A(230|290|330|380|390|850|900)$/', Perl::str($self->Model));
 };
@@ -416,6 +443,8 @@ $f_1eb2069475 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     }
     return null;
 };
+$f_76bada3a36 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 76bada3a36'); };
+$f_85b248badb = static function (mixed ...$args) { throw new NotPorted('WriteCheck 85b248badb'); };
 $f_8b5ad7a709 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^NEX-5N$/', Perl::str($self->Model));
 };
@@ -474,6 +503,7 @@ $f_4fc45dc27a = static function (ExifTool $self, $valPt, $format, $count) {
 $f_b05ba9ae30 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) - 1;
 };
+$f_1434eeebbd = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 1434eeebbd'); };
 $f_cee8cab58d = static function (ExifTool $self, $valPt, $format, $count) {
     return (preg_match('/^ILCA-99M2/', Perl::str($self->Model)) && $self->AFAreaILCA !== null && Perl::num($self->AFAreaILCA) != 8);
 };
@@ -526,6 +556,7 @@ $f_55a1cafee5 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     [$a, $b, $c] = [ExifTool::Get32u($val, 0), ExifTool::Get8u($val, 4), ExifTool::Get8u($val, 5)];
     return Perl::sprintf('%.2d%.2d%.2d%.2d %d %d 0x%x', ($a >> 17) & 0x1f, ($a >> 12) & 0x1f, ($a >> 6) & 0x3f, $a & 0x3f, $b, $c, $a >> 22);
 };
+$f_0f556923d3 = static function (mixed ...$args) { throw new NotPorted('RawConvInv 0f556923d3'); };
 $f_34b5f540de = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.8d', $val);
 };
@@ -534,10 +565,12 @@ $f_0498433c31 = static function ($val, ExifTool $self, array &$vals, array $prt,
     $val = preg_replace('/^0/', '', $val, 1);
     return $val;
 };
+$f_4dcc5f90f2 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 4dcc5f90f2'); };
 $f_0d75453e03 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::split(' ', $val);
     return ($a[2] ?? null) ? Perl::sprintf('%3dx%3d', $a[0], $a[1]) : 'n/a';
 };
+$f_f3f556c57c = static function (mixed ...$args) { throw new NotPorted('PrintConvInv f3f556c57c'); };
 $f_35d9e4e77b = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^(DSC-RX1RM3)\b/', Perl::str($self->Model));
 };
@@ -607,6 +640,7 @@ $f_8d3dac56f3 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_f989a2eb75 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? (Perl::num($val) == 0xffffffff ? 'n/a' : $val) : 'Auto';
 };
+$f_3d1b37a744 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 3d1b37a744'); };
 $f_f77455784a = static function ($val, $inv, $conv) {
     if ($inv) return null;
     $id = Perl::int($val) & 65280;
@@ -626,6 +660,7 @@ $f_f77455784a = static function ($val, $inv, $conv) {
     }
     return null;
 };
+$f_dbfa7022d4 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv dbfa7022d4'); };
 $f_00c8dbeae0 = static function (ExifTool $self, $valPt, $format, $count) {
     return $valPt !== "\0\0\0\0";
 };
@@ -635,9 +670,11 @@ $f_5879ccff58 = static function ($valuePtr = null, $val = null, $dirStart = null
 $f_32fa794234 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', 'x');
 };
+$f_4f4b756712 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 4f4b756712'); };
 $f_9cd93d9857 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return implode(' ', array_reverse(Perl::split(' ', $val)));
 };
+$f_ff8820c035 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv ff8820c035'); };
 $f_00ed8ede0e = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Perl::num($val) == 65535 ? null : $val;
 };
@@ -696,18 +733,22 @@ $f_549203434b = static function (ExifTool $self, $valPt, $format, $count) {
 $f_fafc4e62b1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return (Perl::num($val) - 106) / 8;
 };
+$f_f16262a420 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv f16262a420'); };
 $f_b1934a1778 = static function (ExifTool $self, $valPt, $format, $count) {
     return !preg_match('/^NEX-(3|5|5C)/', Perl::str($self->Model));
 };
 $f_7c6c53b4c4 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^NEX-(3|5|5C)/', Perl::str($self->Model));
 };
+$f_3e18fc8321 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 3e18fc8321'); };
 $f_f966b2b5e6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 10 * 2 ** ((Perl::num($val) - 28) / 16);
 };
+$f_1dcf862f03 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 1dcf862f03'); };
 $f_854a53c15e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 8;
 };
+$f_3c29a897ef = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 3c29a897ef'); };
 $f_bb3427369a = static function (ExifTool $self, $valPt, $format, $count) {
     return !preg_match('/^NEX-(3|5|5C)|DSLR-(A450|A500|A550)/', Perl::str($self->Model));
 };
@@ -777,6 +818,7 @@ $f_e75fab21e2 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_54ca571dfb = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->FaceInfoOffset = $val;
 };
+$f_9183f2970f = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 9183f2970f'); };
 $f_809b493f7a = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->FacesDetected = $val;
 };
@@ -798,28 +840,35 @@ $f_55e2d18a41 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_1b49c380d5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 16 - Perl::num($val) / 256;
 };
+$f_967e3fa0f7 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 967e3fa0f7'); };
 $f_8d4d0b179f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 256 - 56.6;
 };
+$f_c51ac67ef3 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv c51ac67ef3'); };
 $f_316ea25d96 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return -Perl::num($val) / 256;
 };
+$f_f51601b7aa = static function (mixed ...$args) { throw new NotPorted('ValueConvInv f51601b7aa'); };
 $f_4828c7c932 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) + 1;
 };
+$f_1c538804b4 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 1c538804b4'); };
 $f_609d2b7456 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $v = Perl::unpack('vC*', $val);
     return Perl::sprintf('%.4d:%.2d:%.2d %.2d:%.2d:%.2d', ...$v);
 };
+$f_d7ab883423 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv d7ab883423'); };
 $f_2dc7d88624 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.0f', $val);
 };
 $f_20d3123c63 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 100 * 2 ** (16 - Perl::num($val) / 256);
 };
+$f_06fc1b2d1e = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 06fc1b2d1e'); };
 $f_d77361d758 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 16;
 };
+$f_116ae9f02c = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 116ae9f02c'); };
 $f_1aec4798cd = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^(SLT-(A99|A99V)|NEX-(5R|5T|6|VG900|VG30E)|DSC-RX100|Stellar|HV)\b/', Perl::str($self->Model));
 };
@@ -829,6 +878,7 @@ $f_c905ccc978 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_a1129b79ca = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^(SLT-A58|ILCE-(3000|3500)|NEX-3N|DSC-(HX300|HX50V|WX60|WX80|WX200|WX300|TX30))\b/', Perl::str($self->Model));
 };
+$f_78ab47e76d = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 78ab47e76d'); };
 $f_3ab71eb818 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $val ?: null;
 };
@@ -845,6 +895,7 @@ $f_f7ad2462b8 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_28d5407d3b = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::num($self->LensMount) == 1;
 };
+$f_d8663a24e0 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv d8663a24e0'); };
 $f_975887c46c = static function (ExifTool $self, $valPt, $format, $count) {
     return !preg_match('/^DSC-/', Perl::str($self->Model));
 };
@@ -930,9 +981,11 @@ $f_2cb870ddb6 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_2eb18fa9ec = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? 2.0 ** (16 - Perl::num($val) / 256) : 0;
 };
+$f_7bc548787b = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 7bc548787b'); };
 $f_ac95e933ec = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 2.0 ** ((Perl::num($val) / 256 - 16) / 2);
 };
+$f_2d1d064085 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 2d1d064085'); };
 $f_c40ce3e408 = static function (ExifTool $self, $valPt, $format, $count) {
     return (preg_match('/^(ILCE-(7(R|S|M2)?|[56]000|5100|QX1))\b/', Perl::str($self->Model))) && ((Perl::int($self->FlashFired) & 0x01) != 1);
 };
@@ -946,6 +999,7 @@ $f_53d7b626a6 = static function ($val, ExifTool $self, array &$vals, array $prt,
     }
     return Perl::sprintf('20%.2d:%.2d:%.2d %.2d:%.2d:%.2d', ...$v);
 };
+$f_830ea91fe1 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 830ea91fe1'); };
 $f_46925a6312 = static function (ExifTool $self, $valPt, $format, $count) {
     return !preg_match('/^(SLT-A(65|77)V?|Lunar|NEX-(5N|7|VG20E))/', Perl::str($self->Model));
 };
@@ -955,15 +1009,18 @@ $f_553edb55c8 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_d91c8365ec = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::unpack('H*', Perl::pack('C*', ...Perl::split(' ', $val)))[0];
 };
+$f_6142cc0608 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 6142cc0608'); };
 $f_22b9ddc23a = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^(SLT-A99|HV|ILCE-7)/', Perl::str($self->Model));
 };
 $f_2a598991a2 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^(SLT-A(37|57|65|77)V?|Lunar|NEX-(F3|5N|7|VG20E))/', Perl::str($self->Model));
 };
+$f_570682e9a6 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 570682e9a6'); };
 $f_33b584082e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return implode(' ', Perl::unpack('H2H2', $val));
 };
+$f_3a33745dc3 = static function (mixed ...$args) { throw new NotPorted('code:conv 3a33745dc3'); };
 $f_41e5c27be6 = static function (ExifTool $self, $valPt, $format, $count) {
     return !preg_match('/^(SLT-A(37|57|65|77)V?|Lunar|NEX-(F3|5N|7|VG20E))/', Perl::str($self->Model));
 };
@@ -1152,6 +1209,7 @@ $f_51e8e4847d = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_ad5280893d = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::num($self->TempTest1) == 255;
 };
+$f_1845a2bd14 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1845a2bd14'); };
 $f_16fad1921a = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     $self->TempTest2 = $val;
     return Perl::num($self->OPTIONS['Unknown']) < 2 ? null : $val;
@@ -1165,9 +1223,11 @@ $f_70f34b473e = static function (ExifTool $self, $valPt, $format, $count) {
 $f_dc278ec452 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.0f%%', Perl::num($val) / 10.24);
 };
+$f_91c24946b2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 91c24946b2'); };
 $f_30b37629be = static function (ExifTool $self, $valPt, $format, $count) {
     return !preg_match('/^(SLT-|HV|ILCA-)/', Perl::str($self->Model));
 };
+$f_afc38f199f = static function (mixed ...$args) { throw new NotPorted('PrintConvInv afc38f199f'); };
 $f_d4f3fdaf9d = static function (ExifTool $self, $valPt, $format, $count) {
     return !preg_match('/^(DSC-|ZV-)/', Perl::str($self->Model));
 };
@@ -1198,6 +1258,7 @@ $f_8b1cc5e1c4 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_e21356f57b = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^(ILCE-(6100|6400|6600|7C|7M3|7RM3A?|7RM4A?|9|9M2)|ZV-E10)/', Perl::str($self->Model));
 };
+$f_c856a566c9 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c856a566c9'); };
 $f_273894f86a = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $val ? $val : null;
 };
@@ -3103,6 +3164,7 @@ return [
                 'PrintConv' => $d_2,
                 'Priority' => 0,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [2],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
@@ -3111,6 +3173,7 @@ return [
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::AFStatus15' => [
             0 => [
@@ -3203,10 +3266,12 @@ return [
                 'Name' => 'AFStatusLower-middle',
                 'PrintConv' => $d_1,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::AFStatus19' => [
             0 => [
@@ -3359,10 +3424,12 @@ return [
                 'Name' => 'AFStatusLower-rightVertical',
                 'PrintConv' => $d_1,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::AFStatus79' => [
             0 => [
@@ -3840,17 +3907,21 @@ return [
                 'Name' => 'AFStatus_94_E6_Center_F2-8',
                 'PrintConv' => $d_1,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::CameraInfo' => [
             0 => [
                 'Format' => 'undef[8]',
                 'Name' => 'LensSpec',
                 'PrintConv' => 'Image\\ExifTool\\Sony::PrintLensSpec',
+                'PrintConvInv' => 'Image\\ExifTool\\Sony::PrintInvLensSpec',
                 'ValueConv' => $f_69d60e50e1,
+                'ValueConvInv' => $f_88f8860c84,
             ],
             20 => [
                 'Name' => 'FocusModeSetting',
@@ -4025,6 +4096,7 @@ return [
                 'Condition' => $f_ed3a9f8f3a,
                 'Name' => 'AFMicroAdjValue',
                 'ValueConv' => $f_6301d15a00,
+                'ValueConvInv' => $f_fbd1c80303,
             ],
             305 => [
                 'Condition' => $f_ed3a9f8f3a,
@@ -4037,17 +4109,21 @@ return [
                 'Mask' => 127,
                 'Name' => 'AFMicroAdjRegisteredLenses',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::CameraInfo2' => [
             0 => [
                 'Format' => 'undef[8]',
                 'Name' => 'LensSpec',
                 'PrintConv' => 'Image\\ExifTool\\Sony::PrintLensSpec',
+                'PrintConvInv' => 'Image\\ExifTool\\Sony::PrintInvLensSpec',
                 'ValueConv' => 'Image\\ExifTool\\Sony::ConvLensSpec',
+                'ValueConvInv' => 'Image\\ExifTool\\Sony::ConvInvLensSpec',
             ],
             20 => [
                 'Name' => 'AFPointSelected',
@@ -4141,10 +4217,12 @@ return [
                 'Name' => 'AFStatusRight',
                 'PrintConv' => $d_1,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::CameraInfo3' => [
             0 => [
@@ -4152,22 +4230,28 @@ return [
                 'Format' => 'undef[8]',
                 'Name' => 'LensSpec',
                 'PrintConv' => 'Image\\ExifTool\\Sony::PrintLensSpec',
+                'PrintConvInv' => 'Image\\ExifTool\\Sony::PrintInvLensSpec',
                 'ValueConv' => 'Image\\ExifTool\\Sony::ConvLensSpec',
+                'ValueConvInv' => 'Image\\ExifTool\\Sony::ConvInvLensSpec',
             ],
             14 => [
                 'Condition' => $f_6505917baf,
                 'Format' => 'int16u',
                 'Name' => 'FocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_ce7c2b5724,
                 'Priority' => 0,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             16 => [
                 'Condition' => $f_6505917baf,
                 'Format' => 'int16u',
                 'Name' => 'FocalLengthTeleZoom',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_ce7c2b5724,
                 'ValueConv' => $f_1f2e32b0e0,
+                'ValueConvInv' => $f_abeab2adfa,
             ],
             20 => [
                 'Condition' => $f_85d0518a81,
@@ -4359,28 +4443,36 @@ return [
                 'Name' => 'AFStatusRight',
                 'PrintConv' => $d_1,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'IS_SUBDIR' => [35],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::CameraInfoUnknown' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::CameraSettings' => [
             0 => [
                 'Name' => 'ExposureTime',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_016bd30b33,
                 'ValueConv' => $f_d18cb03143,
+                'ValueConvInv' => $f_b741ab304b,
             ],
             1 => [
                 'Name' => 'FNumber',
                 'PrintConv' => $f_02272264af,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_da8878109c,
+                'ValueConvInv' => $f_e07886ab98,
             ],
             2 => [
                 'Name' => 'HighSpeedSync',
@@ -4389,7 +4481,9 @@ return [
             3 => [
                 'Name' => 'ExposureCompensationSet',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_a73bfc622c,
+                'ValueConvInv' => $f_c7ff64fd34,
             ],
             4 => [
                 'Mask' => 255,
@@ -4430,26 +4524,35 @@ return [
             6 => [
                 'Name' => 'WhiteBalanceFineTune',
                 'ValueConv' => $f_d618d74d93,
+                'ValueConvInv' => $f_409c8d67d9,
             ],
             7 => [
                 'Name' => 'ColorTemperatureSet',
                 'PrintConv' => $f_555d882e03,
+                'PrintConvInv' => $f_3b614a939a,
                 'ValueConv' => $f_b94c7bf60c,
+                'ValueConvInv' => $f_b2e9e0be57,
             ],
             8 => [
                 'Name' => 'ColorCompensationFilterSet',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_d618d74d93,
+                'ValueConvInv' => $f_409c8d67d9,
             ],
             12 => [
                 'Name' => 'ColorTemperatureCustom',
                 'PrintConv' => $f_555d882e03,
+                'PrintConvInv' => $f_3b614a939a,
                 'ValueConv' => $f_b94c7bf60c,
+                'ValueConvInv' => $f_b2e9e0be57,
             ],
             13 => [
                 'Name' => 'ColorCompensationFilterCustom',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_d618d74d93,
+                'ValueConvInv' => $f_409c8d67d9,
             ],
             15 => [
                 'Name' => 'WhiteBalance',
@@ -4506,7 +4609,9 @@ return [
                 'Description' => 'Flash Exposure Comp. Setting',
                 'Name' => 'FlashExposureCompSet',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_a73bfc622c,
+                'ValueConvInv' => $f_c7ff64fd34,
             ],
             21 => [
                 'Name' => 'MeteringMode',
@@ -4515,7 +4620,9 @@ return [
             22 => [
                 'Name' => 'ISOSetting',
                 'PrintConv' => $f_ec8e3ed1f0,
+                'PrintConvInv' => $f_9ff4f4a8c6,
                 'ValueConv' => $f_5f093464fd,
+                'ValueConvInv' => $f_16a8e8deef,
             ],
             24 => [
                 'Name' => 'DynamicRangeOptimizerMode',
@@ -4550,27 +4657,37 @@ return [
             28 => [
                 'Name' => 'Sharpness',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             29 => [
                 'Name' => 'Contrast',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             30 => [
                 'Name' => 'Saturation',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             31 => [
                 'Name' => 'ZoneMatchingValue',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             34 => [
                 'Name' => 'Brightness',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             35 => [
                 'Name' => 'FlashControl',
@@ -4623,12 +4740,16 @@ return [
             47 => [
                 'Name' => 'ShutterSpeedSetting',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_016bd30b33,
                 'ValueConv' => $f_d18cb03143,
+                'ValueConvInv' => $f_b741ab304b,
             ],
             48 => [
                 'Name' => 'ApertureSetting',
                 'PrintConv' => $f_02272264af,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_da8878109c,
+                'ValueConvInv' => $f_e07886ab98,
             ],
             60 => [
                 'Name' => 'ExposureProgram',
@@ -4680,6 +4801,7 @@ return [
             81 => [
                 'Name' => 'BatteryLevel',
                 'PrintConv' => $f_0a6503c132,
+                'PrintConvInv' => $f_0f1ec7d68b,
             ],
             83 => [
                 'Name' => 'FocusStatus',
@@ -4721,29 +4843,37 @@ return [
                 'Mask' => 1023,
                 'Name' => 'FolderNumber',
                 'PrintConv' => $f_12acbf71af,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             155 => [
                 'Mask' => 16383,
                 'Name' => 'ImageNumber',
                 'PrintConv' => $f_f99fbac8a7,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::CameraSettings2' => [
             0 => [
                 'Name' => 'ExposureTime',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_016bd30b33,
                 'ValueConv' => $f_d18cb03143,
+                'ValueConvInv' => $f_b741ab304b,
             ],
             1 => [
                 'Name' => 'FNumber',
                 'PrintConv' => $f_02272264af,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_da8878109c,
+                'ValueConvInv' => $f_e07886ab98,
             ],
             2 => [
                 'Name' => 'HighSpeedSync',
@@ -4752,7 +4882,9 @@ return [
             3 => [
                 'Name' => 'ExposureCompensationSet',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_a73bfc622c,
+                'ValueConvInv' => $f_c7ff64fd34,
             ],
             4 => [
                 'Name' => 'WhiteBalanceSetting',
@@ -4773,16 +4905,21 @@ return [
             5 => [
                 'Name' => 'WhiteBalanceFineTune',
                 'ValueConv' => $f_d618d74d93,
+                'ValueConvInv' => $f_409c8d67d9,
             ],
             6 => [
                 'Name' => 'ColorTemperatureSet',
                 'PrintConv' => $f_555d882e03,
+                'PrintConvInv' => $f_3b614a939a,
                 'ValueConv' => $f_b94c7bf60c,
+                'ValueConvInv' => $f_b2e9e0be57,
             ],
             7 => [
                 'Name' => 'ColorCompensationFilterSet',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_d618d74d93,
+                'ValueConvInv' => $f_409c8d67d9,
             ],
             8 => [
                 'Format' => 'int16u[3]',
@@ -4791,12 +4928,16 @@ return [
             11 => [
                 'Name' => 'ColorTemperatureCustom',
                 'PrintConv' => $f_555d882e03,
+                'PrintConvInv' => $f_3b614a939a,
                 'ValueConv' => $f_b94c7bf60c,
+                'ValueConvInv' => $f_b2e9e0be57,
             ],
             12 => [
                 'Name' => 'ColorCompensationFilterCustom',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_d618d74d93,
+                'ValueConvInv' => $f_409c8d67d9,
             ],
             14 => [
                 'Name' => 'WhiteBalance',
@@ -4840,7 +4981,9 @@ return [
                 'Description' => 'Flash Exposure Comp. Setting',
                 'Name' => 'FlashExposureCompSet',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_a73bfc622c,
+                'ValueConvInv' => $f_c7ff64fd34,
             ],
             19 => [
                 'Name' => 'MeteringMode',
@@ -4849,7 +4992,9 @@ return [
             20 => [
                 'Name' => 'ISOSetting',
                 'PrintConv' => $f_ec8e3ed1f0,
+                'PrintConvInv' => $f_9ff4f4a8c6,
                 'ValueConv' => $f_5f093464fd,
+                'ValueConvInv' => $f_16a8e8deef,
             ],
             22 => [
                 'Name' => 'DynamicRangeOptimizerMode',
@@ -4871,17 +5016,23 @@ return [
             25 => [
                 'Name' => 'Sharpness',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             26 => [
                 'Name' => 'Contrast',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             27 => [
                 'Name' => 'Saturation',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_e44c9514cb,
+                'ValueConvInv' => $f_7f762f40c8,
             ],
             31 => [
                 'Name' => 'FlashControl',
@@ -4910,12 +5061,16 @@ return [
             40 => [
                 'Name' => 'ShutterSpeedSetting',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_016bd30b33,
                 'ValueConv' => $f_d18cb03143,
+                'ValueConvInv' => $f_b741ab304b,
             ],
             41 => [
                 'Name' => 'ApertureSetting',
                 'PrintConv' => $f_02272264af,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_da8878109c,
+                'ValueConvInv' => $f_e07886ab98,
             ],
             60 => [
                 'Name' => 'ExposureProgram',
@@ -5020,33 +5175,42 @@ return [
                 'Name' => 'ColorSpace',
                 'PrintConv' => [5 => 'Adobe RGB', 6 => 'sRGB'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::CameraSettings3' => [
             0 => [
                 'Name' => 'ShutterSpeedSetting',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_016bd30b33,
                 'ValueConv' => $f_d18cb03143,
+                'ValueConvInv' => $f_b741ab304b,
             ],
             1 => [
                 'Name' => 'ApertureSetting',
                 'PrintConv' => $f_02272264af,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_da8878109c,
+                'ValueConvInv' => $f_e07886ab98,
             ],
             2 => [
                 'Name' => 'ISOSetting',
                 'PrintConv' => [0 => 'Auto', 254 => 'n/a', 'OTHER' => $f_b8580420d5],
                 'ValueConv' => $f_082322c970,
+                'ValueConvInv' => $f_12f069a5f1,
             ],
             3 => [
                 'Name' => 'ExposureCompensationSet',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_a73bfc622c,
+                'ValueConvInv' => $f_c7ff64fd34,
             ],
             4 => [
                 'Name' => 'DriveModeSetting',
@@ -5120,16 +5284,19 @@ return [
                 'Format' => 'int8s',
                 'Name' => 'ContrastSetting',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             17 => [
                 'Format' => 'int8s',
                 'Name' => 'SaturationSetting',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             18 => [
                 'Format' => 'int8s',
                 'Name' => 'SharpnessSetting',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             22 => [
                 'Name' => 'WhiteBalanceSetting',
@@ -5139,12 +5306,15 @@ return [
             23 => [
                 'Name' => 'ColorTemperatureSetting',
                 'PrintConv' => $f_555d882e03,
+                'PrintConvInv' => $f_3b614a939a,
                 'ValueConv' => $f_b94c7bf60c,
+                'ValueConvInv' => $f_b2e9e0be57,
             ],
             24 => [
                 'Format' => 'int8s',
                 'Name' => 'ColorCompensationFilterSet',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             25 => [
                 'Format' => 'int16uRev[3]',
@@ -5169,7 +5339,9 @@ return [
                 'Description' => 'Flash Exposure Comp. Setting',
                 'Name' => 'FlashExposureCompSet',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_a73bfc622c,
+                'ValueConvInv' => $f_c7ff64fd34,
             ],
             36 => [
                 'Name' => 'AFAreaMode',
@@ -5324,6 +5496,7 @@ return [
                 'Mask' => 16760832,
                 'Name' => 'FolderNumber',
                 'PrintConv' => $f_12acbf71af,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             '276.1' => [
                 'Condition' => $f_6505917baf,
@@ -5331,6 +5504,7 @@ return [
                 'Mask' => 16383,
                 'Name' => 'ImageNumber',
                 'PrintConv' => $f_f99fbac8a7,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             512 => [
                 'Condition' => $f_6505917baf,
@@ -5383,6 +5557,7 @@ return [
                 'Mask' => 16383,
                 'Name' => 'ImageNumber',
                 'PrintConv' => $f_f99fbac8a7,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             790 => [
                 'Condition' => $f_f92e8f45cf,
@@ -5390,12 +5565,14 @@ return [
                 'Mask' => 1023,
                 'Name' => 'FolderNumber',
                 'PrintConv' => $f_12acbf71af,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             1008 => [
                 'Condition' => $f_21afe3c4d9,
                 'Format' => 'int16u',
                 'Name' => 'LensE-mountVersion',
                 'PrintConv' => $f_0a6df780cd,
+                'PrintConvInv' => $f_a6beb8215b,
             ],
             1011 => [
                 'Condition' => $f_21afe3c4d9,
@@ -5416,6 +5593,7 @@ return [
                 'Mask' => 16383,
                 'Name' => 'ImageNumber',
                 'PrintConv' => $f_f99fbac8a7,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             1026 => [
                 'Condition' => $f_f92e8f45cf,
@@ -5423,7 +5601,9 @@ return [
                 'Mask' => 1023,
                 'Name' => 'FolderNumber',
                 'PrintConv' => $f_12acbf71af,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [153],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
@@ -5431,13 +5611,16 @@ return [
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::CameraSettingsUnknown' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::Composite' => [
             'FocusDistance' => [
@@ -5511,13 +5694,17 @@ return [
                 'Name' => 'MakerNoteVersion',
                 'Writable' => 'undef',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Sony::ExtraInfo' => [
             1 => [
                 'Name' => 'BatteryTemperature',
                 'PrintConv' => $f_a928b39f8a,
+                'PrintConvInv' => $f_76d0f0c35f,
                 'ValueConv' => $f_72246fafe6,
+                'ValueConvInv' => $f_6e8ced977c,
             ],
             2 => [
                 'Format' => 'undef[4]',
@@ -5540,30 +5727,37 @@ return [
             12 => [
                 'Name' => 'BatteryLevel',
                 'PrintConv' => $f_0a6503c132,
+                'PrintConvInv' => $f_0f1ec7d68b,
             ],
             26 => [
                 'Format' => 'int8u[4]',
                 'Name' => 'ExtraInfoVersion',
                 'PrintConv' => $f_227aa4ff88,
+                'PrintConvInv' => $f_226ee11c90,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::ExtraInfo2' => [
             4 => [
                 'Name' => 'BatteryLevel',
                 'PrintConv' => $f_0a6503c132,
+                'PrintConvInv' => $f_0f1ec7d68b,
             ],
             18 => [
                 'Name' => 'ImageStabilization',
                 'PrintConv' => [0 => 'Off', 64 => 'On'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::ExtraInfo3' => [
             0 => [
@@ -5574,25 +5768,32 @@ return [
             2 => [
                 'Name' => 'BatteryTemperature',
                 'PrintConv' => $f_a928b39f8a,
+                'PrintConvInv' => $f_76d0f0c35f,
                 'ValueConv' => $f_72246fafe6,
+                'ValueConvInv' => $f_6e8ced977c,
             ],
             4 => [
                 'Name' => 'BatteryLevel',
                 'PrintConv' => $f_0a6503c132,
+                'PrintConvInv' => $f_0f1ec7d68b,
             ],
             6 => [
                 'Condition' => $f_b4a7963959,
                 'Format' => 'int16u',
                 'Name' => 'BatteryVoltage1',
                 'PrintConv' => $f_584de4e556,
+                'PrintConvInv' => $f_80f91b40d2,
                 'ValueConv' => $f_a1aaa6b70c,
+                'ValueConvInv' => $f_57b7279a3e,
             ],
             8 => [
                 'Condition' => $f_b4a7963959,
                 'Format' => 'int16u',
                 'Name' => 'BatteryVoltage2',
                 'PrintConv' => $f_584de4e556,
+                'PrintConvInv' => $f_80f91b40d2,
                 'ValueConv' => $f_a1aaa6b70c,
+                'ValueConvInv' => $f_57b7279a3e,
             ],
             17 => [
                 'Condition' => $f_b4a7963959,
@@ -5660,10 +5861,12 @@ return [
                 'Name' => 'CameraOrientation',
                 'PrintConv' => [0 => 'Horizontal (normal)', 1 => 'Rotate 90 CW', 2 => 'Rotate 270 CW', 3 => 'Rotate 180'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::FaceInfo' => [
             0 => [
@@ -5678,55 +5881,65 @@ return [
                 'Format' => 'int16u[4]',
                 'Name' => 'Face1Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             6 => [
                 'Condition' => $f_d89bc7fe52,
                 'Format' => 'int16u[4]',
                 'Name' => 'Face2Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             11 => [
                 'Condition' => $f_fc92a5da09,
                 'Format' => 'int16u[4]',
                 'Name' => 'Face3Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             16 => [
                 'Condition' => $f_ded294fba4,
                 'Format' => 'int16u[4]',
                 'Name' => 'Face4Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             21 => [
                 'Condition' => $f_9ed4566745,
                 'Format' => 'int16u[4]',
                 'Name' => 'Face5Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             26 => [
                 'Condition' => $f_cd7e512206,
                 'Format' => 'int16u[4]',
                 'Name' => 'Face6Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             31 => [
                 'Condition' => $f_be1ec5e80f,
                 'Format' => 'int16u[4]',
                 'Name' => 'Face7Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             36 => [
                 'Condition' => $f_5becdaf52e,
                 'Format' => 'int16u[4]',
                 'Name' => 'Face8Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [0],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::FaceInfo1' => [
             0 => [
@@ -5769,10 +5982,12 @@ return [
                 'Name' => 'Face8Position',
                 'RawConv' => $f_7774121a75,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::FaceInfo2' => [
             0 => [
@@ -5815,10 +6030,12 @@ return [
                 'Name' => 'Face8Position',
                 'RawConv' => $f_7774121a75,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::FaceInfoA' => [
             2 => [
@@ -5844,79 +6061,93 @@ return [
                 'Format' => 'int16u[4]',
                 'Name' => 'PotentialFace1Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             21 => [
                 'Condition' => $f_d76c508e1f,
                 'Format' => 'int16u[4]',
                 'Name' => 'PotentialFace2Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             31 => [
                 'Condition' => $f_531c79da44,
                 'Format' => 'int16u[4]',
                 'Name' => 'PotentialFace3Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             41 => [
                 'Condition' => $f_8b98bb5bf0,
                 'Format' => 'int16u[4]',
                 'Name' => 'PotentialFace4Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             51 => [
                 'Condition' => $f_eec156b37c,
                 'Format' => 'int16u[4]',
                 'Name' => 'PotentialFace5Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             61 => [
                 'Condition' => $f_275c98ad7a,
                 'Format' => 'int16u[4]',
                 'Name' => 'PotentialFace6Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             71 => [
                 'Condition' => $f_fedd02ffbb,
                 'Format' => 'int16u[4]',
                 'Name' => 'PotentialFace7Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             81 => [
                 'Condition' => $f_7fd0cc74a1,
                 'Format' => 'int16u[4]',
                 'Name' => 'PotentialFace8Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             91 => [
                 'Condition' => $f_9e790c3a48,
                 'Format' => 'int16u[4]',
                 'Name' => 'Face1Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             101 => [
                 'Condition' => $f_d89bc7fe52,
                 'Format' => 'int16u[4]',
                 'Name' => 'Face2Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             111 => [
                 'Condition' => $f_fc92a5da09,
                 'Format' => 'int16u[4]',
                 'Name' => 'Face3Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
             121 => [
                 'Condition' => $f_ded294fba4,
                 'Format' => 'int16u[4]',
                 'Name' => 'Face4Position',
                 'ValueConv' => $f_7b321057ff,
+                'ValueConvInv' => $f_7e490b8006,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [2, 3, 8],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::FocusInfo' => [
             14 => [
@@ -5933,6 +6164,7 @@ return [
                         11 => 'Continuous Self-timer',
                     ],
                     'PrintHex' => 1,
+                    'ValueConvInv' => $f_25924ee98a,
                 ],
                 [
                     'Name' => 'DriveMode2',
@@ -5952,6 +6184,7 @@ return [
                         41 => 'D-Range Optimizer Bracketing High',
                     ],
                     'PrintHex' => 1,
+                    'ValueConvInv' => $f_25924ee98a,
                 ],
             ],
             16 => [
@@ -6009,12 +6242,16 @@ return [
             109 => [
                 'Name' => 'ISOSetting',
                 'PrintConv' => $f_ec8e3ed1f0,
+                'PrintConvInv' => $f_9ff4f4a8c6,
                 'ValueConv' => $f_5f093464fd,
+                'ValueConvInv' => $f_16a8e8deef,
             ],
             111 => [
                 'Name' => 'ISO',
                 'PrintConv' => $f_ec8e3ed1f0,
+                'PrintConvInv' => $f_9ff4f4a8c6,
                 'ValueConv' => $f_5f093464fd,
+                'ValueConvInv' => $f_16a8e8deef,
             ],
             119 => [
                 'Name' => 'DynamicRangeOptimizerMode',
@@ -6036,11 +6273,13 @@ return [
                 'Name' => 'TiffMeteringImage',
                 'ValueConv' => $f_6353e38b07,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::HiddenInfo' => [
             0 => [
@@ -6058,12 +6297,14 @@ return [
                 'Protectd' => 2,
                 'WriteGroup' => 'MakerNotes',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int32u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'IS_OFFSET' => [0],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::ISOInfo' => [
             0 => [
@@ -6078,11 +6319,13 @@ return [
                 'Name' => 'ISOAutoMax',
                 'ValueConv' => $d_7,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::Main' => [
             16 => [
@@ -6287,7 +6530,9 @@ return [
                 'Groups' => [2 => 'Preview'],
                 'Name' => 'PreviewImage',
                 'RawConv' => $f_1eb2069475,
+                'ValueConvInv' => $f_76bada3a36,
                 'Writable' => 'undef',
+                'WriteCheck' => $f_85b248badb,
             ],
             8194 => [
                 'Name' => 'Rating',
@@ -6296,21 +6541,25 @@ return [
             8196 => [
                 'Name' => 'Contrast',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'int32s',
             ],
             8197 => [
                 'Name' => 'Saturation',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'int32s',
             ],
             8198 => [
                 'Name' => 'Sharpness',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'int32s',
             ],
             8199 => [
                 'Name' => 'Brightness',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'int32s',
             ],
             8200 => [
@@ -6683,6 +6932,7 @@ return [
                         78 => 'I7',
                     ],
                     'ValueConv' => $f_b05ba9ae30,
+                    'ValueConvInv' => $f_1434eeebbd,
                     'Writable' => 'int8u',
                 ],
                 [
@@ -7014,6 +7264,7 @@ return [
             8237 => [
                 'Name' => 'ExposureStandardAdjustment',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'rational64s',
             ],
             8238 => [
@@ -7057,37 +7308,45 @@ return [
                 'Name' => 'PixelShiftInfo',
                 'PrintConv' => ['00000000 0 0 0x0' => 'n/a', 'OTHER' => $f_0abfd634ac],
                 'RawConv' => $f_55a1cafee5,
+                'RawConvInv' => $f_0f556923d3,
                 'Writable' => 'undef',
             ],
             8241 => [
                 'Name' => 'SerialNumber',
                 'PrintConv' => $f_34b5f540de,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_0498433c31,
+                'ValueConvInv' => $f_4dcc5f90f2,
                 'Writable' => 'string',
             ],
             8242 => [
                 'Name' => 'Shadows',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'int32s',
             ],
             8243 => [
                 'Name' => 'Highlights',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'int32s',
             ],
             8244 => [
                 'Name' => 'Fade',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'int32s',
             ],
             8245 => [
                 'Name' => 'SharpnessRange',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'int32s',
             ],
             8246 => [
                 'Name' => 'Clarity',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'int32s',
             ],
             8247 => [
@@ -7095,6 +7354,7 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'FocusFrameSize',
                 'PrintConv' => $f_0d75453e03,
+                'PrintConvInv' => $f_f3f556c57c,
             ],
             8249 => [
                 'Name' => 'JPEG-HEIFSwitch',
@@ -7606,6 +7866,7 @@ return [
             45089 => [
                 'Name' => 'ColorTemperature',
                 'PrintConv' => $f_f989a2eb75,
+                'PrintConvInv' => $f_3d1b37a744,
                 'Writable' => 'int32u',
             ],
             45090 => [
@@ -7681,6 +7942,7 @@ return [
                 'Name' => 'LensType',
                 'PrintConv' => $d_8,
                 'PrintInt' => 1,
+                'ValueConvInv' => $f_dbfa7022d4,
                 'Writable' => 'int32u',
             ],
             45096 => [
@@ -7731,21 +7993,27 @@ return [
                 'Format' => 'undef',
                 'Name' => 'LensSpec',
                 'PrintConv' => 'Image\\ExifTool\\Sony::PrintLensSpec',
+                'PrintConvInv' => 'Image\\ExifTool\\Sony::PrintInvLensSpec',
                 'ValueConv' => 'Image\\ExifTool\\Sony::ConvLensSpec',
+                'ValueConvInv' => 'Image\\ExifTool\\Sony::ConvInvLensSpec',
                 'Writable' => 'int8u',
             ],
             45099 => [
                 'Count' => 2,
                 'Name' => 'FullImageSize',
                 'PrintConv' => $f_32fa794234,
+                'PrintConvInv' => $f_4f4b756712,
                 'ValueConv' => $f_9cd93d9857,
+                'ValueConvInv' => $f_ff8820c035,
                 'Writable' => 'int32u',
             ],
             45100 => [
                 'Count' => 2,
                 'Name' => 'PreviewImageSize',
                 'PrintConv' => $f_32fa794234,
+                'PrintConvInv' => $f_4f4b756712,
                 'ValueConv' => $f_9cd93d9857,
+                'ValueConvInv' => $f_ff8820c035,
                 'Writable' => 'int32u',
             ],
             45120 => [
@@ -7940,93 +8208,113 @@ return [
                 ],
                 'Writable' => 'int16u',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Sony::MeterInfo' => [
             0 => [
                 'Format' => 'int32u[27]',
                 'Name' => 'MeterInfo1Row1',
                 'PrintConv' => $f_dc219d4ad0,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             108 => [
                 'Format' => 'int32u[27]',
                 'Name' => 'MeterInfo1Row2',
                 'PrintConv' => $f_dc219d4ad0,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             216 => [
                 'Format' => 'int32u[27]',
                 'Name' => 'MeterInfo1Row3',
                 'PrintConv' => $f_dc219d4ad0,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             324 => [
                 'Format' => 'int32u[27]',
                 'Name' => 'MeterInfo1Row4',
                 'PrintConv' => $f_dc219d4ad0,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             432 => [
                 'Format' => 'int32u[27]',
                 'Name' => 'MeterInfo1Row5',
                 'PrintConv' => $f_dc219d4ad0,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             540 => [
                 'Format' => 'int32u[27]',
                 'Name' => 'MeterInfo1Row6',
                 'PrintConv' => $f_dc219d4ad0,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             648 => [
                 'Format' => 'int32u[27]',
                 'Name' => 'MeterInfo1Row7',
                 'PrintConv' => $f_dc219d4ad0,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             756 => [
                 'Format' => 'int32u[33]',
                 'Name' => 'MeterInfo2Row1',
                 'PrintConv' => $f_ed04067d63,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             888 => [
                 'Format' => 'int32u[33]',
                 'Name' => 'MeterInfo2Row2',
                 'PrintConv' => $f_ed04067d63,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             1020 => [
                 'Format' => 'int32u[33]',
                 'Name' => 'MeterInfo2Row3',
                 'PrintConv' => $f_ed04067d63,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             1152 => [
                 'Format' => 'int32u[33]',
                 'Name' => 'MeterInfo2Row4',
                 'PrintConv' => $f_ed04067d63,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             1284 => [
                 'Format' => 'int32u[33]',
                 'Name' => 'MeterInfo2Row5',
                 'PrintConv' => $f_ed04067d63,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             1416 => [
                 'Format' => 'int32u[33]',
                 'Name' => 'MeterInfo2Row6',
                 'PrintConv' => $f_ed04067d63,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             1548 => [
                 'Format' => 'int32u[33]',
                 'Name' => 'MeterInfo2Row7',
                 'PrintConv' => $f_ed04067d63,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             1680 => [
                 'Format' => 'int32u[33]',
                 'Name' => 'MeterInfo2Row8',
                 'PrintConv' => $f_ed04067d63,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             1812 => [
                 'Format' => 'int32u[33]',
                 'Name' => 'MeterInfo2Row9',
                 'PrintConv' => $f_ed04067d63,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::MeterInfo9' => [
             0 => [
@@ -8125,10 +8413,12 @@ return [
                 'PrintConv' => $f_ed04067d63,
                 'ValueConv' => 'Image\\ExifTool\\Sony::ConvMeter2',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::MoreInfo' => [
             1 => [
@@ -8171,6 +8461,7 @@ return [
             ],
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessMoreInfo',
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::ProcessMoreInfo',
         ],
         'Image::ExifTool::Sony::MoreInfo0201' => [
             283 => [
@@ -8191,11 +8482,13 @@ return [
                 'Name' => 'ShutterCount',
                 'RawConv' => $f_6404d91d8e,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::MoreInfo0401' => [
             1102 => [
@@ -8204,11 +8497,13 @@ return [
                 'Name' => 'ShotNumberSincePowerUp',
                 'RawConv' => $f_6404d91d8e,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::MoreSettings' => [
             1 => [
@@ -8260,16 +8555,19 @@ return [
                 'Format' => 'int8s',
                 'Name' => 'ContrastSetting',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             9 => [
                 'Format' => 'int8s',
                 'Name' => 'SaturationSetting',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             10 => [
                 'Format' => 'int8s',
                 'Name' => 'SharpnessSetting',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             13 => [
                 'Name' => 'WhiteBalanceSetting',
@@ -8279,12 +8577,15 @@ return [
             14 => [
                 'Name' => 'ColorTemperatureSetting',
                 'PrintConv' => $f_555d882e03,
+                'PrintConvInv' => $f_3b614a939a,
                 'ValueConv' => $f_b94c7bf60c,
+                'ValueConvInv' => $f_b2e9e0be57,
             ],
             15 => [
                 'Format' => 'int8s',
                 'Name' => 'ColorCompensationFilterSet',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             16 => [
                 'Name' => 'FlashMode',
@@ -8350,11 +8651,14 @@ return [
                     'Condition' => $f_549203434b,
                     'Name' => 'BrightnessValue',
                     'ValueConv' => $f_fafc4e62b1,
+                    'ValueConvInv' => $f_f16262a420,
                 ],
                 [
                     'Name' => 'ExposureCompensationSet',
                     'PrintConv' => $f_3517b56753,
+                    'PrintConvInv' => $f_153707d441,
                     'ValueConv' => $f_a73bfc622c,
+                    'ValueConvInv' => $f_c7ff64fd34,
                 ],
             ],
             31 => [
@@ -8362,13 +8666,17 @@ return [
                     'Condition' => $f_549203434b,
                     'Name' => 'ISO',
                     'PrintConv' => $f_ec8e3ed1f0,
+                    'PrintConvInv' => $f_9ff4f4a8c6,
                     'ValueConv' => $f_5f093464fd,
+                    'ValueConvInv' => $f_16a8e8deef,
                 ],
                 [
                     'Description' => 'Flash Exposure Comp. Setting',
                     'Name' => 'FlashExposureCompSet',
                     'PrintConv' => $f_3517b56753,
+                    'PrintConvInv' => $f_153707d441,
                     'ValueConv' => $f_a73bfc622c,
+                    'ValueConvInv' => $f_c7ff64fd34,
                 ],
             ],
             32 => [
@@ -8376,7 +8684,9 @@ return [
                     'Condition' => $f_549203434b,
                     'Name' => 'FNumber',
                     'PrintConv' => $f_02272264af,
+                    'PrintConvInv' => $f_1d8918cb54,
                     'ValueConv' => $f_da8878109c,
+                    'ValueConvInv' => $f_e07886ab98,
                 ],
                 [
                     'Condition' => $f_b1934a1778,
@@ -8389,33 +8699,43 @@ return [
                     'Condition' => $f_549203434b,
                     'Name' => 'ExposureTime',
                     'PrintConv' => $f_a63541d7d7,
+                    'PrintConvInv' => $f_016bd30b33,
                     'ValueConv' => $f_d18cb03143,
+                    'ValueConvInv' => $f_b741ab304b,
                 ],
                 [
                     'Condition' => $f_7c6c53b4c4,
                     'Name' => 'ISO',
                     'PrintConv' => $f_ec8e3ed1f0,
+                    'PrintConvInv' => $f_9ff4f4a8c6,
                     'ValueConv' => $f_5f093464fd,
+                    'ValueConvInv' => $f_16a8e8deef,
                 ],
             ],
             34 => [
                 'Condition' => $f_7c6c53b4c4,
                 'Name' => 'FNumber',
                 'PrintConv' => $f_02272264af,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_da8878109c,
+                'ValueConvInv' => $f_e07886ab98,
             ],
             35 => [
                 [
                     'Condition' => $f_549203434b,
                     'Name' => 'FocalLength2',
                     'PrintConv' => $f_8f0e71a82a,
+                    'PrintConvInv' => $f_3e18fc8321,
                     'ValueConv' => $f_f966b2b5e6,
+                    'ValueConvInv' => $f_1dcf862f03,
                 ],
                 [
                     'Condition' => $f_7c6c53b4c4,
                     'Name' => 'ExposureTime',
                     'PrintConv' => $f_a63541d7d7,
+                    'PrintConvInv' => $f_016bd30b33,
                     'ValueConv' => $f_d18cb03143,
+                    'ValueConvInv' => $f_b741ab304b,
                 ],
             ],
             36 => [
@@ -8423,20 +8743,26 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'ExposureCompensation2',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_854a53c15e,
+                'ValueConvInv' => $f_3c29a897ef,
             ],
             37 => [
                 [
                     'Condition' => $f_7c6c53b4c4,
                     'Name' => 'FocalLength2',
                     'PrintConv' => $f_8f0e71a82a,
+                    'PrintConvInv' => $f_3e18fc8321,
                     'ValueConv' => $f_f966b2b5e6,
+                    'ValueConvInv' => $f_1dcf862f03,
                 ],
                 [
                     'Condition' => $f_8d6df88e0c,
                     'Name' => 'ISO',
                     'PrintConv' => $f_ec8e3ed1f0,
+                    'PrintConvInv' => $f_9ff4f4a8c6,
                     'ValueConv' => $f_5f093464fd,
+                    'ValueConvInv' => $f_16a8e8deef,
                 ],
             ],
             38 => [
@@ -8446,26 +8772,34 @@ return [
                     'Format' => 'int16s',
                     'Name' => 'FlashExposureCompSet2',
                     'PrintConv' => $f_3517b56753,
+                    'PrintConvInv' => $f_1d8918cb54,
                     'ValueConv' => $f_854a53c15e,
+                    'ValueConvInv' => $f_3c29a897ef,
                 ],
                 [
                     'Condition' => $f_7c6c53b4c4,
                     'Format' => 'int16s',
                     'Name' => 'ExposureCompensation2',
                     'PrintConv' => $f_3517b56753,
+                    'PrintConvInv' => $f_1d8918cb54,
                     'ValueConv' => $f_854a53c15e,
+                    'ValueConvInv' => $f_3c29a897ef,
                 ],
                 [
                     'Name' => 'FNumber',
                     'PrintConv' => $f_02272264af,
+                    'PrintConvInv' => $f_1d8918cb54,
                     'ValueConv' => $f_da8878109c,
+                    'ValueConvInv' => $f_e07886ab98,
                 ],
             ],
             39 => [
                 'Condition' => $f_bb3427369a,
                 'Name' => 'ExposureTime',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_016bd30b33,
                 'ValueConv' => $f_d18cb03143,
+                'ValueConvInv' => $f_b741ab304b,
             ],
             40 => [
                 'Condition' => $f_549203434b,
@@ -8481,7 +8815,9 @@ return [
                     'Condition' => $f_b1934a1778,
                     'Name' => 'FocalLength2',
                     'PrintConv' => $f_8f0e71a82a,
+                    'PrintConvInv' => $f_3e18fc8321,
                     'ValueConv' => $f_f966b2b5e6,
+                    'ValueConvInv' => $f_1dcf862f03,
                 ],
             ],
             42 => [
@@ -8495,7 +8831,9 @@ return [
                     'Format' => 'int16s',
                     'Name' => 'ExposureCompensation2',
                     'PrintConv' => $f_3517b56753,
+                    'PrintConvInv' => $f_1d8918cb54,
                     'ValueConv' => $f_854a53c15e,
+                    'ValueConvInv' => $f_3c29a897ef,
                 ],
             ],
             43 => [
@@ -8518,7 +8856,9 @@ return [
                     'Format' => 'int16s',
                     'Name' => 'FlashExposureCompSet2',
                     'PrintConv' => $f_3517b56753,
+                    'PrintConvInv' => $f_1d8918cb54,
                     'ValueConv' => $f_854a53c15e,
+                    'ValueConvInv' => $f_3c29a897ef,
                 ],
             ],
             46 => [
@@ -8577,11 +8917,13 @@ return [
                 'Name' => 'FlashStatus',
                 'PrintConv' => [0 => 'None', 1 => 'Built-in', 2 => 'External'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::PIC' => [
             'BC:' => [
@@ -8722,19 +9064,23 @@ return [
             9 => 'PanoramaFrameHeight',
             10 => 'PanoramaSourceWidth',
             11 => 'PanoramaSourceHeight',
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int32u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::SR2DataIFD' => [
             30576 => [
                 'Name' => 'ColorMode',
                 'Priority' => 0,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 1 => 'SR2DataIFD', 2 => 'Camera'],
             'SET_GROUP1' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Sony::SR2Private' => [
             29184 => [
@@ -8788,6 +9134,7 @@ return [
             ],
             'GROUPS' => [0 => 'MakerNotes', 1 => 'SR2', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessSR2',
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteSR2',
         ],
         'Image::ExifTool::Sony::SR2SubIFD' => [
             29440 => [
@@ -8976,10 +9323,12 @@ return [
             31101 => 'VignettingCorrParams',
             31104 => 'ChromaticAberrationCorrParams',
             31106 => 'DistortionCorrParams',
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 1 => 'SR2SubIFD', 2 => 'Camera'],
             'PERMANENT' => 1,
             'SET_GROUP1' => 1,
             'WRITE_GROUP' => 'SR2SubIFD',
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Sony::SRF' => [
             0 => [
@@ -9049,6 +9398,8 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'SonyDateTime',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_9183f2970f,
+                'Shift' => 'Time',
             ],
             26 => [
                 'Format' => 'int16u',
@@ -9091,12 +9442,14 @@ return [
                     'TagTable' => 'Image::ExifTool::Sony::FaceInfo2',
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [2, 48, 50, 52],
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'IS_SUBDIR' => [72, 94],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::Tag2010a' => [
             1200 => [
@@ -9127,12 +9480,15 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'StopsAboveBaseISO',
                 'PrintConv' => $f_55e2d18a41,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1b49c380d5,
+                'ValueConvInv' => $f_967e3fa0f7,
             ],
             4416 => [
                 'Format' => 'int16u',
                 'Name' => 'BrightnessValue',
                 'ValueConv' => $f_8d4d0b179f,
+                'ValueConvInv' => $f_c51ac67ef3,
             ],
             4420 => [
                 'Name' => 'DynamicRangeOptimizer',
@@ -9146,7 +9502,9 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'ExposureCompensation',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_316ea25d96,
+                'ValueConvInv' => $f_f51601b7aa,
             ],
             4446 => [
                 'Name' => 'PictureProfile',
@@ -9176,6 +9534,7 @@ return [
                 'Format' => 'int16u[3]',
                 'Name' => 'WB_RGBLevels',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
@@ -9183,17 +9542,20 @@ return [
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag2010b' => [
             0 => [
                 'Format' => 'int32u',
                 'Name' => 'SequenceImageNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             4 => [
                 'Format' => 'int32u',
                 'Name' => 'SequenceFileNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             8 => [
                 'Format' => 'int32u',
@@ -9205,7 +9567,10 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'SonyDateTime',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_9183f2970f,
+                'Shift' => 'Time',
                 'ValueConv' => $f_609d2b7456,
+                'ValueConvInv' => $f_d7ab883423,
             ],
             804 => [
                 'Name' => 'DynamicRangeOptimizer',
@@ -9239,12 +9604,15 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'StopsAboveBaseISO',
                 'PrintConv' => $f_55e2d18a41,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1b49c380d5,
+                'ValueConvInv' => $f_967e3fa0f7,
             ],
             4416 => [
                 'Format' => 'int16u',
                 'Name' => 'BrightnessValue',
                 'ValueConv' => $f_8d4d0b179f,
+                'ValueConvInv' => $f_c51ac67ef3,
             ],
             4420 => [
                 'Name' => 'DynamicRangeOptimizer',
@@ -9258,7 +9626,9 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'ExposureCompensation',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_316ea25d96,
+                'ValueConvInv' => $f_f51601b7aa,
             ],
             4450 => [
                 'Name' => 'PictureProfile',
@@ -9292,12 +9662,15 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'SonyISO',
                 'PrintConv' => $f_2dc7d88624,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_20d3123c63,
+                'ValueConvInv' => $f_06fc1b2d1e,
             ],
             6691 => [
                 'Format' => 'int16s[16]',
                 'Name' => 'DistortionCorrParams',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
@@ -9305,17 +9678,20 @@ return [
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag2010c' => [
             0 => [
                 'Format' => 'int32u',
                 'Name' => 'SequenceImageNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             4 => [
                 'Format' => 'int32u',
                 'Name' => 'SequenceFileNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             8 => [
                 'Format' => 'int32u',
@@ -9326,13 +9702,17 @@ return [
                 'Name' => 'DigitalZoomRatio',
                 'Priority' => 0,
                 'ValueConv' => $f_d77361d758,
+                'ValueConvInv' => $f_116ae9f02c,
             ],
             528 => [
                 'Format' => 'undef[7]',
                 'Groups' => [2 => 'Time'],
                 'Name' => 'SonyDateTime',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_9183f2970f,
+                'Shift' => 'Time',
                 'ValueConv' => $f_609d2b7456,
+                'ValueConvInv' => $f_d7ab883423,
             ],
             768 => [
                 'Name' => 'DynamicRangeOptimizer',
@@ -9366,12 +9746,15 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'StopsAboveBaseISO',
                 'PrintConv' => $f_55e2d18a41,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1b49c380d5,
+                'ValueConvInv' => $f_967e3fa0f7,
             ],
             4380 => [
                 'Format' => 'int16u',
                 'Name' => 'BrightnessValue',
                 'ValueConv' => $f_8d4d0b179f,
+                'ValueConvInv' => $f_c51ac67ef3,
             ],
             4384 => [
                 'Name' => 'DynamicRangeOptimizer',
@@ -9385,7 +9768,9 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'ExposureCompensation',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_316ea25d96,
+                'ValueConvInv' => $f_f51601b7aa,
             ],
             4414 => [
                 'Name' => 'PictureProfile',
@@ -9419,8 +9804,11 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'SonyISO',
                 'PrintConv' => $f_2dc7d88624,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_20d3123c63,
+                'ValueConvInv' => $f_06fc1b2d1e,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
@@ -9428,17 +9816,20 @@ return [
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag2010d' => [
             0 => [
                 'Format' => 'int32u',
                 'Name' => 'SequenceImageNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             4 => [
                 'Format' => 'int32u',
                 'Name' => 'SequenceFileNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             8 => [
                 'Format' => 'int32u',
@@ -9450,7 +9841,10 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'SonyDateTime',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_9183f2970f,
+                'Shift' => 'Time',
                 'ValueConv' => $f_609d2b7456,
+                'ValueConvInv' => $f_d7ab883423,
             ],
             892 => [
                 'Name' => 'DynamicRangeOptimizer',
@@ -9484,12 +9878,15 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'StopsAboveBaseISO',
                 'PrintConv' => $f_55e2d18a41,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1b49c380d5,
+                'ValueConvInv' => $f_967e3fa0f7,
             ],
             4504 => [
                 'Format' => 'int16u',
                 'Name' => 'BrightnessValue',
                 'ValueConv' => $f_8d4d0b179f,
+                'ValueConvInv' => $f_c51ac67ef3,
             ],
             4508 => [
                 'Name' => 'DynamicRangeOptimizer',
@@ -9527,8 +9924,11 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'SonyISO',
                 'PrintConv' => $f_2dc7d88624,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_20d3123c63,
+                'ValueConvInv' => $f_06fc1b2d1e,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
@@ -9536,17 +9936,20 @@ return [
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag2010e' => [
             0 => [
                 'Format' => 'int32u',
                 'Name' => 'SequenceImageNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             4 => [
                 'Format' => 'int32u',
                 'Name' => 'SequenceFileNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             8 => [
                 'Format' => 'int32u',
@@ -9557,13 +9960,17 @@ return [
                 'Name' => 'DigitalZoomRatio',
                 'Priority' => 0,
                 'ValueConv' => $f_d77361d758,
+                'ValueConvInv' => $f_116ae9f02c,
             ],
             556 => [
                 'Format' => 'undef[7]',
                 'Groups' => [2 => 'Time'],
                 'Name' => 'SonyDateTime',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_9183f2970f,
+                'Shift' => 'Time',
                 'ValueConv' => $f_609d2b7456,
+                'ValueConvInv' => $f_d7ab883423,
             ],
             808 => [
                 'Name' => 'DynamicRangeOptimizer',
@@ -9597,12 +10004,15 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'StopsAboveBaseISO',
                 'PrintConv' => $f_55e2d18a41,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1b49c380d5,
+                'ValueConvInv' => $f_967e3fa0f7,
             ],
             4468 => [
                 'Format' => 'int16u',
                 'Name' => 'BrightnessValue',
                 'ValueConv' => $f_8d4d0b179f,
+                'ValueConvInv' => $f_c51ac67ef3,
             ],
             4472 => [
                 'Name' => 'DynamicRangeOptimizer',
@@ -9616,7 +10026,9 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'ExposureCompensation',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_316ea25d96,
+                'ValueConvInv' => $f_f51601b7aa,
             ],
             4502 => [
                 'Name' => 'PictureProfile',
@@ -9651,43 +10063,55 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'SonyISO',
                 'PrintConv' => $f_2dc7d88624,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_20d3123c63,
+                'ValueConvInv' => $f_06fc1b2d1e,
             ],
             4696 => [
                 'Condition' => $f_c905ccc978,
                 'Format' => 'int16u',
                 'Name' => 'SonyISO',
                 'PrintConv' => $f_2dc7d88624,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_20d3123c63,
+                'ValueConvInv' => $f_06fc1b2d1e,
             ],
             4728 => [
                 'Condition' => $f_a1129b79ca,
                 'Format' => 'int16u',
                 'Name' => 'FocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             4730 => [
                 'Condition' => $f_a1129b79ca,
                 'Format' => 'int16u',
                 'Name' => 'MinFocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             4732 => [
                 'Condition' => $f_a1129b79ca,
                 'Format' => 'int16u',
                 'Name' => 'MaxFocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'RawConv' => $f_3ab71eb818,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             4736 => [
                 'Condition' => $f_a1129b79ca,
                 'Format' => 'int16u',
                 'Name' => 'SonyISO',
                 'PrintConv' => $f_2dc7d88624,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_20d3123c63,
+                'ValueConvInv' => $f_06fc1b2d1e,
             ],
             6256 => [
                 'Condition' => $f_7f5076ce62,
@@ -9719,6 +10143,7 @@ return [
                 'PrintConv' => $d_8,
                 'PrintInt' => 1,
                 'Priority' => 0,
+                'ValueConvInv' => $f_d8663a24e0,
             ],
             6296 => [
                 'Condition' => $f_7f5076ce62,
@@ -9740,6 +10165,7 @@ return [
                 'Name' => 'AspectRatio',
                 'PrintConv' => [0 => '16:9', 1 => '4:3', 2 => '3:2', 3 => '1:1', 5 => 'Panorama'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [6290],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
@@ -9748,6 +10174,7 @@ return [
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag2010f' => [
             4 => [
@@ -9787,12 +10214,15 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'StopsAboveBaseISO',
                 'PrintConv' => $f_55e2d18a41,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1b49c380d5,
+                'ValueConvInv' => $f_967e3fa0f7,
             ],
             4140 => [
                 'Format' => 'int16u',
                 'Name' => 'BrightnessValue',
                 'ValueConv' => $f_8d4d0b179f,
+                'ValueConvInv' => $f_c51ac67ef3,
             ],
             4144 => [
                 'Name' => 'DynamicRangeOptimizer',
@@ -9806,7 +10236,9 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'ExposureCompensation',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_316ea25d96,
+                'ValueConvInv' => $f_f51601b7aa,
             ],
             4174 => [
                 'Name' => 'PictureProfile',
@@ -9840,30 +10272,39 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'FocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             4406 => [
                 'Format' => 'int16u',
                 'Name' => 'MinFocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             4408 => [
                 'Format' => 'int16u',
                 'Name' => 'MaxFocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             4412 => [
                 'Format' => 'int16u',
                 'Name' => 'SonyISO',
                 'PrintConv' => $f_2dc7d88624,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_20d3123c63,
+                'ValueConvInv' => $f_06fc1b2d1e,
             ],
             6444 => [
                 'Name' => 'AspectRatio',
                 'PrintConv' => [0 => '16:9', 1 => '4:3', 2 => '3:2', 3 => '1:1', 5 => 'Panorama'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
@@ -9871,6 +10312,7 @@ return [
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag2010g' => [
             4 => [
@@ -9902,12 +10344,15 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'StopsAboveBaseISO',
                 'PrintConv' => $f_55e2d18a41,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1b49c380d5,
+                'ValueConvInv' => $f_967e3fa0f7,
             ],
             548 => [
                 'Format' => 'int16u',
                 'Name' => 'BrightnessValue',
                 'ValueConv' => $f_8d4d0b179f,
+                'ValueConvInv' => $f_c51ac67ef3,
             ],
             552 => [
                 'Name' => 'DynamicRangeOptimizer',
@@ -9921,7 +10366,9 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'ExposureCompensation',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_316ea25d96,
+                'ValueConvInv' => $f_f51601b7aa,
             ],
             582 => [
                 'Name' => 'PictureProfile',
@@ -9955,26 +10402,34 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'FocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             814 => [
                 'Format' => 'int16u',
                 'Name' => 'MinFocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             816 => [
                 'Format' => 'int16u',
                 'Name' => 'MaxFocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'RawConv' => $f_3ab71eb818,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             836 => [
                 'Format' => 'int16u',
                 'Name' => 'SonyISO',
                 'PrintConv' => $f_2dc7d88624,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_20d3123c63,
+                'ValueConvInv' => $f_06fc1b2d1e,
             ],
             904 => [
                 'Format' => 'int32u[486]',
@@ -10014,6 +10469,7 @@ return [
                 'PrintConv' => $d_8,
                 'PrintInt' => 1,
                 'Priority' => 0,
+                'ValueConvInv' => $f_d8663a24e0,
             ],
             6340 => [
                 'Condition' => $f_975887c46c,
@@ -10029,6 +10485,7 @@ return [
                 'Name' => 'AspectRatio',
                 'PrintConv' => [0 => '16:9', 1 => '4:3', 2 => '3:2', 3 => '1:1', 5 => 'Panorama'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [6334],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
@@ -10037,6 +10494,7 @@ return [
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag2010h' => [
             4 => [
@@ -10068,12 +10526,15 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'StopsAboveBaseISO',
                 'PrintConv' => $f_55e2d18a41,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1b49c380d5,
+                'ValueConvInv' => $f_967e3fa0f7,
             ],
             548 => [
                 'Format' => 'int16u',
                 'Name' => 'BrightnessValue',
                 'ValueConv' => $f_8d4d0b179f,
+                'ValueConvInv' => $f_c51ac67ef3,
             ],
             552 => [
                 'Name' => 'DynamicRangeOptimizer',
@@ -10087,7 +10548,9 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'ExposureCompensation',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_316ea25d96,
+                'ValueConvInv' => $f_f51601b7aa,
             ],
             582 => [
                 'Name' => 'PictureProfile',
@@ -10121,26 +10584,34 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'FocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             814 => [
                 'Format' => 'int16u',
                 'Name' => 'MinFocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             816 => [
                 'Format' => 'int16u',
                 'Name' => 'MaxFocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'RawConv' => $f_3ab71eb818,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             838 => [
                 'Format' => 'int16u',
                 'Name' => 'SonyISO',
                 'PrintConv' => $f_2dc7d88624,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_20d3123c63,
+                'ValueConvInv' => $f_06fc1b2d1e,
             ],
             904 => [
                 'Condition' => $f_29b492a100,
@@ -10190,6 +10661,7 @@ return [
                 'PrintConv' => $d_8,
                 'PrintInt' => 1,
                 'Priority' => 0,
+                'ValueConvInv' => $f_d8663a24e0,
             ],
             6388 => [
                 'Condition' => $f_975887c46c,
@@ -10205,6 +10677,7 @@ return [
                 'Name' => 'AspectRatio',
                 'PrintConv' => [0 => '16:9', 1 => '4:3', 2 => '3:2', 3 => '1:1', 5 => 'Panorama'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [6382],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
@@ -10213,6 +10686,7 @@ return [
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag2010i' => [
             4 => [
@@ -10244,12 +10718,15 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'StopsAboveBaseISO',
                 'PrintConv' => $f_55e2d18a41,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1b49c380d5,
+                'ValueConvInv' => $f_967e3fa0f7,
             ],
             537 => [
                 'Format' => 'int16u',
                 'Name' => 'BrightnessValue',
                 'ValueConv' => $f_8d4d0b179f,
+                'ValueConvInv' => $f_c51ac67ef3,
             ],
             539 => [
                 'Name' => 'DynamicRangeOptimizer',
@@ -10263,7 +10740,9 @@ return [
                 'Format' => 'int16s',
                 'Name' => 'ExposureCompensation',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_316ea25d96,
+                'ValueConvInv' => $f_f51601b7aa,
             ],
             567 => [
                 'Name' => 'PictureProfile',
@@ -10297,26 +10776,34 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'FocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             780 => [
                 'Format' => 'int16u',
                 'Name' => 'MinFocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             782 => [
                 'Format' => 'int16u',
                 'Name' => 'MaxFocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'RawConv' => $f_3ab71eb818,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             800 => [
                 'Format' => 'int16u',
                 'Name' => 'SonyISO',
                 'PrintConv' => $f_2dc7d88624,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_20d3123c63,
+                'ValueConvInv' => $f_06fc1b2d1e,
             ],
             877 => [
                 'Format' => 'undef[1620]',
@@ -10356,6 +10843,7 @@ return [
                 'PrintConv' => $d_8,
                 'PrintInt' => 1,
                 'Priority' => 0,
+                'ValueConvInv' => $f_d8663a24e0,
             ],
             6136 => [
                 'Condition' => $f_975887c46c,
@@ -10371,6 +10859,7 @@ return [
                 'Name' => 'AspectRatio',
                 'PrintConv' => [0 => '16:9', 1 => '4:3', 2 => '3:2', 3 => '1:1', 5 => 'Panorama'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [6130],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
@@ -10379,6 +10868,7 @@ return [
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag202a' => [
             1 => [
@@ -10467,12 +10957,14 @@ return [
                 'Format' => 'int16u[2]',
                 'Name' => 'FocalPlaneAFPointLocation15',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [1],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sony::Tag900b' => [
             2 => [
@@ -10494,21 +10986,27 @@ return [
                 'Name' => 'FaceDetection',
                 'PrintConv' => [0 => 'Off', 98 => 'On'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9050a' => [
             0 => [
                 'Condition' => $f_5644293dfd,
                 'Name' => 'SonyMaxAperture',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_8c2ae1ffe0,
+                'ValueConvInv' => $f_e07886ab98,
             ],
             1 => [
                 'Condition' => $f_5644293dfd,
                 'Name' => 'SonyMinAperture',
                 'PrintConv' => $f_2dc7d88624,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_8c2ae1ffe0,
+                'ValueConvInv' => $f_e07886ab98,
             ],
             32 => [
                 'Format' => 'int16u[3]',
@@ -10537,13 +11035,17 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'SonyExposureTime',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_016bd30b33,
                 'ValueConv' => $f_2eb18fa9ec,
+                'ValueConvInv' => $f_7bc548787b,
             ],
             60 => [
                 'Format' => 'int16u',
                 'Name' => 'SonyFNumber',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_ac95e933ec,
+                'ValueConvInv' => $f_2d1d064085,
             ],
             63 => [
                 'Name' => 'ReleaseMode2',
@@ -10561,7 +11063,10 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'SonyDateTime2',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_9183f2970f,
+                'Shift' => 'Time',
                 'ValueConv' => $f_53d7b626a6,
+                'ValueConvInv' => $f_830ea91fe1,
             ],
             103 => [
                 'Condition' => $f_46925a6312,
@@ -10579,6 +11084,7 @@ return [
                 'Format' => 'int8u[5]',
                 'Name' => 'InternalSerialNumber',
                 'PrintConv' => $f_d91c8365ec,
+                'PrintConvInv' => $f_6142cc0608,
             ],
             261 => [
                 'DataMember' => 'LensMount',
@@ -10604,6 +11110,7 @@ return [
                 'PrintConv' => $d_8,
                 'PrintInt' => 1,
                 'Priority' => 0,
+                'ValueConvInv' => $f_d8663a24e0,
             ],
             267 => [
                 'Name' => 'DistortionCorrParamsPresent',
@@ -10619,14 +11126,18 @@ return [
                 'Format' => 'undef[2]',
                 'Name' => 'LensSpecFeatures',
                 'PrintConv' => 'Image\\ExifTool\\Sony::PrintLensSpec',
+                'PrintConvInv' => $f_570682e9a6,
                 'ValueConv' => $f_33b584082e,
+                'ValueConvInv' => $f_3a33745dc3,
             ],
             278 => [
                 'Condition' => $f_41e5c27be6,
                 'Format' => 'undef[2]',
                 'Name' => 'LensSpecFeatures',
                 'PrintConv' => 'Image\\ExifTool\\Sony::PrintLensSpec',
+                'PrintConvInv' => $f_570682e9a6,
                 'ValueConv' => $f_33b584082e,
+                'ValueConvInv' => $f_3a33745dc3,
             ],
             416 => [
                 'Condition' => $f_e45332eb2f,
@@ -10646,25 +11157,31 @@ return [
                 'Name' => 'ShutterCount3',
                 'RawConv' => $f_d724a3f80a,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [49, 261],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9050b' => [
             0 => [
                 'Condition' => $f_29223e86fc,
                 'Name' => 'SonyMaxAperture',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_8c2ae1ffe0,
+                'ValueConvInv' => $f_e07886ab98,
             ],
             1 => [
                 'Condition' => $f_29223e86fc,
                 'Name' => 'SonyMinAperture',
                 'PrintConv' => $f_2dc7d88624,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_8c2ae1ffe0,
+                'ValueConvInv' => $f_e07886ab98,
             ],
             38 => [
                 'Format' => 'int16u[3]',
@@ -10693,13 +11210,17 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'SonyExposureTime',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_016bd30b33,
                 'ValueConv' => $f_2eb18fa9ec,
+                'ValueConvInv' => $f_7bc548787b,
             ],
             72 => [
                 'Format' => 'int16u',
                 'Name' => 'SonyFNumber',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_ac95e933ec,
+                'ValueConvInv' => $f_2d1d064085,
             ],
             75 => [
                 'Name' => 'ReleaseMode2',
@@ -10773,6 +11294,7 @@ return [
                 'PrintConv' => $d_8,
                 'PrintInt' => 1,
                 'Priority' => 0,
+                'ValueConvInv' => $f_d8663a24e0,
             ],
             267 => [
                 'Name' => 'DistortionCorrParamsPresent',
@@ -10787,7 +11309,9 @@ return [
                 'Format' => 'undef[2]',
                 'Name' => 'LensSpecFeatures',
                 'PrintConv' => 'Image\\ExifTool\\Sony::PrintLensSpec',
+                'PrintConvInv' => $f_570682e9a6,
                 'ValueConv' => $f_33b584082e,
+                'ValueConvInv' => $f_3a33745dc3,
             ],
             415 => [
                 'Condition' => $f_e91f99500a,
@@ -10817,8 +11341,10 @@ return [
                 'Format' => 'undef[2]',
                 'Name' => 'LensSpecFeatures',
                 'PrintConv' => 'Image\\ExifTool\\Sony::PrintLensSpec',
+                'PrintConvInv' => $f_570682e9a6,
                 'Priority' => 0,
                 'ValueConv' => $f_33b584082e,
+                'ValueConvInv' => $f_3a33745dc3,
             ],
             494 => [
                 'Condition' => $f_36688ee0cd,
@@ -10830,8 +11356,10 @@ return [
                 'Format' => 'undef[2]',
                 'Name' => 'LensSpecFeatures',
                 'PrintConv' => 'Image\\ExifTool\\Sony::PrintLensSpec',
+                'PrintConvInv' => $f_570682e9a6,
                 'Priority' => 0,
                 'ValueConv' => $f_33b584082e,
+                'ValueConvInv' => $f_3a33745dc3,
             ],
             538 => [
                 'Condition' => $f_ba0f1064b0,
@@ -10844,8 +11372,10 @@ return [
                     'Format' => 'undef[2]',
                     'Name' => 'LensSpecFeatures',
                     'PrintConv' => 'Image\\ExifTool\\Sony::PrintLensSpec',
+                    'PrintConvInv' => $f_570682e9a6,
                     'Priority' => 0,
                     'ValueConv' => $f_33b584082e,
+                    'ValueConvInv' => $f_3a33745dc3,
                 ],
                 [
                     'Condition' => $f_9853292e45,
@@ -10858,15 +11388,19 @@ return [
                 'Format' => 'undef[2]',
                 'Name' => 'LensSpecFeatures',
                 'PrintConv' => 'Image\\ExifTool\\Sony::PrintLensSpec',
+                'PrintConvInv' => $f_570682e9a6,
                 'Priority' => 0,
                 'ValueConv' => $f_33b584082e,
+                'ValueConvInv' => $f_3a33745dc3,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [57, 261],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9050c' => [
             38 => [
@@ -10896,13 +11430,17 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'SonyExposureTime',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_016bd30b33,
                 'ValueConv' => $f_2eb18fa9ec,
+                'ValueConvInv' => $f_7bc548787b,
             ],
             72 => [
                 'Format' => 'int16u',
                 'Name' => 'SonyFNumber',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_ac95e933ec,
+                'ValueConvInv' => $f_2d1d064085,
             ],
             75 => [
                 'Name' => 'ReleaseMode2',
@@ -10918,13 +11456,17 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'SonyExposureTime',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_016bd30b33,
                 'ValueConv' => $f_2eb18fa9ec,
+                'ValueConvInv' => $f_7bc548787b,
             ],
             104 => [
                 'Format' => 'int16u',
                 'Name' => 'SonyFNumber',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_ac95e933ec,
+                'ValueConvInv' => $f_2d1d064085,
             ],
             107 => [
                 'Name' => 'ReleaseMode2',
@@ -10942,12 +11484,14 @@ return [
                 'Name' => 'InternalSerialNumber',
                 'PrintConv' => $f_d91c8365ec,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [57],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9050d' => [
             10 => [
@@ -10960,14 +11504,18 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'SonyExposureTime',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_016bd30b33,
                 'ValueConv' => $f_2eb18fa9ec,
+                'ValueConvInv' => $f_7bc548787b,
             ],
             28 => [
                 'Condition' => $f_ea8c048818,
                 'Format' => 'int16u',
                 'Name' => 'SonyFNumber',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_ac95e933ec,
+                'ValueConvInv' => $f_2d1d064085,
             ],
             31 => [
                 'Name' => 'ReleaseMode2',
@@ -10979,22 +11527,26 @@ return [
                 'Name' => 'InternalSerialNumber',
                 'PrintConv' => $f_d91c8365ec,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9400a' => [
             8 => [
                 'Format' => 'int32u',
                 'Name' => 'SequenceImageNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             12 => [
                 'Format' => 'int32u',
                 'Name' => 'SequenceFileNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             16 => [
                 'Name' => 'ReleaseMode2',
@@ -11044,22 +11596,26 @@ return [
                 'Name' => 'ModelReleaseYear',
                 'PrintConv' => $f_354f4ec267,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9400b' => [
             8 => [
                 'Format' => 'int32u',
                 'Name' => 'SequenceImageNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             12 => [
                 'Format' => 'int32u',
                 'Name' => 'SequenceFileNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             16 => [
                 'Name' => 'ReleaseMode2',
@@ -11106,11 +11662,13 @@ return [
                 'Name' => 'ModelReleaseYear',
                 'PrintConv' => $f_354f4ec267,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9400c' => [
             9 => [
@@ -11126,6 +11684,7 @@ return [
                 'Format' => 'int32u',
                 'Name' => 'SequenceImageNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             22 => [
                 'Name' => 'SequenceLength',
@@ -11150,6 +11709,7 @@ return [
                 'Format' => 'int32u',
                 'Name' => 'SequenceFileNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             30 => [
                 'Hook' => $f_77773bc48b,
@@ -11201,12 +11761,14 @@ return [
                 'Name' => 'ShutterType',
                 'PrintConv' => [7 => 'Electronic', 23 => 'Mechanical'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [30],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9401' => [
             0 => [
@@ -11366,6 +11928,7 @@ return [
                     'TagTable' => 'Image::ExifTool::Sony::ISOInfo',
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [0],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
@@ -11393,6 +11956,7 @@ return [
             ],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9402' => [
             2 => [
@@ -11406,6 +11970,7 @@ return [
                 'Format' => 'int8s',
                 'Name' => 'AmbientTemperature',
                 'PrintConv' => $f_98770fe8c4,
+                'PrintConvInv' => $f_1845a2bd14,
             ],
             22 => [
                 'Mask' => 127,
@@ -11434,6 +11999,7 @@ return [
                 'Condition' => $f_7f5076ce62,
                 'Name' => 'FocusPosition2',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [2],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
@@ -11441,6 +12007,7 @@ return [
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9403' => [
             4 => [
@@ -11454,13 +12021,16 @@ return [
                 'Format' => 'int8s',
                 'Name' => 'CameraTemperature',
                 'PrintConv' => $f_98770fe8c4,
+                'PrintConvInv' => $f_1845a2bd14,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [4],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9404a' => [
             11 => [
@@ -11476,12 +12046,15 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'LensZoomPosition',
                 'PrintConv' => $f_dc278ec452,
+                'PrintConvInv' => $f_91c24946b2,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9404b' => [
             12 => [
@@ -11497,16 +12070,19 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'LensZoomPosition',
                 'PrintConv' => $f_dc278ec452,
+                'PrintConvInv' => $f_91c24946b2,
             ],
             32 => [
                 'Condition' => $f_2894eed608,
                 'Name' => 'FocusPosition2',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9404c' => [
             11 => [
@@ -11517,11 +12093,13 @@ return [
                 'Name' => 'IntelligentAuto',
                 'PrintConv' => [0 => 'Off', 1 => 'On'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9405a' => [
             1536 => [
@@ -11573,6 +12151,7 @@ return [
                 'Format' => 'int16s[16]',
                 'Name' => 'DistortionCorrParams',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [1540],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
@@ -11580,54 +12159,69 @@ return [
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9405b' => [
             4 => [
                 'Format' => 'int16u',
                 'Name' => 'SonyISO',
                 'PrintConv' => $f_2dc7d88624,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_20d3123c63,
+                'ValueConvInv' => $f_06fc1b2d1e,
             ],
             6 => [
                 'Format' => 'int16u',
                 'Name' => 'BaseISO',
                 'PrintConv' => $f_2dc7d88624,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_20d3123c63,
+                'ValueConvInv' => $f_06fc1b2d1e,
             ],
             10 => [
                 'Format' => 'int16u',
                 'Name' => 'StopsAboveBaseISO',
                 'PrintConv' => $f_55e2d18a41,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1b49c380d5,
+                'ValueConvInv' => $f_967e3fa0f7,
             ],
             14 => [
                 'Format' => 'int16u',
                 'Name' => 'SonyExposureTime2',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_016bd30b33,
                 'ValueConv' => $f_2eb18fa9ec,
+                'ValueConvInv' => $f_7bc548787b,
             ],
             16 => [
                 'Format' => 'rational32u',
                 'Name' => 'ExposureTime',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_afc38f199f,
             ],
             20 => [
                 'Condition' => $f_d4f3fdaf9d,
                 'Format' => 'int16u',
                 'Name' => 'SonyFNumber',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_ac95e933ec,
+                'ValueConvInv' => $f_2d1d064085,
             ],
             22 => [
                 'Format' => 'int16u',
                 'Name' => 'SonyMaxApertureValue',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_ac95e933ec,
+                'ValueConvInv' => $f_2d1d064085,
             ],
             36 => [
                 'Format' => 'int32u',
                 'Name' => 'SequenceImageNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             52 => [
                 'Name' => 'ReleaseMode2',
@@ -11684,6 +12278,7 @@ return [
                 'Format' => 'int8s',
                 'Name' => 'Sharpness',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             90 => [
                 'Condition' => $f_975887c46c,
@@ -11729,6 +12324,7 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'LensZoomPosition',
                 'PrintConv' => $f_dc278ec452,
+                'PrintConvInv' => $f_91c24946b2,
             ],
             842 => [
                 'Condition' => $f_7786fc95d0,
@@ -11740,6 +12336,7 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'LensZoomPosition',
                 'PrintConv' => $f_dc278ec452,
+                'PrintConvInv' => $f_91c24946b2,
             ],
             848 => [
                 'Condition' => $f_44a10748f3,
@@ -11751,6 +12348,7 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'LensZoomPosition',
                 'PrintConv' => $f_dc278ec452,
+                'PrintConvInv' => $f_91c24946b2,
             ],
             860 => [
                 'Condition' => $f_26fa3cb466,
@@ -11787,6 +12385,7 @@ return [
                 'Format' => 'int16s[32]',
                 'Name' => 'ChromaticAberrationCorrParams',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [94],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
@@ -11794,33 +12393,41 @@ return [
             'PRIORITY' => 0,
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9406' => [
             5 => [
                 'Name' => 'BatteryTemperature',
                 'PrintConv' => $f_a928b39f8a,
+                'PrintConvInv' => $f_c856a566c9,
                 'ValueConv' => $f_72246fafe6,
+                'ValueConvInv' => $f_6e8ced977c,
             ],
             6 => [
                 'Name' => 'BatteryLevelGrip1',
                 'PrintConv' => $f_0a6503c132,
+                'PrintConvInv' => $f_0f1ec7d68b,
                 'RawConv' => $f_273894f86a,
             ],
             7 => [
                 'Name' => 'BatteryLevel',
                 'PrintConv' => $f_0a6503c132,
+                'PrintConvInv' => $f_0f1ec7d68b,
             ],
             8 => [
                 'Condition' => $f_72050f62f4,
                 'Name' => 'BatteryLevelGrip2',
                 'PrintConv' => $f_0a6503c132,
+                'PrintConvInv' => $f_0f1ec7d68b,
                 'RawConv' => $f_4b1ebf2812,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9406b' => [
             1 => [
@@ -11837,6 +12444,7 @@ return [
                 'Condition' => $f_558c2e5870,
                 'Name' => 'BatteryLevel',
                 'PrintConv' => $f_0a6503c132,
+                'PrintConvInv' => $f_0f1ec7d68b,
             ],
             6 => [
                 'Condition' => $f_0d7dd768eb,
@@ -11848,13 +12456,16 @@ return [
                 'Condition' => $f_7396aeaab6,
                 'Name' => 'BatteryLevel2',
                 'PrintConv' => $f_0a6503c132,
+                'PrintConvInv' => $f_0f1ec7d68b,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [1, 4, 6],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag940a' => [
             4 => [
@@ -11891,11 +12502,13 @@ return [
                     ],
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag940c' => [
             8 => [
@@ -11914,12 +12527,14 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'CameraE-mountVersion',
                 'PrintConv' => $f_0a6df780cd,
+                'PrintConvInv' => $f_a6beb8215b,
             ],
             13 => [
                 'Condition' => $f_8cef71a91a,
                 'Format' => 'int16u',
                 'Name' => 'LensE-mountVersion',
                 'PrintConv' => $f_0a6df780cd,
+                'PrintConvInv' => $f_a6beb8215b,
             ],
             20 => [
                 'Condition' => $f_8cef71a91a,
@@ -11927,12 +12542,14 @@ return [
                 'Name' => 'LensFirmwareVersion',
                 'PrintConv' => $f_f14da4a392,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [8],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag940e' => [
             6662 => [
@@ -11949,10 +12566,12 @@ return [
                 'Name' => 'TiffMeteringImage',
                 'ValueConv' => $f_62f4604c99,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::Tag9416' => [
             0 => [
@@ -11966,41 +12585,53 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'SonyISO',
                 'PrintConv' => $f_2dc7d88624,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_20d3123c63,
+                'ValueConvInv' => $f_06fc1b2d1e,
             ],
             6 => [
                 'Format' => 'int16u',
                 'Name' => 'StopsAboveBaseISO',
                 'PrintConv' => $f_55e2d18a41,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_1b49c380d5,
+                'ValueConvInv' => $f_967e3fa0f7,
             ],
             10 => [
                 'Format' => 'int16u',
                 'Name' => 'SonyExposureTime2',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_016bd30b33,
                 'ValueConv' => $f_2eb18fa9ec,
+                'ValueConvInv' => $f_7bc548787b,
             ],
             12 => [
                 'Format' => 'rational32u',
                 'Name' => 'ExposureTime',
                 'PrintConv' => $f_a63541d7d7,
+                'PrintConvInv' => $f_afc38f199f,
             ],
             16 => [
                 'Format' => 'int16u',
                 'Name' => 'SonyFNumber2',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_ac95e933ec,
+                'ValueConvInv' => $f_2d1d064085,
             ],
             18 => [
                 'Format' => 'int16u',
                 'Name' => 'SonyMaxApertureValue',
                 'PrintConv' => $f_9c98df8b6c,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_ac95e933ec,
+                'ValueConvInv' => $f_2d1d064085,
             ],
             29 => [
                 'Format' => 'int32u',
                 'Name' => 'SequenceImageNumber',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             43 => [
                 'Hook' => $f_85d8765f1e,
@@ -12068,6 +12699,7 @@ return [
                 'PrintConv' => $d_8,
                 'PrintInt' => 1,
                 'Priority' => 0,
+                'ValueConvInv' => $f_d8663a24e0,
             ],
             79 => [
                 'Format' => 'int16s[16]',
@@ -12081,20 +12713,26 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'FocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             115 => [
                 'Format' => 'int16u',
                 'Name' => 'MinFocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             117 => [
                 'Format' => 'int16u',
                 'Name' => 'MaxFocalLength',
                 'PrintConv' => $f_8f0e71a82a,
+                'PrintConvInv' => $f_78ab47e76d,
                 'RawConv' => $f_3ab71eb818,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             1794 => [
                 'Condition' => $f_e9111a5219,
@@ -12171,11 +12809,13 @@ return [
                 'Format' => 'int16s[32]',
                 'Name' => 'ChromaticAberrationCorrParams',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [0, 55],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int8u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Sony::ProcessEnciphered',
+            'WRITE_PROC' => 'Image\\ExifTool\\Sony::WriteEnciphered',
         ],
         'Image::ExifTool::Sony::rtmd' => [
             1550 => [

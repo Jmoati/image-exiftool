@@ -10,6 +10,7 @@ $f_0a6503c132 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_7446497894 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) + 4;
 };
+$f_a68c16576a = static function (mixed ...$args) { throw new NotPorted('PrintConvInv a68c16576a'); };
 $f_5f366ef5c4 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->PhotoshopFormat = $val;
 };
@@ -68,12 +69,15 @@ $f_7459807b98 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     $img = \strlen($val) < 0x1c ? null : substr($val, 0x1c);
     return $self->ValidateImage(new ScalarRef($img), $tag);
 };
+$f_e202883967 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv e202883967'); };
 $f_8d3320c255 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return implode(' ', Perl::unpack('C*', $val));
 };
+$f_62a040c64f = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 62a040c64f'); };
 $f_770b7e2b24 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::unpack('N', $val)[0] ?? null;
 };
+$f_8fe06f8e1e = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 8fe06f8e1e'); };
 $f_3cdee17d9e = static function ($val, $et) {
     if (\strlen($val) < 4) {
         return '<err>';
@@ -84,6 +88,7 @@ $f_3cdee17d9e = static function ($val, $et) {
     }
     return $et->Decode(substr($val, 4, $len), 'UTF16', 'MM');
 };
+$f_c8d01696a0 = static function (mixed ...$args) { throw new NotPorted('code:conv c8d01696a0'); };
 $f_342916569c = static function ($val, $et) {
     if (\strlen($val) < 4) {
         return '<err>';
@@ -108,6 +113,7 @@ $f_342916569c = static function ($val, $et) {
 $f_141bbcf6d5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::unpack('H*', $val)[0];
 };
+$f_3bd3cd39df = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 3bd3cd39df'); };
 $f_fa22926f22 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::unpack('nN*', $val);
     $n = array_shift($a);
@@ -126,9 +132,11 @@ $f_fe6666da09 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_7e6e49a851 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::int(Perl::num($val) * 100 + 0.5) / 100;
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 $f_2b566cfd7f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 0x10000;
 };
+$f_b582d7b612 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv b582d7b612'); };
 
 return [
     'load' => [
@@ -213,6 +221,7 @@ return [
             0 => [
                 'Name' => 'PhotoshopQuality',
                 'PrintConv' => $f_7446497894,
+                'PrintConvInv' => $f_a68c16576a,
                 'Writable' => 1,
             ],
             1 => [
@@ -225,10 +234,12 @@ return [
                 'Name' => 'ProgressiveScans',
                 'PrintConv' => [1 => '3 Scans', 2 => '4 Scans', 3 => '5 Scans'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [1],
             'FORMAT' => 'int16s',
             'GROUPS' => [2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Photoshop::Layers' => [
             'GROUPS' => [2 => 'Image'],
@@ -486,6 +497,7 @@ return [
                 'Name' => 'PhotoshopBGRThumbnail',
                 'Protected' => 1,
                 'RawConv' => $f_7459807b98,
+                'ValueConvInv' => $f_e202883967,
                 'Writable' => 'undef',
             ],
             1034 => [
@@ -493,6 +505,7 @@ return [
                 'Name' => 'CopyrightFlag',
                 'PrintConv' => [0 => 'False', 1 => 'True'],
                 'ValueConv' => $f_8d3320c255,
+                'ValueConvInv' => $f_62a040c64f,
                 'Writable' => 'int8u',
             ],
             1035 => [
@@ -505,11 +518,13 @@ return [
                 'Name' => 'PhotoshopThumbnail',
                 'Protected' => 1,
                 'RawConv' => $f_7459807b98,
+                'ValueConvInv' => $f_e202883967,
                 'Writable' => 'undef',
             ],
             1037 => [
                 'Name' => 'GlobalAngle',
                 'ValueConv' => $f_770b7e2b24,
+                'ValueConvInv' => $f_8fe06f8e1e,
                 'Writable' => 'int32u',
             ],
             1038 => [
@@ -564,6 +579,7 @@ return [
             1049 => [
                 'Name' => 'GlobalAltitude',
                 'ValueConv' => $f_770b7e2b24,
+                'ValueConvInv' => $f_8fe06f8e1e,
                 'Writable' => 'int32u',
             ],
             1050 => [
@@ -575,6 +591,7 @@ return [
             1051 => [
                 'Name' => 'WorkflowURL',
                 'ValueConv' => $f_3cdee17d9e,
+                'ValueConvInv' => $f_c8d01696a0,
             ],
             1052 => [
                 'Name' => 'JumpToXPEP',
@@ -601,6 +618,7 @@ return [
                 'SubDirectory' => [
                     'ProcessProc' => 'Image\\ExifTool\\ExifTool::ProcessTIFF',
                     'TagTable' => 'Image::ExifTool::Exif::Main',
+                    'WriteProc' => 'Image\\ExifTool\\ExifTool::WriteTIFF',
                 ],
             ],
             1059 => [
@@ -618,6 +636,7 @@ return [
                 'Name' => 'IPTCDigest',
                 'Protected' => 1,
                 'ValueConv' => $f_141bbcf6d5,
+                'ValueConvInv' => $f_3bd3cd39df,
                 'Writable' => 'string',
             ],
             1062 => [
@@ -748,15 +767,18 @@ return [
             ],
             'GROUPS' => [2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\Photoshop::ProcessPhotoshop',
+            'WRITE_PROC' => 'Image\\ExifTool\\Photoshop::WritePhotoshop',
         ],
         'Image::ExifTool::Photoshop::PixelInfo' => [
             4 => [
                 'Format' => 'double',
                 'Name' => 'PixelAspectRatio',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Photoshop::PrintScaleInfo' => [
             0 => [
@@ -772,17 +794,21 @@ return [
                 'Format' => 'float',
                 'Name' => 'PrintScale',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Photoshop::Resolution' => [
             0 => [
                 'Format' => 'int32u',
                 'Name' => 'XResolution',
                 'PrintConv' => $f_7e6e49a851,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Priority' => 0,
                 'ValueConv' => $f_2b566cfd7f,
+                'ValueConvInv' => $f_b582d7b612,
             ],
             2 => [
                 'Name' => 'DisplayedUnitsX',
@@ -792,18 +818,22 @@ return [
                 'Format' => 'int32u',
                 'Name' => 'YResolution',
                 'PrintConv' => $f_7e6e49a851,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Priority' => 0,
                 'ValueConv' => $f_2b566cfd7f,
+                'ValueConvInv' => $f_b582d7b612,
             ],
             6 => [
                 'Name' => 'DisplayedUnitsY',
                 'PrintConv' => [1 => 'inches', 2 => 'cm'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16u',
             'GROUPS' => [2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Photoshop::SliceInfo' => [
             20 => [
@@ -833,9 +863,11 @@ return [
                 'Format' => 'var_ustr32',
                 'Name' => 'ReaderName',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
     ],
 ];

@@ -7,30 +7,39 @@ namespace Image\ExifTool;
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
+$f_289bae1164 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 289bae1164'); };
 $f_64552f9356 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertUnixTime(Perl::num($val) / 1000, 1, 3);
 };
+$f_f46ac524d0 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv f46ac524d0'); };
 $f_5df0cbcf9c = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->ProcessGoogleTrailer = $val;
 };
 $f_d9fec15555 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).' m';
 };
+$f_d68fc876a9 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv d68fc876a9'); };
 $f_5f55a3e4a5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1, 'N');
 };
+$f_cb54e897d7 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv cb54e897d7'); };
 $f_473c5a1df4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDegrees($val, 1);
 };
+$f_25924ee98a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 25924ee98a'); };
 $f_5817105f7a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1, 'E');
 };
+$f_c94d243322 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c94d243322'); };
 $f_9c417307ae = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return XMP::DecodeBase64($val);
 };
+$f_8984a60d89 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 8984a60d89'); };
+$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
 $f_2a20e62bf5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertUnixTime($val);
 };
+$f_8b8cfb0849 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 8b8cfb0849'); };
 $f_7b446e214d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1000;
 };
@@ -88,7 +97,10 @@ $d_2 = [
         'Groups' => [2 => 'Time'],
         'Name' => 'TimeStamp',
         'PrintConv' => $f_ae2db35ce3,
+        'PrintConvInv' => $f_289bae1164,
+        'Shift' => 'Time',
         'ValueConv' => $f_64552f9356,
+        'ValueConvInv' => $f_f46ac524d0,
         'Writable' => 'integer',
     ],
 ];
@@ -111,6 +123,7 @@ return [
             'AppInfo' => [
                 'Struct' => $d_1,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'Cameras' => [
                 'FlatName' => '',
                 'List' => 'Seq',
@@ -279,18 +292,23 @@ return [
                     'Altitude' => [
                         'Groups' => [2 => 'Location'],
                         'PrintConv' => $f_d9fec15555,
+                        'PrintConvInv' => $f_d68fc876a9,
                         'Writable' => 'real',
                     ],
                     'Latitude' => [
                         'Groups' => [2 => 'Location'],
                         'PrintConv' => $f_5f55a3e4a5,
+                        'PrintConvInv' => $f_cb54e897d7,
                         'ValueConv' => $f_473c5a1df4,
+                        'ValueConvInv' => $f_25924ee98a,
                         'Writable' => 'real',
                     ],
                     'Longitude' => [
                         'Groups' => [2 => 'Location'],
                         'PrintConv' => $f_5817105f7a,
+                        'PrintConvInv' => $f_c94d243322,
                         'ValueConv' => $f_473c5a1df4,
+                        'ValueConvInv' => $f_25924ee98a,
                         'Writable' => 'real',
                     ],
                     'NAMESPACE' => ['EarthPose' => 'http://ns.google.com/photos/dd/1.0/earthpose/'],
@@ -315,7 +333,10 @@ return [
                         'Groups' => [2 => 'Time'],
                         'Name' => 'TimeStamp',
                         'PrintConv' => $f_ae2db35ce3,
+                        'PrintConvInv' => $f_289bae1164,
+                        'Shift' => 'Time',
                         'ValueConv' => $f_64552f9356,
+                        'ValueConvInv' => $f_f46ac524d0,
                         'Writable' => 'integer',
                     ],
                 ],
@@ -378,11 +399,14 @@ return [
                 'Struct' => $d_3,
             ],
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
         ],
         'Image::ExifTool::Google::GAudio' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'Data' => [
                 'Name' => 'AudioData',
                 'ValueConv' => $f_9c417307ae,
+                'ValueConvInv' => $f_8984a60d89,
             ],
             'GROUPS' => [0 => 'XMP', 1 => 'XMP-GAudio', 2 => 'Audio'],
             'LANG_INFO' => 'Image\\ExifTool\\XMP::GetLangInfo',
@@ -391,12 +415,14 @@ return [
             ],
             'NAMESPACE' => 'GAudio',
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
         ],
         'Image::ExifTool::Google::GCamera' => [
             'BurstID' => [
             ],
             'BurstPrimary' => [
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'DisableAutoCreation' => [
                 'List' => 'Bag',
             ],
@@ -450,6 +476,7 @@ return [
                 'List' => 'Bag',
             ],
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
             'hdrp_makernote' => [
                 'Binary' => 1,
                 'Name' => 'HDRPMakerNote',
@@ -469,6 +496,7 @@ return [
             ],
         ],
         'Image::ExifTool::Google::GContainer' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'Directory' => [
                 'FlatName' => 'Directory',
                 'List' => 'Seq',
@@ -502,8 +530,10 @@ return [
             'LANG_INFO' => 'Image\\ExifTool\\XMP::GetLangInfo',
             'NAMESPACE' => 'GContainer',
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
         ],
         'Image::ExifTool::Google::GCreations' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'CameraBurstID' => [
             ],
             'GROUPS' => [0 => 'XMP', 1 => 'XMP-GCreations', 2 => 'Camera'],
@@ -513,17 +543,20 @@ return [
                 'Avoid' => 1,
             ],
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
         ],
         'Image::ExifTool::Google::GDepth' => [
             'AVOID' => 1,
             'Confidence' => [
                 'ValueConv' => $f_9c417307ae,
+                'ValueConvInv' => $f_8984a60d89,
             ],
             'ConfidenceMime' => [
             ],
             'Data' => [
                 'Name' => 'DepthImage',
                 'ValueConv' => $f_9c417307ae,
+                'ValueConvInv' => $f_8984a60d89,
             ],
             'Far' => [
                 'Writable' => 'real',
@@ -562,6 +595,7 @@ return [
             'BlurAtInfinity' => [
                 'Writable' => 'real',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'FocalDistance' => [
                 'Writable' => 'real',
             ],
@@ -575,11 +609,14 @@ return [
             'LANG_INFO' => 'Image\\ExifTool\\XMP::GetLangInfo',
             'NAMESPACE' => 'GFocus',
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
         ],
         'Image::ExifTool::Google::GImage' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'Data' => [
                 'Name' => 'ImageData',
                 'ValueConv' => $f_9c417307ae,
+                'ValueConvInv' => $f_8984a60d89,
             ],
             'GROUPS' => [0 => 'XMP', 1 => 'XMP-GImage', 2 => 'Image'],
             'LANG_INFO' => 'Image\\ExifTool\\XMP::GetLangInfo',
@@ -588,8 +625,10 @@ return [
             ],
             'NAMESPACE' => 'GImage',
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
         ],
         'Image::ExifTool::Google::GPano' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'CaptureSoftware' => [
             ],
             'CroppedAreaImageHeightPixels' => [
@@ -610,6 +649,8 @@ return [
             'FirstPhotoDate' => [
                 'Groups' => [2 => 'Time'],
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_289bae1164,
+                'Shift' => 'Time',
                 'Validate' => 'ValidateXMPDate($val)',
                 'Writable' => 'date',
             ],
@@ -654,6 +695,8 @@ return [
             'LastPhotoDate' => [
                 'Groups' => [2 => 'Time'],
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_289bae1164,
+                'Shift' => 'Time',
                 'Validate' => 'ValidateXMPDate($val)',
                 'Writable' => 'date',
             ],
@@ -678,9 +721,11 @@ return [
                 'Writable' => 'boolean',
             ],
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
         ],
         'Image::ExifTool::Google::GSpherical' => [
             'AVOID' => 1,
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'CroppedAreaImageHeightPixels' => [
                 'Writable' => 'integer',
             ],
@@ -730,11 +775,15 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'TimeStamp',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
                 'ValueConv' => $f_2a20e62bf5,
+                'ValueConvInv' => $f_8b8cfb0849,
                 'Writable' => 'integer',
             ],
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'GSpherical',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
         ],
         'Image::ExifTool::Google::HDRPMakerNote' => [
             'Finished image' => [

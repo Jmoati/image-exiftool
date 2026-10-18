@@ -19,12 +19,15 @@ $f_21cb65935a = static function (ExifTool $self, $valPt, $format, $count) {
 $f_2327041798 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? Perl::sprintf('%+.2f', $val) : 0;
 };
+$f_153707d441 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 153707d441'); };
 $f_4c247ed1c7 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return (Perl::num($val) > 0x7 ? Perl::num($val) - 0x10 : Perl::num($val)) / 6;
 };
+$f_297d4a09e5 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 297d4a09e5'); };
 $f_8859373a48 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' fps';
 };
+$f_bb8d7dd8d5 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv bb8d7dd8d5'); };
 $f_c3a8e8f45b = static function (ExifTool $self, $valPt, $format, $count) {
     return (bool) preg_match('/(D3S|D300S)\b/', Perl::str($self->Model));
 };
@@ -38,18 +41,23 @@ $f_114f5c8ad3 = static function ($val, ExifTool $self, array &$vals, array $prt,
     if (Perl::num($val) > 0.99) return 'Full';
     return Exif::PrintExposureTime($val);
 };
+$f_a6325ca6e3 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv a6325ca6e3'); };
 $f_361b820b78 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 2.0 ** (-Perl::num($val));
 };
+$f_9befe6e2e8 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 9befe6e2e8'); };
 $f_cc49c0df99 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%+.1f', $val);
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 $f_f7eee011de = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 6;
 };
+$f_55201a7b9b = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 55201a7b9b'); };
 $f_dc5d089389 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 2 ** (-Perl::num($val) / 3);
 };
+$f_00e4336430 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 00e4336430'); };
 $f_55f3e41741 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->FlashControlBuiltin = $val;
 };
@@ -65,15 +73,19 @@ $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_5b42165a56 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 2.0 ** (-Perl::num($val) - 2);
 };
+$f_51e37023a3 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 51e37023a3'); };
 $f_870e4cbddb = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) < 10 ? Perl::num($val) + 1 : 5 * (Perl::num($val) - 7);
 };
+$f_1c2927ee93 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 1c2927ee93'); };
 $f_7daee69205 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' Hz';
 };
+$f_067e53c3ea = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 067e53c3ea'); };
 $f_8e8a2e3cc2 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) < 10 ? Perl::num($val) + 1 : 10 * (Perl::num($val) - 8);
 };
+$f_e00fa30529 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv e00fa30529'); };
 $f_98c606990a = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::num($self->FlashControlBuiltin) == 3;
 };
@@ -83,12 +95,18 @@ $f_3517b56753 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_56df756248 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return (Perl::num($val) - 9) / 3;
 };
+$f_642551f7a7 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 642551f7a7'); };
 $f_a4420b9239 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 2.0 ** (Perl::num($val) - 6);
 };
+$f_b6fe4a841b = static function (mixed ...$args) { throw new NotPorted('ValueConvInv b6fe4a841b'); };
 $f_4828c7c932 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) + 1;
 };
+$f_1c538804b4 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 1c538804b4'); };
+$f_cace0a5a17 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv cace0a5a17'); };
+$f_5a725e3488 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 5a725e3488'); };
+$f_5c585265e8 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 5c585265e8'); };
 $f_8543eecc5b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) === '-1' ? 'No Limit' : $val;
 };
@@ -108,6 +126,7 @@ $f_fc750553ac = static function (ExifTool $self, $valPt, $format, $count) {
 $f_3b922d5a8e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) - 5;
 };
+$f_6862220f86 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 6862220f86'); };
 $f_09f1fdb88f = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->ZebraPatternToneRange = $val;
 };
@@ -590,19 +609,25 @@ return [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptCenterWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '8.1' => [
                 'Mask' => 240,
                 'Name' => 'FineTuneOptMatrixMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '8.2' => [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptSpotMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '9.1' => [
                 'Mask' => 192,
@@ -642,6 +667,7 @@ return [
                 'Mask' => 7,
                 'Name' => 'CLModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
             ],
             '10.3' => [
                 'Condition' => $f_87e2868e6b,
@@ -1137,10 +1163,12 @@ return [
                 'Name' => 'ShootingInfoMonitorOffTime',
                 'PrintConv' => [0 => '4 s', 1 => '10 s', 2 => '20 s', 3 => '1 min', 4 => '5 min', 5 => '10 min'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsD4' => [
             '0.1' => [
@@ -1267,19 +1295,25 @@ return [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptMatrixMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '9.1' => [
                 'Mask' => 240,
                 'Name' => 'FineTuneOptCenterWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '9.2' => [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptSpotMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '10.1' => [
                 'Mask' => 192,
@@ -1310,6 +1344,7 @@ return [
                 'Mask' => 15,
                 'Name' => 'CLModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
             ],
             12 => [
                 'Name' => 'MaxContinuousRelease',
@@ -1844,10 +1879,12 @@ return [
                     37 => 'AF-Area Mode: Auto area AF',
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsD40' => [
             '0.1' => [
@@ -1965,13 +2002,17 @@ return [
                 'Mask' => 7,
                 'Name' => 'ManualFlashOutput',
                 'PrintConv' => $f_114f5c8ad3,
+                'PrintConvInv' => $f_a6325ca6e3,
                 'ValueConv' => $f_361b820b78,
+                'ValueConvInv' => $f_9befe6e2e8,
             ],
             9 => [
                 'Format' => 'int8s',
                 'Name' => 'FlashLevel',
                 'PrintConv' => $f_cc49c0df99,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_55201a7b9b,
             ],
             '10.1' => [
                 'Mask' => 192,
@@ -1983,10 +2024,12 @@ return [
                 'Name' => 'AFAreaModeSetting',
                 'PrintConv' => [0 => 'Single Area', 1 => 'Dynamic Area', 2 => 'Closest Subject'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsD5' => [
             '0.1' => [
@@ -2092,19 +2135,25 @@ return [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptMatrixMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '9.1' => [
                 'Mask' => 240,
                 'Name' => 'FineTuneOptCenterWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '9.2' => [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptSpotMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '10.1' => [
                 'Mask' => 224,
@@ -2130,6 +2179,7 @@ return [
                 'Mask' => 15,
                 'Name' => 'CLModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
             ],
             '12.1' => [
                 'Name' => 'MaxContinuousRelease',
@@ -2452,7 +2502,9 @@ return [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptHighlightWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '47.1' => [
                 'Mask' => 128,
@@ -2830,10 +2882,12 @@ return [
                 'Name' => 'Func3Button',
                 'PrintConv' => [0 => 'None', 1 => 'Voice Memo', 2 => 'Rating', 3 => 'Connect To Network'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsD500' => [
             '0.1' => [
@@ -2939,19 +2993,25 @@ return [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptMatrixMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '9.1' => [
                 'Mask' => 240,
                 'Name' => 'FineTuneOptCenterWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '9.2' => [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptSpotMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '10.1' => [
                 'Mask' => 224,
@@ -2982,6 +3042,7 @@ return [
                 'Mask' => 15,
                 'Name' => 'CLModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
             ],
             '12.1' => [
                 'Name' => 'MaxContinuousRelease',
@@ -3298,7 +3359,9 @@ return [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptHighlightWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '47.1' => [
                 'Mask' => 128,
@@ -3624,10 +3687,12 @@ return [
                 'Name' => 'AssignMovieFunc2Button',
                 'PrintConv' => [0 => 'None', 3 => 'Index Marking', 4 => 'View Photo Shooting Info'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsD5000' => [
             '0.1' => [
@@ -3762,17 +3827,21 @@ return [
                 'Mask' => 31,
                 'Name' => 'ManualFlashOutput',
                 'PrintConv' => $f_114f5c8ad3,
+                'PrintConvInv' => $f_a6325ca6e3,
                 'ValueConv' => $f_dc5d089389,
+                'ValueConvInv' => $f_00e4336430,
             ],
             '32.1' => [
                 'Mask' => 96,
                 'Name' => 'LiveViewAF',
                 'PrintConv' => [0 => 'Face Priority', 1 => 'Wide Area', 2 => 'Normal Area', 3 => 'Subject Tracking'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsD5100' => [
             '0.1' => [
@@ -3897,12 +3966,16 @@ return [
                 'Mask' => 31,
                 'Name' => 'ManualFlashOutput',
                 'PrintConv' => $f_114f5c8ad3,
+                'PrintConvInv' => $f_a6325ca6e3,
                 'ValueConv' => $f_dc5d089389,
+                'ValueConvInv' => $f_00e4336430,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsD5200' => [
             '0.1' => [
@@ -4048,12 +4121,16 @@ return [
                 'Mask' => 31,
                 'Name' => 'ManualFlashOutput',
                 'PrintConv' => $f_114f5c8ad3,
+                'PrintConvInv' => $f_a6325ca6e3,
                 'ValueConv' => $f_dc5d089389,
+                'ValueConvInv' => $f_00e4336430,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsD610' => [
             '0.1' => [
@@ -4115,19 +4192,25 @@ return [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptMatrixMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '8.1' => [
                 'Mask' => 240,
                 'Name' => 'FineTuneOptCenterWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '8.2' => [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptSpotMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '17.1' => [
                 'Mask' => 2,
@@ -4193,10 +4276,12 @@ return [
                 'Name' => 'PlaybackMonitorOffTime',
                 'PrintConv' => [0 => '4 s', 1 => '10 s', 2 => '20 s', 3 => '1 min', 4 => '5 min', 5 => '10 min'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsD700' => [
             '0.1' => [
@@ -4296,13 +4381,17 @@ return [
                 'Mask' => 240,
                 'Name' => 'FineTuneOptMatrixMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '6.2' => [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptSpotMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '7.1' => [
                 'Mask' => 128,
@@ -4384,6 +4473,7 @@ return [
                 'Mask' => 7,
                 'Name' => 'CLModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
             ],
             12 => [
                 'Name' => 'MaxContinuousRelease',
@@ -4447,27 +4537,34 @@ return [
                 'Mask' => 31,
                 'Name' => 'ManualFlashOutput',
                 'PrintConv' => $f_114f5c8ad3,
+                'PrintConvInv' => $f_a6325ca6e3,
                 'ValueConv' => $f_dc5d089389,
+                'ValueConvInv' => $f_00e4336430,
             ],
             '17.1' => [
                 'Condition' => $f_a061549efa,
                 'Mask' => 112,
                 'Name' => 'RepeatingFlashOutput',
                 'PrintConv' => $f_a941801118,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_5b42165a56,
+                'ValueConvInv' => $f_51e37023a3,
             ],
             '17.2' => [
                 'Condition' => $f_a061549efa,
                 'Mask' => 15,
                 'Name' => 'RepeatingFlashCount',
                 'ValueConv' => $f_870e4cbddb,
+                'ValueConvInv' => $f_1c2927ee93,
             ],
             '18.1' => [
                 'Condition' => $f_a061549efa,
                 'Mask' => 240,
                 'Name' => 'RepeatingFlashRate',
                 'PrintConv' => $f_7daee69205,
+                'PrintConvInv' => $f_067e53c3ea,
                 'ValueConv' => $f_8e8a2e3cc2,
+                'ValueConvInv' => $f_e00fa30529,
             ],
             '18.2' => [
                 'Condition' => $f_98c606990a,
@@ -4480,21 +4577,27 @@ return [
                 'Mask' => 31,
                 'Name' => 'CommanderInternalTTLCompBuiltin',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_56df756248,
+                'ValueConvInv' => $f_642551f7a7,
             ],
             '21.1' => [
                 'Condition' => $f_98c606990a,
                 'Mask' => 31,
                 'Name' => 'CommanderInternalTTLCompGroupA',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_56df756248,
+                'ValueConvInv' => $f_642551f7a7,
             ],
             '22.1' => [
                 'Condition' => $f_98c606990a,
                 'Mask' => 31,
                 'Name' => 'CommanderInternalTTLCompGroupB',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_56df756248,
+                'ValueConvInv' => $f_642551f7a7,
             ],
             '26.1' => [
                 'Mask' => 192,
@@ -4686,11 +4789,13 @@ return [
                 'Name' => 'ReleaseButtonToUseDial',
                 'PrintConv' => $d_3,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [16.1],
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsD7000' => [
             '0.1' => [
@@ -4835,6 +4940,7 @@ return [
                 'Mask' => 7,
                 'Name' => 'CLModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
             ],
             11 => [
                 'Name' => 'MaxContinuousRelease',
@@ -5058,48 +5164,61 @@ return [
                 'Mask' => 31,
                 'Name' => 'ManualFlashOutput',
                 'PrintConv' => $f_114f5c8ad3,
+                'PrintConvInv' => $f_a6325ca6e3,
                 'ValueConv' => $f_dc5d089389,
+                'ValueConvInv' => $f_00e4336430,
             ],
             '24.1' => [
                 'Condition' => $f_a061549efa,
                 'Mask' => 112,
                 'Name' => 'RepeatingFlashOutput',
                 'PrintConv' => $f_a941801118,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_5b42165a56,
+                'ValueConvInv' => $f_51e37023a3,
             ],
             '24.2' => [
                 'Condition' => $f_a061549efa,
                 'Mask' => 15,
                 'Name' => 'RepeatingFlashCount',
                 'ValueConv' => $f_870e4cbddb,
+                'ValueConvInv' => $f_1c2927ee93,
             ],
             '25.1' => [
                 'Condition' => $f_a061549efa,
                 'Mask' => 240,
                 'Name' => 'RepeatingFlashRate',
                 'PrintConv' => $f_7daee69205,
+                'PrintConvInv' => $f_067e53c3ea,
                 'ValueConv' => $f_8e8a2e3cc2,
+                'ValueConvInv' => $f_e00fa30529,
             ],
             '26.1' => [
                 'Condition' => $f_98c606990a,
                 'Mask' => 31,
                 'Name' => 'CommanderInternalTTLCompBuiltin',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_56df756248,
+                'ValueConvInv' => $f_642551f7a7,
             ],
             '27.1' => [
                 'Condition' => $f_98c606990a,
                 'Mask' => 31,
                 'Name' => 'CommanderInternalTTLCompGroupA',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_56df756248,
+                'ValueConvInv' => $f_642551f7a7,
             ],
             '28.1' => [
                 'Condition' => $f_98c606990a,
                 'Mask' => 31,
                 'Name' => 'CommanderInternalTTLCompGroupB',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_56df756248,
+                'ValueConvInv' => $f_642551f7a7,
             ],
             '30.1' => [
                 'Mask' => 128,
@@ -5126,11 +5245,13 @@ return [
                 'Name' => 'PlaybackMonitorOffTime',
                 'PrintConv' => [0 => '4 s', 1 => '10 s', 2 => '20 s', 3 => '1 min', 4 => '5 min', 5 => '10 min'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [23.1],
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsD80' => [
             '0.1' => [
@@ -5301,7 +5422,9 @@ return [
                 'Mask' => 120,
                 'Name' => 'FlashShutterSpeed',
                 'PrintConv' => $f_a941801118,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_a4420b9239,
+                'ValueConvInv' => $f_b6fe4a841b,
             ],
             '7.3' => [
                 'Mask' => 4,
@@ -5322,29 +5445,37 @@ return [
                 'Mask' => 7,
                 'Name' => 'ManualFlashOutput',
                 'PrintConv' => $f_114f5c8ad3,
+                'PrintConvInv' => $f_a6325ca6e3,
                 'ValueConv' => $f_361b820b78,
+                'ValueConvInv' => $f_9befe6e2e8,
             ],
             '9.1' => [
                 'Mask' => 112,
                 'Name' => 'RepeatingFlashOutput',
                 'PrintConv' => $f_a941801118,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_5b42165a56,
+                'ValueConvInv' => $f_51e37023a3,
             ],
             '9.2' => [
                 'Mask' => 15,
                 'Name' => 'RepeatingFlashCount',
                 'ValueConv' => $f_870e4cbddb,
+                'ValueConvInv' => $f_1c2927ee93,
             ],
             '10.1' => [
                 'Mask' => 240,
                 'Name' => 'RepeatingFlashRate',
                 'PrintConv' => $f_7daee69205,
+                'PrintConvInv' => $f_067e53c3ea,
                 'ValueConv' => $f_8e8a2e3cc2,
+                'ValueConvInv' => $f_e00fa30529,
             ],
             '10.2' => [
                 'Mask' => 3,
                 'Name' => 'CommanderChannel',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             '11.1' => [
                 'Mask' => 192,
@@ -5365,37 +5496,49 @@ return [
                 'Mask' => 31,
                 'Name' => 'CommanderInternalTTLComp',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_56df756248,
+                'ValueConvInv' => $f_642551f7a7,
             ],
             '12.2' => [
                 'Mask' => 224,
                 'Name' => 'CommanderInternalManualOutput',
                 'PrintConv' => $f_114f5c8ad3,
+                'PrintConvInv' => $f_a6325ca6e3,
                 'ValueConv' => $f_361b820b78,
+                'ValueConvInv' => $f_cace0a5a17,
             ],
             '13.1' => [
                 'Mask' => 31,
                 'Name' => 'CommanderGroupA_TTL-AAComp',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_56df756248,
+                'ValueConvInv' => $f_642551f7a7,
             ],
             '13.2' => [
                 'Mask' => 224,
                 'Name' => 'CommanderGroupAManualOutput',
                 'PrintConv' => $f_114f5c8ad3,
+                'PrintConvInv' => $f_a6325ca6e3,
                 'ValueConv' => $f_361b820b78,
+                'ValueConvInv' => $f_cace0a5a17,
             ],
             '14.1' => [
                 'Mask' => 31,
                 'Name' => 'CommanderGroupB_TTL-AAComp',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_56df756248,
+                'ValueConvInv' => $f_642551f7a7,
             ],
             '14.2' => [
                 'Mask' => 224,
                 'Name' => 'CommanderGroupBManualOutput',
                 'PrintConv' => $f_114f5c8ad3,
+                'PrintConvInv' => $f_a6325ca6e3,
                 'ValueConv' => $f_361b820b78,
+                'ValueConvInv' => $f_cace0a5a17,
             ],
             '15.1' => [
                 'Mask' => 128,
@@ -5417,10 +5560,12 @@ return [
                 'Name' => 'AFAreaModeSetting',
                 'PrintConv' => [0 => 'Single Area', 1 => 'Dynamic Area', 2 => 'Auto-area'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsD800' => [
             '12.1' => [
@@ -5488,32 +5633,40 @@ return [
                 'Mask' => 31,
                 'Name' => 'ManualFlashOutput',
                 'PrintConv' => $f_114f5c8ad3,
+                'PrintConvInv' => $f_a6325ca6e3,
                 'ValueConv' => $f_dc5d089389,
+                'ValueConvInv' => $f_00e4336430,
             ],
             '24.1' => [
                 'Condition' => $f_a061549efa,
                 'Mask' => 112,
                 'Name' => 'RepeatingFlashOutput',
                 'PrintConv' => $f_a941801118,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_5b42165a56,
+                'ValueConvInv' => $f_51e37023a3,
             ],
             '24.2' => [
                 'Condition' => $f_a061549efa,
                 'Mask' => 15,
                 'Name' => 'RepeatingFlashCount',
                 'ValueConv' => $f_870e4cbddb,
+                'ValueConvInv' => $f_1c2927ee93,
             ],
             '25.1' => [
                 'Condition' => $f_a061549efa,
                 'Mask' => 240,
                 'Name' => 'RepeatingFlashRate',
                 'PrintConv' => $f_7daee69205,
+                'PrintConvInv' => $f_067e53c3ea,
                 'ValueConv' => $f_8e8a2e3cc2,
+                'ValueConvInv' => $f_e00fa30529,
             ],
             '25.2' => [
                 'Mask' => 3,
                 'Name' => 'CommanderChannel',
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             '27.1' => [
                 'Mask' => 192,
@@ -5524,7 +5677,9 @@ return [
                 'Mask' => 31,
                 'Name' => 'CommanderInternalManualOutput',
                 'PrintConv' => $f_114f5c8ad3,
+                'PrintConvInv' => $f_a6325ca6e3,
                 'ValueConv' => $f_dc5d089389,
+                'ValueConvInv' => $f_5a725e3488,
             ],
             '28.1' => [
                 'Mask' => 192,
@@ -5535,7 +5690,9 @@ return [
                 'Mask' => 31,
                 'Name' => 'CommanderGroupAManualOutput',
                 'PrintConv' => $f_114f5c8ad3,
+                'PrintConvInv' => $f_a6325ca6e3,
                 'ValueConv' => $f_dc5d089389,
+                'ValueConvInv' => $f_5a725e3488,
             ],
             '29.1' => [
                 'Mask' => 192,
@@ -5546,7 +5703,9 @@ return [
                 'Mask' => 31,
                 'Name' => 'CommanderGroupBManualOutput',
                 'PrintConv' => $f_114f5c8ad3,
+                'PrintConvInv' => $f_a6325ca6e3,
                 'ValueConv' => $f_dc5d089389,
+                'ValueConvInv' => $f_5a725e3488,
             ],
             '30.1' => [
                 'Mask' => 32,
@@ -5557,25 +5716,33 @@ return [
                 'Mask' => 31,
                 'Name' => 'CommanderInternalTTLComp',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_56df756248,
+                'ValueConvInv' => $f_642551f7a7,
             ],
             '31.1' => [
                 'Mask' => 31,
                 'Name' => 'CommanderGroupA_TTL-AAComp',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_56df756248,
+                'ValueConvInv' => $f_642551f7a7,
             ],
             '32.1' => [
                 'Mask' => 31,
                 'Name' => 'CommanderGroupB_TTL-AAComp',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_56df756248,
+                'ValueConvInv' => $f_642551f7a7,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [23.1],
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsD810' => [
             '0.1' => [
@@ -5727,19 +5894,25 @@ return [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptMatrixMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '9.1' => [
                 'Mask' => 240,
                 'Name' => 'FineTuneOptCenterWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '9.2' => [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptSpotMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '10.1' => [
                 'Mask' => 192,
@@ -5770,6 +5943,7 @@ return [
                 'Mask' => 15,
                 'Name' => 'CLModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
             ],
             '12.1' => [
                 'Name' => 'MaxContinuousRelease',
@@ -6117,7 +6291,9 @@ return [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptHighlightWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '47.1' => [
                 'Mask' => 128,
@@ -6219,11 +6395,13 @@ return [
                     37 => 'AF-Area Mode: Auto area AF',
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [24.1],
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsD850' => [
             '0.2' => [
@@ -6330,19 +6508,25 @@ return [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptMatrixMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '9.1' => [
                 'Mask' => 240,
                 'Name' => 'FineTuneOptCenterWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '9.2' => [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptSpotMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '10.1' => [
                 'Mask' => 224,
@@ -6373,6 +6557,7 @@ return [
                 'Mask' => 15,
                 'Name' => 'CLModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
             ],
             '12.1' => [
                 'Name' => 'MaxContinuousRelease',
@@ -6693,7 +6878,9 @@ return [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptHighlightWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '47.1' => [
                 'Mask' => 128,
@@ -7029,10 +7216,12 @@ return [
                 'Name' => 'AssignMovieFunc2Button',
                 'PrintConv' => [0 => 'None', 3 => 'Index Marking', 4 => 'View Photo Shooting Info'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsD90' => [
             '0.1' => [
@@ -7152,24 +7341,31 @@ return [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptMatrixMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '9.1' => [
                 'Mask' => 240,
                 'Name' => 'FineTuneOptCenterWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '9.2' => [
                 'Mask' => 15,
                 'Name' => 'FineTuneOptSpotMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_4c247ed1c7,
+                'ValueConvInv' => $f_297d4a09e5,
             ],
             '11.1' => [
                 'Mask' => 7,
                 'Name' => 'CLModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
             ],
             '11.2' => [
                 'Mask' => 64,
@@ -7316,24 +7512,31 @@ return [
                 'Mask' => 31,
                 'Name' => 'ManualFlashOutput',
                 'PrintConv' => $f_114f5c8ad3,
+                'PrintConvInv' => $f_a6325ca6e3,
                 'ValueConv' => $f_dc5d089389,
+                'ValueConvInv' => $f_00e4336430,
             ],
             '25.1' => [
                 'Mask' => 112,
                 'Name' => 'RepeatingFlashOutput',
                 'PrintConv' => $f_a941801118,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_5b42165a56,
+                'ValueConvInv' => $f_51e37023a3,
             ],
             '25.2' => [
                 'Mask' => 15,
                 'Name' => 'RepeatingFlashCount',
                 'ValueConv' => $f_870e4cbddb,
+                'ValueConvInv' => $f_1c2927ee93,
             ],
             '26.1' => [
                 'Mask' => 240,
                 'Name' => 'RepeatingFlashRate',
                 'PrintConv' => $f_7daee69205,
+                'PrintConvInv' => $f_067e53c3ea,
                 'ValueConv' => $f_8e8a2e3cc2,
+                'ValueConvInv' => $f_e00fa30529,
             ],
             '31.1' => [
                 'Mask' => 128,
@@ -7344,7 +7547,9 @@ return [
                 'Mask' => 31,
                 'Name' => 'CommanderInternalTTLComp',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_56df756248,
+                'ValueConvInv' => $f_642551f7a7,
             ],
             '31.3' => [
                 'Mask' => 32,
@@ -7360,23 +7565,29 @@ return [
                 'Mask' => 31,
                 'Name' => 'CommanderGroupA_TTLComp',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_56df756248,
+                'ValueConvInv' => $f_642551f7a7,
             ],
             '33.1' => [
                 'Mask' => 31,
                 'Name' => 'CommanderGroupB_TTLComp',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_56df756248,
+                'ValueConvInv' => $f_642551f7a7,
             ],
             '34.1' => [
                 'Mask' => 192,
                 'Name' => 'LiveViewAF',
                 'PrintConv' => [0 => 'Face Priority', 1 => 'Wide Area', 2 => 'Normal Area'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsZ6III' => [
             3 => [
@@ -7467,25 +7678,33 @@ return [
                 'Format' => 'int8s',
                 'Name' => 'FineTuneOptMatrixMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_5c585265e8,
             ],
             37 => [
                 'Format' => 'int8s',
                 'Name' => 'FineTuneOptCenterWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_5c585265e8,
             ],
             39 => [
                 'Format' => 'int8s',
                 'Name' => 'FineTuneOptSpotMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_5c585265e8,
             ],
             41 => [
                 'Format' => 'int8s',
                 'Name' => 'FineTuneOptHighlightWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_5c585265e8,
             ],
             43 => [
                 'Name' => 'ShutterReleaseButtonAE-L',
@@ -7521,7 +7740,9 @@ return [
             63 => [
                 'Name' => 'CLModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             65 => [
                 'Format' => 'int16s',
@@ -7730,6 +7951,7 @@ return [
             229 => [
                 'Name' => 'MovieAFSpeed',
                 'ValueConv' => $f_3b922d5a8e,
+                'ValueConvInv' => $f_6862220f86,
             ],
             231 => [
                 'Name' => 'MovieAFSpeedApply',
@@ -7850,11 +8072,13 @@ return [
                 'PrintConv' => $d_2,
                 'Unknown' => 1,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [189],
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsZ8' => [
             1 => [
@@ -7949,25 +8173,33 @@ return [
                 'Format' => 'int8s',
                 'Name' => 'FineTuneOptMatrixMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_5c585265e8,
             ],
             35 => [
                 'Format' => 'int8s',
                 'Name' => 'FineTuneOptCenterWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_5c585265e8,
             ],
             37 => [
                 'Format' => 'int8s',
                 'Name' => 'FineTuneOptSpotMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_5c585265e8,
             ],
             39 => [
                 'Format' => 'int8s',
                 'Name' => 'FineTuneOptHighlightWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_5c585265e8,
             ],
             41 => [
                 'Name' => 'ShutterReleaseButtonAE-L',
@@ -8003,7 +8235,9 @@ return [
             59 => [
                 'Name' => 'CLModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             61 => [
                 'Format' => 'int16s',
@@ -8220,6 +8454,7 @@ return [
             221 => [
                 'Name' => 'MovieAFSpeed',
                 'ValueConv' => $f_3b922d5a8e,
+                'ValueConvInv' => $f_6862220f86,
             ],
             223 => [
                 'Name' => 'MovieAFSpeedApply',
@@ -8254,7 +8489,9 @@ return [
             267 => [
                 'Name' => 'CHModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             273 => [
                 'Name' => 'FlashBurstPriority',
@@ -8479,11 +8716,13 @@ return [
                 'Name' => 'ExposureDelay',
                 'PrintConv' => $f_c961c7f7c2,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [185, 529],
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsZ9' => [
             1 => [
@@ -8578,25 +8817,33 @@ return [
                 'Format' => 'int8s',
                 'Name' => 'FineTuneOptMatrixMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_5c585265e8,
             ],
             35 => [
                 'Format' => 'int8s',
                 'Name' => 'FineTuneOptCenterWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_5c585265e8,
             ],
             37 => [
                 'Format' => 'int8s',
                 'Name' => 'FineTuneOptSpotMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_5c585265e8,
             ],
             39 => [
                 'Format' => 'int8s',
                 'Name' => 'FineTuneOptHighlightWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_5c585265e8,
             ],
             41 => [
                 'Name' => 'ShutterReleaseButtonAE-L',
@@ -8632,7 +8879,9 @@ return [
             59 => [
                 'Name' => 'CLModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             61 => [
                 'Format' => 'int16s',
@@ -8849,6 +9098,7 @@ return [
             221 => [
                 'Name' => 'MovieAFSpeed',
                 'ValueConv' => $f_3b922d5a8e,
+                'ValueConvInv' => $f_6862220f86,
             ],
             223 => [
                 'Name' => 'MovieAFSpeedApply',
@@ -8883,7 +9133,9 @@ return [
             267 => [
                 'Name' => 'CHModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             '269.1' => [
                 'Mask' => 2,
@@ -9189,11 +9441,13 @@ return [
                 'PrintConv' => [0 => 'Left to Right', 1 => 'Right to Left'],
                 'Unknown' => 1,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [185, 529],
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::NikonCustom::SettingsZ9v4' => [
             1 => [
@@ -9288,25 +9542,33 @@ return [
                 'Format' => 'int8s',
                 'Name' => 'FineTuneOptMatrixMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_5c585265e8,
             ],
             35 => [
                 'Format' => 'int8s',
                 'Name' => 'FineTuneOptCenterWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_5c585265e8,
             ],
             37 => [
                 'Format' => 'int8s',
                 'Name' => 'FineTuneOptSpotMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_5c585265e8,
             ],
             39 => [
                 'Format' => 'int8s',
                 'Name' => 'FineTuneOptHighlightWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_f7eee011de,
+                'ValueConvInv' => $f_5c585265e8,
             ],
             41 => [
                 'Name' => 'ShutterReleaseButtonAE-L',
@@ -9342,7 +9604,9 @@ return [
             59 => [
                 'Name' => 'CLModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             61 => [
                 'Format' => 'int16s',
@@ -9559,6 +9823,7 @@ return [
             221 => [
                 'Name' => 'MovieAFSpeed',
                 'ValueConv' => $f_3b922d5a8e,
+                'ValueConvInv' => $f_6862220f86,
             ],
             223 => [
                 'Name' => 'MovieAFSpeedApply',
@@ -9593,7 +9858,9 @@ return [
             289 => [
                 'Name' => 'CHModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
                 'ValueConv' => $f_4828c7c932,
+                'ValueConvInv' => $f_1c538804b4,
             ],
             '293.1' => [
                 'Mask' => 2,
@@ -9906,11 +10173,13 @@ return [
                 'PrintConv' => [0 => 'Left to Right', 1 => 'Right to Left'],
                 'Unknown' => 1,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [185, 553],
             'FIRST_ENTRY' => 0,
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
     ],
 ];

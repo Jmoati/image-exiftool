@@ -14,10 +14,12 @@ $f_0fb2685b8c = static function ($val, ExifTool $self, array &$vals, array $prt,
     $a = Perl::split(' ', $val);
     return Perl::sprintf('%.2f - %.2f m', ...(Perl::num($a[0] ?? null) <= Perl::num($a[1] ?? null) ? $a : array_reverse($a)));
 };
+$f_ebadc2f4a1 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv ebadc2f4a1'); };
 $f_f594b218a5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::split(' ', $val);
     return Perl::sprintf('%d %d %d', $a[0] ?? null, (Perl::int($a[1] ?? null) >> 28) & 0xFFFFFFFFF, Perl::int($a[1] ?? null) & 0xfffffff);
 };
+$f_874d15eae8 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 874d15eae8'); };
 
 return [
     'load' => [
@@ -87,6 +89,7 @@ return [
                 'Count' => 2,
                 'Name' => 'FocusDistanceRange',
                 'PrintConv' => $f_0fb2685b8c,
+                'PrintConvInv' => $f_ebadc2f4a1,
                 'Writable' => 'rational64s',
             ],
             15 => [
@@ -141,6 +144,7 @@ return [
                 'Count' => 2,
                 'Name' => 'AFPerformance',
                 'PrintConv' => $f_f594b218a5,
+                'PrintConvInv' => $f_874d15eae8,
                 'Writable' => 'int32s',
             ],
             37 => [
@@ -229,8 +233,10 @@ return [
                 'Unknown' => 1,
                 'ValueConv' => 'Image\\ExifTool\\Apple::ConvertPLIST',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Apple::RunTime' => [
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],

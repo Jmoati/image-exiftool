@@ -16,18 +16,23 @@ $f_70df469c39 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_2327041798 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? Perl::sprintf('%+.2f', $val) : 0;
 };
+$f_153707d441 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 153707d441'); };
 $f_e254bf8c6e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return (Perl::num($val) - 7) / 6;
 };
+$f_b1499ad77b = static function (mixed ...$args) { throw new NotPorted('ValueConvInv b1499ad77b'); };
 $f_43cd962359 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 10 - Perl::num($val);
 };
+$f_ebedda35cc = static function (mixed ...$args) { throw new NotPorted('ValueConvInv ebedda35cc'); };
 $f_8859373a48 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val) . ' fps';
 };
+$f_bb8d7dd8d5 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv bb8d7dd8d5'); };
 $f_a3b50b417e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 6 - Perl::num($val);
 };
+$f_c4d27675c7 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv c4d27675c7'); };
 $f_8a9d4943d8 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->CmdDialsReverseRotExposureComp = $val;
 };
@@ -49,6 +54,7 @@ $f_8c23682c1b = static function (ExifTool $self, $valPt, $format, $count) {
 $f_120c253c04 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) - 6;
 };
+$f_73667e4106 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 73667e4106'); };
 $f_bc56f64990 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->HDMIBitDepth = $val;
 };
@@ -88,9 +94,11 @@ $f_8ebe61545f = static function (ExifTool $self, $valPt, $format, $count) {
 $f_eed552fac1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 15 - Perl::num($val);
 };
+$f_42c2e24ca0 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 42c2e24ca0'); };
 $f_6b063834b4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 11 - Perl::num($val);
 };
+$f_ad419c1c12 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv ad419c1c12'); };
 $f_aa0ed4e357 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->PlaybackFlickUp = $val;
 };
@@ -681,22 +689,30 @@ return [
             47 => [
                 'Name' => 'FineTuneOptMatrixMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_e254bf8c6e,
+                'ValueConvInv' => $f_b1499ad77b,
             ],
             48 => [
                 'Name' => 'FineTuneOptCenterWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_e254bf8c6e,
+                'ValueConvInv' => $f_b1499ad77b,
             ],
             49 => [
                 'Name' => 'FineTuneOptSpotMetering',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_e254bf8c6e,
+                'ValueConvInv' => $f_b1499ad77b,
             ],
             50 => [
                 'Name' => 'FineTuneOptHighlightWeighted',
                 'PrintConv' => $f_2327041798,
+                'PrintConvInv' => $f_153707d441,
                 'ValueConv' => $f_e254bf8c6e,
+                'ValueConvInv' => $f_b1499ad77b,
             ],
             51 => [
                 'Name' => 'ShutterReleaseButtonAE-L',
@@ -740,6 +756,7 @@ return [
             54 => [
                 'Name' => 'SelfTimerShotCount',
                 'ValueConv' => $f_43cd962359,
+                'ValueConvInv' => $f_ebedda35cc,
             ],
             55 => [
                 'Name' => 'SelfTimerShotInterval',
@@ -768,7 +785,9 @@ return [
             62 => [
                 'Name' => 'CLModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
                 'ValueConv' => $f_a3b50b417e,
+                'ValueConvInv' => $f_c4d27675c7,
             ],
             63 => [
                 'Name' => 'MaxContinuousRelease',
@@ -1657,6 +1676,7 @@ return [
             238 => [
                 'Name' => 'MovieAFSpeed',
                 'ValueConv' => $f_120c253c04,
+                'ValueConvInv' => $f_73667e4106,
             ],
             239 => [
                 'Name' => 'MovieAFSpeedApply',
@@ -1895,12 +1915,16 @@ return [
             287 => [
                 'Name' => 'CHModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
                 'ValueConv' => $f_eed552fac1,
+                'ValueConvInv' => $f_42c2e24ca0,
             ],
             288 => [
                 'Name' => 'CLModeShootingSpeed',
                 'PrintConv' => $f_8859373a48,
+                'PrintConvInv' => $f_bb8d7dd8d5,
                 'ValueConv' => $f_6b063834b4,
+                'ValueConvInv' => $f_ad419c1c12,
             ],
             289 => [
                 'Name' => 'QuietShutterShootingSpeed',

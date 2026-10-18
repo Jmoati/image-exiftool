@@ -404,6 +404,7 @@ $f_24585565de = static function (ExifTool $self, $valPt, $format, $count) {
 $f_609fe59810 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strlen(Perl::str($val)) > 64 ? new ScalarRef($val) : $val;
 };
+$f_25924ee98a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 25924ee98a'); };
 $f_1a47d140b4 = static function (ExifTool $self, $valPt, $format, $count) {
     return preg_match('/^LSI1\0/', $valPt);
 };
@@ -418,6 +419,7 @@ return [
                 'SubDirectory' => [
                     'ProcessProc' => 'Image\\ExifTool\\DNG::ProcessAdobeCRW',
                     'TagTable' => 'Image::ExifTool::CanonRaw::Main',
+                    'WriteProc' => 'Image\\ExifTool\\DNG::WriteAdobeStuff',
                 ],
             ],
             'GROUPS' => [0 => 'MakerNotes', 1 => 'AdobeDNG', 2 => 'Image'],
@@ -440,6 +442,7 @@ return [
                 'SubDirectory' => [
                     'ProcessProc' => 'Image\\ExifTool\\DNG::ProcessAdobeMRW',
                     'TagTable' => 'Image::ExifTool::MinoltaRaw::Main',
+                    'WriteProc' => 'Image\\ExifTool\\DNG::WriteAdobeStuff',
                 ],
             ],
             'MakN' => [
@@ -1751,6 +1754,7 @@ return [
                     'Format' => 'undef',
                     'Name' => 'MakerNoteUnknownText',
                     'ValueConv' => $f_609fe59810,
+                    'ValueConvInv' => $f_25924ee98a,
                     'Writable' => 'undef',
                     'WriteGroup' => 'ExifIFD',
                 ],
@@ -1773,6 +1777,7 @@ return [
                         'FixBase' => 2,
                         'ProcessProc' => 'Image\\ExifTool\\MakerNotes::ProcessUnknownOrPreview',
                         'TagTable' => 'Image::ExifTool::Unknown::Main',
+                        'WriteProc' => 'Image\\ExifTool\\MakerNotes::WriteUnknownOrPreview',
                     ],
                     'Writable' => 'undef',
                     'WriteGroup' => 'ExifIFD',
@@ -1800,6 +1805,7 @@ return [
                     'TagTable' => 'Image::ExifTool::Sony::SR2Private',
                 ],
             ],
+            'WRITE_PROC' => 'Image\\ExifTool\\DNG::WriteAdobeStuff',
         ],
         'Image::ExifTool::DNG::ImageSeq' => [
             0 => [

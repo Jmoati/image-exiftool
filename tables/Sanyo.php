@@ -52,6 +52,7 @@ $f_42870d06cd = static function (ExifTool $self, $valPt, $format, $count) {
 $f_1f2667c7fa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->ValidateImage(new ScalarRef($val), $tag);
 };
+$f_0fa5c867aa = static function (mixed ...$args) { throw new NotPorted('WriteCheck 0fa5c867aa'); };
 $f_03c93132e2 = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::str($format) === 'rational64u';
 };
@@ -68,11 +69,13 @@ return [
                 'Format' => 'int32u[4]',
                 'Name' => 'FacePosition',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int32u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::Sanyo::MOV' => [
             0 => [
@@ -180,6 +183,7 @@ return [
                 'Name' => 'SanyoThumbnail',
                 'RawConv' => $f_1f2667c7fa,
                 'Writable' => 'undef',
+                'WriteCheck' => $f_0fa5c867aa,
             ],
             512 => [
                 'Count' => 3,
@@ -330,8 +334,10 @@ return [
                 'Name' => 'DataDump',
                 'Writable' => 0,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::Sanyo::Thumbnail' => [
             1 => 'ThumbnailWidth',

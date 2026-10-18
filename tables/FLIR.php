@@ -138,6 +138,7 @@ $f_6b5d3822d3 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     $copy = new ScalarRef($self->GainDeadMapImage);
     return new ScalarRef($copy);
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 $f_ed53db3d38 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->Reading1Units = $val;
 };
@@ -1175,6 +1176,7 @@ return [
             3 => [
                 'Name' => 'Emissivity',
                 'PrintConv' => $f_5dbc52ad61,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'rational64u',
             ],
             4 => [
@@ -1195,9 +1197,11 @@ return [
                 'Unknown' => 1,
                 'Writable' => 'rational64u',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PRIORITY' => 0,
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::FLIR::MeasInfo' => [
             'FORMAT' => 'int16u',

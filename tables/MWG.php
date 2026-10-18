@@ -4,18 +4,23 @@
 
 namespace Image\ExifTool;
 
+$f_1382674969 = static function (mixed ...$args) { throw new NotPorted('DelCheck 1382674969'); };
 $f_25780f1581 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     $xmpVal = ($vals[2] ?? null) ?: ($vals[1] ?? null);
     if (!isset($vals[3]) or ($xmpVal !== null and
         (!isset($vals[4]) or Perl::str($vals[3]) === Perl::str($vals[4])))) return $xmpVal;
     return MWG::RecoverTruncatedIPTC($vals[0] ?? null, $xmpVal, 32);
 };
+$f_cccaf96975 = static function (mixed ...$args) { throw new NotPorted('WriteAlso cccaf96975'); };
+$f_dc0ae2b70f = static function (mixed ...$args) { throw new NotPorted('WriteAlso dc0ae2b70f'); };
+$f_a0e52572af = static function (mixed ...$args) { throw new NotPorted('WriteCheck a0e52572af'); };
 $f_e4706d5423 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     if (isset($vals[0]) and !preg_match('/^ *$/', Perl::str($vals[0]))) return $vals[0];
     if (!isset($vals[3]) or (isset($vals[2]) and
         (!isset($vals[4]) or Perl::str($vals[3]) === Perl::str($vals[4])))) return $vals[2] ?? null;
     return MWG::RecoverTruncatedIPTC($vals[1] ?? null, $vals[2] ?? null, 128);
 };
+$f_6f1a11d8ce = static function (mixed ...$args) { throw new NotPorted('WriteAlso 6f1a11d8ce'); };
 $f_9d2458d245 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     $xmpVal = ($vals[2] ?? null) ?: ($vals[1] ?? null);
     if (!isset($vals[3]) or ($xmpVal !== null and
@@ -25,6 +30,7 @@ $f_9d2458d245 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
+$f_289bae1164 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 289bae1164'); };
 $f_000e9a42a6 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return (isset($vals[0]) or isset($vals[1]) or !empty($vals[2]) or
         (isset($vals[4]) and (!isset($vals[5]) or !isset($vals[6]) or
@@ -38,6 +44,7 @@ $f_a87cf5bb3f = static function ($val, ExifTool $self, array &$vals, array $prt,
     if (!empty($vals[2])) return !empty($vals[3]) ? Perl::str($vals[2]) . ' ' . Perl::str($vals[3]) : $vals[2];
     return null;
 };
+$f_6e48053b23 = static function (mixed ...$args) { throw new NotPorted('WriteAlso 6e48053b23'); };
 $f_45f3c6f0c4 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     if (isset($vals[0]) and !preg_match('/^ *$/', Perl::str($vals[0]))) return $vals[0];
     if (!isset($vals[3]) or (isset($vals[2]) and
@@ -55,12 +62,14 @@ $f_2e720198bc = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
         (!isset($vals[3]) or Perl::str($vals[2]) === Perl::str($vals[3])))) return $vals[1] ?? null;
     return MWG::RecoverTruncatedIPTC($vals[0] ?? null, $vals[1] ?? null, 64);
 };
+$f_bbebb7d11a = static function (mixed ...$args) { throw new NotPorted('DelCheck bbebb7d11a'); };
 $f_fd33864163 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     if (isset($vals[0]) and !preg_match('/^[: ]*$/', Perl::str($vals[0]))) return $vals[0];
     if (isset($vals[1]) and !preg_match('/^[: ]*$/', Perl::str($vals[1]))) return $vals[1];
     if (!isset($vals[3]) or !isset($vals[4]) or Perl::str($vals[3]) === Perl::str($vals[4])) return $vals[2] ?? null;
     return null;
 };
+$f_65f081ae03 = static function (mixed ...$args) { throw new NotPorted('WriteCheck 65f081ae03'); };
 $f_6b105e8189 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val;
 };
@@ -84,6 +93,7 @@ return [
     ],
     'tables' => [
         'Image::ExifTool::MWG::Collections' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'Collections' => [
                 'FlatName' => '',
                 'List' => 'Bag',
@@ -100,9 +110,11 @@ return [
             'LANG_INFO' => 'Image\\ExifTool\\XMP::GetLangInfo',
             'NAMESPACE' => 'mwg-coll',
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
         ],
         'Image::ExifTool::MWG::Composite' => [
             'City' => [
+                'DelCheck' => $f_1382674969,
                 'Desire' => [
                     0 => 'IPTC:City',
                     1 => 'XMP-photoshop:City',
@@ -113,8 +125,11 @@ return [
                 'Groups' => [2 => 'Location'],
                 'RawConv' => $f_25780f1581,
                 'Writable' => 1,
+                'WriteAlso' => ['IPTC:City' => $f_cccaf96975, 'XMP-iptcExt:LocationShownCity' => $f_dc0ae2b70f, 'XMP-photoshop:City' => $f_dc0ae2b70f],
+                'WriteCheck' => $f_a0e52572af,
             ],
             'Copyright' => [
+                'DelCheck' => $f_1382674969,
                 'Desire' => [
                     0 => 'EXIF:Copyright',
                     1 => 'IPTC:CopyrightNotice',
@@ -125,8 +140,11 @@ return [
                 'Groups' => [2 => 'Author'],
                 'RawConv' => $f_e4706d5423,
                 'Writable' => 1,
+                'WriteAlso' => ['EXIF:Copyright' => $f_6f1a11d8ce, 'IPTC:CopyrightNotice' => $f_cccaf96975, 'XMP-dc:Rights' => $f_dc0ae2b70f],
+                'WriteCheck' => $f_a0e52572af,
             ],
             'Country' => [
+                'DelCheck' => $f_1382674969,
                 'Desire' => [
                     0 => 'IPTC:Country-PrimaryLocationName',
                     1 => 'XMP-photoshop:Country',
@@ -137,8 +155,11 @@ return [
                 'Groups' => [2 => 'Location'],
                 'RawConv' => $f_9d2458d245,
                 'Writable' => 1,
+                'WriteAlso' => ['IPTC:Country-PrimaryLocationName' => $f_cccaf96975, 'XMP-iptcExt:LocationShownCountryName' => $f_dc0ae2b70f, 'XMP-photoshop:Country' => $f_dc0ae2b70f],
+                'WriteCheck' => $f_a0e52572af,
             ],
             'CreateDate' => [
+                'DelCheck' => $f_1382674969,
                 'Desire' => [
                     0 => 'Composite:SubSecCreateDate',
                     1 => 'EXIF:CreateDate',
@@ -150,11 +171,16 @@ return [
                 ],
                 'Groups' => [2 => 'Time'],
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_289bae1164,
                 'RawConv' => $f_000e9a42a6,
+                'Shift' => 0,
                 'ValueConv' => $f_a87cf5bb3f,
                 'Writable' => 1,
+                'WriteAlso' => ['Composite:SubSecCreateDate' => $f_6e48053b23, 'IPTC:DigitalCreationDate' => $f_cccaf96975, 'IPTC:DigitalCreationTime' => $f_cccaf96975, 'XMP-xmp:CreateDate' => $f_dc0ae2b70f],
+                'WriteCheck' => $f_a0e52572af,
             ],
             'Creator' => [
+                'DelCheck' => $f_1382674969,
                 'Desire' => [
                     0 => 'EXIF:Artist',
                     1 => 'IPTC:By-line',
@@ -165,8 +191,11 @@ return [
                 'Flags' => ['Writable', 'List'],
                 'Groups' => [2 => 'Author'],
                 'RawConv' => $f_45f3c6f0c4,
+                'WriteAlso' => ['EXIF:Artist' => $f_dc0ae2b70f, 'IPTC:By-line' => $f_cccaf96975, 'XMP-dc:Creator' => $f_dc0ae2b70f],
+                'WriteCheck' => $f_a0e52572af,
             ],
             'DateTimeOriginal' => [
+                'DelCheck' => $f_1382674969,
                 'Description' => 'Date/Time Original',
                 'Desire' => [
                     0 => 'Composite:SubSecDateTimeOriginal',
@@ -179,11 +208,16 @@ return [
                 ],
                 'Groups' => [2 => 'Time'],
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_289bae1164,
                 'RawConv' => $f_000e9a42a6,
+                'Shift' => 0,
                 'ValueConv' => $f_a87cf5bb3f,
                 'Writable' => 1,
+                'WriteAlso' => ['Composite:SubSecDateTimeOriginal' => $f_6e48053b23, 'IPTC:DateCreated' => $f_cccaf96975, 'IPTC:TimeCreated' => $f_cccaf96975, 'XMP-photoshop:DateCreated' => $f_dc0ae2b70f],
+                'WriteCheck' => $f_a0e52572af,
             ],
             'Description' => [
+                'DelCheck' => $f_1382674969,
                 'Desire' => [
                     0 => 'EXIF:ImageDescription',
                     1 => 'IPTC:Caption-Abstract',
@@ -193,14 +227,20 @@ return [
                 ],
                 'RawConv' => $f_c86dfdb9c1,
                 'Writable' => 1,
+                'WriteAlso' => ['EXIF:ImageDescription' => $f_dc0ae2b70f, 'IPTC:Caption-Abstract' => $f_cccaf96975, 'XMP-dc:Description' => $f_dc0ae2b70f],
+                'WriteCheck' => $f_a0e52572af,
             ],
             'GROUPS' => [0 => 'Composite', 1 => 'MWG', 2 => 'Image'],
             'Keywords' => [
+                'DelCheck' => $f_1382674969,
                 'Desire' => [0 => 'IPTC:Keywords', 1 => 'XMP-dc:Subject', 2 => 'CurrentIPTCDigest', 3 => 'IPTCDigest'],
                 'Flags' => ['Writable', 'List'],
                 'RawConv' => $f_2e720198bc,
+                'WriteAlso' => ['IPTC:Keywords' => $f_cccaf96975, 'XMP-dc:Subject' => $f_dc0ae2b70f],
+                'WriteCheck' => $f_a0e52572af,
             ],
             'Location' => [
+                'DelCheck' => $f_1382674969,
                 'Desire' => [
                     0 => 'IPTC:Sub-location',
                     1 => 'XMP-iptcCore:Location',
@@ -211,8 +251,11 @@ return [
                 'Groups' => [2 => 'Location'],
                 'RawConv' => $f_25780f1581,
                 'Writable' => 1,
+                'WriteAlso' => ['IPTC:Sub-location' => $f_cccaf96975, 'XMP-iptcCore:Location' => $f_dc0ae2b70f, 'XMP-iptcExt:LocationShownSublocation' => $f_dc0ae2b70f],
+                'WriteCheck' => $f_a0e52572af,
             ],
             'ModifyDate' => [
+                'DelCheck' => $f_bbebb7d11a,
                 'Desire' => [
                     0 => 'Composite:SubSecModifyDate',
                     1 => 'EXIF:ModifyDate',
@@ -222,10 +265,15 @@ return [
                 ],
                 'Groups' => [2 => 'Time'],
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_289bae1164,
                 'RawConv' => $f_fd33864163,
+                'Shift' => 0,
                 'Writable' => 1,
+                'WriteAlso' => ['Composite:SubSecModifyDate' => $f_6e48053b23, 'XMP-xmp:ModifyDate' => $f_dc0ae2b70f],
+                'WriteCheck' => $f_65f081ae03,
             ],
             'Orientation' => [
+                'DelCheck' => $f_bbebb7d11a,
                 'PrintConv' => [
                     1 => 'Horizontal (normal)',
                     2 => 'Mirror horizontal',
@@ -239,13 +287,19 @@ return [
                 'Require' => 'EXIF:Orientation',
                 'ValueConv' => $f_6b105e8189,
                 'Writable' => 1,
+                'WriteAlso' => ['EXIF:Orientation' => $f_dc0ae2b70f],
+                'WriteCheck' => $f_65f081ae03,
             ],
             'Rating' => [
+                'DelCheck' => $f_bbebb7d11a,
                 'Require' => 'XMP-xmp:Rating',
                 'ValueConv' => $f_6b105e8189,
                 'Writable' => 1,
+                'WriteAlso' => ['XMP-xmp:Rating' => $f_dc0ae2b70f],
+                'WriteCheck' => $f_65f081ae03,
             ],
             'State' => [
+                'DelCheck' => $f_1382674969,
                 'Desire' => [
                     0 => 'IPTC:Province-State',
                     1 => 'XMP-photoshop:State',
@@ -256,10 +310,14 @@ return [
                 'Groups' => [2 => 'Location'],
                 'RawConv' => $f_25780f1581,
                 'Writable' => 1,
+                'WriteAlso' => ['IPTC:Province-State' => $f_cccaf96975, 'XMP-iptcExt:LocationShownProvinceState' => $f_dc0ae2b70f, 'XMP-photoshop:State' => $f_dc0ae2b70f],
+                'WriteCheck' => $f_a0e52572af,
             ],
             'VARS' => ['ID_FMT' => 'none'],
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::DummyWriteProc',
         ],
         'Image::ExifTool::MWG::Keywords' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'GROUPS' => [0 => 'XMP', 1 => 'XMP-mwg-kw', 2 => 'Image'],
             'Keywords' => [
                 'Name' => 'KeywordInfo',
@@ -348,8 +406,10 @@ return [
             'LANG_INFO' => 'Image\\ExifTool\\XMP::GetLangInfo',
             'NAMESPACE' => 'mwg-kw',
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
         ],
         'Image::ExifTool::MWG::Regions' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'GROUPS' => [0 => 'XMP', 1 => 'XMP-mwg-rs', 2 => 'Image'],
             'LANG_INFO' => 'Image\\ExifTool\\XMP::GetLangInfo',
             'NAMESPACE' => 'mwg-rs',
@@ -441,6 +501,7 @@ return [
                 'Name' => 'RegionList',
             ],
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
         ],
     ],
 ];

@@ -135,9 +135,11 @@ return [
                 'RawConv' => $f_75db46a4dc,
                 'ValueConv' => $f_a05ca7de2b,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [2, 3, 5],
             'GROUPS' => [0 => 'JFIF', 1 => 'JFIF', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
     ],
 ];

@@ -10,24 +10,31 @@ $f_b2e41c1595 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_a941801118 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::PrintExposureTime($val);
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
+$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
 $f_5f55a3e4a5 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1, 'N');
 };
+$f_cb54e897d7 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv cb54e897d7'); };
 $f_473c5a1df4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDegrees($val, 1);
 };
+$f_ad82fb7d22 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv ad82fb7d22'); };
 $f_5817105f7a = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return GPS::ToDMS($self, $val, 1, 'E');
 };
+$f_c94d243322 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c94d243322'); };
 $f_05825dd92f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', 'x');
 };
+$f_83d255d5dd = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 83d255d5dd'); };
 $f_1f2667c7fa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->ValidateImage(new ScalarRef($val), $tag);
 };
+$f_d2c798ea2d = static function (mixed ...$args) { throw new NotPorted('ValueConvInv d2c798ea2d'); };
 
 return [
     'load' => [
@@ -40,6 +47,7 @@ return [
             '1Name' => [
                 'Name' => 'RelatedAudioFileName',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'Channels' => [
                 'Writable' => 'int8u',
             ],
@@ -62,6 +70,7 @@ return [
             ],
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-Audio',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
             'data' => [
                 'Binary' => 1,
                 'Name' => 'RelatedAudioFile',
@@ -72,6 +81,7 @@ return [
             'Brightness' => [
                 'Writable' => 'int8s',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'ColorBalance' => [
                 'Count' => 3,
                 'Writable' => 'rational64u',
@@ -93,6 +103,7 @@ return [
             ],
             'ExposureTime' => [
                 'PrintConv' => $f_a941801118,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'rational64u',
             ],
             'FirmwareVersion' => [
@@ -162,8 +173,10 @@ return [
             ],
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-Camera',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
         ],
         'Image::ExifTool::MIE::Canon' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'GROUPS' => [1 => 'MIE-Canon'],
             'LANG_INFO' => 'Image\\ExifTool\\MIE::GetLangInfo',
             'PREFERRED' => 1,
@@ -176,11 +189,13 @@ return [
             ],
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-Canon',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
         ],
         'Image::ExifTool::MIE::Doc' => [
             'Author' => [
                 'Groups' => [2 => 'Author'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'Comment' => [
             ],
             'Contributors' => [
@@ -193,6 +208,8 @@ return [
             'CreateDate' => [
                 'Groups' => [2 => 'Time'],
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
             ],
             'EMail' => [
                 'Groups' => [2 => 'Author'],
@@ -206,12 +223,16 @@ return [
             'ModifyDate' => [
                 'Groups' => [2 => 'Time'],
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
             ],
             'OriginalDate' => [
                 'Description' => 'Date/Time Original',
                 'Groups' => [2 => 'Time'],
                 'Name' => 'DateTimeOriginal',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
             ],
             'PREFERRED' => 1,
             'PROCESS_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
@@ -230,8 +251,10 @@ return [
             ],
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-Doc',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
         ],
         'Image::ExifTool::MIE::Extender' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'GROUPS' => [1 => 'MIE-Extender', 2 => 'Camera'],
             'LANG_INFO' => 'Image\\ExifTool\\MIE::GetLangInfo',
             'Magnification' => [
@@ -251,8 +274,10 @@ return [
             ],
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-Extender',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
         ],
         'Image::ExifTool::MIE::Flash' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'ExposureComp' => [
                 'Name' => 'FlashExposureComp',
                 'Writable' => 'rational64s',
@@ -286,6 +311,7 @@ return [
             ],
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-Flash',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
         ],
         'Image::ExifTool::MIE::GPS' => [
             'Altitude' => [
@@ -298,10 +324,13 @@ return [
                 'Units' => ['deg', 'deg{mag}'],
                 'Writable' => 'rational64s',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'DateTime' => [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'GPSDateTime',
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
+                'Shift' => 'Time',
             ],
             'Datum' => [
                 'Name' => 'GPSMapDatum',
@@ -327,14 +356,18 @@ return [
                 'Count' => -1,
                 'Name' => 'GPSLatitude',
                 'PrintConv' => $f_5f55a3e4a5,
+                'PrintConvInv' => $f_cb54e897d7,
                 'ValueConv' => $f_473c5a1df4,
+                'ValueConvInv' => $f_ad82fb7d22,
                 'Writable' => 'rational64s',
             ],
             'Longitude' => [
                 'Count' => -1,
                 'Name' => 'GPSLongitude',
                 'PrintConv' => $f_5817105f7a,
+                'PrintConvInv' => $f_c94d243322,
                 'ValueConv' => $f_473c5a1df4,
+                'ValueConvInv' => $f_ad82fb7d22,
                 'Writable' => 'rational64s',
             ],
             'MeasureMode' => [
@@ -352,10 +385,12 @@ return [
             ],
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-GPS',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
         ],
         'Image::ExifTool::MIE::Geo' => [
             'Address' => [
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'City' => [
             ],
             'Country' => [
@@ -382,6 +417,7 @@ return [
             ],
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-Geo',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
         ],
         'Image::ExifTool::MIE::Image' => [
             '0Type' => [
@@ -394,6 +430,7 @@ return [
                 'Name' => 'BitDepth',
                 'Writable' => 'int16u',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'ColorSpace' => [
             ],
             'Components' => [
@@ -407,12 +444,14 @@ return [
             'ImageSize' => [
                 'Count' => -1,
                 'PrintConv' => $f_05825dd92f,
+                'PrintConvInv' => $f_83d255d5dd,
                 'Writable' => 'int16u',
             ],
             'LANG_INFO' => 'Image\\ExifTool\\MIE::GetLangInfo',
             'OriginalImageSize' => [
                 'Count' => -1,
                 'PrintConv' => $f_05825dd92f,
+                'PrintConvInv' => $f_83d255d5dd,
                 'Writable' => 'int16u',
             ],
             'PREFERRED' => 1,
@@ -420,11 +459,13 @@ return [
             'Resolution' => [
                 'Count' => -1,
                 'PrintConv' => $f_05825dd92f,
+                'PrintConvInv' => $f_83d255d5dd,
                 'Units' => ['/in', '/cm', '/deg', '/arcmin', '/arcsec', ''],
                 'Writable' => 'rational64u',
             ],
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-Image',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
             'data' => [
                 'Binary' => 1,
                 'Groups' => [2 => 'Preview'],
@@ -434,6 +475,7 @@ return [
             ],
         ],
         'Image::ExifTool::MIE::Lens' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'Extender' => [
                 'SubDirectory' => [
                     'DirName' => 'MIE-Extender',
@@ -483,6 +525,7 @@ return [
             ],
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-Lens',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
         ],
         'Image::ExifTool::MIE::Main' => [
             '0Type' => [
@@ -500,6 +543,7 @@ return [
             '2MIME' => [
                 'Name' => 'SubfileMIMEType',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'GROUPS' => [1 => 'MIE-Main'],
             'LANG_INFO' => 'Image\\ExifTool\\MIE::GetLangInfo',
             'Meta' => [
@@ -512,6 +556,7 @@ return [
             'PROCESS_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-Main',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
             'data' => [
                 'Binary' => 1,
                 'Name' => 'SubfileData',
@@ -527,10 +572,12 @@ return [
             ],
             'zmie' => [
                 'Name' => 'TrailerSignature',
+                'ValueConvInv' => $f_d2c798ea2d,
                 'Writable' => 'undef',
             ],
         ],
         'Image::ExifTool::MIE::MakerNotes' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'Canon' => [
                 'SubDirectory' => [
                     'DirName' => 'MIE-Canon',
@@ -598,6 +645,7 @@ return [
             ],
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-MakerNotes',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
         ],
         'Image::ExifTool::MIE::Meta' => [
             'Audio' => [
@@ -606,6 +654,7 @@ return [
                     'TagTable' => 'Image::ExifTool::MIE::Audio',
                 ],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'Camera' => [
                 'SubDirectory' => [
                     'DirName' => 'MIE-Camera',
@@ -622,6 +671,7 @@ return [
                 'SubDirectory' => [
                     'ProcessProc' => 'Image\\ExifTool\\ExifTool::ProcessTIFF',
                     'TagTable' => 'Image::ExifTool::Exif::Main',
+                    'WriteProc' => 'Image\\ExifTool\\ExifTool::WriteTIFF',
                 ],
             ],
             'GROUPS' => [1 => 'MIE-Meta', 2 => 'Image'],
@@ -682,6 +732,7 @@ return [
             ],
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-Meta',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
             'XMP' => [
                 'SubDirectory' => [
                     'TagTable' => 'Image::ExifTool::XMP::Main',
@@ -693,6 +744,7 @@ return [
                 'Units' => ['deg', 'deg{mag}'],
                 'Writable' => 'rational64s',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'Declination' => [
                 'Writable' => 'rational64s',
             ],
@@ -711,6 +763,7 @@ return [
             ],
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-Orient',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
         ],
         'Image::ExifTool::MIE::Preview' => [
             '0Type' => [
@@ -719,11 +772,13 @@ return [
             '1Name' => [
                 'Name' => 'PreviewImageName',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'GROUPS' => [1 => 'MIE-Preview', 2 => 'Image'],
             'ImageSize' => [
                 'Count' => -1,
                 'Name' => 'PreviewImageSize',
                 'PrintConv' => $f_05825dd92f,
+                'PrintConvInv' => $f_83d255d5dd,
                 'Writable' => 'int16u',
             ],
             'LANG_INFO' => 'Image\\ExifTool\\MIE::GetLangInfo',
@@ -731,6 +786,7 @@ return [
             'PROCESS_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-Preview',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
             'data' => [
                 'Binary' => 1,
                 'Groups' => [2 => 'Preview'],
@@ -746,11 +802,13 @@ return [
             '1Name' => [
                 'Name' => 'ThumbnailImageName',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'GROUPS' => [1 => 'MIE-Thumbnail', 2 => 'Image'],
             'ImageSize' => [
                 'Count' => -1,
                 'Name' => 'ThumbnailImageSize',
                 'PrintConv' => $f_05825dd92f,
+                'PrintConvInv' => $f_83d255d5dd,
                 'Writable' => 'int16u',
             ],
             'LANG_INFO' => 'Image\\ExifTool\\MIE::GetLangInfo',
@@ -758,6 +816,7 @@ return [
             'PROCESS_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-Thumbnail',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
             'data' => [
                 'Binary' => 1,
                 'Groups' => [2 => 'Preview'],
@@ -767,6 +826,7 @@ return [
             ],
         ],
         'Image::ExifTool::MIE::UTM' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'Datum' => [
                 'Name' => 'UTMMapDatum',
             ],
@@ -782,6 +842,7 @@ return [
             'PROCESS_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-UTM',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
             'Zone' => [
                 'Name' => 'UTMZone',
                 'Writable' => 'int8s',
@@ -798,6 +859,7 @@ return [
             '1Name' => [
                 'Name' => 'RelatedVideoFileName',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\MIE::CheckMIE',
             'Codec' => [
             ],
             'Duration' => [
@@ -810,6 +872,7 @@ return [
             'PROCESS_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
             'WRITABLE' => 'string',
             'WRITE_GROUP' => 'MIE-Video',
+            'WRITE_PROC' => 'Image\\ExifTool\\MIE::ProcessMIE',
             'data' => [
                 'Binary' => 1,
                 'Name' => 'RelatedVideoFile',

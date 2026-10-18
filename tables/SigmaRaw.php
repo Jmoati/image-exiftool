@@ -37,6 +37,7 @@ $f_98770fe8c4 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_76cbd6b2d3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_match('/^[0-9a-f]+$/i', Perl::str($val)) ? Perl::hex($val) : $val;
 };
+$f_1d9796caac = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 1d9796caac'); };
 $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $self->ConvertDateTime($val);
 };
@@ -480,6 +481,7 @@ return [
                 ],
                 'PrintHex' => 1,
                 'ValueConv' => $f_76cbd6b2d3,
+                'ValueConvInv' => $f_1d9796caac,
             ],
             'PMODE' => [
                 'Name' => 'ExposureProgram',

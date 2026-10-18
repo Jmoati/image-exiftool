@@ -44,6 +44,7 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'CreateDate',
                 'PrintConv' => $f_ae2db35ce3,
+                'Shift' => 'Time',
                 'ValueConv' => $f_67d4f92774,
             ],
             'CreatorApplication' => [
@@ -108,6 +109,7 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'DateTimeOriginal',
                 'PrintConv' => $f_ae2db35ce3,
+                'Shift' => 'Time',
                 'ValueConv' => $f_67d4f92774,
             ],
             'RelatedResources' => [

@@ -66,9 +66,11 @@ $f_ace74453f8 = static function ($val, ExifTool $self, array &$vals, array $prt,
     }
     return $val;
 };
+$f_242a17b648 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 242a17b648'); };
 $f_37a6427f97 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('Red %+d, Blue %+d', ...Perl::split(' ', $val));
 };
+$f_482dfa12d9 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 482dfa12d9'); };
 $f_057a988663 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Perl::num($val) == 0x100 ? null : $val;
 };
@@ -82,9 +84,11 @@ $f_29b332a80d = static function ($val, $inv, $conv) {
 $f_854a53c15e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 8;
 };
+$f_3c29a897ef = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 3c29a897ef'); };
 $f_9022e09426 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) > 0 ? '+'.Perl::str($val) : $val;
 };
+$f_e03f894aa7 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv e03f894aa7'); };
 $f_5b14fa612e = static function (ExifTool $self, $valPt, $format, $count) {
     return Perl::str($self->Model) === 'X-T3';
 };
@@ -94,13 +98,16 @@ $f_5e2e3ff7e8 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_0a6503c132 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).'%';
 };
+$f_1952f21aaf = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1952f21aaf'); };
 $f_c85a958273 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::int($val) & 0x7fff;
 };
+$f_0ad8308afb = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 0ad8308afb'); };
 $f_37000e05b6 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $on = (((Perl::int($val) >> 8) & 0x0f) == 1) ? 'On' : 'Off';
     return Perl::sprintf('%s (0x%.4x)', $on, $val);
 };
+$f_d85938244f = static function (mixed ...$args) { throw new NotPorted('PrintConvInv d85938244f'); };
 $f_e47da47920 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return strtr(Perl::str($val), ' ', 'x');
 };
@@ -140,6 +147,7 @@ $f_520e3b0345 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_3517b56753 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? Perl::sprintf('%+.1f', $val) : 0;
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 $f_8c7eb1dafc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $v = Perl::num($val);
     if ($v <= 0) {
@@ -147,6 +155,7 @@ $f_8c7eb1dafc = static function ($val, ExifTool $self, array &$vals, array $prt,
     }
     return log($v) / log(2);
 };
+$f_48d4c48205 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 48d4c48205'); };
 $f_a4fc56b083 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Perl::num($val) < 10000 ? ($self->FujiWidth = $val) : null;
 };
@@ -202,10 +211,12 @@ return [
                 'Name' => 'AF-CZoneAreaSwitching',
                 'PrintConv' => [0 => 'Front', 1 => 'Auto', 2 => 'Center'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FORMAT' => 'int32u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::FujiFilm::DriveSettings' => [
             '0.1' => [
@@ -218,10 +229,12 @@ return [
                 'Name' => 'DriveSpeed',
                 'PrintConv' => [0 => 'n/a', 'OTHER' => $f_ed222b5f5b],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FORMAT' => 'int32u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::FujiFilm::FFMV' => [
             0 => [
@@ -327,10 +340,12 @@ return [
                 'Name' => 'AFAreaZoneSize',
                 'PrintConv' => [0 => 'n/a', 'OTHER' => $f_e7b216900b],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FORMAT' => 'int32u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::FujiFilm::IFD' => [
             61440 => [
@@ -439,6 +454,7 @@ return [
             16 => [
                 'Name' => 'InternalSerialNumber',
                 'PrintConv' => $f_ace74453f8,
+                'PrintConvInv' => $f_242a17b648,
                 'Writable' => 'string',
             ],
             4096 => [
@@ -543,6 +559,7 @@ return [
                 'Count' => 2,
                 'Name' => 'WhiteBalanceFineTune',
                 'PrintConv' => $f_37a6427f97,
+                'PrintConvInv' => $f_482dfa12d9,
                 'Writable' => 'int32s',
             ],
             4107 => [
@@ -759,6 +776,7 @@ return [
             4164 => [
                 'Name' => 'DigitalZoom',
                 'ValueConv' => $f_854a53c15e,
+                'ValueConvInv' => $f_3c29a897ef,
                 'Writable' => 'int32u',
             ],
             4165 => [
@@ -780,11 +798,13 @@ return [
                 'Format' => 'int8s',
                 'Name' => 'BWAdjustment',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_e03f894aa7,
             ],
             4171 => [
                 'Format' => 'int8s',
                 'Name' => 'BWMagentaGreen',
                 'PrintConv' => $f_9022e09426,
+                'PrintConvInv' => $f_e03f894aa7,
             ],
             4172 => [
                 'Name' => 'GrainEffectSize',
@@ -1010,6 +1030,7 @@ return [
             5131 => [
                 'Name' => 'AutoDynamicRange',
                 'PrintConv' => $f_0a6503c132,
+                'PrintConvInv' => $f_1952f21aaf,
                 'Writable' => 'int16u',
             ],
             5154 => [
@@ -1053,6 +1074,7 @@ return [
             5176 => [
                 'Name' => 'ImageCount',
                 'ValueConv' => $f_c85a958273,
+                'ValueConvInv' => $f_0ad8308afb,
                 'Writable' => 'int16u',
             ],
             5187 => [
@@ -1073,6 +1095,7 @@ return [
             5190 => [
                 'Name' => 'FlickerReduction',
                 'PrintConv' => $f_37000e05b6,
+                'PrintConvInv' => $f_d85938244f,
                 'Writable' => 'int32u',
             ],
             5191 => [
@@ -1215,8 +1238,10 @@ return [
                 'Name' => 'Parallax',
                 'Writable' => 'rational64s',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::FujiFilm::PrioritySettings' => [
             '0.1' => [
@@ -1229,10 +1254,12 @@ return [
                 'Name' => 'AF-CPriority',
                 'PrintConv' => [1 => 'Release', 2 => 'Focus'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FORMAT' => 'int16u',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::FujiFilm::RAF' => [
             256 => [
@@ -1370,12 +1397,15 @@ return [
                 'Format' => 'rational32s',
                 'Name' => 'RelativeExposure',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_8c7eb1dafc,
+                'ValueConvInv' => $f_48d4c48205,
             ],
             38480 => [
                 'Format' => 'rational32s',
                 'Name' => 'RawExposureBias',
                 'PrintConv' => $f_3517b56753,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             49152 => [
                 'Name' => 'RAFData',

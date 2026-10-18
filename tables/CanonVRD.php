@@ -7,18 +7,22 @@ namespace Image\ExifTool;
 $f_e9d43919cd = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.7g', $val);
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 $f_13e7186c58 = static function (array $val, $size, $varSize, ExifTool $self) {
     return $self->DLODataLength;
 };
 $f_6f9ae4d345 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/^\d+ /', '', Perl::str($val), 1);
 };
+$f_afea06632d = static function (mixed ...$args) { throw new NotPorted('PrintConvInv afea06632d'); };
 $f_570e4ee13b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%.0f%%', Perl::num($val) * 100);
 };
+$f_476a76dee6 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 476a76dee6'); };
 $f_ddae2f7edc = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 10;
 };
+$f_8f9dd09855 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 8f9dd09855'); };
 $f_82a9f4ee4b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%g', $val);
 };
@@ -32,6 +36,7 @@ $f_592d3cd1ca = static function ($val, ExifTool $self, array &$vals, array $prt,
     $val = log(Perl::num($val) / 4.6875) / log(2) + 1;
     return abs($val) > 1e-10 ? $val : 0;
 };
+$f_fde9b9e3d5 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv fde9b9e3d5'); };
 $f_ac43947e14 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     if (Perl::num($val) <= 0) {
         return $val;
@@ -39,6 +44,7 @@ $f_ac43947e14 = static function ($val, ExifTool $self, array &$vals, array $prt,
     $val = log(Perl::num($val) / 4.6875) / log(2) - 11.77109325169954;
     return abs($val) > 1e-10 ? $val : 0;
 };
+$f_1200984292 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 1200984292'); };
 $f_d705789207 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     if (Perl::num($val) <= 0) {
         return $val;
@@ -46,6 +52,7 @@ $f_d705789207 = static function ($val, ExifTool $self, array &$vals, array $prt,
     $val = log(Perl::num($val) / 4.6875) / log(2) - 8;
     return abs($val) > 1e-10 ? $val : 0;
 };
+$f_3a9ceedb80 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 3a9ceedb80'); };
 $f_986101391e = static function (ExifTool $self, $valPt, $format, $count) {
     return $self->Options('ExtractEmbedded');
 };
@@ -55,6 +62,7 @@ $f_f6d62338c0 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_7f74aee2ff = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return CanonVRD::ToneCurvePrint($val);
 };
+$f_4d29a54e7b = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 4d29a54e7b'); };
 $f_fd4edfe95c = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/^(\d)(\d*)(\d)$/', '${1}.${2}.${3}', Perl::str($val), 1);
 };
@@ -67,6 +75,7 @@ $f_5dbc52ad61 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_3069b832b1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 6000;
 };
+$f_96e39b87a0 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 96e39b87a0'); };
 $f_82da52f197 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return \strlen(Perl::str($val)) == 2 ? null : $val;
 };
@@ -76,15 +85,19 @@ $f_57e8dbb839 = static function (ExifTool $self, $valPt, $format, $count) {
 $f_6fc506f77f = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 0x400;
 };
+$f_deb374f093 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv deb374f093'); };
 $f_1975d44dc4 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return Perl::num($val) == 0x7fff ? null : $val;
 };
 $f_5d5a812a99 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return 1 - Perl::num($val) / 0x400;
 };
+$f_8af8d80367 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 8af8d80367'); };
+$f_cd061609c1 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv cd061609c1'); };
 $f_2beaacd6d4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 100;
 };
+$f_509567a743 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 509567a743'); };
 $f_8bf86de79e = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     return $self->DLOOn = $val;
 };
@@ -120,14 +133,17 @@ return [
                 'Format' => 'double',
                 'Name' => 'CropAngle',
                 'PrintConv' => $f_e9d43919cd,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             10 => 'CropOriginalWidth',
             11 => 'CropOriginalHeight',
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int32s',
             'GROUPS' => [1 => 'CanonDR4', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::CanonVRD::DLOInfo' => [
             4 => 'DLOSettingApplied',
@@ -143,11 +159,13 @@ return [
                 'Name' => 'DLOData',
                 'Writable' => 0,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 1,
             'FORMAT' => 'int16s',
             'GROUPS' => [2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::CanonVRD::DR4' => [
             65538 => 'Rotation',
@@ -187,6 +205,7 @@ return [
             131365 => [
                 'Name' => 'WBAdjRGGBLevels',
                 'PrintConv' => $f_6f9ae4d345,
+                'PrintConvInv' => $f_afea06632d,
             ],
             131584 => [
                 'Name' => 'GammaLinear',
@@ -247,15 +266,19 @@ return [
             132865 => [
                 'Name' => 'ShootingDistance',
                 'PrintConv' => $f_570e4ee13b,
+                'PrintConvInv' => $f_476a76dee6,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             132866 => [
                 'Name' => 'PeripheralIllumination',
                 'PrintConv' => $f_82a9f4ee4b,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             132867 => [
                 'Name' => 'ChromaticAberration',
                 'PrintConv' => $f_82a9f4ee4b,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             132868 => [
                 'Name' => 'ColorBlurOn',
@@ -264,15 +287,18 @@ return [
             132869 => [
                 'Name' => 'DistortionCorrection',
                 'PrintConv' => $f_82a9f4ee4b,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             132870 => 'DLOSetting',
             132871 => [
                 'Name' => 'ChromaticAberrationRed',
                 'PrintConv' => $f_82a9f4ee4b,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             132872 => [
                 'Name' => 'ChromaticAberrationBlue',
                 'PrintConv' => $f_82a9f4ee4b,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             132873 => [
                 'Name' => 'DistortionEffect',
@@ -386,6 +412,7 @@ return [
             'PROCESS_PROC' => 'Image\\ExifTool\\CanonVRD::ProcessDR4',
             'VARS' => ['ID_FMT' => 'hex', 'SORT_PROC' => 'Image\\ExifTool\\CanonVRD::SortDR4'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\CanonVRD::ProcessDR4',
             'header' => [
                 'Name' => 'DR4Header',
                 'SubDirectory' => [
@@ -758,11 +785,13 @@ return [
                 ],
                 'PrintHex' => 1,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int32u',
             'GROUPS' => [1 => 'CanonDR4', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::CanonVRD::DustInfo' => [
             2 => [
@@ -798,6 +827,7 @@ return [
             ],
             'PROCESS_PROC' => 'Image\\ExifTool\\CanonVRD::ProcessEditData',
             'VARS' => ['ID_LABEL' => 'Index'],
+            'WRITE_PROC' => 'Image\\ExifTool\\CanonVRD::ProcessEditData',
         ],
         'Image::ExifTool::CanonVRD::Edit4' => [
             0 => [
@@ -809,6 +839,7 @@ return [
             ],
             'PROCESS_PROC' => 'Image\\ExifTool\\CanonVRD::ProcessEditData',
             'VARS' => ['ID_LABEL' => 'Index'],
+            'WRITE_PROC' => 'Image\\ExifTool\\CanonVRD::ProcessEditData',
         ],
         'Image::ExifTool::CanonVRD::GammaInfo' => [
             2 => 'GammaContrast',
@@ -823,27 +854,35 @@ return [
             12 => [
                 'Name' => 'GammaBlackPoint',
                 'PrintConv' => $f_48acefc1e0,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_592d3cd1ca,
+                'ValueConvInv' => $f_fde9b9e3d5,
             ],
             13 => [
                 'Name' => 'GammaWhitePoint',
                 'PrintConv' => $f_48acefc1e0,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_ac43947e14,
+                'ValueConvInv' => $f_1200984292,
             ],
             14 => [
                 'Name' => 'GammaMidPoint',
                 'PrintConv' => $f_48acefc1e0,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_d705789207,
+                'ValueConvInv' => $f_3a9ceedb80,
             ],
             15 => [
                 'Format' => 'double[2]',
                 'Name' => 'GammaCurveOutputRange',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'double',
             'GROUPS' => [1 => 'CanonDR4', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::CanonVRD::IHL' => [
             1 => [
@@ -913,6 +952,7 @@ return [
                 ],
             ],
             'PROCESS_PROC' => 'Image\\ExifTool\\CanonVRD::ProcessCanonVRD',
+            'WRITE_PROC' => 'Image\\ExifTool\\CanonVRD::WriteCanonVRD',
         ],
         'Image::ExifTool::CanonVRD::StampInfo' => [
             2 => 'StampToolCount',
@@ -950,6 +990,7 @@ return [
                 'Format' => 'int32u[21]',
                 'Name' => 'RGBCurvePoints',
                 'PrintConv' => $f_7f74aee2ff,
+                'PrintConvInv' => $f_4d29a54e7b,
             ],
             10 => 'ToneCurveX',
             11 => 'ToneCurveY',
@@ -957,22 +998,27 @@ return [
                 'Format' => 'int32u[21]',
                 'Name' => 'RedCurvePoints',
                 'PrintConv' => $f_7f74aee2ff,
+                'PrintConvInv' => $f_4d29a54e7b,
             ],
             83 => [
                 'Format' => 'int32u[21]',
                 'Name' => 'GreenCurvePoints',
                 'PrintConv' => $f_7f74aee2ff,
+                'PrintConvInv' => $f_4d29a54e7b,
             ],
             121 => [
                 'Format' => 'int32u[21]',
                 'Name' => 'BlueCurvePoints',
                 'PrintConv' => $f_7f74aee2ff,
+                'PrintConvInv' => $f_4d29a54e7b,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int32u',
             'GROUPS' => [1 => 'CanonDR4', 2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::CanonVRD::Ver1' => [
             2 => [
@@ -1037,7 +1083,9 @@ return [
                 'Format' => 'int32s',
                 'Name' => 'RawBrightnessAdj',
                 'PrintConv' => $f_5dbc52ad61,
+                'PrintConvInv' => $f_1d8918cb54,
                 'ValueConv' => $f_3069b832b1,
+                'ValueConvInv' => $f_96e39b87a0,
             ],
             60 => [
                 'Format' => 'int16u',
@@ -1089,6 +1137,7 @@ return [
                 'Format' => 'int16u[21]',
                 'Name' => 'LuminanceCurvePoints',
                 'PrintConv' => $f_7f74aee2ff,
+                'PrintConvInv' => $f_4d29a54e7b,
             ],
             336 => [
                 'Format' => 'int16u[4]',
@@ -1102,6 +1151,7 @@ return [
                 'Format' => 'int16u[21]',
                 'Name' => 'RedCurvePoints',
                 'PrintConv' => $f_7f74aee2ff,
+                'PrintConvInv' => $f_4d29a54e7b,
             ],
             394 => [
                 'Format' => 'int16u[4]',
@@ -1111,6 +1161,7 @@ return [
                 'Format' => 'int16u[21]',
                 'Name' => 'GreenCurvePoints',
                 'PrintConv' => $f_7f74aee2ff,
+                'PrintConvInv' => $f_4d29a54e7b,
             ],
             452 => [
                 'Format' => 'int16u[4]',
@@ -1120,6 +1171,7 @@ return [
                 'Format' => 'int16u[21]',
                 'Name' => 'BlueCurvePoints',
                 'PrintConv' => $f_7f74aee2ff,
+                'PrintConvInv' => $f_4d29a54e7b,
             ],
             510 => [
                 'Format' => 'int16u[4]',
@@ -1129,6 +1181,7 @@ return [
                 'Format' => 'int16u[21]',
                 'Name' => 'RGBCurvePoints',
                 'PrintConv' => $f_7f74aee2ff,
+                'PrintConvInv' => $f_4d29a54e7b,
             ],
             568 => [
                 'Format' => 'int16u[4]',
@@ -1183,11 +1236,13 @@ return [
                 'Format' => 'float',
                 'Name' => 'ConstrainedCropWidth',
                 'PrintConv' => $f_e9d43919cd,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             614 => [
                 'Format' => 'float',
                 'Name' => 'ConstrainedCropHeight',
                 'PrintConv' => $f_e9d43919cd,
+                'PrintConvInv' => $f_1d8918cb54,
             ],
             618 => [
                 'Format' => 'int16u',
@@ -1204,12 +1259,14 @@ return [
                 'Name' => 'WorkColorSpace',
                 'PrintConv' => [0 => 'sRGB', 1 => 'Adobe RGB', 2 => 'Wide Gamut RGB', 3 => 'Apple RGB', 4 => 'ColorMatch RGB'],
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [2],
             'FIRST_ENTRY' => 0,
             'GROUPS' => [2 => 'Image'],
             'PERMANENT' => 1,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
         'Image::ExifTool::CanonVRD::Ver2' => [
             2 => [
@@ -1476,29 +1533,38 @@ return [
             102 => [
                 'Name' => 'ChromaticAberration',
                 'PrintConv' => $f_570e4ee13b,
+                'PrintConvInv' => $f_476a76dee6,
                 'ValueConv' => $f_6fc506f77f,
+                'ValueConvInv' => $f_deb374f093,
             ],
             103 => [
                 'Name' => 'DistortionCorrection',
                 'PrintConv' => $f_570e4ee13b,
+                'PrintConvInv' => $f_476a76dee6,
                 'ValueConv' => $f_6fc506f77f,
+                'ValueConvInv' => $f_deb374f093,
             ],
             104 => [
                 'Name' => 'PeripheralIllumination',
                 'PrintConv' => $f_570e4ee13b,
+                'PrintConvInv' => $f_476a76dee6,
                 'ValueConv' => $f_6fc506f77f,
+                'ValueConvInv' => $f_deb374f093,
             ],
             105 => [
                 'Name' => 'AberrationCorrectionDistance',
                 'PrintConv' => $f_570e4ee13b,
+                'PrintConvInv' => $f_476a76dee6,
                 'RawConv' => $f_1975d44dc4,
                 'ValueConv' => $f_5d5a812a99,
+                'ValueConvInv' => $f_8af8d80367,
             ],
             106 => 'ChromaticAberrationRed',
             107 => 'ChromaticAberrationBlue',
             109 => [
                 'Name' => 'LuminanceNR_TIFF_JPEG',
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_cd061609c1,
             ],
             110 => [
                 'Name' => 'AutoLightingOptimizerOn',
@@ -1511,73 +1577,90 @@ return [
             117 => [
                 'Name' => 'StandardRawHighlight',
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             118 => [
                 'Name' => 'PortraitRawHighlight',
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             119 => [
                 'Name' => 'LandscapeRawHighlight',
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             120 => [
                 'Name' => 'NeutralRawHighlight',
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             121 => [
                 'Name' => 'FaithfulRawHighlight',
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             122 => [
                 'Name' => 'MonochromeRawHighlight',
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             123 => [
                 'Name' => 'UnknownRawHighlight',
                 'Unknown' => 1,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             124 => [
                 'Name' => 'CustomRawHighlight',
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             126 => [
                 'Name' => 'StandardRawShadow',
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             127 => [
                 'Name' => 'PortraitRawShadow',
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             128 => [
                 'Name' => 'LandscapeRawShadow',
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             129 => [
                 'Name' => 'NeutralRawShadow',
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             130 => [
                 'Name' => 'FaithfulRawShadow',
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             131 => [
                 'Name' => 'MonochromeRawShadow',
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             132 => [
                 'Name' => 'UnknownRawShadow',
                 'Unknown' => 1,
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             133 => [
                 'Name' => 'CustomRawShadow',
                 'ValueConv' => $f_ddae2f7edc,
+                'ValueConvInv' => $f_8f9dd09855,
             ],
             139 => [
                 'Format' => 'int32s',
                 'Name' => 'AngleAdj',
                 'ValueConv' => $f_2beaacd6d4,
+                'ValueConvInv' => $f_509567a743,
             ],
             142 => [
                 'Format' => 'int16u',
@@ -1629,8 +1712,10 @@ return [
             222 => [
                 'Name' => 'DLOShootingDistance',
                 'PrintConv' => $f_570e4ee13b,
+                'PrintConvInv' => $f_476a76dee6,
                 'RawConv' => $f_1975d44dc4,
                 'ValueConv' => $f_5d5a812a99,
+                'ValueConvInv' => $f_8af8d80367,
             ],
             223 => [
                 'DataMember' => 'DLODataLength',
@@ -1659,6 +1744,7 @@ return [
             231 => 'CameraRawShadowPoint',
             232 => 'CameraRawOutputHighlightPoint',
             233 => 'CameraRawOutputShadowPoint',
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'DATAMEMBER' => [88, 220, 223, 224],
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int16s',
@@ -1667,6 +1753,7 @@ return [
             'PERMANENT' => 1,
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
     ],
 ];

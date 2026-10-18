@@ -10,6 +10,10 @@ $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_b2e41c1595 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return ExifTool::ConvertDuration($val);
 };
+$f_5a6c693af3 = static function (mixed ...$args) { throw new NotPorted('DelCheck 5a6c693af3'); };
+$f_2f0c5a83d2 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 2f0c5a83d2'); };
+$f_25924ee98a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 25924ee98a'); };
+$f_383f917626 = static function (mixed ...$args) { throw new NotPorted('WriteCheck 383f917626'); };
 $f_641c610afa = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $val = Perl::str($val);
     if (!preg_match("/^('.*?') ('.*?') /s", $val, $m)) return $val;
@@ -54,6 +58,7 @@ $f_986bcca18f = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     }
     return ExifTool::ConvertUnixTime(Perl::unpack('V', $val->value)[0] ?? null);
 };
+$f_4eaba744c0 = static function (mixed ...$args) { throw new NotPorted('WriteCheck 4eaba744c0'); };
 $f_962d85de43 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     $a = Perl::split('/;/', $val);
     $a[0] = 'Flags=' . Perl::str($a[0] ?? null);
@@ -61,6 +66,7 @@ $f_962d85de43 = static function ($val, ExifTool $self, array &$vals, array $prt,
     $a[2] = 'by ' . Perl::str($a[2] ?? null);
     return implode(' ', $a);
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 
 return [
     'load' => [
@@ -195,10 +201,14 @@ return [
                 'ValueConv' => 'Image\\ExifTool\\MacOS::MDItemLocalTime',
             ],
             'MDItemFSCreationDate' => [
+                'DelCheck' => $f_5a6c693af3,
                 'Groups' => [2 => 'Time'],
                 'PrintConv' => $f_ae2db35ce3,
+                'PrintConvInv' => $f_2f0c5a83d2,
                 'Protected' => 1,
+                'Shift' => 'Time',
                 'ValueConv' => 'Image\\ExifTool\\MacOS::MDItemLocalTime',
+                'ValueConvInv' => $f_25924ee98a,
                 'Writable' => 1,
                 'WritePseudo' => 1,
             ],
@@ -228,6 +238,7 @@ return [
                 ],
                 'Protected' => 1,
                 'Writable' => 1,
+                'WriteCheck' => $f_383f917626,
                 'WritePseudo' => 1,
             ],
             'MDItemFSName' => [
@@ -430,6 +441,7 @@ return [
                 'Groups' => [2 => 'Image'],
             ],
             'VARS' => ['ID_FMT' => 'none'],
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::DummyWriteProc',
             'com_apple_mail_dateReceived' => [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'AppleMailDateReceived',
@@ -480,6 +492,7 @@ return [
         'Image::ExifTool::MacOS::XAttr' => [
             'GROUPS' => [0 => 'File', 1 => 'MacOS', 2 => 'Other'],
             'VARS' => ['ID_FMT' => 'none'],
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::DummyWriteProc',
             'com.apple.FinderInfo' => [
                 'ConvertBinary' => 1,
                 'Name' => 'XAttrFinderInfo',
@@ -518,6 +531,7 @@ return [
                 'Name' => 'XAttrMDItemWhereFroms',
                 'Protected' => 1,
                 'Writable' => 1,
+                'WriteCheck' => $f_4eaba744c0,
                 'WritePseudo' => 1,
             ],
             'com.apple.metadata:kMDLabel' => [
@@ -527,8 +541,10 @@ return [
             'com.apple.quarantine' => [
                 'Name' => 'XAttrQuarantine',
                 'PrintConv' => $f_962d85de43,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Protected' => 1,
                 'Writable' => 1,
+                'WriteCheck' => $f_4eaba744c0,
                 'WritePseudo' => 1,
             ],
         ],

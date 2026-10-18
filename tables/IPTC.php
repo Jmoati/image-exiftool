@@ -22,12 +22,15 @@ $f_ec7fb927a0 = static function (array $val, $size, $varSize, ExifTool $self) {
 $f_79f2c2179d = static function (array $val, $size, $varSize, ExifTool $self) {
     return 32;
 };
+$f_b4c527c9de = static function (mixed ...$args) { throw new NotPorted('PrintConvInv b4c527c9de'); };
 $f_ea51c8e58d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::ExifDate($val);
 };
+$f_3d330301b3 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 3d330301b3'); };
 $f_746dd5d294 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Exif::ExifTime($val);
 };
+$f_3cac7e9162 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 3cac7e9162'); };
 $f_9293a7ef3c = static function (array $val, $size, $varSize, ExifTool $self) {
     return 256;
 };
@@ -55,12 +58,14 @@ $f_aae3c34833 = static function (array $val, $size, $varSize, ExifTool $self) {
 $f_f62d9dd77e = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/\s*(\d+):\s*(\d+):\s*(\d+):\s*(\S*)/', 'Tagged:$1, ColorClass:$2, Rating:$3, FrameNum:$4', Perl::str($val), 1);
 };
+$f_4cef5c329f = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 4cef5c329f'); };
 $f_53d8b2a59b = static function (array $val, $size, $varSize, ExifTool $self) {
     return 1024;
 };
 $f_a207a71d87 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return preg_replace('/\0+/', "\n", Perl::str($val));
 };
+$f_25924ee98a = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 25924ee98a'); };
 $f_a439e850cc = static function (array $val, $size, $varSize, ExifTool $self) {
     return 4096;
 };
@@ -70,12 +75,14 @@ $f_ae2db35ce3 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_fc992187ee = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($vals[0]).' '.Perl::str($vals[1]);
 };
+$f_b95bc94b34 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv b95bc94b34'); };
 $f_9c8780888e = static function (array $val, $size, $varSize, ExifTool $self) {
     return 80;
 };
 $f_78a5a99c34 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return IPTC::ConvertPictureNumber($val);
 };
+$f_8dde4a4503 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 8dde4a4503'); };
 
 $d_1 = [
     0 => 'No ObjectData',
@@ -208,25 +215,37 @@ return [
                 'Format' => 'digits[8]',
                 'Groups' => [2 => 'Time'],
                 'Name' => 'ReleaseDate',
+                'PrintConvInv' => $f_b4c527c9de,
+                'Shift' => 'Time',
                 'ValueConv' => $f_ea51c8e58d,
+                'ValueConvInv' => $f_3d330301b3,
             ],
             35 => [
                 'Format' => 'string[11]',
                 'Groups' => [2 => 'Time'],
                 'Name' => 'ReleaseTime',
+                'PrintConvInv' => $f_b4c527c9de,
+                'Shift' => 'Time',
                 'ValueConv' => $f_746dd5d294,
+                'ValueConvInv' => $f_3cac7e9162,
             ],
             37 => [
                 'Format' => 'digits[8]',
                 'Groups' => [2 => 'Time'],
                 'Name' => 'ExpirationDate',
+                'PrintConvInv' => $f_b4c527c9de,
+                'Shift' => 'Time',
                 'ValueConv' => $f_ea51c8e58d,
+                'ValueConvInv' => $f_3d330301b3,
             ],
             38 => [
                 'Format' => 'string[11]',
                 'Groups' => [2 => 'Time'],
                 'Name' => 'ExpirationTime',
+                'PrintConvInv' => $f_b4c527c9de,
+                'Shift' => 'Time',
                 'ValueConv' => $f_746dd5d294,
+                'ValueConvInv' => $f_3cac7e9162,
             ],
             40 => [
                 'FormatCount' => $f_9293a7ef3c,
@@ -255,7 +274,10 @@ return [
                 'Format' => 'digits[8]',
                 'Groups' => [2 => 'Time'],
                 'Name' => 'ReferenceDate',
+                'PrintConvInv' => $f_b4c527c9de,
+                'Shift' => 'Time',
                 'ValueConv' => $f_ea51c8e58d,
+                'ValueConvInv' => $f_3d330301b3,
             ],
             50 => [
                 'Flags' => 'List',
@@ -267,28 +289,40 @@ return [
                 'Groups' => [2 => 'Time'],
                 'Name' => 'DateCreated',
                 'PrintConv' => $f_13319458b5,
+                'PrintConvInv' => $f_b4c527c9de,
+                'Shift' => 'Time',
                 'ValueConv' => $f_ea51c8e58d,
+                'ValueConvInv' => $f_3d330301b3,
             ],
             60 => [
                 'Format' => 'string[11]',
                 'Groups' => [2 => 'Time'],
                 'Name' => 'TimeCreated',
                 'PrintConv' => $f_d2616b07a4,
+                'PrintConvInv' => $f_b4c527c9de,
+                'Shift' => 'Time',
                 'ValueConv' => $f_746dd5d294,
+                'ValueConvInv' => $f_3cac7e9162,
             ],
             62 => [
                 'Format' => 'digits[8]',
                 'Groups' => [2 => 'Time'],
                 'Name' => 'DigitalCreationDate',
                 'PrintConv' => $f_13319458b5,
+                'PrintConvInv' => $f_b4c527c9de,
+                'Shift' => 'Time',
                 'ValueConv' => $f_ea51c8e58d,
+                'ValueConvInv' => $f_3d330301b3,
             ],
             63 => [
                 'Format' => 'string[11]',
                 'Groups' => [2 => 'Time'],
                 'Name' => 'DigitalCreationTime',
                 'PrintConv' => $f_d2616b07a4,
+                'PrintConvInv' => $f_b4c527c9de,
+                'Shift' => 'Time',
                 'ValueConv' => $f_746dd5d294,
+                'ValueConvInv' => $f_3cac7e9162,
             ],
             65 => [
                 'FormatCount' => $f_79f2c2179d,
@@ -510,6 +544,7 @@ return [
                 'Groups' => [2 => 'Image'],
                 'Name' => 'Prefs',
                 'PrintConv' => $f_f62d9dd77e,
+                'PrintConvInv' => $f_4cef5c329f,
             ],
             225 => [
                 'FormatCount' => $f_5f50f9fe69,
@@ -531,6 +566,7 @@ return [
                 'Format' => 'string[0,256]',
                 'Name' => 'DocumentHistory',
                 'ValueConv' => $f_a207a71d87,
+                'ValueConvInv' => $f_25924ee98a,
             ],
             232 => [
                 'FormatCount' => $f_a439e850cc,
@@ -543,8 +579,10 @@ return [
                 'List' => 1,
                 'Name' => 'CatalogSets',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\IPTC::CheckIPTC',
             'GROUPS' => [2 => 'Other'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\IPTC::WriteIPTC',
         ],
         'Image::ExifTool::IPTC::Composite' => [
             'DateTimeCreated' => [
@@ -624,20 +662,28 @@ return [
                 'Format' => 'digits[8]',
                 'Groups' => [2 => 'Time'],
                 'Name' => 'DateSent',
+                'PrintConvInv' => $f_b4c527c9de,
+                'Shift' => 'Time',
                 'ValueConv' => $f_ea51c8e58d,
+                'ValueConvInv' => $f_3d330301b3,
             ],
             80 => [
                 'Format' => 'string[11]',
                 'Groups' => [2 => 'Time'],
                 'Name' => 'TimeSent',
+                'PrintConvInv' => $f_b4c527c9de,
+                'Shift' => 'Time',
                 'ValueConv' => $f_746dd5d294,
+                'ValueConvInv' => $f_3cac7e9162,
             ],
             90 => [
                 'FormatCount' => $f_79f2c2179d,
                 'Format' => 'string[0,32]',
                 'Name' => 'CodedCharacterSet',
                 'PrintConv' => 'Image\\ExifTool\\IPTC::PrintCodedCharset',
+                'PrintConvInv' => 'Image\\ExifTool\\IPTC::PrintInvCodedCharset',
                 'Protected' => 1,
+                'ValueConvInv' => $f_b95bc94b34,
             ],
             100 => [
                 'FormatCount' => $f_9c8780888e,
@@ -652,12 +698,16 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'ARMVersion',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\IPTC::CheckIPTC',
             'GROUPS' => [2 => 'Other'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\IPTC::WriteIPTC',
         ],
         'Image::ExifTool::IPTC::FotoStation' => [
+            'CHECK_PROC' => 'Image\\ExifTool\\IPTC::CheckIPTC',
             'GROUPS' => [2 => 'Other'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\IPTC::WriteIPTC',
         ],
         'Image::ExifTool::IPTC::Main' => [
             1 => [
@@ -705,6 +755,7 @@ return [
             ],
             'GROUPS' => [2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\IPTC::ProcessIPTC',
+            'WRITE_PROC' => 'Image\\ExifTool\\IPTC::WriteIPTC',
         ],
         'Image::ExifTool::IPTC::NewsPhoto' => [
             0 => [
@@ -716,6 +767,7 @@ return [
                 'Format' => 'string[16]',
                 'Name' => 'IPTCPictureNumber',
                 'PrintConv' => $f_78a5a99c34,
+                'PrintConvInv' => $f_8dde4a4503,
             ],
             20 => [
                 'Format' => 'int16u',
@@ -869,8 +921,10 @@ return [
                 'Format' => 'int16u',
                 'Name' => 'GammaCompensatedValue',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\IPTC::CheckIPTC',
             'GROUPS' => [2 => 'Image'],
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\IPTC::WriteIPTC',
         ],
         'Image::ExifTool::IPTC::ObjectData' => [
             10 => [
@@ -878,12 +932,14 @@ return [
                 'Flags' => 'List',
                 'Name' => 'SubFile',
             ],
+            'WRITE_PROC' => 'Image\\ExifTool\\IPTC::WriteIPTC',
         ],
         'Image::ExifTool::IPTC::PostObjectData' => [
             10 => [
                 'Format' => 'int32u',
                 'Name' => 'ConfirmedObjectSize',
             ],
+            'WRITE_PROC' => 'Image\\ExifTool\\IPTC::WriteIPTC',
         ],
         'Image::ExifTool::IPTC::PreObjectData' => [
             10 => [
@@ -903,6 +959,7 @@ return [
                 'Format' => 'int32u',
                 'Name' => 'MaximumObjectSize',
             ],
+            'WRITE_PROC' => 'Image\\ExifTool\\IPTC::WriteIPTC',
         ],
     ],
 ];

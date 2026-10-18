@@ -10,15 +10,19 @@ $f_1f2667c7fa = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_7b446e214d = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 1000;
 };
+$f_9f4b179b48 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv 9f4b179b48'); };
 $f_e5431626d1 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return $val ? 360 - Perl::num($val) / 100 : 0;
 };
+$f_feb9573114 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv feb9573114'); };
 $f_0a6503c132 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::str($val).'%';
 };
+$f_1f2cf7b051 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1f2cf7b051'); };
 $f_fbf4f69f75 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return -Perl::num($val) / 100;
 };
+$f_efb2470293 = static function (mixed ...$args) { throw new NotPorted('ValueConvInv efb2470293'); };
 
 return [
     'load' => [
@@ -51,6 +55,7 @@ return [
             ],
             'GROUPS' => [2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\FotoStation::ProcessFotoStation',
+            'WRITE_PROC' => 'Image\\ExifTool\\FotoStation::ProcessFotoStation',
         ],
         'Image::ExifTool::FotoStation::SoftEdit' => [
             0 => [
@@ -61,40 +66,53 @@ return [
             3 => [
                 'Name' => 'XYResolution',
                 'ValueConv' => $f_7b446e214d,
+                'ValueConvInv' => $f_9f4b179b48,
             ],
             4 => [
                 'Name' => 'Rotation',
                 'ValueConv' => $f_e5431626d1,
+                'ValueConvInv' => $f_feb9573114,
             ],
             6 => [
                 'Name' => 'CropLeft',
                 'PrintConv' => $f_0a6503c132,
+                'PrintConvInv' => $f_1f2cf7b051,
                 'ValueConv' => $f_7b446e214d,
+                'ValueConvInv' => $f_9f4b179b48,
             ],
             7 => [
                 'Name' => 'CropTop',
                 'PrintConv' => $f_0a6503c132,
+                'PrintConvInv' => $f_1f2cf7b051,
                 'ValueConv' => $f_7b446e214d,
+                'ValueConvInv' => $f_9f4b179b48,
             ],
             8 => [
                 'Name' => 'CropRight',
                 'PrintConv' => $f_0a6503c132,
+                'PrintConvInv' => $f_1f2cf7b051,
                 'ValueConv' => $f_7b446e214d,
+                'ValueConvInv' => $f_9f4b179b48,
             ],
             9 => [
                 'Name' => 'CropBottom',
                 'PrintConv' => $f_0a6503c132,
+                'PrintConvInv' => $f_1f2cf7b051,
                 'ValueConv' => $f_7b446e214d,
+                'ValueConvInv' => $f_9f4b179b48,
             ],
             11 => [
                 'Name' => 'CropRotation',
                 'ValueConv' => $f_fbf4f69f75,
+                'ValueConvInv' => $f_efb2470293,
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\ExifTool::CheckBinaryData',
             'FIRST_ENTRY' => 0,
             'FORMAT' => 'int32s',
             'GROUPS' => [2 => 'Image'],
             'PROCESS_PROC' => 'Image\\ExifTool\\ExifTool::ProcessBinaryData',
             'WRITABLE' => 1,
+            'WRITE_PROC' => 'Image\\ExifTool\\ExifTool::WriteBinaryData',
         ],
     ],
 ];

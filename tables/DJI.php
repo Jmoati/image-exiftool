@@ -26,6 +26,7 @@ $f_4d862aa166 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 $f_4a113cad5b = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::sprintf('%+.2f', $val);
 };
+$f_1d8918cb54 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv 1d8918cb54'); };
 $f_b1fdb19171 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     if (!((Vars\DJI::$knownProtocol[Perl::str($val)] ?? null) || preg_match('/^dbginfo/', Perl::str($val)))) {
         $self->Warn('Unknown protocol '.Perl::str($val).' (please submit sample for testing)');
@@ -71,6 +72,8 @@ $f_5963c78984 = static function ($val, ExifTool $self, array &$vals, array $prt,
 $f_2beaacd6d4 = static function ($val, ExifTool $self, array &$vals, array $prt, array $raw, ?TagInfo $tagInfo, $tag) {
     return Perl::num($val) / 100;
 };
+$f_cb54e897d7 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv cb54e897d7'); };
+$f_c94d243322 = static function (mixed ...$args) { throw new NotPorted('PrintConvInv c94d243322'); };
 
 return [
     'load' => [
@@ -232,49 +235,60 @@ return [
             3 => [
                 'Name' => 'SpeedX',
                 'PrintConv' => $f_4a113cad5b,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'float',
             ],
             4 => [
                 'Name' => 'SpeedY',
                 'PrintConv' => $f_4a113cad5b,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'float',
             ],
             5 => [
                 'Name' => 'SpeedZ',
                 'PrintConv' => $f_4a113cad5b,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'float',
             ],
             6 => [
                 'Name' => 'Pitch',
                 'PrintConv' => $f_4a113cad5b,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'float',
             ],
             7 => [
                 'Name' => 'Yaw',
                 'PrintConv' => $f_4a113cad5b,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'float',
             ],
             8 => [
                 'Name' => 'Roll',
                 'PrintConv' => $f_4a113cad5b,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'float',
             ],
             9 => [
                 'Name' => 'CameraPitch',
                 'PrintConv' => $f_4a113cad5b,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'float',
             ],
             10 => [
                 'Name' => 'CameraYaw',
                 'PrintConv' => $f_4a113cad5b,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'float',
             ],
             11 => [
                 'Name' => 'CameraRoll',
                 'PrintConv' => $f_4a113cad5b,
+                'PrintConvInv' => $f_1d8918cb54,
                 'Writable' => 'float',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\Exif::CheckExif',
             'GROUPS' => [0 => 'MakerNotes', 2 => 'Camera'],
+            'WRITE_PROC' => 'Image\\ExifTool\\Exif::WriteExif',
         ],
         'Image::ExifTool::DJI::Protobuf' => [
             'GROUPS' => [0 => 'Protobuf', 1 => 'DJI', 2 => 'Camera'],
@@ -1321,6 +1335,7 @@ return [
             'AbsoluteAltitude' => [
                 'Writable' => 'real',
             ],
+            'CHECK_PROC' => 'Image\\ExifTool\\XMP::CheckXMP',
             'CalibratedFocalLength' => [
                 'Groups' => [2 => 'Image'],
                 'Writable' => 'real',
@@ -1375,29 +1390,34 @@ return [
                 'Avoid' => 1,
                 'Name' => 'GPSLatitude',
                 'PrintConv' => $f_5f55a3e4a5,
+                'PrintConvInv' => $f_cb54e897d7,
                 'Writable' => 'real',
             ],
             'GpsLongitude' => [
                 'Avoid' => 1,
                 'Name' => 'GPSLongitude',
                 'PrintConv' => $f_5817105f7a,
+                'PrintConvInv' => $f_c94d243322,
                 'Writable' => 'real',
             ],
             'GpsLongtitude' => [
                 'Avoid' => 1,
                 'Name' => 'GPSLongtitude',
                 'PrintConv' => $f_5817105f7a,
+                'PrintConvInv' => $f_c94d243322,
                 'Writable' => 'real',
             ],
             'LANG_INFO' => 'Image\\ExifTool\\XMP::GetLangInfo',
             'Latitude' => [
                 'Name' => 'Latitude',
                 'PrintConv' => $f_5f55a3e4a5,
+                'PrintConvInv' => $f_cb54e897d7,
                 'Writable' => 'real',
             ],
             'Longitude' => [
                 'Name' => 'Longitude',
                 'PrintConv' => $f_5817105f7a,
+                'PrintConvInv' => $f_c94d243322,
                 'Writable' => 'real',
             ],
             'NAMESPACE' => 'drone-dji',
@@ -1421,6 +1441,7 @@ return [
             'TABLE_DESC' => 'XMP DJI',
             'VARS' => ['ID_FMT' => 'none'],
             'WRITABLE' => 'string',
+            'WRITE_PROC' => 'Image\\ExifTool\\XMP::WriteXMP',
         ],
     ],
 ];
