@@ -302,6 +302,11 @@ $c('mwg', ['require', 'Image::ExifTool::MWG'], ['set', 'MWG:Description', 'd'], 
     ['set', 'MWG:Creator', 'me'], ['get', 'XMP-dc:Description'], ['get', 'IPTC:Keywords']);
 $c('user defined', ['udt', 'Image::ExifTool::Exif::Main', ['53248' => ['Name' => 'MyNewTag', 'Writable' => 'int16u']]], ['set', 'MyNewTag', '5'],
     ['get', 'MyNewTag'], ['writable', 'MyNewTag'], ['set', 'MyNewTag', 'x']);
+$c('user defined struct', ['udt', 'Image::ExifTool::XMP::xmp', ['MyStruct' => ['List' => 'Bag', 'Struct' => [
+        'STRUCT_NAME' => 'MyStruct', 'Field1' => new \stdClass(), 'Field2' => ['Writable' => 'integer'],
+        'Sub' => ['Struct' => ['Deep' => new \stdClass()]]]]]],   // (stdClass: an empty hash in the JSON)
+    ['set', 'MyStructField1', 'x'], ['get', 'MyStructField1'], ['set', 'XMP:MyStructField2', 'y'], ['set', 'MyStructField2', '3'],
+    ['set', 'MyStructSubDeep', 'd'], ['writable', 'MyStructSubDeep'], ['nvlist']);
 
 if ($images) {
     foreach (glob("$img/*") as $file) {
