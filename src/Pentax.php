@@ -17,8 +17,7 @@
 //
 // References:   (see Pentax.pm)
 //
-// PHP port of Image::ExifTool::Pentax 3.63 (reading only: the inverse branch of PrintFilter
-// and PentaxEvInv are not ported). Tag tables are generated into tables/Pentax.php,
+// PHP port of Image::ExifTool::Pentax 3.63. Tag tables are generated into tables/Pentax.php,
 // %filterSettings, @k3iiiAF and %pentaxLensTypes into Vars\Pentax.
 //------------------------------------------------------------------------------
 
@@ -63,8 +62,34 @@ final class Pentax
             }
             return $cval ? $cval : null;
         }
-        // (reverse conversion (writing) not ported)
-        return null;
+        // reverse conversion (writing):
+        $vals = Perl::split('/,\s*/', $val);
+        // convert filter name
+        unset($conv['OTHER']);  // avoid recursion (PHP: $conv is a copy)
+        $v = ExifTool::ReverseLookup(array_shift($vals), $conv);
+        if ($v === null) return null;
+        $cval[] = $v;
+        // generate a lookup table for the filter setting name
+        $settingNames = [];
+        foreach (Vars::$filterSettings as $k => $setting) $settingNames[$k] = $setting[0];
+        // convert filter settings
+        foreach ($vals as $v) {
+            if (!preg_match('/^(.*)=(.*)$/', $v, $m)) return null;
+            [$t, $v] = [$m[1], $m[2]];
+            // look up settings name
+            $t = ExifTool::ReverseLookup($t, $settingNames);
+            if ($t === null) return null;
+            if (is_array(Vars::$filterSettings[$t][1])) {
+                // look up settings value
+                $v = ExifTool::ReverseLookup($v, Vars::$filterSettings[$t][1]);
+                if ($v === null) return null;
+            } elseif (!ExifTool::IsInt($v)) {
+                return null;
+            }
+            array_push($cval, $t, $v);
+        }
+        while (count($cval) < 17) $cval[] = 0;  // pad with zeros if necessary
+        return implode(' ', $cval);
     }
 
     //------------------------------------------------------------------------------
@@ -181,6 +206,26 @@ final class Pentax
             }
         }
         return $val / 8;
+    }
+
+    //------------------------------------------------------------------------------
+    // Convert number to Pentax hex-based EV (modulo 8)
+    // Inputs: 0) number
+    // Returns: Pentax EV code
+    public static function PentaxEvInv($num)
+    {
+        // (Perl warns once for a non-numeric string: the number is cached by the first use)
+        $num = Perl::numw($num, 'multiplication (*)', '$num');
+        $val = $num * 8;
+        // extra fudging makes sure 0.3 and 0.33333 both round up to 3, etc
+        $sign = $num < 0 ? -1 : 1;
+        $inum = $num * $sign - Perl::int($num * $sign);
+        if ($inum > 0.29 and $inum < 0.4) {
+            $val += $sign / 3;
+        } elseif ($inum > 0.6 and $inum < .71) {
+            $val -= $sign / 3;
+        }
+        return Perl::int($val + 0.5 * $sign);
     }
 
     //------------------------------------------------------------------------------

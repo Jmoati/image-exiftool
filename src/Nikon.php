@@ -18,9 +18,9 @@
 //
 // PHP port of Image::ExifTool::Nikon 4.58 (reading only). Tag tables are generated into
 // tables/Nikon.php, %nikonLensIDs, the AF point maps, @xlat and the decryption state
-// ($ci0, $cj0, $ck0, $decryptStart) into Vars\Nikon. Not ported (writing): PrintAFPointsInv,
-// PrintAFPointsGridInv, PrintPCInv and the OutFile branches (the IsWriting branches of
-// ProcessNikon and ProcessNikonEncrypted are ported: they are the write procs of the maker notes).
+// ($ci0, $cj0, $ck0, $decryptStart) into Vars\Nikon. Not ported (writing): the OutFile branches
+// (the IsWriting branches of ProcessNikon and ProcessNikonEncrypted are ported: they are the write
+// procs of the maker notes).
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -86,6 +86,33 @@ final class Nikon
     }
 
     //------------------------------------------------------------------------------
+    // Inverse print conversion for AF points
+    // Inputs: 0) AF point string, 1) AF point hash or array ref
+    // Returns: AF point data as a string of hex bytes
+    public static function PrintAFPointsInv($val, $afPoints)
+    {
+        preg_match_all('/[A-Za-z]\d+/', Perl::str($val), $m);
+        $points = $m[0];
+        $size = (int) ((count($afPoints) + 7) / 8);
+        $dat = array_fill(0, $size, 0);
+        if ($points) {
+            $bitNum = [];
+            if (!array_is_list($afPoints)) {
+                $bitNum = array_flip($afPoints);    // build reverse lookup
+            } else {
+                foreach ($afPoints as $i => $point) $bitNum[$point] = $i + 1;
+            }
+            foreach ($points as $point) {
+                $n = $bitNum[strtoupper($point)] ?? null;
+                if (!$n) continue;
+                $byte = (int) (($n - 1) / 8);
+                $dat[$byte] |= (1 << (($n - 1) % 8));
+            }
+        }
+        return implode(' ', Perl::unpack(str_repeat('H2', $size), Perl::pack('C*', ...$dat)));
+    }
+
+    //------------------------------------------------------------------------------
     // Get AF point name for grid-type AF
     // Inputs: 0) AF point number, 1) number of columns, 2) true for inverse conversion
     // Returns: AF point name, or undef
@@ -121,6 +148,26 @@ final class Nikon
         }
         if (!$points) return '(none)';
         return implode(',', $points);   // return as comma-separated string
+    }
+
+    //------------------------------------------------------------------------------
+    // Inverse print conversion for AF points
+    // Inputs: 0) AF point string, 1) number of columns, 2) size of data
+    // Returns: AF point data as a string of hex bytes
+    public static function PrintAFPointsGridInv($val, $ncol, $size)
+    {
+        preg_match_all('/[A-Za-z]\d+/', Perl::str($val), $m);
+        $dat = array_fill(0, $size, 0);
+        foreach ($m[0] as $point) {
+            $n = self::GetAFPointGrid($point, $ncol, 1);
+            if ($n === null) continue;
+            $byte = (int) Perl::int($n / 8);
+            if ($byte > $size) continue;
+            // (Perl shifts the other way for a negative count: "A0" gives 1 << -1 = 0)
+            $shift = $n - $byte * 8;
+            $dat[$byte] = ($dat[$byte] ?? 0) | ($shift < 0 ? 1 >> -$shift : 1 << $shift);
+        }
+        return implode(' ', Perl::unpack(str_repeat('H2', $size), Perl::pack('C*', ...$dat)));
     }
 
     //------------------------------------------------------------------------------
@@ -168,6 +215,21 @@ final class Nikon
         // -127 = custom curve created in Camera Control Pro (show as "User" by D3) - ref 28
         if ($val == -127) return 'User';    //28
         return Perl::sprintf($fmt ?: '%+d', $val / ($div ?: 1));
+    }
+
+    //------------------------------------------------------------------------------
+    // Inverse of PrintPC
+    // Inputs: 0) PrintConv value (after subracting 0x80 from raw value), 1) v2 divisor
+    // Returns: unconverted value
+    // Notes: raw values: 0=Auto, 1=User, 0xff=n/a, ... 0x7f=-1, 0x80=0, 0x81=1, ...
+    public static function PrintPCInv($val, $div = null)
+    {
+        $s = Perl::str($val);
+        if (preg_match('/^[-+]?\d+(\.\d+)?$/', $s)) return Perl::num($val) * ($div ?: 1);
+        if (preg_match('/n\/a/i', $s)) return 0x7f;
+        if (preg_match('/auto/i', $s)) return -128;
+        if (preg_match('/user/i', $s)) return -127;    //28
+        return 0;
     }
 
     //------------------------------------------------------------------------------

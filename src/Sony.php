@@ -12,7 +12,7 @@
 // PHP port of Image::ExifTool::Sony 3.87 (reading only). Tag tables are generated into
 // tables/Sony.php, %sonyLensTypes (already filled in from the Minolta LensType's, which is
 // what SortLensTypes was for), %sonyLensTypes2 and @lensFeatures into Vars\Sony.
-// Not ported (writing): ConvInvLensSpec, PrintInvLensSpec, FinishARW, WriteEnciphered,
+// Not ported (writing): FinishARW, WriteEnciphered,
 // WriteSR2 and the IsWriting/OutFile branches of ProcessMoreInfo and ProcessSR2.
 //------------------------------------------------------------------------------
 
@@ -143,6 +143,19 @@ final class Sony
         $a[3] = Perl::num($a[3]) / 10; $a[4] = Perl::num($a[4]) / 10;   // divide f-numbers by 10
         return implode(' ', array_map(Perl::str(...), $a));
     }
+    public static function ConvInvLensSpec($val)
+    {
+        $a = Perl::split(' ', $val);
+        if (count($a) != 6) return $val;
+        // f-numbers are multiplied by 10
+        $a[3] = Perl::numw($a[3], 'multiplication (*)') * 10; $a[4] = Perl::numw($a[4], 'multiplication (*)') * 10;
+        foreach ([3, 4] as $i) {
+            $a[$i] = preg_replace_callback('/^(\d{2})0$/', static fn ($m) => Perl::sprintf('%x0', $m[1]), Perl::str($a[$i]));
+        }
+        foreach ($a as &$_) $_ = Perl::hexw($_);    // convert from hex
+        unset($_);
+        return Perl::packw('CnnCCC', ...$a);
+    }
 
     //------------------------------------------------------------------------------
     // Print Sony LensSpec value
@@ -189,6 +202,31 @@ final class Sony
             $rtnVal = "Unknown ($val)";
         }
         return $rtnVal;
+    }
+    // inverse conversion
+    public static function PrintInvLensSpec($val, $self = null, $features = null)
+    {
+        $val = Perl::str($val);
+        if (preg_match('/Unknown \((.*)\)/i', $val, $m)) return $m[1];
+        [$sf, $lf, $sa, $la] = Exif::GetLensInfo($val) + [null, null, null, null];
+        if ($features) {
+            $str = '';
+        } elseif ($sf) {
+            // fixed focal length and aperture have zero for 2nd number
+            if (Perl::num($lf) == Perl::num($sf)) $lf = 0;
+            if (Perl::num($la) == Perl::num($sa)) $la = 0;
+            $str = " $sf $lf $sa $la";
+        } else {
+            return null;
+        }
+        $flags = 0;
+        foreach (Vars\Sony::$lensFeatures as $feature) {
+            foreach ($feature[1] as $bits => $name) {
+                // set corresponding flag bits for each feature name found
+                if (preg_match("/\\b$name\\b/i", $val)) $flags |= $bits;
+            }
+        }
+        return Perl::sprintf("%.2x$str %.2x", $flags >> 8, $flags & 0xff);
     }
 
     //------------------------------------------------------------------------------
