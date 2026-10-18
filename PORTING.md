@@ -334,7 +334,11 @@ New values (`src/ExifTool/NewValues.php`):
   them from the list as the writers get ported.
 - A write-parity case is one line `[source file of t/images, [exiftool arguments]]` in the section
   of its format in `tools/write-parity.php` (`-TAG=VALUE`, `-TAG<=FILE`, `-o out.ext`, no `-o` to
-  edit in place, `-v3`...); `php tools/write-parity.php --case=TEXT -v` runs some of them and shows
-  what both tools printed. `MSG` means the same files but different results/warnings, `DIFF`
-  different files.
+  edit in place, `-v3`, `-_tagsFromFile FILE` to copy all the tags of a file...); an input that
+  t/images lacks is generated into `var/write-parity-inputs` (by Perl ExifTool, or by patching a
+  test image), and a null source creates the file from scratch. The work directories
+  (`var/write-parity/`) are shared by all the runs: agents working at the same time may clash
+  there (re-run a case that fails strangely). `php tools/write-parity.php --case=TEXT -v` runs
+  some of them and shows what both tools printed. `MSG` means the same files but different
+  results/warnings, `DIFF` different files.
 

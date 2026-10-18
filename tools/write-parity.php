@@ -564,6 +564,17 @@ $cases = [
     ["$inputs/mie.tif", ['-MIE:Title=trailer of a TIFF', '-o', 'out.tif']],
     ["$inputs/mie.tif", ['-MIE:all=', '-o', 'out.tif']],
     ["$inputs/mie.tif", ['-Artist=only EXIF', '-o', 'out.tif']],
+    ["$inputs/mie.mov", ['-MIE:Title=trailer of a MOV', '-o', 'out.mov']],
+    ["$inputs/mie.mov", ['-MIE:all=', '-o', 'out.mov']],
+    ["$inputs/mie.mov", ['-Artist=only QuickTime', '-o', 'out.mov']],
+    ['MIE.mie', ['-_handleout', '-MIE:Title=to a handle', '-o', 'out.mie']],
+    ['MIE.mie', ['-_memin', '-_memout', '-MIE:Title=in memory', '-o', 'out.mie']],
+    [null, ['-_handleout', '-MIE:Title=created in a handle', '-o', 'out.mie']],
+    ['ExifTool.jpg', ['-_handleout', '-MIE:Title=trailer to a handle', '-o', 'out.jpg']],
+    ['CanonRaw.crw', ['-_memin', '-_memout', '-OwnerName=in memory', '-o', 'out.crw']],
+    ['CanonRaw.crw', ['-_handle', '-OwnerName=handle in place']],
+    ['CanonRaw.cr2', ['-_raf', '-Artist=from RAF', '-o', 'out.cr2']],
+    ['Minolta.mrw', ['-_handleout', '-Artist=to a handle', '-o', 'out.mrw']],
     // CanonRaw: CRW (WriteCRW, WriteCanonRaw), CIFF in JPEG, CR2 (WriteCR2)
     ['CanonRaw.crw', ['-OwnerName=new owner', '-o', 'out.crw']],
     ['CanonRaw.crw', ['-ROMOperationMode=CDN', '-SerialNumber=1234', '-FocalPlaneXSize=35 mm', '-o', 'out.crw']],
@@ -920,8 +931,9 @@ function QuickTimeInputs(string $etDir, string $inputs): void
         Run(['perl', "$etDir/exiftool", '-q', '-m', ...$args, '-o', "$inputs/$out", ...($src === null ? [] : ["$images/$src"])],
             $inputs, ['PERL_HASH_SEED' => '0', 'PERL_PERTURB_KEYS' => '0']);
     }
-    // a TIFF with a MIE trailer
+    // a TIFF and a MOV with a MIE trailer
     file_put_contents("$inputs/mie.tif", file_get_contents("$images/ExifTool.tif").file_get_contents("$inputs/trailer.mie"));
+    file_put_contents("$inputs/mie.mov", file_get_contents("$images/QuickTime.mov").file_get_contents("$inputs/trailer.mie"));
     // CR2 images with other signatures (unsupported version, 1D RAW)
     file_put_contents("$inputs/cr3sig.cr2", substr_replace(file_get_contents("$images/CanonRaw.cr2"), "CR\x03\0", 8, 4));
     file_put_contents("$inputs/1d.cr2", substr_replace(file_get_contents("$images/CanonRaw.cr2"), "\xba\xb0\xac\xbb", 8, 4));
