@@ -121,8 +121,7 @@ final class Geolocation
         }
 
         // add user-defined entries to the database
-        // (ponytail: @Image::ExifTool::UserDefined::Geolocation comes from config files, which
-        // aren't ported: call AddEntry() instead)
+        foreach (ExifTool::$UserGeolocation as $entry) self::AddEntry(...$entry);
     }
 
     //------------------------------------------------------------------------------

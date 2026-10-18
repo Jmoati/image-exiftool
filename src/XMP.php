@@ -334,9 +334,8 @@ class XMP
 
             $strTable = $tagInfo->Struct;
             if (!is_array($strTable)) { // (allow a structure name for backward compatibility only)
-                // (structures named in %Image::ExifTool::UserDefined::xmpStruct come from
-                //  config files, which aren't supported)
-                continue;
+                $strTable = ExifTool::$UserXmpStruct[$strTable] ?? null;
+                if (!$strTable) continue;
             }
 
             // get prefix for flattened tag names

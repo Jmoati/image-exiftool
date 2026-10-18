@@ -27,6 +27,11 @@ $cases = [
     // languages (descriptions, PrintConv values, lang-alt tags, alignment of wide characters)
     ['-lang'], ['-lang', 'zz', 'Canon.jpg'], ['-lang', 'fr', 'Canon.jpg'],
     ['-lang', 'de', '-j', '-a', 'Canon.jpg', 'Nikon.jpg'], ['-lang', 'ja', '-a', '-G1', 'XMP5.xmp'],
+    // alternate files
+    ['-file1', 'Nikon.jpg', '-p', '$model $file1:model $file1:filename', 'Canon.jpg'],
+    ['-file1', '%f.jpg', '-file2', '@', '-if', '$file1:make eq "Canon"', '-p', '$file1:model|$file2:model|${file1:iso}', 'Canon.jpg', 'Nikon.jpg'],
+    ['-file1', 'Nikon.jpg', '-G1', '-a', '-s', '-File1:Model', '-model', '-File1:ISO', 'Canon.jpg'],
+    ['-file1', 'NoSuch.jpg', '-p', '$model $file1:model', 'Canon.jpg'], ['-file1'],
     ['-lang', 'ru', '-t', '-flash', '-exposureprogram', 'Canon.jpg'],
 ];
 // writing: run in var/cli-compat/<tool>, on fresh copies of the test images named in the arguments
@@ -36,6 +41,7 @@ $writeCases = [
     ['-o', '-', '-all=', '-Comment=only', 'Nikon.jpg'],
     ['-o', '-', '-tagsFromFile', 'Canon.jpg', '-Make', '-Model>Artist', '-Comment<$Make $ISO', 'Writer.jpg'],
     ['-o', '-', '-n', '-Orientation=6', '-ExifIFD:ISO#=800', '-sep', ';', '-XMP:Subject=a;b', 'Canon.jpg'],
+    ['-file1', 'Canon.jpg', '-o', '-', '-Comment<$file1:Model $make', '-tagsFromFile', '@', '-Artist<$file1:make', 'Nikon.jpg'],
     ['-o', '-.exv', 'Canon.jpg'], ['-o', '-.xmp', 'XMP.jpg'],
     ['-if', '$make eq "Canon"', '-o', '-', '-Comment=if', 'Canon.jpg'],
     ['-Comment=x', 'NoSuchFile.jpg'], ['-o', '-', '-Comment=x', 'BMP.bmp'],
@@ -46,9 +52,73 @@ $writeCases = [
     ['-csv=NoSuchFile.csv', 'Canon.jpg'], ['-Comment=x', '-execute', '-restore_original', '-common_args', 'Writer.jpg'],
     ['-CompositeImageExposureTimes=1 2 3 4 5 6 7 8 inf 10', 'Writer.jpg'],     // (dies while writing)
 ];
+// -config: the Perl twin of tests/config/example.config.php is written under var/ ('@CONFIG@' is the config file)
+$perlConfig = <<<'PERL'
+%Image::ExifTool::UserDefined::Shortcuts = (
+    MyShortcut => ['exif:createdate','exposuretime','aperture'],
+    MyAlias => 'FocalLengthIn35mmFormat',
+);
+%Image::ExifTool::UserDefined = (
+    'Image::ExifTool::Exif::Main' => {
+        0xd000 => { Name => 'NewEXIFTag', Writable => 'int16u', WriteGroup => 'IFD0' },
+    },
+    'Image::ExifTool::GPS::Main' => {
+        0xd000 => { Name => 'GPSPitch', Writable => 'rational64s' },
+        0xd001 => { Name => 'GPSRoll', Writable => 'rational64s' },
+    },
+    'Image::ExifTool::IPTC::ApplicationRecord' => {
+        160 => { Name => 'NewIPTCTag', Format => 'string[0,16]' },
+    },
+    'Image::ExifTool::XMP::xmp' => {
+        NewXMPxmpTag => { Groups => { 2 => 'Author' } },
+    },
+    'Image::ExifTool::XMP::Main' => {
+        xxx => { SubDirectory => { TagTable => 'Image::ExifTool::UserDefined::xxx' } },
+    },
+    'Image::ExifTool::Composite' => {
+        FileExtension => { Require => 'FileName', ValueConv => '$val=~/\.([^.]*)$/; $1' },
+        CircleOfConfusion => {
+            Require => 'ScaleFactor35efl',
+            Groups => { 2 => 'Camera' },
+            ValueConv => 'sqrt(24*24+36*36) / ($val * 1750)',
+            PrintConv => 'sprintf("%.3f mm",$val)',
+        },
+    },
+);
+%Image::ExifTool::UserDefined::xxx = (
+    GROUPS        => { 0 => 'XMP', 1 => 'XMP-xxx', 2 => 'Image' },
+    NAMESPACE     => { 'xxx' => 'http://ns.myname.com/xxx/1.0/' },
+    WRITABLE      => 'string',
+    NewXMPxxxTag1 => { Writable => 'lang-alt' },
+    NewXMPxxxTag2 => { Groups => { 2 => 'Author' } },
+    NewXMPxxxTag3 => { List => 'Bag' },
+);
+require Image::ExifTool::XMP;
+Image::ExifTool::XMP::RegisterNamespace(\%Image::ExifTool::UserDefined::xxx);
+%Image::ExifTool::UserDefined::Options = (Duplicates => 1, Composite => 1);
+@Image::ExifTool::UserDefined::Lenses = ('Sigma AF 10-20mm F4-5.6 EX DC', 'Tokina AF193-2 19-35mm f/3.5-4.5');
+1;
+PERL;
+@mkdir(__DIR__.'/../var/cli-compat', 0777, true);
+file_put_contents($perlCfg = realpath(__DIR__.'/../var/cli-compat').'/example.config', $perlConfig);
+$phpCfg = realpath(__DIR__.'/config').'/example.config.php';
+$cfgCases = [
+    ['-config', '@CONFIG@', '-o', '-', '-NewEXIFTag=7', '-GPSPitch=1.5', '-NewIPTCTag=abc', '-XMP-xxx:NewXMPxxxTag3=a', '-XMP-xxx:NewXMPxxxTag3=b',
+     '-NewXMPxmpTag=z', '-XMP-xxx:NewXMPxxxTag1-fr=bonjour', 'Writer.jpg'],
+    ['-config', '@CONFIG@', '-a', '-G1', '-MyShortcut', '-MyAlias', '-FileExtension', '-CircleOfConfusion', '-NewEXIFTag', 'Canon.jpg'],
+    ['-config', '@CONFIG@', '-config', '', '-MyShortcut', 'Canon.jpg'],
+    ['-config', '', '-MyShortcut', 'Canon.jpg'],
+    ['-config', '@CONFIG@', '-list', '-Exif:all'],
+    ['-config', '@CONFIG@', '-list', '-xmp-xxx:all'],
+    ['-config', '@CONFIG@', '-overwrite_original', '-NewEXIFTag=7', '-GPSPitch=1.5', '-NewIPTCTag=abc', '-XMP-xxx:NewXMPxxxTag3=a', '-XMP-xxx:NewXMPxxxTag1-fr=bonjour',
+     '-NewXMPxmpTag=z', 'Writer.jpg', '-execute', '-a', '-G1', '-s', '-NewEXIFTag', '-GPSPitch', '-NewIPTCTag', '-XMP-xxx:all', '-NewXMPxmpTag', '-FileExtension', 'Writer.jpg'],
+    ['-config', '@CONFIG@', '-a', '-G1', '-s', '-XMP-xxx:all', '-NewIPTCTag', '-GPSPitch', 'Canon.jpg'],
+    ['-config', '/nonexistent/file.config', '-model', 'Canon.jpg'],
+];
 $fail = 0;
-foreach ([...$cases, ...$writeCases] as $i => $args) {
-    $run = function (array $cmd, string $tool) use ($args, $img, $i, $cases) {
+foreach ([...$cases, ...$writeCases, ...$cfgCases] as $i => $args) {
+    $run = function (array $cmd, string $tool) use ($args, $img, $i, $cases, $perlCfg, $phpCfg) {
+        $args = str_replace('@CONFIG@', 'perl' === $tool ? $perlCfg : $phpCfg, $args);
         $dir = $img;
         if ($i >= count($cases)) {
             $dir = __DIR__."/../var/cli-compat/".getmypid()."/$tool";  // (a directory per run)

@@ -103,6 +103,7 @@ final class Application
     private array $dynamicFiles = [];   // list of -tagsFromFile files with dynamic names and -TAG<=FMT pairs
     private array $echo3 = [];          // stdout echo after processing is complete
     private array $echo4 = [];          // stderr echo after processing is complete
+    private array $altFile = [];       // alternate files to extract information (keyed by lower-case family 8 group)
     private array $efile = [];          // files for writing list of error/fail/same file names
     private array $exclude = [];        // list of excluded tags
     private $doUnzip;                  // flag to extract info from .gz and .bz2 files
@@ -247,7 +248,7 @@ final class Application
     public function __construct($stdout = null, $stderr = null, $stdin = null)
     {
         // (the STD* constants only exist in the CLI SAPI)
-        $this->stdout = $stdout ?? (\defined('STDOUT') ? \STDOUT : fopen('php://output', 'w'));
+        $this->stdout = $stdout ?? (\defined('STDOUT') ? (stream_isatty(\STDOUT) ? \STDOUT : BufferedStdout::open()) : fopen('php://output', 'w'));
         $this->stderr = $stderr ?? (\defined('STDERR') ? \STDERR : fopen('php://stderr', 'w'));
         $this->stdin = $stdin ?? (\defined('STDIN') ? \STDIN : fopen('php://memory', 'r'));
     }
@@ -258,14 +259,13 @@ final class Application
     public static function main(array $argv): int
     {
         array_shift($argv);
-        // (Perl config files can't be loaded: drop the leading -config options)
+        // load or disable config file if specified
+        $configFiles = [];
         while ($argv && strtolower($argv[0]) === '-config') {
             array_shift($argv);
-            $config = array_shift($argv);
-            if ($config !== null && $config !== '') {
-                fwrite(\STDERR, "Warning: Config files are not supported by the PHP port - $config\n");
-            }
+            $configFiles[] = (string) array_shift($argv);
         }
+        ExifTool::LoadConfig($configFiles);
         $app = new self();
         if (\function_exists('pcntl_async_signals')) {
             pcntl_async_signals(true);
@@ -397,7 +397,7 @@ final class Application
             // (not done: @commonArgs, @moreArgs, $critical, $binaryStdout, $helped,
             //  $interrupted, $mt, $pause, $rtnValApp, $rtnValPrev, $stayOpen, $stayOpenBuff, $stayOpenFile)
             $this->condition = $this->csvExclude = $this->csvFiles = $this->csvTagList = $this->delFiles = [];
-            $this->dynamicFiles = $this->echo3 = $this->echo4 = $this->efile = $this->exclude = $this->files = [];
+            $this->altFile = $this->dynamicFiles = $this->echo3 = $this->echo4 = $this->efile = $this->exclude = $this->files = [];
             $this->newValues = $this->requestTags = $this->srcFmt = $this->tags = $this->appended = [];
             $this->countLink = $this->created = $this->csvTags = $this->database = $this->filterExt = [];
             $this->ignore = $this->outComma = $this->outTrailer = $this->preserveTimes = $this->printFmt = [];
@@ -464,12 +464,17 @@ final class Application
             $this->mt = $mt = new ExifTool();   // create ExifTool object
             $mt->Options('TextOut', $this->vout);
 
-            // don't extract duplicates by default (no UserDefined::Options: config files aren't loaded)
-            $mt->Options('Duplicates', 0);
+            // don't extract duplicates by default unless set by UserDefined::Options
+            if (!isset(ExifTool::$UserOptions['Duplicates'])) $mt->Options('Duplicates', 0);
 
             // default is to join lists if the List option was set to zero in the config file
             if (null !== $mt->Options('List') && !$mt->Options('List')) {
                 $this->joinLists = 1;
+            }
+
+            // add user-defined command-line arguments
+            if (ExifTool::$UserArguments) {
+                array_unshift($this->ARGV, ...ExifTool::$UserArguments);
             }
 
             if (self::VERSION !== ExifTool::$VERSION) {
@@ -1066,8 +1071,14 @@ final class Application
                         $mt->Options('FastScan', \strlen($m[1]) ? $m[1] : 1);
                         continue;
                     }
-                    if (preg_match('/^(file\d+)$/i', $arg)) {
-                        $badCmd = $this->NotPorted($arg);
+                    if (preg_match('/^(file\d+)$/i', $arg, $m)) {
+                        $v = array_shift($this->ARGV);
+                        if (null === $v || '' === $v || '0' === $v) {
+                            $this->Error("Expecting file name for -file option\n");
+                            $badCmd = 1;
+                        } else {
+                            $this->altFile[strtolower($m[1])] = $v;
+                        }
                         continue;
                     }
                     if (preg_match('/^fileorder(\d*)$/i', $arg, $m)) {
@@ -1871,7 +1882,9 @@ final class Application
                     $this->binaryOutput = null;    // disable conflicting option
                     $mt->Options('Verbose', $this->verbose);
                 }
-            } // (-v0 auto-flushes the output in Perl: PHP streams aren't buffered)
+            } elseif (null !== $this->verbose) {
+                BufferedStdout::$autoflush = true;  // (-v0 auto-flushes the output)
+            }
 
             // validate all tags we're writing
             $needSave = 1;
@@ -2445,7 +2458,18 @@ final class Application
         } else {
             $file = $orig;
         }
-        // (-fileNUM is not ported)
+        // set alternate file names
+        ksort($this->altFile, SORT_STRING);
+        foreach ($this->altFile as $g8 => $altFile) {
+            $altName = $orig;
+            if ('@' !== $altFile) {
+                // must double any '$' symbols in the original file name because
+                // they are used for tag names in a -fileNUM argument
+                $altName = str_replace('$', '$$', $altName);
+                $altName = $this->FilenameSPrintf($altFile, $altName);
+            }
+            $et->SetAlternateFile($g8, $altName);
+        }
 
         $pipe = $file;
         if ($this->doUnzip) {
