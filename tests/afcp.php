@@ -8,9 +8,7 @@ require __DIR__.'/TestLib.php';
 
 use Image\ExifTool\ExifTool;
 
-$skip = [
-    3 => 'EXIF writer (all the tags of IPTC.jpg are copied)',
-];
+$skip = [];
 $t = testDir();
 $testname = 'AFCP';
 

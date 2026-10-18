@@ -9,10 +9,7 @@ require __DIR__.'/TestLib.php';
 use Image\ExifTool\ExifTool;
 use Image\ExifTool\MWG;
 
-$skip = [
-    3 => 'EXIF writer',
-    4 => 'EXIF writer',
-];
+$skip = [];
 $t = testDir();
 $testname = 'MWG';
 

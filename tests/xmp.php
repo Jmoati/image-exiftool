@@ -42,9 +42,6 @@ $pkgTables->setValue(null, $pkgTables->getValue() + ['Image::ExifTool::UserDefin
 ])]);
 
 $skip = [
-    3 => 'EXIF writer (XMP.jpg has EXIF, all tags are rewritten)',
-    19 => 'EXIF writer',
-    20 => 'EXIF writer',
     46 => 'advanced formatting expressions (Perl code)',
 ];
 $t = testDir();
