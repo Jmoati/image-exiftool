@@ -1243,7 +1243,19 @@ final class PDF
             $et->Warn('Nesting too deep (directory ignored)');
             return null;
         }
-        // (PDF_CAPTURE: the entire dictionary is saved here for rewriting -- writer only)
+        // save entire dictionary for rewriting if specified
+        // (PHP: the dictionary is a copy, so $capName tracks it to propagate _needCrypt)
+        $capName = null;
+        if ($et->PDF_CAPTURE !== null and $tagTablePtr['VARS'] and ($tagTablePtr['VARS']['CAPTURE'] ?? null)) {
+            foreach ($tagTablePtr['VARS']['CAPTURE'] as $name) {
+                if (!empty($et->PDF_CAPTURE[$name])) continue;
+                // make sure we load the right type if indicated
+                if ($type and $type !== $name) continue;
+                $et->PDF_CAPTURE[$name] = $dict;
+                $capName = $name;
+                break;
+            }
+        }
         $validInfo = ($et->Options('Validate') and $tagTablePtr['TABLE_NAME'] === 'Image::ExifTool::PDF::Info');
         $fetched = &Vars\PDF::$fetched;
         $isHash = static fn ($v) => is_array($v) and !array_is_list($v);
@@ -1432,6 +1444,7 @@ final class PDF
                         $index = 0;
                         $tagTablePtr = $subTablePtr;
                         $dict = $subDict;
+                        $capName = null;
                         $tags = $subDict['_tags'];
                         $et->VerboseDir($tag, count($tags));
                     } else {
@@ -1457,7 +1470,10 @@ final class PDF
                     if ($val !== null) {
                         $val = self::ReadPDFValue($val);
                         // set flag to re-encrypt if necessary if rewritten
-                        if (Vars\PDF::$cryptString) $dict['_needCrypt'][$tag] = (self::$lastFetched ? 0 : 1);
+                        if (Vars\PDF::$cryptString) {
+                            $dict['_needCrypt'][$tag] = (self::$lastFetched ? 0 : 1);
+                            if ($capName !== null) $et->PDF_CAPTURE[$capName]['_needCrypt'][$tag] = $dict['_needCrypt'][$tag];
+                        }
                         self::$lastFetched = $prevFetched; // restore last fetched object reference
                     }
                 } else {
@@ -1569,7 +1585,8 @@ final class PDF
             // decode stream if necessary
             $cryptInfo = Vars\PDF::$cryptInfo;
             if ($cryptInfo and (!empty($cryptInfo['_aesv2']) or !empty($cryptInfo['_aesv3']) and
-                ($dict['Length'] ?? null) and Perl::num($dict['Length']) > 10000) and empty($dict['_decrypted']))
+                ($dict['Length'] ?? null) and Perl::num($dict['Length']) > 10000) and empty($dict['_decrypted']) and
+                $et->PDF_CAPTURE === null)  // (capturing PDF for writing?)
             {
                 $type = ($dict['Type'] ?? null) ?: '';
                 if ($type !== '/Metadata' or Perl::num($dict['Length'] ?? 0) > 100000) {
@@ -1630,8 +1647,10 @@ final class PDF
         //
         // check for a linearized PDF (only if reading)
         //
-        $lin = 'false';
-        if (($p = strpos($buff, '<<')) !== false) {
+        $capture = null;
+        if ($et->PDF_CAPTURE !== null) $capture = &$et->PDF_CAPTURE;
+        $lin = $capture === null ? 'false' : null;
+        if ($capture === null and ($p = strpos($buff, '<<')) !== false) {
             $buff = substr($buff, $p);
             $dict = self::ExtractObject($et, $buff);
             if (is_array($dict) and !array_is_list($dict) and ($dict['Linearized'] ?? null) and ($dict['L'] ?? null)) {
@@ -1677,7 +1696,14 @@ final class PDF
             $xref = $mainDicts = $loaded = [];
             $mainFree = null;
             [$xrefSize, $mainDictSize] = [0, 0];
-            // (PDF_CAPTURE: variables captured here for rewriting -- writer only)
+            // initialize variables to capture when rewriting
+            if ($capture !== null) {
+                $capture['startxref'] = $xr;
+                $capture['xref'] = &$xref;
+                $capture['newline'] = Perl::$RS;
+                $capture['mainFree'] = [];
+                $mainFree = &$capture['mainFree'];
+            }
             while ($xrefOffsets) {  // (Perl label XRef)
                 $offset = array_shift($xrefOffsets);
                 $type = array_shift($xrefOffsets);
@@ -1730,7 +1756,7 @@ final class PDF
                                 $xref[$n] = $offset;
                                 if ($m[3] === 'f') {
                                     // save free objects in last xref table for rewriting
-                                    // (writer only)
+                                    if ($mainFree !== null) $mainFree[$n] = [$offset, $gen, 'f'];
                                     continue;
                                 }
                                 // also save offset keyed by object reference string
@@ -1741,6 +1767,7 @@ final class PDF
                         // %xref or return -4; # xref table may not be empty
                         $buff = '';
                     }
+                    unset($mainFree);
                     $mainFree = null;   // only do this for the last xref table
                 } elseif (preg_match('/^\s*(\d+)\s+(\d+)\s+obj/s', $buff, $m)) {
                     $buff = substr($buff, strlen($m[0]));
@@ -1800,7 +1827,7 @@ final class PDF
             }
             if ($xrefSize > $mainDictSize) {
                 $str = "Objects in xref table ($xrefSize) exceed trailer dictionary Size ($mainDictSize)";
-                $et->Warn($str);
+                if ($capture !== null) $et->Error($str); else $et->Warn($str);
             }
             //
             // extract encryption information if necessary
@@ -1813,6 +1840,7 @@ final class PDF
                 $err = self::DecryptInit($et, $encrypt, $id);
                 if ($err) {
                     $et->Warn($err);
+                    if ($capture !== null) $capture['Error'] = $err;
                     return -1;
                 }
             }
@@ -1837,6 +1865,7 @@ final class PDF
                 $err = Vars\PDF::$cryptInfo['_error'] ?? null;
                 if ($err) {
                     $et->Warn($err);
+                    if ($capture !== null) $capture['Error'] = $err;
                     return -1;
                 }
             }

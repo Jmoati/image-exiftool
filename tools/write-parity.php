@@ -941,6 +941,75 @@ array_push($cases,
     ["$inputs/doc-plain.ps", ['-XMP:Title=plain', "-ICC_Profile<=$images/ICC_Profile.icc", '-IPTC:Keywords=k', '-o', 'out.ps']],
     ["$inputs/doc-plain.ps", ['-Keywords=', '-Creator=', '-o', 'out.ps']],
     ["$inputs/doc-crlf.eps", ['-XMP:Title=crlf', '-Subject=s', '-o', 'out.eps']],
+    // PDF (WritePDF): incremental updates of the Info dictionary and XMP, reverted with PDF-update
+    ['PDF.pdf', ['-PDF:Creator=me', '-XMP:Creator=you', '-o', 'out.pdf']],
+    ['PDF.pdf', ['-AllDates=2:30', '-api', 'Shift=-1', '-o', 'out.pdf']],
+    ['PDF.pdf', ['-PDF:all=', '-o', 'out.pdf']],
+    ['PDF.pdf', ['-XMP:all=', '-o', 'out.pdf']],
+    ['PDF.pdf', ['-all=', '-o', 'out.pdf']],
+    ['PDF.pdf', ['-PDF:Keywords=one', '-PDF:Keywords=two', '-AppleKeywords=three', '-o', 'out.pdf']],
+    ['PDF.pdf', ['-PDF:Title=caf'."\xc3\xa9 (parens) \\ \x01", '-PDF:Author=', '-o', 'out.pdf']],
+    ['PDF.pdf', ['-PDF:CreationDate=2020:01:02 03:04:05.5+01:00', '-PDF:Trapped=Unknown', '-o', 'out.pdf']],
+    ['PDF.pdf', ['-XMP:Author=them', '-XMP-dc:Subject=a', '-XMP-dc:Subject=b', '-o', 'out.pdf']],
+    ['PDF.pdf', ["-XMP<=$images/XMP.xmp", '-o', 'out.pdf']],
+    ['PDF.pdf', ['-v3', '-PDF:Creator=v', '-XMP:Creator=v', '-o', 'out.pdf']],
+    ['PDF.pdf', ['-_memin', '-_memout', '-PDF:Creator=memory', '-o', 'out.pdf']],
+    ['PDF.pdf', ['-PDF-update:all=', '-o', 'out.pdf']],
+    ['PDF.pdf', ['-PDF:Creator=in place']],
+    ['PDF2.pdf', ['-XMP:Author=him', '-o', 'out.pdf']],
+    ['PDF2.pdf', ['-PDF:Author=her', '-o', 'out.pdf']],
+    ['PDF2.pdf', ['-XMP:all=', '-PDF:all=', '-o', 'out.pdf']],
+    ['PDF2.pdf', ['-all=', '-o', 'out.pdf']],
+    ['PDF2.pdf', ['-v', '-PDF:Author=it', '-XMP:Author=thing', '-o', 'out.pdf']],
+    ["$inputs/doc-upd1.pdf", ['-PDF-update:all=', '-o', 'out.pdf']],
+    ["$inputs/doc-upd1.pdf", ['-PDF:Creator=again', '-o', 'out.pdf']],
+    ["$inputs/doc-upd1.pdf", ['-XMP:Author=next', '-o', 'out.pdf']],
+    ["$inputs/doc-upd1.pdf", ['-XMP:all=', '-o', 'out.pdf']],
+    ["$inputs/doc-upd1.pdf", ['-PDF:all=', '-o', 'out.pdf']],
+    ["$inputs/doc-upd1.pdf", ['-all=', '-o', 'out.pdf']],
+    ["$inputs/doc-upd1.pdf", ['-PDF:Creator=me', '-o', 'out.pdf']],
+    ["$inputs/doc-upd1.pdf", ['-v3', '-PDF:Keywords=k', '-o', 'out.pdf']],
+    ["$inputs/doc-upd2.pdf", ['-PDF-update:all=', '-o', 'out.pdf']],
+    ["$inputs/doc-upd2.pdf", ['-PDF:Title=third', '-XMP:Title=third', '-o', 'out.pdf']],
+    ["$inputs/doc-upd2.pdf", ['-all=', '-o', 'out.pdf']],
+    ["$inputs/doc-upd3.pdf", ['-PDF-update:all=', '-o', 'out.pdf']],
+    ["$inputs/doc-upd3.pdf", ['-XMP:Title=again', '-o', 'out.pdf']],
+    ["$inputs/doc-del.pdf", ['-PDF:Author=back', '-o', 'out.pdf']],
+    ["$inputs/doc-del.pdf", ['-XMP:Author=back', '-o', 'out.pdf']],
+    ["$inputs/doc-del.pdf", ['-PDF-update:all=', '-o', 'out.pdf']],
+    ["$inputs/doc-xrefstm.pdf", ['-PDF:Title=xref stream', '-XMP:Title=xref stream', '-o', 'out.pdf']],
+    ["$inputs/doc-xrefstm.pdf", ['-XMP:Title=only xmp', '-o', 'out.pdf']],
+    ["$inputs/doc-xrefstm.pdf", ['-all=', '-o', 'out.pdf']],
+    ["$inputs/doc-xrefstm.pdf", ['-v3', '-PDF:Author=v', '-o', 'out.pdf']],
+    ["$inputs/doc-xrefstm.pdf", ['-PDF-update:all=', '-o', 'out.pdf']],
+    ["$inputs/doc-xrefstm-info.pdf", ['-PDF:Title=changed', '-XMP:Title=added', '-o', 'out.pdf']],
+    ["$inputs/doc-xrefstm-info.pdf", ['-PDF:all=', '-o', 'out.pdf']],
+    ["$inputs/doc-xrefstm-info.pdf", ['-all=', '-o', 'out.pdf']],
+    ["$inputs/doc-xsupd1.pdf", ['-PDF-update:all=', '-o', 'out.pdf']],
+    ["$inputs/doc-xsupd1.pdf", ['-PDF:Title=second', '-o', 'out.pdf']],
+    ["$inputs/doc-xsupd1.pdf", ['-all=', '-o', 'out.pdf']],
+    ["$inputs/doc-xsupd2.pdf", ['-XMP:all=', '-o', 'out.pdf']],
+    ["$inputs/doc-xsupd2.pdf", ['-PDF-update:all=', '-o', 'out.pdf']],
+    ["$inputs/doc-rc4.pdf", ['-PDF:Title=new title', '-XMP:Title=new xmp', '-o', 'out.pdf']],
+    ["$inputs/doc-rc4.pdf", ['-PDF:Keywords=a', '-PDF:Keywords=b', '-o', 'out.pdf']],
+    ["$inputs/doc-rc4.pdf", ['-XMP:all=', '-o', 'out.pdf']],
+    ["$inputs/doc-rc4.pdf", ['-all=', '-o', 'out.pdf']],
+    ["$inputs/doc-rc4.pdf", ['-v3', '-PDF:Author=v', '-o', 'out.pdf']],
+    ["$inputs/doc-rc4pw.pdf", ['-api', 'Password=secret', '-PDF:Title=new', '-XMP:Title=new', '-o', 'out.pdf']],
+    ["$inputs/doc-rc4pw.pdf", ['-api', 'Password=secret', '-PDF:all=', '-o', 'out.pdf']],
+    ["$inputs/doc-rc4pw.pdf", ['-PDF:Title=no password', '-o', 'out.pdf']],
+    ["$inputs/doc-rc4pw.pdf", ['-api', 'Password=wrong', '-PDF:Title=bad password', '-o', 'out.pdf']],
+    ["$inputs/doc-rc4upd.pdf", ['-PDF:Title=third', '-o', 'out.pdf']],
+    ["$inputs/doc-rc4upd.pdf", ['-PDF-update:all=', '-o', 'out.pdf']],
+    ["$inputs/doc-rc4upd.pdf", ['-XMP:Title=third xmp', '-o', 'out.pdf']],
+    // (AES encryption of new values uses a random IV: only deletions can be compared byte for byte)
+    ["$inputs/doc-aes.pdf", ['-all=', '-o', 'out.pdf']],
+    ["$inputs/doc-aes.pdf", ['-PDF:all=', '-o', 'out.pdf']],
+    ["$inputs/doc-crlf.pdf", ['-PDF:Title=crlf', '-XMP:Title=crlf', '-o', 'out.pdf']],
+    ["$inputs/doc-crlf.pdf", ['-PDF:Title=crlf', '-o', 'out.pdf']],
+    ["$inputs/doc-notpdf.pdf", ['-PDF:Title=nope', '-o', 'out.pdf']],
+    ["$inputs/doc-future.pdf", ['-PDF:Title=future', '-o', 'out.pdf']],
+    ["$inputs/doc-future.pdf", ['-m', '-PDF:Title=future', '-o', 'out.pdf']],
     ["$inputs/doc-crlf.eps", ['-api', 'Compact=NoPadding', '-XMP:Title=compact', '-o', 'out.eps']],
     ["$inputs/doc-xmp.eps", ['-XMP:Title=changed size', '-o', 'out.eps']],
     ["$inputs/doc-xmp.eps", ['-XMP:all=', '-o', 'out.eps']],
@@ -1562,9 +1631,159 @@ function DocumentInputs(string $etDir, string $inputs): void
  * mdat size, two mdat atoms), a 'wide' atom, a udta terminator and trailers.
  */
 function QuickTimeInputs(string $etDir, string $inputs): void
+    // PDF: files written by Perl ExifTool (chains of incremental updates: the second and later
+    // edits find a previous update; a deleted Info), PDFs built here: cross-reference stream,
+    // RC4 and AES encryption, CR/LF newlines, a PDF 2.1 header
+    $pdfRun = static fn (string $src, string $out, array $args) => Run(['perl', "$etDir/exiftool", '-q', ...$args, '-o', "$inputs/$out", $src], $inputs);
+    $pdfRun("$images/PDF.pdf", 'doc-upd1.pdf', ['-PDF:Creator=me', '-XMP:Creator=you']);
+    $pdfRun("$inputs/doc-upd1.pdf", 'doc-upd2.pdf', ['-XMP:Author=them', '-PDF:Keywords=k']);
+    $pdfRun("$inputs/doc-upd2.pdf", 'doc-upd3.pdf', ['-XMP:all=', '-PDF:all=']);
+    $pdfRun("$images/PDF2.pdf", 'doc-upd4.pdf', ['-PDF:Author=her', '-XMP:Author=him']);
+    $pdfRun("$inputs/doc-upd4.pdf", 'doc-del.pdf', ['-XMP:all=', '-PDF:all=']);
+    $objs = static function (array $o, array $trailer, string $nl = "\n", string $ver = '1.4', ?array $xrefStream = null) {
+        $out = "%PDF-$ver$nl";
+        $pos = [];
+        foreach ($o as $n => $body) {
+            $pos[$n] = strlen($out);
+            $out .= "$n 0 obj$nl$body{$nl}endobj$nl";
+        }
+        $size = max(array_keys($o)) + 1;
+        $t = '';
+        foreach ($trailer as $k => $v) {
+            $t .= "/$k $v ";
+        }
+        if ($xrefStream) {
+            $size++;
+            $pos[$size - 1] = strlen($out);
+            $data = pack('CNn', 0, 0, 65535);
+            for ($n = 1; $n < $size; ++$n) {
+                $data .= pack('CNn', 1, $pos[$n], 0);
+            }
+            $out .= ($size - 1)." 0 obj$nl<< /Type /XRef /Size $size /W [1 4 2] {$t}/Length ".strlen($data)." >>{$nl}stream$nl$data{$nl}endstream{$nl}endobj$nl";
+            $start = $pos[$size - 1];
+        } else {
+            $start = strlen($out);
+            $out .= "xref{$nl}0 $size{$nl}".sprintf('%010d 65535 f', 0).($nl === "\n" ? " \n" : $nl);
+            for ($n = 1; $n < $size; ++$n) {
+                $out .= sprintf('%010d 00000 n', $pos[$n]).($nl === "\n" ? " \n" : $nl);
+            }
+            $out .= "trailer$nl<< /Size $size {$t}>>$nl";
+        }
+
+        return $out."startxref$nl$start$nl%%EOF$nl";
+    };
+    $base = [1 => '<< /Type /Catalog /Pages 2 0 R >>', 2 => '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+        3 => '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 10 10] >>'];
+    $xmpDoc = static fn (string $t) => '<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?><x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title><rdf:Alt><rdf:li xml:lang="x-default">'.$t.'</rdf:li></rdf:Alt></dc:title></rdf:Description></rdf:RDF></x:xmpmeta><?xpacket end="w"?>';
+    $id = '[<0123456789abcdef0123456789abcdef> <0123456789abcdef0123456789abcdef>]';
+    $files['doc-xrefstm.pdf'] = $objs($base, ['Root' => '1 0 R', 'ID' => $id], "\n", '1.5', ['x']);
+    $withInfo = $base + [4 => '<< /Title (xref title) /Author (someone) >>'];
+    $files['doc-xrefstm-info.pdf'] = $objs($withInfo, ['Root' => '1 0 R', 'Info' => '4 0 R', 'ID' => '[(abc) (abc)]'], "\n", '1.5', ['x']);
+    $files['doc-crlf.pdf'] = $objs($withInfo, ['Root' => '1 0 R', 'Info' => '4 0 R'], "\r\n");
+    $files['doc-future.pdf'] = $objs($base, ['Root' => '1 0 R'], "\n", '2.1');
+    $files['doc-notpdf.pdf'] = 'this is not a PDF file';
+    // encryption: standard security handler, 40-bit RC4 (R2) and AES-128 (R4), object keys as in Crypt()
+    $pad = hex2bin('28bf4e5e4e758a4164004e56fffa01082e2e00b6d0683e802f0ca9fe6453697a');
+    $rc4 = static function (string $key, string $d): string {
+        $s = range(0, 255);
+        for ($i = $j = 0; $i < 256; ++$i) {
+            $j = ($j + $s[$i] + ord($key[$i % strlen($key)])) & 255;
+            [$s[$i], $s[$j]] = [$s[$j], $s[$i]];
+        }
+        $out = '';
+        for ($n = $i = $j = 0; $n < strlen($d); ++$n) {
+            $i = ($i + 1) & 255;
+            $j = ($j + $s[$i]) & 255;
+            [$s[$i], $s[$j]] = [$s[$j], $s[$i]];
+            $out .= chr(ord($d[$n]) ^ $s[($s[$i] + $s[$j]) & 255]);
+        }
+
+        return $out;
+    };
+    $mkEnc = static function (string $userPw, bool $aes) use ($pad, $rc4, $objs, $base, $xmpDoc): string {
+        $fileId = hex2bin('0123456789abcdef0123456789abcdef');
+        $owner = substr($pad, 0, 32);
+        $keyLen = $aes ? 16 : 5;
+        $o = $aes ? '' : '';
+        $ownerKey = substr(md5($owner, true), 0, $keyLen);
+        if ($aes) {
+            $ownerKey = md5($owner, true);
+            for ($i = 0; $i < 50; ++$i) {
+                $ownerKey = md5($ownerKey, true);
+            }
+            $o = substr($pad, 0, 32);
+            for ($i = 0; $i < 20; ++$i) {
+                $k = '';
+                foreach (str_split($ownerKey) as $c) {
+                    $k .= chr(ord($c) ^ $i);
+                }
+                $o = $rc4($k, $o);
+            }
+        } else {
+            $o = $rc4($ownerKey, substr($userPw.$pad, 0, 32));
+        }
+        $p = -64 & 0xffffffff;
+        $h = substr($userPw.$pad, 0, 32).$o.pack('V', $p).$fileId;
+        $key = md5($h, true);
+        if ($aes) {
+            for ($i = 0; $i < 50; ++$i) {
+                $key = md5(substr($key, 0, 16), true);
+            }
+        } else {
+            $key = substr($key, 0, 5);
+        }
+        if ($aes) {
+            $u = md5($pad.$fileId, true);
+            for ($i = 0; $i < 20; ++$i) {
+                $k = '';
+                foreach (str_split($key) as $c) {
+                    $k .= chr(ord($c) ^ $i);
+                }
+                $u = $rc4($k, $u);
+            }
+            $u .= str_repeat("\0", 16);
+        } else {
+            $u = $rc4($key, $pad);
+        }
+        $objKey = static function (int $n) use ($key, $aes): string {
+            $k = $key.substr(pack('V', $n), 0, 3)."\0\0".($aes ? 'sAlT' : '');
+            $k = md5($k, true);
+
+            return $aes ? $k : substr($k, 0, min(strlen($key) + 5, 16));
+        };
+        $encrypt = static function (string $d, int $n) use ($objKey, $rc4, $aes): string {
+            if (!$aes) {
+                return $rc4($objKey($n), $d);
+            }
+            $iv = str_repeat("\x07", 16);
+
+            return $iv.openssl_encrypt($d, 'aes-128-cbc', $objKey($n), OPENSSL_RAW_DATA, $iv);
+        };
+        $hex = static fn (string $d) => '<'.bin2hex($d).'>';
+        $xmp = $xmpDoc('encrypted xmp');
+        $xmpEnc = $encrypt($xmp, 5);
+        $encDict = $aes ?
+            '<< /Filter /Standard /V 4 /R 4 /Length 128 /P '.($p - 4294967296).' /O '.$hex($o).' /U '.$hex($u).
+                ' /CF << /StdCF << /CFM /AESV2 /AuthEvent /DocOpen /Length 16 >> >> /StmF /StdCF /StrF /StdCF >>' :
+            '<< /Filter /Standard /V 1 /R 2 /P '.($p - 4294967296).' /O '.$hex($o).' /U '.$hex($u).' >>';
+        $o2 = $base;
+        $o2[1] = '<< /Type /Catalog /Pages 2 0 R /Metadata 5 0 R >>';
+        $o2[4] = '<< /Title '.$hex($encrypt('secret title', 4)).' /Author '.$hex($encrypt('secret author', 4)).' >>';
+        $o2[5] = '<< /Type /Metadata /Subtype /XML /Length '.strlen($xmpEnc)." >>\nstream\n$xmpEnc\nendstream";
+        $o2[6] = $encDict;
+
+        return $objs($o2, ['Root' => '1 0 R', 'Info' => '4 0 R', 'Encrypt' => '6 0 R', 'ID' => '['.$hex($fileId).' '.$hex($fileId).']']);
+    };
+    $files['doc-rc4.pdf'] = $mkEnc('', false);
+    $files['doc-rc4pw.pdf'] = $mkEnc('secret', false);
+    $files['doc-aes.pdf'] = $mkEnc('', true);
 {
     $images = "$etDir/t/images";
     foreach ([
+    // written by Perl: updates of a cross-reference stream PDF and of an encrypted PDF
+    $pdfRun("$inputs/doc-xrefstm.pdf", 'doc-xsupd1.pdf', ['-PDF:Title=first', '-XMP:Title=first']);
+    $pdfRun("$inputs/doc-xsupd1.pdf", 'doc-xsupd2.pdf', ['-PDF:Author=second', '-XMP:Title=second']);
+    $pdfRun("$inputs/doc-rc4.pdf", 'doc-rc4upd.pdf', ['-PDF:Title=second', '-XMP:Title=second']);
         'meta.heic' => ['QuickTime.heic', '-XMP:Title=a title', '-EXIF:Artist=an artist'],
         'deflate.heic' => ['QuickTime.heic', '-api', 'Compress', '-XMP:Title=compressed', '-EXIF:Artist=x'],
         'lang.mov' => ['QuickTime.mov', '-Keys:Title-eng-ca=keys ca', '-ItemList:Title-eng-ca=il ca',
