@@ -104,6 +104,11 @@ Use `Image\ExifTool\Perl` for everything whose PHP twin behaves differently:
 - `sort` (default string sort) → `sort($a, SORT_STRING)`; `sort { $a <=> $b }` → `sort($a)` with numeric
   values or `usort`.
 
+Write code of the tag tables (inverse conversions, WriteCheck...) runs where Perl turns any `-w`
+warning into an error for the tag (writing "abc" to a numeric tag fails instead of writing 0):
+use the warning-raising variants `Perl::numw()`, `strw()`, `hexw()`, `uv()`, `neg()`, `log()`,
+`packw()` there (see the comments in `src/Perl.php`).
+
 ## Byte order and binary reads
 
 `ExifTool::SetByteOrder('MM'|'II')`, `ExifTool::GetByteOrder()`, `ExifTool::ToggleByteOrder()`,
