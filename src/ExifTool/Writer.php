@@ -964,6 +964,8 @@ trait Writer
         }
         // check for write error and set appropriate error message and return value
         if ($rtnVal < 0) {
+            // (PHP: the cause may be a write proc not ported yet)
+            if (!($this->VALUE['Error'] ?? null) and $this->NotPorted) $this->Error($this->NotPorted);
             if (!($this->VALUE['Error'] ?? null)) $this->Error('Error writing output file');
             $rtnVal = 0;    // return 0 on failure
         } elseif ($rtnVal > 0) {
@@ -1419,8 +1421,11 @@ trait Writer
         } else {
             // (PHP: the write proc is not ported yet: an error if this directory must be
             //  edited, otherwise no change, like the procs which only rewrite edited directories)
+            $what = 'Not ported: ' . (is_string($writeProc) ? $writeProc : get_debug_type($writeProc));
             if (array_key_exists($dirName, $this->EDIT_DIRS ?? [])) {
-                $this->Error('Not ported: ' . (is_string($writeProc) ? $writeProc : get_debug_type($writeProc)));
+                $this->Error($what);
+            } else {
+                $this->NotPorted ??= $what;     // (reported by WriteInfo if the write fails)
             }
             $newData = null;
         }
