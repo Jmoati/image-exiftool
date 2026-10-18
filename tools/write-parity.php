@@ -294,6 +294,15 @@ $cases = [
     ["$inputs/img-seal.png", ['-SEAL:all=', '-o', 'out.png']],
     ["$inputs/img-jumbf.png", ['-JUMBF:all=', '-o', 'out.png']],
     ["$inputs/img-jumbf.png", ['-PNG:Title=jumbf', '-o', 'out.png']],
+    ["$inputs/img-text.png", ['-ProfileName=name only', '-o', 'out.png']],
+    ["$inputs/img-text.png", ['-api', 'FastScan=2', '-PNG:Title=fast', '-o', 'out.png']],
+    ["$inputs/img-badz.png", ['-PNG:Comment=replaced', '-o', 'out.png']],
+    ["$inputs/img-badz.png", ['-PNG:Comment-=old', '-PNG:Comment=new', '-o', 'out.png']],
+    ["$inputs/img-badz.png", ['-PNG:Title=other', '-o', 'out.png']],
+    ["$inputs/img-badz.png", ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.png']],
+    ["$inputs/img-badz.png", ['-ICC_Profile:all=', '-PNG:all=', '-o', 'out.png']],
+    ["$inputs/img-exifafter.png", ['-EXIF:Artist=moved', '-o', 'out.png']],
+    ["$inputs/img-exifafter.png", ['-EXIF:all=', '-o', 'out.png']],
     // GIF (ProcessGIF): comments and application extensions (XMP, ICC_Profile)
     ['GIF.gif', ['-Comment=new gif comment', '-o', 'out.gif']],
     ['GIF.gif', ['-Comment=', '-o', 'out.gif']],
@@ -307,6 +316,7 @@ $cases = [
     ['GIF.gif', ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.gif']],
     ['GIF.gif', ['-v3', '-Comment=v', '-XMP:Title=v', '-o', 'out.gif']],
     ['GIF.gif', ['-EXIF:Artist=not in gif', '-o', 'out.gif']],
+    ['GIF.gif', ['-Comment=in place', '-XMP:Title=in place']],
     ["$inputs/img-87a.gif", ['-Comment=87a', '-o', 'out.gif']],
     ["$inputs/img-anim.gif", ['-Comment=anim', '-XMP:Title=anim', '-o', 'out.gif']],
     ["$inputs/img-anim.gif", ['-all=', '-o', 'out.gif']],
@@ -318,6 +328,7 @@ $cases = [
     ["$inputs/img-p5.pgm", ['-Comment=pgm', '-o', 'out.pgm']],
     ["$inputs/img-p5.pgm", ['-Comment=', '-o', 'out.pgm']],
     ["$inputs/img-seal.ppm", ['-SEAL:all=', '-o', 'out.ppm']],
+    ['PPM.ppm', ['-Comment=in place']],
     // FLIF (WriteFLIF): EXIF, XMP and ICC_Profile chunks
     ['FLIF.flif', ['-EXIF:Artist=flif', '-XMP:Title=flif', '-o', 'out.flif']],
     ['FLIF.flif', ['-EXIF:all=', '-o', 'out.flif']],
@@ -328,6 +339,7 @@ $cases = [
     ['FLIF.flif', ["-XMP<=$images/XMP.xmp", '-o', 'out.flif']],
     ['FLIF.flif', ['-v3', '-XMP:Title=v', '-o', 'out.flif']],
     ["$inputs/img-none.flif", ['-EXIF:Artist=new', '-XMP:Title=new', "-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.flif']],
+    ['FLIF.flif', ['-XMP:Title=in place']],
     // JPEG 2000 (ProcessJpeg2000Box): UUID, XML and colr boxes
     ['Jpeg2000.jp2', ['-EXIF:Artist=jp2', '-o', 'out.jp2']],
     ['Jpeg2000.jp2', ['-XMP:Title=jp2', '-o', 'out.jp2']],
@@ -355,6 +367,8 @@ $cases = [
     ["$inputs/img-zero.jp2", ['-XMP:Title=zero', '-o', 'out.jp2']],
     ["$inputs/img-jumbf.jp2", ['-XMP:Title=jumbf', '-o', 'out.jp2']],
     ["$inputs/img-jumbf.jp2", ['-JUMBF:all=', '-o', 'out.jp2']],
+    ["$inputs/img-meta.jp2", ['-Jpeg2000:all=', '-o', 'out.jp2']],
+    ['Jpeg2000.jp2', ['-XML=<x>in place</x>', '-EXIF:Artist=in place']],
     // JPEG XL (ProcessJXL): Exif and xml boxes, codestream wrapped in a container, brob boxes
     ['JXL.jxl', ['-XMP:Title=jxl', '-o', 'out.jxl']],
     ['JXL.jxl', ['-m', '-XMP:Title=jxl', '-EXIF:Artist=jxl', '-o', 'out.jxl']],
@@ -366,6 +380,7 @@ $cases = [
     ["$inputs/img-meta.jxl", ['-api', 'Compress=1', '-XMP:Title=compressed', '-o', 'out.jxl']],
     ["$inputs/img-meta.jxl", ['-XMP:all=', '-EXIF:all=', '-o', 'out.jxl']],
     ["$inputs/img-meta.jxl", ['-all=', '-o', 'out.jxl']],
+    ["$inputs/img-meta.jxl", ['-v3', '-XMP:Title=in place', '-EXIF:all=']],
     // MWG composite tags (also need the EXIF and XMP writers)
     ['IPTC.jpg', ['-use', 'MWG', '-MWG:Keywords+=mwg', '-o', 'out.jpg']],
     ['MWG.jpg', ['-MWG:Creator=Creator One', '-MWG:City=Some city', '-o', 'out.jpg']],
@@ -1108,6 +1123,8 @@ function ImageInputs(string $etDir, string $inputs): void
         'img-cgbi.png' => $sig.$chunk('CgBI', "\x50\0\x20\x06").$ihdr.$idat.$iend,
         'img-txmp.png' => $sig.$ihdr.$chunk('tXMP', $xmp).$idat.$iend,
         'img-seal.png' => $sig.$ihdr.$chunk('seAl', '<seal seal="1" kv="1" ka="rsa" da="sha256" d="e.com" s="abc"/>').$idat.$iend,
+        'img-badz.png' => $sig.$ihdr.$chunk('zTXt', "Comment\0\0not deflated").$chunk('iCCP', "icc\0\0bad").$idat.$iend,
+        'img-exifafter.png' => $sig.$ihdr.$idat.$chunk('eXIf', $tiff).$chunk('tEXt', "Title\0after").$iend,
     ];
     $jumd = $box('jumd', "c2pa\x00\x11\x00\x10\x80\x00\x00\xaa\x00\x38\x9b\x71\x03c2pa\0");
     $jumb = $box('jumb', $jumd.$box('jumb', $box('jumd', "json\x00\x11\x00\x10\x80\x00\x00\xaa\x00\x38\x9b\x71\x03test\0").
