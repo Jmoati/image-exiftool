@@ -916,6 +916,13 @@ $cases = [
     ['PhaseOne.iiq', ['-v3', '-SerialNumber=verbose', '-o', 'out.iiq']],
     ['PhaseOne.iiq', ['-Artist=me', '-o', 'out.iiq']],
     ['PhaseOne.iiq', ['-SerialNumber=in place']],
+    // Nikon Capture data in the maker notes of a NEF (WriteNikonCapture)
+    ['Nikon.nef', ['-IgnoreMinorErrors', '-PhotoEffects=Off', '-Caption-abstract=A new caption', '-VignetteControlIntensity=70', '-o', 'out.nef']],
+    ['Nikon.nef', ['-PhotoEffects=Off', '-VignetteControlIntensity=70', '-o', 'out.nef']],
+    ['Nikon.nef', ['-NikonCapture:all=', '-o', 'out.nef']],
+    ['Nikon.nef', ['-PhotoEffects=', '-o', 'out.nef']],
+    ['Nikon.nef', ['-v3', '-VignetteControlIntensity=10', '-o', 'out.nef']],
+    ['Nikon.nef', ['-Artist=me', '-o', 'out.nef']],
 ];
 // RIFF, PDF, PostScript and InDesign writers (inputs made by DocumentInputs(), see below)
 array_push($cases,

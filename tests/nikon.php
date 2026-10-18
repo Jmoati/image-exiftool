@@ -8,9 +8,7 @@ require __DIR__.'/TestLib.php';
 
 use Image\ExifTool\ExifTool;
 
-$skip = [
-    8 => 'NikonCapture writer (and IPTC in the NEF)',
-];
+$skip = [];
 $t = testDir();
 $testname = 'Nikon';
 
