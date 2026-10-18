@@ -16,7 +16,7 @@ use Image\ExifTool\XMP;
  * Port of the `exiftool` command-line script (exiftool 13.59), reading and writing.
  *
  * File-scope variables of the script are properties, its subs are methods with the same names,
- * and the main script is run(). Not ported (the command stops with an error): -X, -h, -htmlDump, -listx,
+ * and the main script is run(). Not ported (the command stops with an error): -X, -h, -htmlDump,
  * -diff, -plot, -fileNUM, -use of modules other than those of ExifTool, and
  * -config files. -if and -p evaluate Perl code: -if supports a subset of Perl expressions (see
  * CompileCondition()), and advanced formatting expressions (${TAG;EXPR}) are not supported in
@@ -605,7 +605,15 @@ final class Application
                             }
                             $this->helped = 1;
                             if ('x' === $type) {
-                                $badCmd = $this->NotPorted($arg);   // (TagInfoXML module not ported)
+                                $opts = [];
+                                if (null !== $this->forcePrint) {
+                                    $opts['Flags'] = 1;
+                                }
+                                if ($this->outFormat > 0) {
+                                    $opts['NoDesc'] = 1;
+                                }
+                                $opts['Lang'] = $this->langOpt;
+                                \Image\ExifTool\TagInfoXML::Write(null, $group, $opts, $this->stdout);
                                 continue;
                             }
                             $wr = ('w' === $type);

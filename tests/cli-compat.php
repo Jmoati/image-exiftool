@@ -32,6 +32,7 @@ $cases = [
     ['-file1', '%f.jpg', '-file2', '@', '-if', '$file1:make eq "Canon"', '-p', '$file1:model|$file2:model|${file1:iso}', 'Canon.jpg', 'Nikon.jpg'],
     ['-file1', 'Nikon.jpg', '-G1', '-a', '-s', '-File1:Model', '-model', '-File1:ISO', 'Canon.jpg'],
     ['-file1', 'NoSuch.jpg', '-p', '$model $file1:model', 'Canon.jpg'], ['-file1'],
+    ['-listx', '-lang', 'fr', '-f', '-s'],
     ['-lang', 'ru', '-t', '-flash', '-exposureprogram', 'Canon.jpg'],
 ];
 // writing: run in var/cli-compat/<tool>, on fresh copies of the test images named in the arguments
