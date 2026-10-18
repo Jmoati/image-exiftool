@@ -28,6 +28,17 @@ $cases = [
     ['-lang'], ['-lang', 'zz', 'Canon.jpg'], ['-lang', 'fr', 'Canon.jpg'],
     ['-lang', 'de', '-j', '-a', 'Canon.jpg', 'Nikon.jpg'], ['-lang', 'ja', '-a', '-G1', 'XMP5.xmp'],
     ['-lang', 'ru', '-t', '-flash', '-exposureprogram', 'Canon.jpg'],
+    // writing (never into t/images: the written file goes to stdout with -o -, or the command fails)
+    ['-o', '-', '-Comment=cli-compat', '-XMP:Title=x', '-IPTC:Keywords=y', 'Writer.jpg'],
+    ['-o', '-', '-all=', '-Comment=only', 'Nikon.jpg'],
+    ['-o', '-', '-tagsFromFile', 'Canon.jpg', '-Make', '-Model>Artist', '-Comment<$Make $ISO', 'Writer.jpg'],
+    ['-o', '-', '-n', '-Orientation=6', '-ExifIFD:ISO#=800', '-sep', ';', '-XMP:Subject=a;b', 'Canon.jpg'],
+    ['-o', '-.exv', 'Canon.jpg'], ['-o', '-.xmp', 'XMP.jpg'],
+    ['-if', '$make eq "Canon"', '-o', '-', '-Comment=if', 'Canon.jpg'],
+    ['-Comment=x', 'NoSuchFile.jpg'], ['-o', '-', '-Comment=x', 'BMP.bmp'],
+    ['-tagsFromFile', 'NoSuchFile.jpg', '-o', '-', 'Canon.jpg'],
+    ['-wm', 'x', '-Comment=x', 'Canon.jpg'], ['-delete_original', '-Comment=x', 'Canon.jpg'],
+    ['-overwrite_original_in_place', '-o', 'x.jpg', '-Comment=x', 'Canon.jpg'],
 ];
 $fail = 0;
 foreach ($cases as $args) {

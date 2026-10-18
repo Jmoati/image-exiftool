@@ -861,6 +861,210 @@ $cases = [
     ["$inputs/garbage.mov", ['-Artist=garbage', '-o', 'out.mov']],
     ["$inputs/garbage.mov", ['-m', '-Artist=garbage', '-o', 'out.mov']],
 ];
+// command line only (--cli): options of the exiftool script, which the API runners don't parse
+if (isset($opt['cli'])) {
+    CliInputs($etDir, $inputs);     // (see below)
+    array_push($cases,
+        // assignments: +=, -=, ^=, #=, -n, wildcards, groups, lists, escapes, charsets
+        ['Writer.jpg', ['-Comment=a', '-Artist=b', '-XMP:Title=c', '-IPTC:Keywords=d', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-XMP:Subject+=one', '-XMP:Subject+=two', '-Keywords+=k1', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-Make-=Canon', '-Model-=nothing', '-XMP:Subject-=none', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-Artist^=', '-XMP:Title^=', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-XResolution#=150', '-Orientation#=6', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-n', '-Orientation=8', '-ExposureProgram=2', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-Orientation=Rotate 90 CW', '-Flash=Fired', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-*Date*=2001:02:03 04:05:06', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-EXIF:*=', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-all=', '-tagsFromFile', '@', '-EXIF:Make', '-EXIF:Model', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-IFD0:all=', '-ExifIFD:ISO=400', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-DateTimeOriginal+=1:00', '-CreateDate-=0:0:1 2:00:00', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-sep', ', ', '-XMP:Subject=a, b,c', '-Keywords=x, y', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-sep', ' ', '-XMP:Subject=one two  three', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-ec', '-Comment=tab\tnew\\nline \x41\\x42 back\\\\slash', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-E', '-Comment=&lt;b&gt; &amp; &#x263a;', '-XMP:Title=&quot;q&quot;', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-ex', '-XMP:Title=&lt;x&gt;', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-L', "-XMP:Title=caf\xe9", "-Comment=caf\xe9", '-o', 'out.jpg']],
+        ['Writer.jpg', ['-charset', 'iptc=Latin', "-IPTC:Caption-Abstract=caf\xc3\xa9", '-o', 'out.jpg']],
+        ['Writer.jpg', ['-charset', 'exif=utf8', "-EXIF:Artist=caf\xc3\xa9", '-o', 'out.jpg']],
+        ['Writer.jpg', ['-NoSuchTag=x', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-NoSuchTag=x']],
+        ['Writer.jpg', ['-FileSize=1']],
+        ['Writer.jpg', ['-Comment=x', '-Make', '-Model']],
+        ['Writer.jpg', ["-Comment<=$images/../README", '-o', 'out.jpg']],
+        ['Writer.jpg', ['-Comment<=%d%f.txt', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-NoSuchTag<=%d%f.txt', '-Comment=x', '-o', 'out.jpg']],
+        // copying tags: -tagsFromFile, redirections, expressions, exclusions
+        ['Writer.jpg', ['-tagsFromFile', "$images/Canon.jpg", '-o', 'out.jpg']],
+        ['Writer.jpg', ['-tagsFromFile', "$images/Canon.jpg", '-all:all', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-tagsFromFile', "$images/Canon.jpg", '-all:all', '--MakerNotes', '-x', 'ISO', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-tagsFromFile', "$images/Canon.jpg", '-Make', '-Model>XMP:Title', '-XMP:Description<Model', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-tagsFromFile', "$images/Canon.jpg", '-EXIF:all>XMP:all', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-tagsFromFile', "$images/Canon.jpg", '-Comment<$Make $Model ($ISO)', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-tagsFromFile', "$images/Canon.jpg", '-Comment', '-tagsFromFile', "$images/Nikon.jpg", '-Artist<Model', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-tagsFromFile', "$images/Canon.jpg", '-Make', '-execute', '-tagsFromFile', "$images/Nikon.jpg", '-Model', '-o', 'out.jpg', '-common_args']],
+        ['Writer.jpg', ['-tagsFromFile', "$images/Canon.jpg", '-Make', '-tagsFromFile', "$images/Canon.jpg", '-Model', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-addTagsFromFile', "$images/Canon.jpg", '-XMP:Subject<Make', '-XMP:Subject<Model', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-allTagsFromFile', "$images/Canon.jpg", '-o', 'out.jpg']],
+        ['Writer.jpg', ["-tagsFromFile=$images/Nikon.jpg", '-Make', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-Comment<$Make $Model', '-XMP:Title<${Model}-${EXIF:ISO}', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-Comment<Model', '-XMP:Subject<Make', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-tagsFromFile', '@', '-XMP:all<EXIF:all', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-XMP:all<all', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-Comment<$NoSuchTag', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-Comment<NoSuchTag', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-tagsFromFile', '@', '-Comment<Make', '-Comment=x', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-Comment=x', '-tagsFromFile', '@', '-Comment<Make', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-tagsFromFile', 'nosuch.jpg', '-all', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-tagsFromFile', '%d%f_nosuch.%e', '-all', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-tagsFromFile', "$images/BMP.bmp", '-o', 'out.jpg']],
+        ['Writer.jpg', ['-tagsFromFile']],
+        ['Writer.jpg', ['-srcfile', '%d%f.jpg', '-Comment=src', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-srcfile', '%d%f_nosuch.jpg', '-srcfile', '@', '-v', '-Comment=src', '-o', 'out.jpg']],
+        // output file names
+        ['Writer.jpg', ['-Comment=x', '-o', '%d%f_new.%e']],
+        ['Writer.jpg', ['-Comment=x', '-o', 'sub/dir/']],
+        ['Writer.jpg', ['-Comment=x', '-o', '%f%-c.%e']],
+        ['Writer.jpg', ['-Comment=x', '-o', '%f%+2c.%ue']],
+        ['Writer.jpg', ['-Comment=x', '-o', 'a/%f_%3C.%e']],
+        ['Writer.jpg', ['-Comment=x', '-o', 'b/%f_%.2lc%-2C.%e']],
+        ['Writer.jpg', ['-Comment=x', '-o', '%-.2f/%.3f%-2f.%e']],
+        ['Writer.jpg', ['-Comment=x', '-o', 'x/y/%:1d%f.%e']],
+        ['Writer.jpg', ['-Comment=x', '-o', '%e/%lf.%E']],
+        ['Writer.jpg', ['-Comment=x', '-o', 'out.jpg', '-o', 'out2.jpg']],
+        ['Writer.jpg', ['-Comment=x', '-o', '%f.%e']],
+        ['Writer.jpg', ['-o', 'out.jpg']],
+        ['Writer.jpg', ['-o', 'out.exv']],
+        ['Canon.jpg', ['-o', 'out.exv']],
+        ['Canon.jpg', ['-o', 'out.xmp']],
+        ['Canon.jpg', ['-Make', '-Model', '-o', 'out.xmp']],
+        ['Canon.jpg', ['-Comment=x', '-o', 'out.txt']],
+        ['Canon.jpg', ['-o', 'out.icc']],
+        ['Canon.jpg', ['-o', '-', '-Comment=to stdout']],
+        ['Canon.jpg', ['-o', '-.exv']],
+        ['Canon.jpg', ['-v', '-o', '-', '-Comment=to stdout']],
+        [null, ['-o', 'out.jpg']],
+        [null, ['-Comment=x', '-o', 'new.exv']],
+        // writing in place: originals, -P, -delete_original, -restore_original
+        ['Writer.jpg', ['-Comment=in place']],
+        ['Writer.jpg', ['-overwrite_original', '-Comment=x']],
+        ['Writer.jpg', ['-overwrite_original_in_place', '-Comment=x']],
+        ['Writer.jpg', ['-P', '-Comment=x']],
+        ['Writer.jpg', ['-P', '-overwrite_original_in_place', '-Comment=x']],
+        ['Writer.jpg', ['-P', '-Comment=x', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-P', '-FileModifyDate=2005:06:07 08:09:10', '-Comment=x']],
+        ['Writer.jpg', ['-Comment=x', '-execute', '-Comment=y', '-common_args']],
+        ['Writer.jpg', ['-Comment=x', '-execute', '-delete_original!', '-common_args']],
+        ['Writer.jpg', ['-Comment=x', '-execute', '-restore_original', '-common_args']],
+        ['Writer.jpg', ['-restore_original']],
+        ['Writer.jpg', ['-delete_original!']],
+        ['Writer.jpg', ['-delete_original', '-Comment=x']],
+        ['Writer.jpg', ['-restore_original', '-Comment=x']],
+        ['Writer.jpg', ['-restore_original', '-Comment']],
+        ['Writer.jpg', ['-overwrite_original_in_place', '-Comment=x', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-Comment=']],
+        ['Writer.jpg', ['-FileName=%f_renamed.%e']],
+        ['Writer.jpg', ['-FileName<%f_moved.%e']],
+        ['Writer.jpg', ['-Directory=%e/%f']],
+        ['Writer.jpg', ['-TestName=%f_test.%e']],
+        ['Writer.jpg', ['-Comment=x', '-FileName=%f.new.%e', '-HardLink=%f.link.%e', '-SymLink=sym.jpg']],
+        ['Canon.jpg', ['-FileName<${Model}.%e']],
+        ['Canon.jpg', ['-FileName<$Make%-c.%e', '-execute', '-FileName<$Make%-c.%e', '-common_args']],
+        // -csv= and -j= imports (files written by exiftool -csv / -j, see CliInputs())
+        ['Writer.jpg', ["-csv=$inputs/import.csv"]],
+        ['Writer.jpg', ["-csv=$inputs/import.csv", '-o', 'out.jpg']],
+        ['Writer.jpg', ["-csv=$inputs/import.csv", '-XMP:all', '--XMP:Title', '-o', 'out.jpg']],
+        ['Writer.jpg', ["-csv=$inputs/import.csv", '-XMP-dc:Subject', '-o', 'out.jpg']],
+        ['Writer.jpg', ["-csv=$inputs/import.csv", '-x', 'XMP:Rights', '-x', 'Artist', '-o', 'out.jpg']],
+        ['Writer.jpg', ["-csv=$inputs/import.csv", '-Comment=after', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-Comment=before', "-csv=$inputs/import.csv", '-o', 'out.jpg']],
+        ['Writer.jpg', ['-XMP:Subject=s0', "-csv+=$inputs/import.csv", '-o', 'out.jpg']],
+        ['Writer.jpg', ['-v2', "-csv=$inputs/import.csv", '-o', 'out.jpg']],
+        ['Writer.jpg', ["-csv=$inputs/star.csv", '-o', 'out.jpg']],
+        ['Canon.jpg', ["-csv=$inputs/import.csv", '-o', 'out.jpg']],
+        ['Writer.jpg', ['-f', "-csv=$inputs/import.csv", '-o', 'out.jpg']],
+        ['Writer.jpg', ['-csvDelim', ';', "-csv=$inputs/semi.csv", '-o', 'out.jpg']],
+        ['Writer.jpg', ["-csv=$inputs/nosuch.csv", '-o', 'out.jpg']],
+        ['Writer.jpg', ["-j=$inputs/import.json", '-o', 'out.jpg']],
+        ['Writer.jpg', ["-json=$inputs/import.json", '-XMP-dc:all', '-o', 'out.jpg']],
+        ['Writer.jpg', ["-j+=$inputs/import.json", '-XMP:Subject=s0', '-o', 'out.jpg']],
+        ['Writer.jpg', ["-j=$inputs/struct.json", '-o', 'out.jpg']],
+        ['Writer.jpg', ["-j=$inputs/binary.json", '-o', 'out.jpg']],
+        ['Writer.jpg', ["-j=$inputs/star.json"]],
+        // output text files: -w, -W, -textOut, -tagOut, -wext
+        ['Canon.jpg', ['-w', 'txt', '-Make', '-Model']],
+        ['Canon.jpg', ['-w', '%d%f_%e.out', '-S', '-EXIF:Make', '-EXIF:Model', '-ISO']],
+        ['Canon.jpg', ['-w', 'txt', '-Make', '-execute', '-w', 'txt', '-Model', '-common_args']],
+        ['Canon.jpg', ['-w!', 'txt', '-Make', '-execute', '-w!', 'txt', '-Model', '-common_args']],
+        ['Canon.jpg', ['-w+', '%f.txt', '-Make', '-execute', '-w+', '%f.txt', '-Model', '-common_args']],
+        ['Canon.jpg', ['-textOut', 'sub/%f.txt', '-s3', '-Make']],
+        ['Canon.jpg', ['-w', 'txt', '-j', '-Make', '-Model']],
+        ['Canon.jpg', ['-w', 'txt', '-p', '#[HEAD]head', '-p', '$Make', '-p', '#[TAIL]tail']],
+        ['Canon.jpg', ['-w+', 'txt', '-j', '-Make', '-execute', '-w+', 'txt', '-j', '-Model', '-common_args']],
+        ['Canon.jpg', ['-csv', '-w', 'out.csv', '-Make', '-Model']],
+        ['Canon.jpg', ['-csv', '-w+', 'out.csv', '-Make']],
+        ['Canon.jpg', ['-v', '-w', 'txt', '-Make']],
+        ['Canon.jpg', ['-w', 'txt', '-NoSuchTag']],
+        ['Canon.jpg', ['-w', '', '-Make']],
+        ['Canon.jpg', ['-W', '%f_%t%-c.%s', '-Make', '-Model', '-ISO']],
+        ['Canon.jpg', ['-W', '%f/%g1/%t.txt', '-EXIF:Make', '-EXIF:Model']],
+        ['Canon.jpg', ['-W+', 'tags.txt', '-Make', '-Model']],
+        ['Canon.jpg', ['-W', '%t.%s', '-v', '-Make']],
+        ['Canon.jpg', ['-tagOut', '%t.%s', '-tagOutExt', 'txt', '-Make']],
+        ['Canon.jpg', ['-W', '%t.%s', '--wext', 'txt', '-Make']],
+        ['ExifTool.jpg', ['-b', '-W', '%f_%t%-c.%s', '-ThumbnailImage', '-PreviewImage', '-ICC_Profile', '-XMP']],
+        ['ExifTool.jpg', ['-b', '-W', '%t.%s', '-wext', 'jpg', '-ThumbnailImage', '-XMP']],
+        ['ExifTool.jpg', ['-b', '-W', '%t%-c.%s', '-XMP:Subject']],
+        ['Canon.jpg', ['-W', 'x.txt', '-csv', '-Make']],
+        // -wm (write mode)
+        ['Writer.jpg', ['-wm', 'c', '-Comment=x', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-wm', 'w', '-XMP:Title=x', '-Comment=y', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-wm', 'cg', '-XMP:Title=x', '-Make=y', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-wm', 'wc', '-XMP:Title=x', '-o', 'out.jpg']],
+        [null, ['-wm', 'w', '-Comment=x', '-o', 'out.exv']],
+        ['Writer.jpg', ['-wm', 'x', '-Comment=x']],
+        ['Writer.jpg', ['-wm']],
+        // -efile
+        ['Writer.jpg', ['-efile', 'errors.txt', '-Comment=x', 'nosuch.jpg']],
+        ['Writer.jpg', ['-efile15', 'all.txt', '-Comment=x', '-o', 'out.jpg', '-execute', '-efile2', 'same.txt', '-Comment=', '-common_args']],
+        ['Canon.jpg', ['-efile4', 'failed.txt', '-if', '$Make eq "Nikon"', '-Comment=x']],
+        ['Writer.jpg', ['-efile8!', 'updated.txt', '-Comment=x']],
+        // -if, -progress, -v, -q, -m, -api with writing
+        ['Canon.jpg', ['-if', '$Make eq "Canon"', '-Comment=x', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-if', '$Make eq "Nikon"', '-Comment=x', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-if', '$Make eq "Nikon"', '-v', '-Comment=x']],
+        ['Canon.jpg', ['-if', '$Model =~ /rebel/i', '-if', '$ISO', '-Comment<$ISO', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-progress', '-Comment=x', '-o', 'out.jpg']],
+        ['Writer.jpg', ['-v', '-Comment=x']],
+        ['Writer.jpg', ['-v0', '-Comment=x']],
+        ['Writer.jpg', ['-q', '-Comment=x', 'nosuch.jpg']],
+        ['Writer.jpg', ['-q', '-q', '-Comment=x', 'nosuch.jpg']],
+        ['Writer.jpg', ['-m', '-Comment=x', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-F', '-Comment=x', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-api', 'NoWarning=not defined', '-NoSuchTag=x', '-Comment=x', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-api', 'Compact=all', '-XMP:Title=compact', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-use', 'MWG', '-MWG:Description=mwg', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-MWG:Creator=mwg', '-o', 'out.jpg']],
+        ['Canon.jpg', ['-use', 'nosuchmodule', '-Comment=x', '-o', 'out.jpg']],
+        // -execute, -common_args, -stay_open and the summary messages
+        ['Writer.jpg', ['-Comment=a', '-o', 'a.jpg', '-execute', '-Comment=b', '-o', 'b.jpg', '-execute', '-Comment', '-common_args']],
+        ['Writer.jpg', ['-Comment=a', '-o', 'a.jpg', '-execute1', '-Comment=b', '-o', 'a.jpg', '-execute2', '-echo3', '${status}', '-common_args']],
+        ['Writer.jpg', ['-stay_open', '1', '-@', "$inputs/stayopen.args"]],
+        ['Writer.jpg', ['-@', "$inputs/write.args"]],
+        ['Writer.jpg', ['-Comment=x', 'nosuch.jpg']],
+        ['Writer.jpg', ['-Comment=x', '-o', 'out.jpg', 'nosuch.jpg']],
+        ['Writer.jpg', ['-Comment=x', '.']],
+        ['Writer.jpg', ['-r', '-Comment=x', '-ext', 'jpg', '.']],
+        ['Writer.jpg', ['-Comment=x', '-ext', 'tif', '.']],
+        ['BMP.bmp', ['-Comment=x']],
+        ['PNG.png', ['-Comment=x']],
+        ['Unknown.jpg', ['-Comment=x']],
+        ['Writer.jpg', ['-Comment=x', '-o']],
+        ['Writer.jpg', ['-Comment=x', '-tagsFromFile=']],
+        ['Writer.jpg', ['-Comment=x', '-efile']],
+        ['Writer.jpg', ['-Comment=x', '-srcfile']],
+        ['Writer.jpg', ['-Comment=x', '-x']],
+    );
+}
 if (isset($opt['sweep'])) {
     $exts = array_map('strtolower', explode(',', $opt['ext'] ?? 'jpg'));
     $cases = [];
@@ -911,6 +1115,7 @@ foreach ($cases as $i => [$src, $args]) {
             touch("$dir/$file[0]", 1_000_000_000);  // (fixed time: FileModifyDate shifts)
         }
         [$status, $out] = Run([...$cmd, ...$args, ...$file], $dir, 'perl' === $tool ? $perlEnv : []);
+        $out = str_replace($dir, '<workdir>', $out);    // (absolute paths printed by the tools)
         $results[$tool] = ['status' => $status, 'out' => $out, 'files' => ListFiles($dir)];
     }
     [$msgDiffs, $fileDiffs] = Compare($results, "$caseDir/perl", "$caseDir/php", $args, $etDir, $perlEnv);
@@ -964,7 +1169,7 @@ function Compare(array $results, string $perlDir, string $phpDir, array $args, s
     }
     $names = array_unique([...array_keys($perl['files']), ...array_keys($php['files'])]);
     sort($names);
-    $checkTime = (bool) preg_grep('/FileModifyDate/i', $args);
+    $checkTime = preg_grep('/FileModifyDate/i', $args) || preg_grep('/^-(P|preserve)$/', $args);
     foreach ($names as $name) {
         $a = $perl['files'][$name] ?? null;
         $b = $php['files'][$name] ?? null;
@@ -1340,6 +1545,35 @@ function QuickTimeInputs(string $etDir, string $inputs): void
     ] as $out => $o) {
         file_put_contents("$inputs/$out", $heic($o));
     }
+}
+
+/**
+ * Inputs of the command-line cases (--cli): CSV and JSON databases written by exiftool -csv and
+ * -j from the tags of test images (SourceFile changed to the file of the case, or removed for
+ * '*'), and argument files for -@ and -stay_open
+ */
+function CliInputs(string $etDir, string $inputs): void
+{
+    $images = "$etDir/t/images";
+    $exiftool = ['perl', "$etDir/exiftool"];
+    $tags = ['-XMP-dc:all', '-EXIF:Artist', '-IPTC:Keywords', '-Comment', 'ExifTool.jpg'];
+    [, $csv] = Run([...$exiftool, '-csv', '-G', ...$tags], $images);
+    file_put_contents("$inputs/import.csv", str_replace("\nExifTool.jpg,", "\nWriter.jpg,", $csv));
+    file_put_contents("$inputs/star.csv", str_replace("\nExifTool.jpg,", "\n*,", $csv));
+    [, $csv] = Run([...$exiftool, '-csv', '-csvDelim', ';', '-XMP-dc:all', '-Comment', 'ExifTool.jpg'], $images);
+    file_put_contents("$inputs/semi.csv", str_replace("\nExifTool.jpg;", "\nWriter.jpg;", $csv));
+    [, $json] = Run([...$exiftool, '-j', '-G1', ...$tags], $images);
+    file_put_contents("$inputs/import.json", str_replace('"SourceFile": "ExifTool.jpg"', '"SourceFile": "Writer.jpg"', $json));
+    file_put_contents("$inputs/star.json", str_replace("\"SourceFile\": \"ExifTool.jpg\",\n", '', $json));
+    [, $json] = Run([...$exiftool, '-j', '-struct', '-G1', '-XMP:all', 'XMP.jpg'], $images);
+    file_put_contents("$inputs/struct.json", str_replace('"SourceFile": "XMP.jpg"', '"SourceFile": "Writer.jpg"', $json));
+    [, $json] = Run([...$exiftool, '-j', '-b', '-ThumbnailImage', '-XMP:Title', 'ExifTool.jpg'], $images);
+    file_put_contents("$inputs/binary.json", str_replace('"SourceFile": "ExifTool.jpg"', '"SourceFile": "Writer.jpg"', $json));
+    // -stay_open argfile (Writer.jpg is the file of the case), and a plain -@ argfile
+    file_put_contents("$inputs/stayopen.args", "-Comment=first\n-o\na.jpg\nWriter.jpg\n-execute\n"
+        ."-Comment=second\n-o\nb.jpg\nWriter.jpg\n-execute7\n-Comment\n-stay_open\nFalse\n");
+    file_put_contents("$inputs/write.args", "# comment\n  -Comment = spaced value\n-XMP:Title+=t1\n"
+        ."#[CSTR]-Artist=tab\\there \\\"quoted\\\"\n-o\nout.jpg\n");
 }
 
 /**
