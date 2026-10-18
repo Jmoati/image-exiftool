@@ -41,9 +41,9 @@
 //             - The family 2 group names will be set to 'Unknown' for any XMP
 //               tags not found in the XMP or Exif tag tables.
 //
-// PHP port of Image::ExifTool::XMP 3.79 (reading only). See PORTING.md.
-// The subs of XMPStruct.pl, XMP2.pl and the reading subs of WriteXMP.pl (same Perl
-// package) are in the traits of src/XMP/. The tag tables are generated (tables/XMP.php),
+// PHP port of Image::ExifTool::XMP 3.79. See PORTING.md.
+// The subs of XMPStruct.pl, XMP2.pl and WriteXMP.pl (same Perl package) are in the traits
+// of src/XMP/. The tag tables are generated (tables/XMP.php),
 // the package variables and file lexicals are in Vars\XMP (tables/vars/XMP.php).
 //------------------------------------------------------------------------------
 
@@ -276,7 +276,8 @@ class XMP
     // Register namespace for specified user-defined table
     // Inputs: 0) tag/structure table ref
     // Returns: namespace prefix
-    public static function RegisterNamespace($table)
+    // (PHP: a structure definition is an array, changed in place like the Perl hash)
+    public static function RegisterNamespace(&$table)
     {
         if (!is_array($table['NAMESPACE'] ?? null)) return $table['NAMESPACE'] ?? null;
         $nsRef = $table['NAMESPACE'];
@@ -991,12 +992,12 @@ class XMP
     //         6) reference to blank node information hash
     // Returns: Number of contained XMP elements
     // (PHP: in the element loop, Perl's %attrs and @attrs are $attrsH and $attrsA; $attrs is
-    //  the attribute string; writing branches (XMP_CAPTURE) are not ported)
+    //  the attribute string)
     public static function ParseXMPElement(ExifTool $et, TagTable $tagTablePtr, $dataPt, $start = null, $end = null,
         ?array &$propList = null, ?array &$blankInfo = null)
     {
         [$count, $nItems] = [0, 0];
-        $isWriting = $et->XMP_CAPTURE;
+        $isWriting = $et->XMP_CAPTURE !== null;     // (Perl: a hash ref, true even if empty)
         $isSVG = $et->XMP_IS_SVG;
         $saveNS = null;     // save xlatNS lookup if changed for the scope of this element
         $definedNS = $usedNS = [];  // namespaces defined and used in this scope
@@ -1336,9 +1337,28 @@ class XMP
                     if (!$et->XmpAbout) {
                         $et->XmpAbout = $attrsH[$shortName];
                     } elseif ($et->XmpAbout !== $attrsH[$shortName]) {
-                        if ($et->XmpValidate !== null) {
+                        if ($isWriting) {
+                            $str = "Different 'rdf:about' attributes not handled";
+                            if (empty($et->WAS_WARNED[$str])) {
+                                $et->Error($str, 1);
+                                $et->WAS_WARNED[$str] = 1;
+                            }
+                        } elseif ($et->XmpValidate !== null) {
                             $et->Warn("Different 'rdf:about' attributes");
                         }
+                    }
+                }
+                if ($isWriting) {
+                    // keep track of our namespaces when writing
+                    if ($ns === 'xmlns') {
+                        $stdNS = Vars\XMP::$uri2ns[$attrsH[$shortName]] ?? null;
+                        if (!($stdNS and ($stdNS === 'x' or $stdNS === 'iX'))) {
+                            if (!isset($et->XMP_NS[$name])) $et->XMP_NS[$name] = $attrsH[$shortName];
+                        }
+                        unset($attrsH[$shortName]);     // (handled by namespace logic)
+                        continue;
+                    } elseif (!empty(Vars\XMP::$recognizedAttrs[$propName])) {
+                        continue;
                     }
                 }
                 $shortVal = $attrsH[$shortName];
@@ -1364,6 +1384,8 @@ class XMP
                 // save this shorthand XMP property
                 if ($nodeID !== null) {
                     self::SaveBlankInfo($blankInfo, $propList, $shortVal);
+                } elseif ($isWriting) {
+                    self::CaptureXMP($et, $propList, $shortVal);
                 } else {
                     if ($et->XmpValidate !== null) self::ValidateProperty($et, $propList);
                     $foundProc($et, $tagTablePtr, $propList, $shortVal);
@@ -1371,8 +1393,29 @@ class XMP
                 array_pop($propList);
                 $shorthand = 1;
             }
+            if ($isWriting) {
+                if (self::ParseXMPElement($et, $tagTablePtr, $dataPt, $valStart, $valEnd,
+                                          $propList, $blankInfo))
+                {
+                    // (no value since we found more properties within this one)
+                    // set an error on any ignored attributes here, because they will be lost
+                    if ($ignored) $et->XMP_ERROR = "Can't handle XMP attribute '{$ignored}'";
+                } elseif (!$shorthand or $valEnd != $valStart) {
+                    $val = substr($dataPt, $valStart, $valEnd - $valStart);
+                    // remove comments and whitespace from rdf:Description only
+                    if ($prop === 'rdf:Description') {
+                        $val = preg_replace('/<!--.*?-->/', '', $val);
+                        $val = preg_replace('/^\s+/', '', $val);
+                        $val = preg_replace('/\s+$/', '', $val);
+                    }
+                    if ($nodeID !== null) {
+                        self::SaveBlankInfo($blankInfo, $propList, $val, $attrsH);
+                    } else {
+                        self::CaptureXMP($et, $propList, $val, $attrsH);
+                    }
+                }
             // look for additional elements contained within this one
-            if ($valStart == $valEnd or
+            } elseif ($valStart == $valEnd or
                 !self::ParseXMPElement($et, $tagTablePtr, $dataPt, $valStart, $valEnd,
                                        $propList, $blankInfo))
             {
@@ -1503,7 +1546,7 @@ class XMP
 
         // ignore non-standard XMP while in strict MWG compatibility mode
         if ((MWG::$strict or $et->OPTIONS['Validate']) and
-            !($et->XMP_CAPTURE or $et->DOC_NUM) and
+            !($et->XMP_CAPTURE !== null or $et->DOC_NUM) and
             ((($dirInfo['DirName'] ?? null) ?: '') === 'XMP' or $et->FILE_TYPE === 'XMP'))
         {
             if ($et->OPTIONS['Validate']) $et->XmpValidate = [];
@@ -1580,6 +1623,10 @@ class XMP
                 if ($m[2] === '<?xml') {
                     if ($fmt !== null and !$fmt and preg_match('/^[^\n\r]*[\n\r]+<\?aid /s', $buf2)) {
                         $et->XmpValidate = null;    // don't validate INX
+                        if ($et->XMP_CAPTURE !== null) {
+                            $et->Error('ExifTool does not yet support writing of INX files');
+                            return 0;
+                        }
                         $type = 'INX';
                     } elseif (preg_match('/<x(mp)?:x[ma]pmeta/', $buf2)) {
                         $hasXMP = 1;
@@ -1610,6 +1657,10 @@ class XMP
                     $isRDF = 1;     // recognize XMP without x:xmpmeta element
                 } elseif ($m[2] === '<svg') {
                     $isSVG = $isXML = 1;
+                }
+                if ($isSVG and $et->XMP_CAPTURE !== null) {
+                    $et->Error('ExifTool does not yet support writing of SVG images');
+                    return 0;
                 }
                 if (str_starts_with($buff, "\0\0")) {
                     $fmt = 'N';     // UTF-32 MM with or without BOM
@@ -1731,7 +1782,7 @@ class XMP
         }
 
         if (!$tagTablePtr) $tagTablePtr = ExifTool::GetTagTable('Image::ExifTool::XMP::Main');
-        if ($et->Options('Verbose') and !$et->XMP_CAPTURE) {
+        if ($et->Options('Verbose') and $et->XMP_CAPTURE === null) {
             $dirType = $isSVG ? 'SVG' : $tagTablePtr['GROUPS'][1];
             $et->VerboseDir($dirType, 0, $dirLen);
         }

@@ -7,24 +7,32 @@
 //
 // Revisions:    01/01/2011 - P. Harvey Created
 //
-// PHP port (reading only: SerializeStruct, EscapeJSON, ConvertStruct, RestoreStruct).
-// Not ported (writing): InflateStruct, CheckStruct, DeleteStruct, AddNewTag, AddNewStruct,
-// GetLangCode, and the DumpStruct debugging routine.
+// PHP port of the whole file (package Image::ExifTool::XMP), mixed into class XMP.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool\XMP;
 
 use Image\ExifTool\ExifTool;
+use Image\ExifTool\NewValue;
 use Image\ExifTool\Perl;
 use Image\ExifTool\ScalarRef;
 use Image\ExifTool\TagInfo;
+use Image\ExifTool\TagLookup;
 use Image\ExifTool\Vars;
 
 /**
  * Structures are PHP arrays: a Perl HASH ref is a string-keyed array, an ARRAY ref a list.
+ * An empty structure (Perl { }) is EMPTY_STRUCT, because an empty PHP array is an empty list.
+ * The structure definitions (Struct of a tagInfo, or of a field) are arrays too: the subs which
+ * add fields to them or cache field information (CheckStruct, AddNewStruct, SetPropertyPath)
+ * take them by reference, so pass $tagInfo->Struct itself. A field generated with a null Struct
+ * is a circular reference to the structure containing it (see FieldStruct()).
  */
 trait XMPStruct
 {
+    /** an empty structure (Perl { }): an empty PHP array would be an empty list */
+    public const array EMPTY_STRUCT = ['_ordered_keys_' => []];
+
     //------------------------------------------------------------------------------
     // Serialize a structure (or other object) into a simple string
     // Inputs: 0) ExifTool ref, 1) HASH ref, ARRAY ref, or SCALAR, 2) closing bracket (or undef)
@@ -67,6 +75,101 @@ trait XMPStruct
     }
 
     //------------------------------------------------------------------------------
+    // Inflate structure (or other object) from a serialized string
+    // Inputs: 0) ExifTool ref, 1) reference to object in string form
+    //           (serialized using the '|' escape, or JSON)
+    //         2) extra delimiter for scalar values delimiters
+    // Returns: 0) object as a SCALAR, HASH ref, or ARRAY ref (or undef on error),
+    //          1) warning string (or undef)
+    // Notes: modifies input string to remove parsed objects
+    public static function InflateStruct(ExifTool $et, &$obj, $delim = null): array
+    {
+        $val = $warn = $part = null;
+        $sfmt = $et->Options('StructFormat');
+        $obj = Perl::str($obj);
+
+        if (self::Subst('/^\s*\{/', $obj)) {
+            $struct = [];
+            for (;;) {
+                if (!($sfmt ? self::Subst('/^\s*"(.*?)"\s*:/s', $obj, $m) :
+                              self::Subst('/^\s*([-\w:.]+#?)\s*=/s', $obj, $m))) break;
+                $tag = $m[1];
+                [$v, $w] = self::InflateStruct($et, $obj, '}');
+                if ($w and !$warn) $warn = $w;
+                if ($v === null) return [null, $warn];
+                $struct[$tag] = $v;
+                // eat comma separator, or all done if there wasn't one
+                if (!self::Subst('/^\s*,/s', $obj)) break;
+            }
+            // eat closing brace and warn if we didn't find one
+            if (!(self::Subst('/^\s*\}/s', $obj) or $warn)) {
+                if (strlen($obj)) {
+                    $part = preg_replace('/^\s*/s', '', $obj, 1);
+                    $part = preg_replace('/[\x0d\x0a].*/s', '', $part, 1);
+                    if (strlen($part) > 30) $part = substr($part, 0, 27) . '...';
+                    $warn = "Invalid structure field at '{$part}'";
+                } else {
+                    $warn = 'Missing closing brace for structure';
+                }
+            }
+            $val = $struct ?: self::EMPTY_STRUCT;
+        } elseif (self::Subst('/^\s*\[/', $obj)) {
+            $list = [];
+            for (;;) {
+                [$v, $w] = self::InflateStruct($et, $obj, ']');
+                if ($w and !$warn) $warn = $w;
+                if ($v === null) return [null, $warn];
+                $list[] = $v;
+                if (!self::Subst('/^\s*,/s', $obj)) break;
+            }
+            // eat closing bracket and warn if we didn't find one
+            if (!self::Subst('/^\s*\]/s', $obj) and !$warn) $warn = 'Missing closing bracket for list';
+            $val = $list;
+        } else {
+            self::Subst('/^\s+/s', $obj);   // remove leading whitespace
+            if ($sfmt) {
+                if (self::Subst('/^"/', $obj)) {
+                    $val = '';
+                    while (self::Subst('/(.*?)"/', $obj, $m)) {
+                        $val .= $m[1];
+                        if (!(preg_match('/([\\\\]+)$/', $val, $mm) and strlen($mm[1]) & 0x01)) break;
+                        $val = substr($val, 0, -1) . '"';   // (was an escaped quote)
+                    }
+                    if (self::Subst('/^base64:/', $val)) {
+                        $val = self::DecodeBase64($val);
+                    } else {
+                        // un-escape characters in JSON string
+                        $val = preg_replace_callback('/\\\\(.)/s',
+                            static fn ($c) => (Vars\XMP::$jsonEsc[$c[1]] ?? null) ?: '\\' . $c[1], $val);
+                    }
+                } elseif (self::Subst('/^(true|false)\b/', $obj, $m)) {
+                    $val = '"' . ucfirst($m[1]) . '"';
+                } elseif (self::Subst('/^([+-]?(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?)/', $obj, $m)) {
+                    $val = $m[1];
+                } else {
+                    if (!$warn) $warn = 'Unknown JSON object';
+                    $val = '""';
+                }
+            } else {
+                // read scalar up to specified delimiter (or "," if not defined)
+                $delim = $delim ? "\\$delim|,|\\||\$" : ',|\||$';
+                $val = '';
+                for (;;) {
+                    if (!self::Subst("/^(.*?)($delim)/s", $obj, $m)) break;
+                    $val .= $m[1];
+                    if (!$m[2]) break;
+                    if ($m[2] !== '|') {
+                        $obj = $m[2] . $obj;
+                        break;
+                    }
+                    if (self::Subst('/^(.)/s', $obj, $m)) $val .= $m[1];    // add escaped character
+                }
+            }
+        }
+        return [$val, $warn];
+    }
+
+    //------------------------------------------------------------------------------
     // Escape string for JSON
     // Inputs: 0) string, 1) flag to force numbers to be quoted too
     // Returns: Escaped string (quoted if necessary)
@@ -91,6 +194,521 @@ trait XMPStruct
         // escape other control characters with \u
         $str = preg_replace_callback('/([\0-\x1f])/s', static fn ($m) => Perl::sprintf('\\u%.4X', ord($m[1])), $str);
         return '"' . $str . '"';    // return the quoted string
+    }
+
+    //------------------------------------------------------------------------------
+    // Get XMP language code from tag name string
+    // Inputs: 0) tag name string
+    // Returns: 0) separated tag name, 1) language code (in standard case), or '' if
+    //          language code was 'x-default', or undef if the tag had no language code
+    public static function GetLangCode($tag): array
+    {
+        $tag = Perl::str($tag);
+        if (preg_match('/^(\w+)[-_]([a-z]{2,3}|[xi])([-_][a-z\d]{2,8}([-_][a-z\d]{1,8})*)?$/i', $tag, $m)) {
+            // normalize case of language codes
+            [$tg, $langCode] = [$m[1], strtolower($m[2])];
+            $m3 = $m[3] ?? '';
+            if ($m3 !== '') $langCode .= (strlen($m3) == 3 ? strtoupper($m3) : strtolower($m3));
+            $langCode = strtr($langCode, '_', '-');     // RFC 3066 specifies '-' as a separator
+            if (strtolower($langCode) === 'x-default') $langCode = '';
+            return [$tg, $langCode];
+        } else {
+            return [$tag, null];
+        }
+    }
+
+    //------------------------------------------------------------------------------
+    // Debugging routine to dump a structure, list or scalar
+    // Inputs: 0) scalar, ARRAY ref or HASH ref, 1) indent (or undef)
+    public static function DumpStruct($obj, $indent = null): void
+    {
+        if (!$indent) $indent = '';
+        if (self::IsHash($obj)) {
+            echo "{\n";
+            foreach (ExifTool::OrderedKeys($obj) as $k) {
+                echo "$indent  $k = ";
+                self::DumpStruct($obj[$k], "$indent  ");
+            }
+            echo $indent, "},\n";
+        } elseif (is_array($obj)) {
+            echo "[\n";
+            foreach ($obj as $v) {
+                echo "$indent  ";
+                self::DumpStruct($v, "$indent  ");
+            }
+            echo $indent, "],\n";
+        } else {
+            echo '"', Perl::str($obj instanceof ScalarRef ? $obj->value : $obj), "\",\n";
+        }
+    }
+
+    //------------------------------------------------------------------------------
+    // Recursively validate structure fields (tags)
+    // Inputs: 0) ExifTool ref, 1) Structure ref, 2) structure table definition ref
+    // Returns: 0) validated structure ref, 1) error string, or undef on success
+    // Notes:
+    // - fixes field names in structure and applies inverse conversions to values
+    // - copies structure to avoid interdependencies with calling code on referenced values
+    // - handles lang-alt tags, and '#' on field names
+    // - resets UTF-8 flag of SCALAR values
+    // - un-escapes for XML or HTML as per Escape option setting
+    // (PHP: always the list context; $strTable is changed in place, like the Perl hash)
+    public static function CheckStruct(ExifTool $et, $struct, array &$strTable): array
+    {
+        $strName = ($strTable['STRUCT_NAME'] ?? null) ?: ('XMP ' . Perl::str(self::RegisterNamespace($strTable)));
+        if (!self::IsHash($struct)) return [null, "Expecting $strName structure"];
+
+        $err = $warn = $rtnVal = $val = null;
+        $copy = [];
+        // copy the ordered keys if they exist
+        if (isset($struct['_ordered_keys_'])) $copy['_ordered_keys_'] = [];
+        foreach (ExifTool::OrderedKeys($struct) as $key) {     // Key:
+            $tag = $key;
+            // allow trailing '#' to disable print conversion on a per-field basis
+            $type = $fieldInfo = null;
+            $tag = preg_replace('/#$/', '', $tag, 1, $n);
+            if ($n) $type = 'ValueConv';
+            if (empty(self::$specialStruct[$tag])) $fieldInfo = $strTable[$tag] ?? null;
+            // fix case of field name if necessary
+            if (!self::PerlTrue($fieldInfo)) {
+                // (sort in reverse to get lower case (not special) tags first)
+                $fix = self::FixCase($tag, $strTable);
+                if ($fix !== null and empty(self::$specialStruct[$fix])) $fieldInfo = $strTable[$tag = $fix] ?? null;
+            }
+            while (!is_array($fieldInfo)) {     // (a field definition is a PHP array, maybe empty)
+                // generate wildcard fields on the fly (eg. mwg-rs:Extensions)
+                if (empty($strTable['NAMESPACE'])) {
+                    $grp = $tg = $langCode = null;
+                    [$grp, $tg] = preg_match('/^(.+):(.+)/', $tag, $m) ? [strtolower($m[1]), $m[2]] : ['', $tag];
+                    if ($grp === 'XMP') $grp = null;    // (a group of 'XMP' is implied)
+                    $matches = TagLookup::FindTagInfo($tg);
+                    // also look for lang-alt tags
+                    if (!$matches) {
+                        [$tg, $langCode] = self::GetLangCode($tg);
+                        if ($langCode !== null) $matches = TagLookup::FindTagInfo($tg);
+                    }
+                    $tagInfo = $priority = $g1 = null;
+                    // find best matching tag
+                    foreach ($matches as $ti) {
+                        $grps = $et->GetGroup($ti);
+                        if ($grps[0] !== 'XMP') continue;
+                        if ($grp and $grp !== strtolower($grps[1])) continue;
+                        // must be lang-alt tag if we are writing an alternate language
+                        if ($langCode !== null and !($ti->Writable and $ti->Writable === 'lang-alt')) continue;
+                        $pri = $ti->Priority ?: 1;
+                        if ($ti->Avoid) $pri -= 10;
+                        if ($priority !== null and $priority >= $pri) continue;
+                        $priority = $pri;
+                        $tagInfo = $ti;
+                        $g1 = $grps[1];
+                    }
+                    if (!$tagInfo) {
+                        $warn = "'{$tag}' is not a writable XMP tag";
+                        continue 2;     // next Key
+                    }
+                    self::GetPropertyPath($tagInfo);    // make sure property path is generated for this tag
+                    $tag = $tagInfo->Name;
+                    if ($grp) $tag = "$g1:$tag";
+                    if ($langCode) $tag .= "-$langCode";
+                    $fieldInfo = $strTable[$tag] ?? null;
+                    // create new structure field if necessary
+                    if (!self::PerlTrue($fieldInfo)) {
+                        $fieldInfo = $strTable[$tag] = [
+                            ...$tagInfo->toArray(),     // (also copies the necessary TagID and PropertyPath)
+                            'Namespace' => $tagInfo->Namespace ?: $tagInfo->Table['NAMESPACE'],
+                            'LangCode'  => $langCode,
+                        ];
+                    }
+                    // delete stuff we don't need (shouldn't cause harm, but better safe than sorry)
+                    // - need to keep StructType and Table in case we need to call AddStructType later
+                    unset($fieldInfo['Description'], $fieldInfo['Groups']);
+                    if (is_array($strTable[$tag] ?? null)) unset($strTable[$tag]['Description'], $strTable[$tag]['Groups']);
+                    break;  // write this dynamically-generated field
+                }
+                // generate lang-alt fields on the fly (eg. Iptc4xmpExt:AOTitle)
+                [$tg, $langCode] = self::GetLangCode($tag);
+                if ($langCode !== null) {
+                    if (empty(self::$specialStruct[$tg])) $fieldInfo = $strTable[$tg] ?? null;
+                    if (!self::PerlTrue($fieldInfo)) {
+                        $fix = self::FixCase($tg, $strTable);
+                        if ($fix !== null and empty(self::$specialStruct[$fix])) $fieldInfo = $strTable[$tg = $fix] ?? null;
+                    }
+                    if (is_array($fieldInfo) and !empty($fieldInfo['Writable']) and
+                        $fieldInfo['Writable'] === 'lang-alt')
+                    {
+                        $srcInfo = $fieldInfo;
+                        if ($langCode) $tag = $tg . '-' . $langCode;
+                        $fieldInfo = $strTable[$tag] ?? null;
+                        // create new structure field if necessary
+                        if (!self::PerlTrue($fieldInfo)) {
+                            $fieldInfo = $strTable[$tag] = [
+                                ...$srcInfo,
+                                'TagID'    => $tg,
+                                'LangCode' => $langCode,
+                            ];
+                        }
+                        break;  // write this lang-alt field
+                    }
+                }
+                $warn = "'{$tag}' is not a field of $strName";
+                continue 2;     // next Key
+            }
+            $sv = $struct[$key];
+            if (self::IsHash($sv)) {
+                if (!self::HasStruct($fieldInfo)) {
+                    $warn = "$tag is not a structure in $strName";
+                    continue;
+                }
+                // recursively check this structure
+                $subTable = &self::FieldStruct($strTable, $tag);
+                [$val, $err] = self::CheckStruct($et, $sv, $subTable);
+                unset($subTable);
+                if ($err) {
+                    $warn = $err;
+                    continue;
+                }
+                $copy[$tag] = $val;
+            } elseif (is_array($sv)) {
+                if (empty($fieldInfo['List'])) {
+                    $warn = "$tag is not a list in $strName";
+                    continue;
+                }
+                // check all items in the list
+                $copyList = [];
+                $i = 0;
+                foreach ($sv as $item) {
+                    if (!is_array($item) and !is_object($item)) {
+                        if ($item === null) $item = '';     // use empty string for missing items
+                        if (self::HasStruct($fieldInfo)) {
+                            // (allow empty structures)
+                            if (!preg_match('/^\s*$/', Perl::str($item))) {
+                                $warn = "$tag items are not valid structures";
+                                continue 2;     // next Key
+                            }
+                            $copyList[$i] = self::EMPTY_STRUCT;     // create hash for empty structure
+                        } else {
+                            $et->Sanitize($item);
+                            [$copyList[$i], $err] = $et->ConvInv($item, $fieldInfo, $tag, $strName, $type, '');
+                            if ($copyList[$i] === null) $copyList[$i] = '';     // avoid undefined item
+                            if ($err) {
+                                $warn = $err;
+                                continue 2;     // next Key
+                            }
+                            $err = self::CheckXMP($et, new TagInfo($fieldInfo), $copyList[$i]);
+                            if ($err) {
+                                $warn = "$err in $strName $tag";
+                                continue 2;     // next Key
+                            }
+                        }
+                    } elseif (self::IsHash($item)) {
+                        if (!self::HasStruct($fieldInfo)) {
+                            $warn = "$tag is not a structure in $strName";
+                            continue 2;     // next Key
+                        }
+                        $subTable = &self::FieldStruct($strTable, $tag);
+                        [$copyList[$i], $err] = self::CheckStruct($et, $item, $subTable);
+                        unset($subTable);
+                        if ($err) {
+                            $warn = $err;
+                            continue 2;     // next Key
+                        }
+                    } else {
+                        $warn = "Invalid value for $tag in $strName";
+                        continue 2;     // next Key
+                    }
+                    ++$i;
+                }
+                $copy[$tag] = $copyList;
+            } elseif (self::HasStruct($fieldInfo)) {
+                $warn = "Improperly formed structure in $strName $tag";
+                continue;
+            } else {
+                $et->Sanitize($sv);
+                [$val, $err] = $et->ConvInv($sv, $fieldInfo, $tag, $strName, $type, '');
+                if ($err) {
+                    $warn = $err;
+                    continue;
+                }
+                if ($val === null) continue;    // check for undefined
+                $err = self::CheckXMP($et, new TagInfo($fieldInfo), $val);
+                if ($err) {
+                    $warn = "$err in $strName $tag";
+                    continue;
+                }
+                // turn this into a list if necessary
+                $copy[$tag] = !empty($fieldInfo['List']) ? [$val] : $val;
+            }
+            if (isset($copy['_ordered_keys_'])) $copy['_ordered_keys_'][] = $tag;   // save ordered keys
+        }
+        if ($copy or !$warn) {
+            $rtnVal = $copy ?: self::EMPTY_STRUCT;
+            $err = null;
+            if ($warn) $et->CHECK_WARN = $warn;
+        } else {
+            $err = $warn;
+        }
+        return [$rtnVal, $err];
+    }
+
+    //------------------------------------------------------------------------------
+    // Delete matching structures from existing linearized XMP
+    // Inputs: 0) ExifTool ref, 1) capture hash ref, 2) structure path ref,
+    //         3) new value hash ref, 4) reference to change counter
+    // Returns: 0) delete flag, 1) list index of deleted structure if adding to list
+    //          2) flag set if structure existed
+    // Notes: updates path to new base path for structure to be added
+    public static function DeleteStruct(ExifTool $et, array &$capture, &$pathPt, NewValue $nvHash, &$changed): array
+    {
+        $deleted = $added = $existed = $p = $pp = $val = $delPath = null;
+        $structPaths = $matchingPaths = $delPaths = [];
+
+        // find all existing elements belonging to this structure
+        $pp = preg_replace('/ \d+/', ' \\d+', $pathPt);
+        $structPaths = self::GrepKeys('^' . $pp . '(\/|$)', $capture);
+        sort($structPaths, SORT_STRING);
+        if ($structPaths) $existed = 1;
+        // delete only structures with matching fields if necessary
+        if ($nvHash->DelValue !== null) {
+            if ($nvHash->DelValue) {
+                $strTable = $nvHash->TagInfo->Struct;
+                // all fields must match corresponding elements in the same
+                // root structure for it to be deleted
+                foreach ($nvHash->DelValue as $val) {
+                    if (!self::IsHash($val)) continue;
+                    $cap = $match = [];
+                    if (!self::AddNewStruct(null, null, $cap, $pathPt, $val, $strTable)) continue;
+                    foreach (array_map('strval', array_keys($cap)) as $p) {
+                        if (str_contains($p, ' ')) {
+                            $p2 = preg_replace('/ \d+/', ' \\d+', $p);
+                            $matchingPaths = array_values(@preg_grep(ExifTool::Rx('^' . $p2 . '$'), $structPaths) ?: []);
+                            sort($matchingPaths, SORT_STRING);
+                        } else {
+                            $matchingPaths[] = $p;
+                        }
+                        foreach ($matchingPaths as $p2) {
+                            if (!preg_match(ExifTool::Rx('^(' . $pp . ')'), $p2, $m)) continue;
+                            // language attribute must also match if it exists
+                            $attr = $cap[$p][1];
+                            if (!empty($attr['xml:lang'])) {
+                                $a2 = $capture[$p2][1] ?? [];
+                                if (!(!empty($a2['xml:lang']) and $a2['xml:lang'] === $attr['xml:lang'])) continue;
+                            }
+                            if (isset($capture[$p2]) and Perl::str($capture[$p2][0]) === Perl::str($cap[$p][0])) {
+                                // ($1 contains root path for this structure)
+                                $match[$m[1]] = ($match[$m[1]] ?? 0) + 1;
+                            }
+                        }
+                    }
+                    $num = count($cap);
+                    foreach (array_map('strval', array_keys($match)) as $p) {
+                        // do nothing unless all fields matched the same structure
+                        if ($match[$p] != $num) continue;
+                        // delete all elements of this structure
+                        foreach ($structPaths as $p2) {
+                            if (preg_match(ExifTool::Rx('^' . $p), $p2)) $delPaths[] = $p2;
+                        }
+                        // remember path of first deleted structure
+                        if (!$delPath or strcmp($delPath, $p) > 0) $delPath = $p;
+                    }
+                }
+            } // (else don't delete anything)
+        } elseif ($structPaths) {
+            $delPaths = $structPaths;   // delete all
+            preg_match(ExifTool::Rx('^(' . $pp . ')'), $structPaths[0], $m);
+            $delPath = $m[1] ?? null;
+        }
+        if ($delPaths) {
+            $verbose = $et->Options('Verbose');
+            if ($verbose > 1) sort($delPaths, SORT_STRING);
+            foreach ($delPaths as $p) {
+                if ($verbose > 1) {
+                    $p2 = preg_replace_callback('/^(\w+)/', static fn ($m) => (Vars\XMP::$stdXlatNS[$m[1]] ?? null) ?: $m[1], $p, 1);
+                    $et->VerboseValue("- XMP-$p2", $capture[$p][0] ?? null);
+                }
+                unset($capture[$p]);
+                $deleted = 1;
+                ++$changed;
+            }
+            if (!$delPath) {
+                ExifTool::PerlWarn("Internal error 1 in DeleteStruct\n");
+                return [null, null, $existed];
+            }
+            $pathPt = $delPath;     // return path of first element deleted
+        } elseif ($nvHash->TagInfo->List) {
+            // NOTE: we don't yet properly handle lang-alt elements!!!!
+            if ($structPaths) {
+                if (!preg_match(ExifTool::Rx('^(' . $pp . ')'), $structPaths[count($structPaths) - 1], $m)) {
+                    ExifTool::PerlWarn("Internal error 2 in DeleteStruct\n");
+                    return [null, null, $existed];
+                }
+                $path = $m[1];
+                // delete any improperly formatted xmp
+                if (isset($capture[$path])) {
+                    $cap = $capture[$path];
+                    // an error unless this was an empty structure
+                    if (!is_array($cap) or $cap[0]) {
+                        $et->Error("Improperly structured XMP ($path)", 1);
+                    }
+                    unset($capture[$path]);
+                }
+                // (match last index to put in same lang-alt list for Bag of lang-alt items)
+                if (!preg_match('/.* (\d+)/', $path, $m, PREG_OFFSET_CAPTURE)) {
+                    ExifTool::PerlWarn("Internal error 3 in DeleteStruct\n");
+                    return [null, null, $existed];
+                }
+                $added = $m[1][0];
+                // add after last item in list
+                $len = strlen($added);
+                $pos = $m[1][1];
+                $nxt = (int) substr($added, 1) + 1;
+                $path = substr_replace($path, strlen((string) $nxt) . $nxt, $pos, $len);
+                $pathPt = $path;
+            } else {
+                $added = '10';
+            }
+        }
+        return [$deleted, $added, $existed];
+    }
+
+    //------------------------------------------------------------------------------
+    // Add new element to XMP capture hash
+    // Inputs: 0) ExifTool ref, 1) TagInfo ref, 2) capture hash ref,
+    //         3) resource path, 4) value ref, 5) hash ref for last used index numbers
+    // (PHP: 1) is the structure field definition)
+    public static function AddNewTag(?ExifTool $et, array $tagInfo, array &$capture, $path, $valPtr, array &$langIdx): void
+    {
+        $val = self::EscapeXML($valPtr instanceof ScalarRef ? $valPtr->value : $valPtr);
+        $attrs = [];
+        // support writing RDF "resource" values
+        if (!empty($tagInfo['Resource'])) {
+            $attrs['rdf:resource'] = $val;
+            $val = '';
+        }
+        if (!empty($tagInfo['Writable']) and $tagInfo['Writable'] === 'lang-alt') {
+            // write the lang-alt tag
+            $langCode = $tagInfo['LangCode'] ?? null;
+            // add indexed lang-alt list properties
+            $i = ($langIdx[$path] ?? null) ?: 0;
+            $langIdx[$path] = $i + 1;   // save next list index
+            if ($i) {
+                $idx = strlen((string) $i) . $i;
+                $path = preg_replace('/(.*) \d+/', '${1} ' . $idx, $path, 1);    // set list index
+            }
+            $attrs['xml:lang'] = $langCode ?: 'x-default';
+        }
+        $capture[$path] = [$val, $attrs];
+        // print verbose message
+        if ($et and $et->Options('Verbose') > 1) {
+            $p = preg_replace_callback('/^(\w+)/', static fn ($m) => (Vars\XMP::$stdXlatNS[$m[1]] ?? null) ?: $m[1], $path, 1);
+            $et->VerboseValue("+ XMP-$p", $val);
+        }
+    }
+
+    //------------------------------------------------------------------------------
+    // Add new structure to capture hash for writing
+    // Inputs: 0) ExifTool object ref (or undef for no warnings),
+    //         1) tagInfo ref (or undef if no ExifTool), 2) capture hash ref,
+    //         3) base path, 4) struct ref, 5) struct hash ref
+    // Returns: number of tags changed
+    // Notes: Escapes values for XML
+    public static function AddNewStruct(?ExifTool $et, ?TagInfo $tagInfo, array &$capture, $basePath, $struct, array &$strTable)
+    {
+        $verbose = $et ? $et->Options('Verbose') : 0;
+        $langIdx = [];
+
+        $ns = ($strTable['NAMESPACE'] ?? null) ?: '';
+        $changed = 0;
+
+        // add dummy field to allow empty structures (name starts with '~' so it will come
+        // after all valid structure fields, which is necessary when serializing the XMP later)
+        // (PHP: the structure is a copy, the dummy field isn't added to the caller's value)
+        if (self::IsEmptyStruct($struct)) $struct = ['~dummy~' => ''];
+
+        foreach (ExifTool::OrderedKeys($struct) as $tag) {
+            $fieldInfo = $strTable[$tag] ?? null;
+            if (!self::PerlTrue($fieldInfo)) {
+                if ($tag !== '~dummy~') continue;   // check for dummy field
+                $fieldInfo = [];    // create dummy field info for dummy structure
+            } elseif (!is_array($fieldInfo)) {
+                continue;   // (PHP: a special entry of the structure table)
+            }
+            $val = $struct[$tag];
+            $propPath = $fieldInfo['PropertyPath'] ?? null;
+            if (!$propPath) {
+                $propPath = (($fieldInfo['Namespace'] ?? null) ?: $ns) . ':' . (($fieldInfo['TagID'] ?? null) ?: $tag);
+                if (!empty($fieldInfo['List'])) {
+                    $propPath .= "/rdf:{$fieldInfo['List']}/rdf:li 10";
+                }
+                if (!empty($fieldInfo['Writable']) and $fieldInfo['Writable'] === 'lang-alt') {
+                    $propPath .= '/rdf:Alt/rdf:li 10';
+                }
+                $fieldInfo['PropertyPath'] = $propPath;     // save for next time
+                if (is_array($strTable[$tag] ?? null)) $strTable[$tag]['PropertyPath'] = $propPath;
+            }
+            $path = $basePath . '/' . self::ConformPathToNamespace($et, $propPath);
+            $addedTag = null;
+            if (self::IsHash($val)) {
+                if (!self::HasStruct($fieldInfo)) continue;
+                $subStruct = &self::FieldStruct($strTable, $tag);
+                $changed += self::AddNewStruct($et, $tagInfo, $capture, $path, $val, $subStruct);
+                unset($subStruct);
+            } elseif (is_array($val)) {
+                if (empty($fieldInfo['List'])) continue;
+                $i = 0;
+                $p = null;
+                $level = preg_match_all('/ \d+/', $propPath);
+                // loop through all list items (note: can't yet write multi-dimensional lists)
+                foreach ($val as $item) {
+                    if ($i) {
+                        // update first index in field property (may be list of lang-alt lists)
+                        $p = self::ConformPathToNamespace($et, $propPath);
+                        $idx = strlen((string) $i) . $i;
+                        $p = preg_replace('/ \d+/', ' ' . $idx, $p, 1);
+                        $p = "$basePath/$p";
+                    } else {
+                        $p = $path;
+                    }
+                    if (self::IsHash($item)) {
+                        if (!self::HasStruct($fieldInfo)) continue;
+                        $subStruct = &self::FieldStruct($strTable, $tag);
+                        $n = self::AddNewStruct($et, $tagInfo, $capture, $p, $item, $subStruct);
+                        unset($subStruct);
+                        if (!$n) continue;
+                    // don't write empty items in upper-level list
+                    // (PHP: an item which is a list is skipped: multi-dimensional lists can't be written)
+                    } elseif ($item !== null and !is_array($item) and
+                              (strlen(Perl::str($item instanceof ScalarRef ? $item->value : $item)) or $level == 1))
+                    {
+                        self::AddNewTag($et, $fieldInfo, $capture, $p, $item, $langIdx);
+                        $addedTag = 1;
+                    }
+                    ++$changed;
+                    ++$i;
+                }
+            } else {
+                self::AddNewTag($et, $fieldInfo, $capture, $path, $val, $langIdx);
+                $addedTag = 1;
+                ++$changed;
+            }
+            // this is tricky, but we must add the rdf:type for contained structures
+            // in the case that a whole hierarchy was added at once by writing a
+            // flattened tag inside a variable-namespace structure
+            if ($addedTag and !empty($fieldInfo['StructType']) and !empty($fieldInfo['Table'])) {
+                self::AddStructType($et, $fieldInfo['Table'], $capture, $propPath, $basePath);
+            }
+        }
+        // add 'rdf:type' property if necessary
+        if (!empty($strTable['TYPE']) and $changed) {
+            $path = $basePath . '/' . self::ConformPathToNamespace($et, 'rdf:type');
+            if (!isset($capture[$path])) {
+                $capture[$path] = ['', ['rdf:resource' => $strTable['TYPE']]];
+                if ($verbose > 1) {
+                    $p = preg_replace_callback('/^(\w+)/', static fn ($m) => (Vars\XMP::$stdXlatNS[$m[1]] ?? null) ?: $m[1], $path, 1);
+                    $et->VerboseValue("+ XMP-$p", $strTable['TYPE']);
+                }
+            }
+        }
+        return $changed;
     }
 
     //------------------------------------------------------------------------------
@@ -407,6 +1025,59 @@ trait XMPStruct
     private static function PerlTrue($val): bool
     {
         return is_array($val) or is_object($val) or (bool) $val;
+    }
+
+    /** Perl ref $val eq 'HASH' for a structure value (EMPTY_STRUCT included) */
+    private static function IsHash($val): bool
+    {
+        return is_array($val) and !array_is_list($val);
+    }
+
+    /** a structure value without fields (Perl: not %$struct) */
+    private static function IsEmptyStruct($struct): bool
+    {
+        return !$struct or $struct === self::EMPTY_STRUCT;
+    }
+
+    /** Perl $$fieldInfo{Struct} is true (a circular reference is generated as a null Struct) */
+    private static function HasStruct($fieldInfo): bool
+    {
+        return is_array($fieldInfo) and (!empty($fieldInfo['Struct']) or
+            (array_key_exists('Struct', $fieldInfo) and $fieldInfo['Struct'] === null));
+    }
+
+    /**
+     * Perl $$strTable{$tag}{Struct}: a reference to the structure definition of a field of
+     * $strTable, which is $strTable itself for a circular reference (call HasStruct() first)
+     */
+    private static function &FieldStruct(array &$strTable, $tag): array
+    {
+        if ($strTable[$tag]['Struct'] === null) return $strTable;
+        return $strTable[$tag]['Struct'];
+    }
+
+    /** reverse sort grep /^$tag$/i, keys %$strTable: the last key matching $tag (any case), or null */
+    private static function FixCase($tag, array $strTable)
+    {
+        $keys = @preg_grep(ExifTool::Rx('^' . $tag . '$', 'i'), array_map('strval', array_keys($strTable))) ?: [];
+        if (!$keys) return null;
+        sort($keys, SORT_STRING);
+        return end($keys);
+    }
+
+    /** grep /RE/, keys %$hash (RE: a Perl regular expression in a string) */
+    private static function GrepKeys(string $re, array $hash, string $mods = ''): array
+    {
+        return array_values(@preg_grep(ExifTool::Rx($re, $mods), array_map('strval', array_keys($hash))) ?: []);
+    }
+
+    /** Perl $str =~ s/RE// (the first match is removed): true if it matched, the groups in $m */
+    private static function Subst(string $re, &$str, &$m = null): bool
+    {
+        if (!preg_match($re, Perl::str($str), $mm, PREG_OFFSET_CAPTURE)) return false;
+        $str = substr($str, 0, $mm[0][1]) . substr($str, $mm[0][1] + strlen($mm[0][0]));
+        $m = array_map(static fn ($g) => $g[1] < 0 ? '' : $g[0], $mm);
+        return true;
     }
 
     /** $$list[$index] = $val, filling the skipped items with undef as Perl does */
