@@ -4976,6 +4976,7 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     // Notes: Generates tagInfo hash if necessary
     public static function GetTagInfoList(TagTable $tagTablePtr, $tagID): array
     {
+        if (is_float($tagID)) $tagID = Perl::str($tagID);  // (a Perl hash key)
         $tagInfo = $tagTablePtr[$tagID];
 
         if (isset(Vars\ExifTool::$specialTags[$tagID])) {
@@ -5828,7 +5829,8 @@ GR_TAG:     foreach ($rtnTags as $tag) {
                 usort($tags, static fn ($a, $b) => Perl::num($a) <=> Perl::num($b));
             }
         } elseif (!empty($dirInfo['DataMember'])) {
-            $tags = $dirInfo['DataMember'];
+            // (fractional tag IDs of the list are Perl numbers, used as hash keys: '12.1')
+            $tags = array_map(static fn ($t) => is_float($t) ? Perl::str($t) : $t, $dirInfo['DataMember']);
             $verbose = 0;   // no verbose output of extracted values when writing
         } elseif (!empty($dirInfo['MixedTags'])) {
             // process sorted integer-ID tags only

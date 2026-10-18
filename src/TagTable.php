@@ -43,11 +43,12 @@ final class TagTable implements \ArrayAccess, \IteratorAggregate, \Countable
 
     public function offsetExists(mixed $offset): bool
     {
-        return isset($this->data[$offset]);
+        return isset($this->data[self::key($offset)]);
     }
 
     public function &offsetGet(mixed $offset): mixed
     {
+        $offset = self::key($offset);
         if (\array_key_exists($offset, $this->data)) {
             return $this->data[$offset];
         }
@@ -61,13 +62,19 @@ final class TagTable implements \ArrayAccess, \IteratorAggregate, \Countable
         if (null === $offset) {
             $this->data[] = $value;
         } else {
-            $this->data[$offset] = $value;
+            $this->data[self::key($offset)] = $value;
         }
     }
 
     public function offsetUnset(mixed $offset): void
     {
-        unset($this->data[$offset]);
+        unset($this->data[self::key($offset)]);
+    }
+
+    /** a Perl hash key: a fractional tag ID (DATAMEMBER, IS_OFFSET lists) stringifies ('12.1') */
+    private static function key(mixed $offset): mixed
+    {
+        return \is_float($offset) ? Perl::str($offset) : $offset;
     }
 
     /** Perl exists($$table{$key}) */
