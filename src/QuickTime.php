@@ -42,9 +42,10 @@
 //   28) https://docs.mp3tag.de/mapping/
 //   29) https://developer.apple.com/documentation/quicktime-file-format/media_data_reference_atom
 //
-// PHP port of Image::ExifTool::QuickTime 3.35 (reading only). Tag tables and package
+// PHP port of Image::ExifTool::QuickTime 3.35. Tag tables and package
 // variables (%ftypLookup, %eeBox, %qtFlags...) are generated into tables/QuickTime.php and
-// Vars\QuickTime. The read-side subs of WriteQuickTime.pl (GetLangInfo) are included, and
+// Vars\QuickTime. The subs of WriteQuickTime.pl are in the trait QuickTime\WriteQuickTime
+// (src/QuickTime/WriteQuickTime.php), except GetLangInfo (at the end of this file), and
 // the subs of QuickTimeStream.pl (timed metadata, ExtractEmbedded option) are in the
 // trait QuickTime\Stream (src/QuickTime/Stream.php).
 //------------------------------------------------------------------------------
@@ -87,7 +88,21 @@ final class QuickTime
         return $proc;
     }
 
-    // (GetRotationMatrix and GetMatrixStructure are used only when writing)
+    //------------------------------------------------------------------------------
+    // Get rotation matrix
+    // Inputs: 0) angle in degrees
+    // Returns: 9-element rotation matrix as a string (with 0 x/y offsets)
+    public static function GetRotationMatrix($val)
+    {
+        $ang = 3.14159265358979323846264 * Perl::num($val) / 180;
+        $cos = cos($ang);
+        $sin = sin($ang);
+        // round to zero
+        if (abs($cos) < 1e-12) $cos = 0;
+        if (abs($sin) < 1e-12) $sin = 0;
+        $msn = -$sin;
+        return implode(' ', array_map([Perl::class, 'str'], [$cos, $sin, 0, $msn, $cos, 0, 0, 0, 1]));
+    }
 
     //------------------------------------------------------------------------------
     // Get rotation angle from a matrix
@@ -131,6 +146,36 @@ final class QuickTime
             return self::GetRotationAngle($value[$tag]);
         }
         return null;
+    }
+
+    //------------------------------------------------------------------------------
+    // Get MatrixStructure for a given rotation angle
+    // Inputs: 0) rotation angle (deg), 1) ExifTool ref
+    // Returns: matrix structure as a string, or undef if it can't be rotated
+    // - requires ImageSizeLookahead to determine the video image size, and doesn't
+    //   rotate matrix unless image size is valid
+    public static function GetMatrixStructure($val, ExifTool $et)
+    {
+        $a = Perl::split(' ', $val);
+        // pass straight through if it already has an offset
+        if (!(Perl::num($a[6] ?? null) == 0 and Perl::num($a[7] ?? null) == 0)) return $val;
+        $s = Perl::split(' ', $et->ImageSizeLookahead);
+        [$w, $h] = [$s[12] ?? null, $s[13] ?? null];
+        if (!($w and $h)) return null;  // don't rotate 0-sized track
+        $w = self::FixWrongFormat($w);
+        $h = self::FixWrongFormat($h);
+        // apply necessary offsets for the standard rotations
+        $angle = self::GetRotationAngle($val);
+        if ($angle === null) return null;
+        if ($angle == 90) {
+            [$a[6], $a[7]] = [$h, 0];
+        } elseif ($angle == 180) {
+            [$a[6], $a[7]] = [$w, $h];
+        } elseif ($angle == 270) {
+            [$a[6], $a[7]] = [0, $w];
+        }
+        ksort($a);
+        return implode(' ', array_map([Perl::class, 'str'], $a));
     }
 
     //------------------------------------------------------------------------------
@@ -2068,6 +2113,7 @@ final class QuickTime
     // Returns: new tagInfo hash ref, or undef if invalid or no language code
     public static function GetLangInfo(TagInfo $tagInfo, $langCode)
     {
+        self::LoadWriteQuickTime();     // (Perl autoloads WriteQuickTime.pl to call this)
         if (!$langCode) return null;
         // only allow alternate language tags in lang-alt lists
         $writable = $tagInfo->Writable;

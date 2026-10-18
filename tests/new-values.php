@@ -7,9 +7,8 @@
 // child process so its warnings can be told apart), then compares the results, the
 // warnings, the verbose output and the new values left in the object.
 // A case that differs and involves untranslated Perl code ("not ported") is counted apart.
-// Run: php tests/new-values.php [-v] [--images] [--qt-init] [name filter] [~/exiftool]
-// (--images also copies all the tags of each test image with SetNewValuesFromFile; --qt-init
-// applies the load-time code of WriteQuickTime.pl that the generated tables lack so far)
+// Run: php tests/new-values.php [-v] [--images] [name filter] [~/exiftool]
+// (--images also copies all the tags of each test image with SetNewValuesFromFile)
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -28,12 +27,10 @@ if (($args[0] ?? '') === '--php') {
     runPhp();
     exit(0);
 }
-$images = $qtInit = false;
+$images = false;
 foreach ($args as $a) {
     if ($a === '--images') {
         $images = true;     // also copy all tags of each test image
-    } elseif ($a === '--qt-init') {
-        $qtInit = true;     // apply the load-time code of WriteQuickTime.pl (see InitWriteQuickTime)
     } elseif ($a === '-v') {
         $verbose = true;
     } elseif (is_dir($a)) {
@@ -331,7 +328,7 @@ file_put_contents($casesFile, json_encode($cases));
 // (perl -w like the exiftool script: the translated table code raises the warnings of -w)
 $perl = run('PERL_HASH_SEED=0 PERL_PERTURB_KEYS=0 perl -w -I ' . escapeshellarg("$exiftool/lib") . ' ' .
     escapeshellarg(__DIR__ . '/new-values.pl') . ' < ' . escapeshellarg($casesFile), $perlErr);
-$php = run(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(__FILE__) . ' --php' . ($qtInit ? ' --qt-init' : '') . ' < ' . escapeshellarg($casesFile), $phpErr);
+$php = run(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(__FILE__) . ' --php < ' . escapeshellarg($casesFile), $phpErr);
 $perlOut = json_decode($perl, true);
 $phpOut = json_decode($php, true);
 if (!is_array($perlOut) or !is_array($phpOut)) {
@@ -638,8 +635,6 @@ function runPhp(): void
         return true;
     });
     $cases = json_decode(stream_get_contents(STDIN), true);
-    global $argv;
-    if (in_array('--qt-init', $argv, true)) InitWriteQuickTime();
     $out = [];
     foreach ($cases as $i => $case) {
         fwrite(STDERR, "\x02$i\n");
@@ -674,50 +669,6 @@ function runPhp(): void
         ];
     }
     echo json_encode($out);
-}
-
-/**
- * The code that WriteQuickTime.pl runs when Perl loads it (with the first dummy call to a QuickTime
- * write proc), which tools/export-tables.pl doesn't capture yet: it marks the UserData tags that
- * have no ItemList counterpart as Preferred, sets Preferred to 0 for the Avoid-ed tags, and
- * Writable to 0 for the tags with a RawConv but no RawConvInv.  (--qt-init, until the generator
- * loads WriteQuickTime.pl before exporting the tables)
- */
-function InitWriteQuickTime(): void
-{
-    $itemList = ExifTool::GetTagTable('Image::ExifTool::QuickTime::ItemList');
-    $userData = ExifTool::GetTagTable('Image::ExifTool::QuickTime::UserData');
-    $pref = [];
-    foreach (ExifTool::TagTableKeys($itemList) as $tag) {
-        $tagInfo = $itemList[$tag];
-        if (!$tagInfo instanceof \Image\ExifTool\TagInfo) {
-            if (is_array($tagInfo)) continue;
-            $tagInfo = $itemList[$tag] = new \Image\ExifTool\TagInfo(['Name' => $tagInfo]);
-        } else {
-            if ($tagInfo->RawConv and !$tagInfo->RawConvInv) $tagInfo->Writable = 0;
-            if ($tagInfo->Avoid) {
-                $tagInfo->Preferred = 0;
-                continue;
-            }
-            if ($tagInfo->Preferred !== null and !$tagInfo->Preferred) continue;
-        }
-        $pref[$tagInfo->Name] = 1;
-    }
-    foreach (ExifTool::TagTableKeys($userData) as $tag) {
-        $tagInfo = $userData[$tag];
-        if (!$tagInfo instanceof \Image\ExifTool\TagInfo) {
-            if (is_array($tagInfo)) continue;
-            $tagInfo = $userData[$tag] = new \Image\ExifTool\TagInfo(['Name' => $tagInfo]);
-        } else {
-            if ($tagInfo->RawConv and !$tagInfo->RawConvInv) $tagInfo->Writable = 0;
-            if ($tagInfo->Avoid) {
-                $tagInfo->Preferred = 0;
-                continue;
-            }
-            if ($tagInfo->Preferred !== null or isset($pref[$tagInfo->Name])) continue;
-        }
-        $tagInfo->Preferred = 1;
-    }
 }
 
 function runOp(ExifTool $et, array $op)

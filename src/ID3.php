@@ -13,10 +13,9 @@
 //               3) http://www.fortunecity.com/underworld/sonic/3/id3tag.html
 //               4) https://id3.org/Lyrics3
 //
-// PHP port of Image::ExifTool::ID3 1.65 (reading only). Tag tables and file lexicals
+// PHP port of Image::ExifTool::ID3 1.65. Tag tables and file lexicals
 // (@audioFormats, %audioModule, %genre, %otherTable, %userTagName) are generated into
-// tables/ID3.php and Vars\ID3. GetGenreID (used only by a QuickTime PrintConvInv) is
-// write-only and not ported.
+// tables/ID3.php and Vars\ID3. GetGenreID is used only by a QuickTime PrintConvInv (writing).
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -189,6 +188,15 @@ final class ID3
         $val = preg_replace_callback('/(^|\/)(\d+)(?=\/|$)/', static fn ($m) => $m[1] . ($genre[$m[2]] ?? ''), $val);
         $val = preg_replace('/^\(([^)]+)\)\1?$/', '$1', $val, 1); // clean up by removing brackets and duplicates
         return $val;
+    }
+
+    //------------------------------------------------------------------------------
+    // Get Genre ID
+    // Inputs: 0) Genre name
+    // Returns: genre ID number, or undef
+    public static function GetGenreID($val)
+    {
+        return ExifTool::ReverseLookup($val, Vars\ID3::$genre);
     }
 
     //------------------------------------------------------------------------------
