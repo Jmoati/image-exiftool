@@ -250,7 +250,9 @@ Data:
   arrays whose `Fixup` is a `Fixup` object.
 - The write procs of Writer.pl named by the tables (`WriteBinaryData`, `WriteTIFF`,
   `CheckBinaryData`, `DummyWriteProc`) are static methods of `ExifTool` taking `$self` first, like
-  the module ones: call them as `ExifTool::WriteBinaryData($et, $dirInfo, $tagTablePtr)`.
+  the module ones: call them as `ExifTool::WriteBinaryData($et, $dirInfo, $tagTablePtr)`, and pass
+  `\&Image::ExifTool::WriteTIFF` to `WriteDirectory()` as the string
+  `'Image\ExifTool\ExifTool::WriteTIFF'` (it is compared with it, like Perl compares the code refs).
 - Until every writer is ported, `WriteDirectory()` gives a "Not ported: <proc>" error when the
   write proc of a directory being edited (in `EDIT_DIRS`) doesn't exist yet, and leaves the other
   directories unchanged (like the procs which only rewrite edited directories); the trailers whose

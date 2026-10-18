@@ -3695,6 +3695,22 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     }
 
     //------------------------------------------------------------------------------
+    // Add tags to TagLookup (used for writing)
+    // Inputs: 0) source hash of tag definitions, 1) name of destination tag table
+    // (PHP: TagLookup is "loaded" once its class is, its data being read on first use)
+    public static function AddTagsToLookup(TagTable $tagHash, $table): void
+    {
+        if (class_exists(TagLookup::class, false)) {
+            TagLookup::AddTags($tagHash, $table);
+        } elseif (empty(Vars\ExifTool::$pluginTags_h[spl_object_id($tagHash)])) {
+            // queue these tags until TagLookup is loaded
+            Vars\ExifTool::$pluginTags[] = [$tagHash, $table];
+            // set flag so we don't load same tags twice
+            Vars\ExifTool::$pluginTags_h[spl_object_id($tagHash)] = 1;
+        }
+    }
+
+    //------------------------------------------------------------------------------
     // Expand tagInfo Flags
     // Inputs: 0) tagInfo hash ref
     // Notes: $$tagInfo{Flags} must be defined to call this routine

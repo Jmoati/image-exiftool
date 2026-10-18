@@ -11,8 +11,7 @@
 //
 // PHP port of Image::ExifTool::MWG 1.24 (reading only). See PORTING.md.
 // The tag tables (MWG Composite tags, Regions, Keywords, Collections) are generated
-// into tables/MWG.php. Not ported (writing): ReconcileIPTCDigest, and the
-// AddTagsToLookup call of Load().
+// into tables/MWG.php. Not ported (writing): ReconcileIPTCDigest.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -37,7 +36,8 @@ class MWG
         ExifTool::AddCompositeTags('Image::ExifTool::MWG');
         // must also add to lookup so we can write them
         // (since MWG tags aren't in the tag lookup by default)
-        // (Image::ExifTool::AddTagsToLookup: writing only)
+        ExifTool::AddTagsToLookup(ExifTool::PackageTable('Image::ExifTool::MWG::Composite'),
+                                  'Image::ExifTool::Composite');
 
         // modify EXIF:Artist to behave as a list-type tag
         $artist = ExifTool::PackageTable('Image::ExifTool::Exif::Main')[0x13b];
