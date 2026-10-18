@@ -890,6 +890,14 @@ $cases = [
     ['SigmaDP2.x3f', ['-EXIF:all=', '-o', 'out.x3f']],
     ['SigmaDP2.x3f', ['-Artist=in place']],
     ['Sigma.x3f', ['-Artist=me', '-o', 'out.x3f']],
+    // Fuji RAF (WriteRAF): the embedded JPEG is rewritten and the header pointers shifted
+    ['FujiFilm.raf', ['-UserComment=test comment', '-o', 'out.raf']],
+    ['FujiFilm.raf', ['-UserComment='.str_repeat(' ', 248), '-o', 'out.raf']],
+    ['FujiFilm.raf', ['-Artist=me', '-XMP:Title=t', '-IPTC:Keywords=k', '-o', 'out.raf']],
+    ['FujiFilm.raf', ['-all=', '-o', 'out.raf']],
+    ['FujiFilm.raf', ['-v3', '-Comment=x', '-o', 'out.raf']],
+    ['FujiFilm.raf', ['-Artist=in place']],
+    ['FujiFilm.raf', ['-_memin', '-_memout', '-Artist=mem', '-o', 'out.raf']],
 ];
 // RIFF, PDF, PostScript and InDesign writers (inputs made by DocumentInputs(), see below)
 array_push($cases,

@@ -206,6 +206,149 @@ final class FujiFilm
     }
 
     //------------------------------------------------------------------------------
+    // write information to FujiFilm RAW file (RAF)
+    // Inputs: 0) ExifTool object reference, 1) dirInfo reference
+    // Returns: 1 on success, 0 if this wasn't a valid RAF file, or -1 on write error
+    public static function WriteRAF(ExifTool $et, array &$dirInfo)
+    {
+        $raf = $dirInfo['RAF'];
+        $hdr = $jpeg = $outJpeg = $err = $buff = null;
+
+        if ($raf->Read($hdr, 0x94) != 0x94) return 0;
+        if (!preg_match('/^FUJIFILM/', $hdr)) return 0;
+        $ver = substr($hdr, 0x3c, 4);
+        if (!(preg_match('/^\d{4}$/', $ver) or (Vars\FujiFilm::$testedRAF[$ver] ?? null))) return 0;
+
+        // get position and size of M-RAW header
+        [$mpos, $mlen] = Perl::unpack('x72NN', $hdr);
+        // get the position and size of embedded JPEG
+        [$jpos, $jlen] = Perl::unpack('x84NN', $hdr);
+        // check to be sure the JPEG starts in the expected location
+        if (($mpos > 0x94 or $jpos > 0x94 + $mlen) or $jpos < 0x68 or $jpos & 0x03) {
+            $et->Error("Unsupported or corrupted RAF image (version $ver)");
+            return 1;
+        }
+        // read the embedded JPEG
+        if (!($raf->Seek($jpos, 0) and $raf->Read($jpeg, $jlen) == $jlen)) {
+            $et->Error('Error reading RAF meta information');
+            return 1;
+        }
+        if ($mpos) {
+            if ($mlen != 0x11c) {
+                $et->Error('Unsupported M-RAW header (please submit sample for testing)');
+                return 1;
+            }
+            // read M-RAW header and add to file header
+            $mraw = null;
+            if (!($raf->Seek($mpos, 0) and $raf->Read($mraw, $mlen) == $mlen)) {
+                $et->Error('Error reading M-RAW header');
+                return 1;
+            }
+            $hdr .= $mraw;
+            // verify that the 1st raw image offset is zero, and that the 1st raw image
+            // length is the same as the 2nd raw image offset
+            if (!(substr($hdr, 0xc0, 8) === "\0\0\0\0\0\0\0\0" and
+                  substr($hdr, 0xc8, 8) === substr($hdr, 0x110, 8)))
+            {
+                $et->Error('Unexpected layout of M-RAW header');
+                return 1;
+            }
+        }
+        // use same write directories as JPEG
+        $et->InitWriteDirs('JPEG');
+        // rewrite the embedded JPEG in memory
+        $outJpegRef = new ScalarRef(null);
+        $jpegInfo = [
+            'Parent'  => 'RAF',
+            'RAF'     => new RandomAccess($jpeg),
+            'OutFile' => $outJpegRef,
+        ];
+        $et->FILE_TYPE = 'JPEG';
+        $success = $et->WriteJPEG($jpegInfo);
+        $et->FILE_TYPE = 'RAF';
+        $outJpeg = $outJpegRef->value;
+        if (!($success and $outJpeg)) {
+            $et->Error('Invalid RAF format');
+            return 1;
+        }
+        if ($success < 0) return -1;
+
+        // rewrite the RAF image
+        ExifTool::SetByteOrder('MM');
+        $jpegLen = strlen($outJpeg);
+        // pad JPEG to an even 4 bytes (ALWAYS use padding as Fuji does)
+        $pad = str_repeat("\0", 4 - ($jpegLen % 4));
+        // update JPEG size in header (size without padding)
+        ExifTool::Set32u(strlen($outJpeg), $hdr, 0x58);
+        // get pointer to start of the next RAF block
+        $nextPtr = ExifTool::Get32u($hdr, 0x5c);
+        // determine the length of padding at the end of the original JPEG
+        $oldPadLen = $nextPtr - ($jpos + $jlen);
+        if ($oldPadLen) {
+            if ($oldPadLen > 1000000 or $oldPadLen < 0 or
+                !$raf->Seek($jpos + $jlen, 0) or
+                $raf->Read($buff, $oldPadLen) != $oldPadLen)
+            {
+                $et->Error('Bad RAF pointer at 0x5c');
+                return 1;
+            }
+            // make sure padding is only zero bytes (can be >100k for HS10)
+            // (have seen non-null padding in X-Pro1)
+            if (preg_match('/[^\0]/', $buff)) {
+                if ($et->Error('Non-null bytes found in padding', 2)) return 1;
+            }
+        }
+        // calculate offset difference due to change in JPEG size
+        $ptrDiff = strlen($outJpeg) + strlen($pad) - ($jlen + $oldPadLen);
+        // update necessary pointers in header (0xcc and higher in M-RAW header)
+        foreach ([0x5c, 0x64, 0x78, 0x80, 0xcc, 0x114, 0x164] as $offset) {
+            if ($offset >= $jpos) break;   // some versions have a short header
+            $oldPtr = ExifTool::Get32u($hdr, $offset);
+            if (!$oldPtr) continue;        // don't update if pointer is zero
+            $newPtr = $oldPtr + $ptrDiff;
+            if ($newPtr < 0 or $newPtr > 0xffffffff) {
+                if ($offset < 0xcc) {
+                    $et->Error('Invalid offset in RAF header');
+                    return 1;
+                }
+                // assume values at 0xcc and greater are 8-byte integers (NC)
+                // and adjust high word if necessary
+                $high = ExifTool::Get32u($hdr, $offset - 4);
+                if ($newPtr < 0) {
+                    $high -= 1;
+                    $newPtr += 0xffffffff + 1;
+                    if ($high < 0) {
+                        $et->Error('RAF header offset error');
+                        return 1;
+                    }
+                } else {
+                    $high += 1;
+                    $newPtr -= 0xffffffff + 1;
+                }
+                ExifTool::Set32u($high, $hdr, $offset - 4);
+            }
+            ExifTool::Set32u($newPtr, $hdr, $offset);
+        }
+        // write the new header
+        $outfile = $dirInfo['OutFile'];
+        if (!ExifTool::Write($outfile, substr($hdr, 0, $jpos))) $err = 1;
+        // write the updated JPEG plus padding
+        if (!ExifTool::Write($outfile, $outJpeg, $pad)) $err = 1;
+        // copy over the rest of the RAF image
+        if (!$raf->Seek($nextPtr, 0)) {
+            $et->Error('Error reading RAF image');
+            return 1;
+        }
+        while ($raf->Read($buff, 65536)) {
+            if (!ExifTool::Write($outfile, $buff)) {
+                $err = 1;
+                break;
+            }
+        }
+        return $err ? -1 : 1;
+    }
+
+    //------------------------------------------------------------------------------
     // get information from FujiFilm RAW file (RAF)
     // Inputs: 0) ExifTool object reference, 1) dirInfo reference
     // Returns: 1 if this was a valid RAF file

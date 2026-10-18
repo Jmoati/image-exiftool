@@ -8,9 +8,7 @@ require __DIR__.'/TestLib.php';
 
 use Image\ExifTool\ExifTool;
 
-$skip = [
-    5 => 'FujiFilm RAF writer',
-];
+$skip = [];
 $t = testDir();
 $testname = 'FujiFilm';
 
