@@ -478,6 +478,14 @@ $cases = [
     ["$inputs/meta.heic", ['-EXIF:all=', '-EXIF:UserComment=a comment', '-XMP:Subject=a', '-XMP:Subject=b', '-o', 'out.heic']],
     ["$inputs/meta.heic", ['-XMP:Title=in place']],
     ["$inputs/meta.heic", ['-v3', '-EXIF:Artist=verbose', '-o', 'out.heic']],
+    ["$inputs/prop.heic", ['-QuickTime:Rotation=Rotate 90 CW', '-Mirroring=Horizontal', '-o', 'out.heic']],
+    ["$inputs/prop.heic", ['-n', '-QuickTime:Rotation=2', '-PixelAspectRatio=16 9', '-o', 'out.heic']],
+    ["$inputs/prop.heic", ["-ICC_Profile<=$images/ICC_Profile.icc", '-o', 'out.heic']],
+    ["$inputs/prop.heic", ['-ICC_Profile=', '-o', 'out.heic']],
+    ["$inputs/prop.heic", ['-QuickTime:Rotation=', '-Mirroring=', '-o', 'out.heic']],
+    ["$inputs/prop.heic", ['-all=', '-o', 'out.heic']],
+    ["$inputs/thumbprop.heic", ['-QuickTime:Rotation=Rotate 180', '-Mirroring=Horizontal', '-o', 'out.heic']],
+    ["$inputs/thumbprop.heic", ["-ICC_Profile<=$inputs/big.icc", '-o', 'out.heic']],
     ["$inputs/deflate.heic", ['-api', 'Compress', '-XMP:Title=still compressed', '-o', 'out.heic']],
     ["$inputs/deflate.heic", ['-XMP:Title=no Compress option', '-o', 'out.heic']],
     ["$inputs/deflate.heic", ['-api', 'Compress=0', '-XMP:Title=uncompress?', '-o', 'out.heic']],
@@ -806,6 +814,25 @@ function QuickTimeInputs(string $etDir, string $inputs): void
     $size = unpack('N', $d, $udta)[1];
     $d = substr($d, 0, $udta).pack('N', $size + 4).substr($d, $udta + 4, $size - 4)."\0\0\0\0".substr($d, $udta + $size);
     file_put_contents("$inputs/term.mov", pack('N', unpack('N', $d)[1] + 4).substr($d, 4));
+    // QuickTime.heic with irot, imir, pasp and colr (ICC profile) item properties, associated
+    // with the primary item (prop.heic) or with the thumbnail only (thumbprop.heic)
+    $h = file_get_contents("$images/QuickTime.heic");
+    $icc = file_get_contents("$images/ICC_Profile.icc");
+    $props = pack('N', 9).'irot'."\1".pack('N', 9).'imir'."\0".pack('N', 16).'pasp'.pack('NN', 4, 3).
+        pack('N', 12 + strlen($icc)).'colr'.'prof'.$icc;
+    foreach (['prop.heic' => ["\x81\x02\x05\x06\x07\x08", "\x83\x04"], 'thumbprop.heic' => ["\x81\x02", "\x83\x04\x05\x06\x07\x08"]] as $out => [$a1, $a2]) {
+        $ipma = pack('NN', 0, 2)."\x4e\x22".chr(strlen($a1)).$a1."\x4e\x23".chr(strlen($a2)).$a2;
+        $ipma = pack('N', 8 + strlen($ipma)).'ipma'.$ipma;
+        $ipco = pack('N', 294 + strlen($props)).substr($h, 255, 290).$props;   // (ipco @251, 294 bytes)
+        $iprp = pack('N', 8 + strlen($ipco) + strlen($ipma)).'iprp'.$ipco.$ipma;
+        $diff = strlen($iprp) - 328;                                              // (iprp @243, 328 bytes)
+        $meta = substr($h, 36, 207).$iprp;                                        // (meta @28, 543 bytes)
+        $file = substr($h, 0, 28).pack('N', 8 + strlen($meta)).'meta'.$meta.substr($h, 571);
+        foreach ([107, 125] as $p) {    // (base offsets of the 2 items in iloc)
+            $file = substr_replace($file, pack('N', unpack('N', $file, $p)[1] + $diff), $p, 4);
+        }
+        file_put_contents("$inputs/$out", $file);
+    }
 }
 
 /**
