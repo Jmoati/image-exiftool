@@ -11,7 +11,7 @@
 //               2) http://netpbm.sourceforge.net/doc/pgm.html
 //               3) http://netpbm.sourceforge.net/doc/pbm.html
 //
-// PHP port of Image::ExifTool::PPM 1.11 (reading only: the rewrite branch is not ported).
+// PHP port of Image::ExifTool::PPM 1.11.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -28,6 +28,7 @@ final class PPM
     public static function ProcessPPM(ExifTool $et, array &$dirInfo)
     {
         $raf = $dirInfo['RAF'];
+        $outfile = $dirInfo['OutFile'] ?? null;
         $verbose = $et->Options('Verbose');
         $out = $et->Options('TextOut');
         $buff = $num = $type = $seal = null;
@@ -93,7 +94,36 @@ final class PPM
 //
 // rewrite the file if requested
 //
-        // (writing not ported)
+        if ($outfile) {
+            $nvHash = null;
+            $newComment = $et->GetNewValue('Comment', $nvHash);
+            $oldComment = $info['Comment'] ?? null;
+            if ($et->IsOverwriting($nvHash, $oldComment)) {
+                ++$et->CHANGED;
+                if ($oldComment !== null) $et->VerboseValue('- Comment', $oldComment);
+                if ($newComment !== null) $et->VerboseValue('+ Comment', $newComment);
+            } elseif ($seal and ($et->DEL_GROUP['SEAL'] ?? null)) {
+                // delete SEAL comment
+                $et->VerboseValue('- Comment', $oldComment);
+                ++$et->CHANGED;
+            } else {
+                $newComment = $oldComment;  // use existing comment
+            }
+            $hdr = "P$num\n";
+            if ($newComment !== null) {
+                $newComment = str_replace("\n", "\n# ", Perl::str($newComment));
+                $hdr .= "# $newComment\n";
+            }
+            $hdr .= "{$info['ImageWidth']} {$info['ImageHeight']}\n";
+            if ($type !== 'PBM') $hdr .= "{$info['MaxVal']}\n";
+            // write header and start of image
+            if (!ExifTool::Write($outfile, $hdr, substr($buff, $len))) return -1;
+            // copy over the rest of the image
+            while ($raf->Read($buff, 0x10000)) {
+                if (!ExifTool::Write($outfile, $buff)) return -1;
+            }
+            return 1;
+        }
 //
 // save extracted information
 //

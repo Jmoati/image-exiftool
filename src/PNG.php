@@ -22,46 +22,28 @@
 //               you can edit it, then you have to ASCII/hex-encode, recompress
 //               and calculate a CRC before you can write it out again.  gaaaak.
 //
-// PHP port of Image::ExifTool::PNG 1.71 (reading only). Tag tables are generated
-// into tables/PNG.php, module variables into tables/vars/PNG.php.
+//               Although XMP is allowed after the IDAT chunk according to the
+//               PNG specifiction, some apps (Apple Spotlight and Preview for
+//               OS X 10.8.5 and Adobe Photoshop CC 14.0) ignore it unless it
+//               comes before IDAT.  As of version 11.58, ExifTool uses a 2-pass
+//               writing algorithm to allow it to be compatible with XMP after
+//               IDAT while writing it before IDAT.  (PNG and EXIF are still
+//               written after IDAT.)  As of version 11.63, this strategy is
+//               applied to all text chunks (tEXt, zTXt and iTXt).
+//
+// PHP port of Image::ExifTool::PNG 1.71. Tag tables are generated into tables/PNG.php,
+// module variables into tables/vars/PNG.php. The writer routines of WritePNG.pl are in the
+// WritePNG trait (src/PNG/WritePNG.php). An output buffer reference ($outBuff, OutBuff of
+// dirInfo: Perl \$theBuff) is a ScalarRef.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
 
 final class PNG
 {
+    use PNG\WritePNG;
+
     public static $VERSION = '1.71';
-
-    // CRC lookup table (my @crcTable in WritePNG.pl)
-    private static array $crcTable = [];
-
-    //------------------------------------------------------------------------------
-    // Calculate CRC or update running CRC (ref 1)
-    // Inputs: 0) data reference, 1) running crc to update (undef initially)
-    //         2) data position (undef for 0), 3) data length (undef for all data),
-    // Returns: updated CRC
-    // (from WritePNG.pl, used when reading to check the CRC in Verbose and Validate modes)
-    public static function CalculateCRC($dataPt, $crc = null, $pos = null, $len = null)
-    {
-        if ($crc === null) $crc = 0;
-        if ($pos === null) $pos = 0;
-        if ($len === null) $len = strlen($dataPt) - $pos;
-        $crc ^= 0xffffffff;         // undo 1's complement
-        // build lookup table unless done already
-        if (!self::$crcTable) {
-            for ($n = 0; $n < 256; ++$n) {
-                for ($k = 0, $c = $n; $k < 8; ++$k) {
-                    $c = ($c & 1) ? 0xedb88320 ^ ($c >> 1) : $c >> 1;
-                }
-                self::$crcTable[$n] = $c;
-            }
-        }
-        // calculate the CRC
-        foreach (unpack('C*', substr($dataPt, $pos, $len)) as $_) {
-            $crc = self::$crcTable[($crc ^ $_) & 0xff] ^ ($crc >> 8);
-        }
-        return $crc ^ 0xffffffff;   // return 1's complement
-    }
 
     //------------------------------------------------------------------------------
     // (PHP) Compress::Zlib's inflate() removes the input it consumed from its argument, so
@@ -122,6 +104,35 @@ final class PNG
     }
 
     //------------------------------------------------------------------------------
+    // Convert EXIF date/time to PNG format
+    // Inputs: 0) Date/time in EXIF format, 1) ExifTool ref
+    // Returns: PNG formatted date/time string
+    public static function InversePNGDate($val, $et)
+    {
+        if ($et->Options('StrictDate')) {
+            $err = null;
+            if (preg_match('/^(\d{4}):(\d{2}):(\d{2}) (\d{2})(:\d{2})(:\d{2})?(?:\.\d*)?\s*(\S*)/', Perl::str($val), $m)) {
+                [, $yr, $mon, $day, $hr, $min, $sec, $tz] = $m + array_fill(0, 8, '');
+                if (!$sec) $sec = '';
+                $monName = array_flip(Vars\PNG::$monthNum);
+                $mon = $monName[$mon + 0] ?? null;
+                if (!$mon) $err = 1;
+                if (strlen($tz)) {
+                    if (!preg_match('/^(Z|[-+]\d{2}:?\d{2})/', $tz)) $err = 1;
+                    $tz = str_replace(':', '', $tz);
+                    $tz = ' ' . $tz;
+                }
+                if (!$err) $val = "$day $mon $yr $hr$min$sec$tz";
+            }
+            if ($err) {
+                trigger_error("Invalid date/time (use YYYY:mm:dd HH:MM:SS[.ss][+/-HH:MM|Z])\n", E_USER_WARNING);
+                $val = null;
+            }
+        }
+        return $val;
+    }
+
+    //------------------------------------------------------------------------------
     // Get localized version of tagInfo hash
     // Inputs: 0) tagInfo hash ref, 1) language code (eg. "x-default")
     // Returns: new tagInfo hash ref, or undef if invalid
@@ -142,8 +153,7 @@ final class PNG
     //         5) optional output buffer ref, 6) character encoding (tEXt/zTXt/iTXt only)
     //         6) optional language code
     // Returns: 1 on success
-    // (PHP: reading only, $outBuff is always undef)
-    public static function FoundPNG(ExifTool $et, TagTable $tagTablePtr, $tag, $val, $compressed = null, $outBuff = null, $enc = null, $lang = null)
+    public static function FoundPNG(ExifTool $et, TagTable $tagTablePtr, $tag, $val, $compressed = null, ?ScalarRef $outBuff = null, $enc = null, $lang = null)
     {
         if ($val === null) return 0;
         $verbose = $et->Options('Verbose');
@@ -230,8 +240,17 @@ final class PNG
                         $et->INDENT = preg_replace('/..$/', '', $et->INDENT, 1);
                     }
                     $processProc = $subdir['ProcessProc'] ?? null;
+                    // nothing more to do if writing and subdirectory is not writable
                     $subTable = ExifTool::GetTagTable($subdir['TagTable'] ?? null);
-                    // (writing not ported)
+                    if ($outBuff and !$subTable['WRITE_PROC']) {
+                        if ($et->DEL_GROUP[$dirName] ?? null) {
+                            // non-writable directories may be deleted as a group (eg. SEAL)
+                            $et->VPrint(0, "  Deleting $dirName\n");
+                            $outBuff->value = '';
+                            ++$et->CHANGED;
+                        }
+                        return 1;
+                    }
                     $subdirInfo = [
                         'DataPt'   => $val,
                         'DirStart' => 0,
@@ -245,11 +264,110 @@ final class PNG
                     ];
                     // no need to re-decompress if already done
                     if ($wasCompressed and $processProc and $processProc === 'Image\ExifTool\PNG::ProcessPNG_Compressed') $processProc = null;
-                    $processed = $et->ProcessDirectory($subdirInfo, $subTable, $processProc);
+                    // rewrite this directory if necessary (but always process TextualData normally)
+                    if ($outBuff and !$processProc and $subTable !== ExifTool::GetTagTable('Image::ExifTool::PNG::TextualData')) {
+                        if (!($et->EDIT_DIRS[$dirName] ?? null)) return 1;
+                        $outBuff->value = $et->WriteDirectory($subdirInfo, $subTable);
+                        if ($tagName === 'XMP' and $outBuff->value) {
+                            // make sure the XMP is marked as read-only
+                            XMP::ValidateXMP($outBuff->value, 'r');
+                        }
+                        self::DoneDir($et, $dirName, $outBuff, $tagInfo->NonStandard);
+                    } else {
+                        $processed = $et->ProcessDirectory($subdirInfo, $subTable, $processProc);
+                    }
                     $compressed = 1;    // pretend this is compressed since it is binary data
+                } elseif ($outBuff) {
+                    if (($et->DEL_GROUP[$dirName] ?? null) or ($dirName === 'EXIF' and ($et->DEL_GROUP['IFD0'] ?? null))) {
+                        $outBuff->value = '';
+                        ++$et->CHANGED;
+                        $et->VPrint(0, "  Deleting $tag chunk");
+                    } else {
+                        if (($et->EDIT_DIRS[$dirName] ?? null) or ($dirName === 'EXIF' and ($et->EDIT_DIRS['IFD0'] ?? null))) {
+                            $et->Warn("Can't write $dirName. Requires Compress::Zlib");
+                        }
+                        // pretend we did this directory so we don't try to recreate it
+                        self::DoneDir($et, $dirName, $outBuff, $tagInfo->NonStandard);
+                    }
                 }
             }
+            if ($outBuff) {
+                $writable = $tagInfo->Writable;
+                $isOverwriting = null;
+                if ($writable or ($tagTablePtr['WRITABLE'] and
+                    $writable === null and !$tagInfo->SubDirectory))
+                {
+                    // write new value for this tag if necessary
+                    $newVal = null;
+                    if ($et->DEL_GROUP['PNG'] ?? null) {
+                        // remove this tag now, but keep in ADD_PNG list to add back later
+                        $isOverwriting = 1;
+                    } else {
+                        // remove this from the list of PNG tags to add
+                        unset($et->ADD_PNG[$id]);
+                        // (also handle case of tEXt tags written with lowercase first letter)
+                        unset($et->ADD_PNG[ucfirst($id)]);
+                        $nvHash = $et->GetNewValueHash($tagInfo);
+                        $isOverwriting = $et->IsOverwriting($nvHash);
+                        if ($deflateErr !== null) {
+                            $newVal = $et->GetNewValue($nvHash);
+                            // can only write tag now if always overwriting
+                            if ($isOverwriting > 0) {
+                                $val = '<deflate error>';
+                            } elseif ($isOverwriting) {
+                                $isOverwriting = 0;     // can't overwrite
+                                if ($deflateErr) $et->Warn($deflateErr);
+                            }
+                        } else {
+                            if ($isOverwriting < 0) {
+                                $isOverwriting = $et->IsOverwriting($nvHash, $val);
+                            }
+                            // (must get new value after IsOverwriting() in case it was shifted)
+                            $newVal = $et->GetNewValue($nvHash);
+                        }
+                    }
+                    if ($isOverwriting) {
+                        $outBuff->value = ($newVal !== null) ? $newVal : '';
+                        ++$et->CHANGED;
+                        $et->VerboseValue("- PNG:$tagName", $val);
+                        if ($newVal !== null) $et->VerboseValue("+ PNG:$tagName", $newVal);
+                    }
+                }
+                if ($outBuff->value !== null and strlen($outBuff->value)) {
+                    if ($enc) {     // must be tEXt/zTXt/iTXt if $enc is set
+                        $outBuff->value = self::BuildTextChunk($et, $tag, $tagInfo, $outBuff->value, $lang);
+                    } elseif ($wasCompressed) {
+                        // re-compress the output data
+                        $len = strlen($outBuff->value);
+                        $deflate = self::DeflateInit();
+                        if ($deflate) {
+                            $outBuff->value = deflate_add($deflate, $outBuff->value, ZLIB_NO_FLUSH);
+                            if ($outBuff->value === false) {
+                                $outBuff->value = null;
+                            } else {
+                                $outBuff->value .= deflate_add($deflate, '', ZLIB_FINISH);
+                            }
+                        } else {
+                            $outBuff->value = null;
+                        }
+                        if (!$outBuff->value) {
+                            $et->Warn("PNG:$tagName not written (compress error)");
+                        } elseif (strtolower($tag) === 'zxif') {
+                            $outBuff->value = "\0" . pack('N', $len) . $outBuff->value;   // add zXIf header
+                        }
+                    }
+                }
+                return 1;
+            }
             if ($processed) return 1;
+        } elseif ($outBuff) {
+            if (($et->DEL_GROUP['PNG'] ?? null) and $tagTablePtr === ExifTool::GetTagTable('Image::ExifTool::PNG::TextualData')) {
+                // delete all TextualData tags if deleting the PNG group
+                $outBuff->value = '';
+                ++$et->CHANGED;
+                $et->VerboseValue("- PNG:$tag", $val);
+            }
+            return 1;
         } else {
             $name = preg_replace_callback('/\s+(.)/', static fn ($m) => ucfirst($m[1]), Perl::str($tag));   // remove white space from tag name
             $tagInfo = new TagInfo(['Name' => $name]);
@@ -292,6 +410,7 @@ final class PNG
     {
         $dataPt = $dirInfo['DataPt'];
         $tagInfo = $dirInfo['TagInfo'];
+        $outBuff = $dirInfo['OutBuff'] ?? null;
         $tagName = $tagInfo->Name;
 
         // ImageMagick 5.3.6 writes profiles with the following headers:
@@ -322,10 +441,13 @@ final class PNG
             'DirStart' => 0,
             'DirLen'   => $len,
             'Base'     => 0,
+            'OutFile'  => $outBuff,
         ];
         $et->PROCESSED = [];    // reset processed directory offsets
         $processed = 0;
+        $oldChanged = $et->CHANGED;
         $exifTable = ExifTool::GetTagTable('Image::ExifTool::Exif::Main');
+        $editDirs = $et->EDIT_DIRS;
 
         if ($tagTablePtr !== $exifTable) {
             // this is unfortunate, but the "IPTC" profile may be stored as either
@@ -334,28 +456,79 @@ final class PNG
                 $tagTablePtr = ExifTool::GetTagTable('Image::ExifTool::IPTC::Main');
             }
             // process non-EXIF and non-APP1 profile as-is
-            $processed = $et->ProcessDirectory($subdirInfo, $tagTablePtr);
+            if ($outBuff) {
+                // no need to rewrite this if not editing tags in this directory
+                $dir = $tagName;
+                if (!preg_match('/^ICC/', $dir)) $dir = preg_replace('/_Profile/', '', $dir, 1);
+                if (!($editDirs[$dir] ?? null)) return 1;
+                $outBuff->value = $et->WriteDirectory($subdirInfo, $tagTablePtr);
+                self::DoneDir($et, $dir, $outBuff, $tagInfo->NonStandard);
+            } else {
+                $processed = $et->ProcessDirectory($subdirInfo, $tagTablePtr);
+            }
         } elseif (preg_match('#^' . Vars\ExifTool::$exifAPP1hdr . '#', $buff)) {
             // APP1 EXIF information
+            if ($outBuff and !($editDirs['IFD0'] ?? null)) return 1;
             $hdrLen = strlen(Vars\ExifTool::$exifAPP1hdr);
             $subdirInfo['DirStart'] += $hdrLen;
             $subdirInfo['DirLen'] -= $hdrLen;
-            $processed = $et->ProcessTIFF($subdirInfo);
+            if ($outBuff) {
+                // delete non-standard EXIF if recreating from scratch
+                if (($et->DEL_GROUP['EXIF'] ?? null) or ($et->DEL_GROUP['IFD0'] ?? null)) {
+                    $outBuff->value = '';
+                    $et->VPrint(0, '  Deleting non-standard APP1 EXIF information');
+                    return 1;
+                }
+                $outBuff->value = $et->WriteDirectory($subdirInfo, $tagTablePtr,
+                                                      'Image\ExifTool\ExifTool::WriteTIFF');
+                if ($outBuff->value) $outBuff->value = Vars\ExifTool::$exifAPP1hdr . $outBuff->value;
+                self::DoneDir($et, 'IFD0', $outBuff, $tagInfo->NonStandard);
+            } else {
+                $processed = $et->ProcessTIFF($subdirInfo);
+            }
         } elseif (preg_match('#^' . Vars\ExifTool::$xmpAPP1hdr . '#', $buff)) {
             // APP1 XMP information
             $hdrLen = strlen(Vars\ExifTool::$xmpAPP1hdr);
             $xmpTable = ExifTool::GetTagTable('Image::ExifTool::XMP::Main');
             $subdirInfo['DirStart'] += $hdrLen;
             $subdirInfo['DirLen'] -= $hdrLen;
-            $processed = $et->ProcessDirectory($subdirInfo, $xmpTable);
+            if ($outBuff) {
+                if (!($editDirs['XMP'] ?? null)) return 1;
+                $outBuff->value = $et->WriteDirectory($subdirInfo, $xmpTable);
+                if ($outBuff->value) $outBuff->value = Vars\ExifTool::$xmpAPP1hdr . $outBuff->value;
+                self::DoneDir($et, 'XMP', $outBuff, $tagInfo->NonStandard);
+            } else {
+                $processed = $et->ProcessDirectory($subdirInfo, $xmpTable);
+            }
         } elseif (preg_match('/^(MM\0\x2a|II\x2a\0)/', $buff)) {
             // TIFF information
-            $processed = $et->ProcessTIFF($subdirInfo);
+            if ($outBuff and !($editDirs['IFD0'] ?? null)) return 1;
+            if ($outBuff) {
+                // delete non-standard EXIF if recreating from scratch
+                if (($et->DEL_GROUP['EXIF'] ?? null) or ($et->DEL_GROUP['IFD0'] ?? null)) {
+                    $outBuff->value = '';
+                    $et->VPrint(0, '  Deleting non-standard EXIF/TIFF information');
+                    return 1;
+                }
+                $outBuff->value = $et->WriteDirectory($subdirInfo, $tagTablePtr,
+                                                      'Image\ExifTool\ExifTool::WriteTIFF');
+                self::DoneDir($et, 'IFD0', $outBuff, $tagInfo->NonStandard);
+            } else {
+                $processed = $et->ProcessTIFF($subdirInfo);
+            }
         } else {
             $profName = preg_replace('/[\x00-\x1f\x7f-\xff]/', '.', $profileType);
             $et->Warn("Unknown raw profile '{$profName}'");
         }
-        // (writing not ported)
+        if ($outBuff and $outBuff->value !== null and strlen($outBuff->value)) {
+            if ($et->CHANGED != $oldChanged) {
+                $hdr = Perl::sprintf("\n%s\n%8d\n", $profileType, strlen($outBuff->value));
+                // hex encode the data
+                $outBuff->value = $hdr . self::HexEncode($outBuff->value);
+            } else {
+                $outBuff->value = null;
+            }
+        }
         return $processed;
     }
 
@@ -370,6 +543,7 @@ final class PNG
         if ($val === null) return 0;
         // set compressed to 2 + compression method to decompress the data
         $compressed = 2 + (Perl::unpack('C', $val)[0] ?? 0);
+        $hdr = $tag . "\0" . substr($val, 0, 1);
         $val = substr($val, 1);     // remove compression method byte
         $outBuff = $dirInfo['OutBuff'] ?? null;
         $tagInfo = $dirInfo['TagInfo'] ?? null;
@@ -379,6 +553,14 @@ final class PNG
             $tagTablePtr = ExifTool::GetTagTable('Image::ExifTool::PNG::Main');
             if (strlen($tag) and !$outBuff) self::FoundPNG($et, $tagTablePtr, 'iCCP-name', $tag);
             $success = self::FoundPNG($et, $tagTablePtr, 'iCCP', $val, $compressed, $outBuff);
+            if ($outBuff and $outBuff->value) {
+                $profileName = $et->GetNewValue($tagTablePtr['iCCP-name']);
+                if ($profileName !== null) {
+                    $hdr = $profileName . substr($hdr, strlen($tag));
+                    $et->VerboseValue('+ PNG:ProfileName', $profileName);
+                }
+                $outBuff->value = $hdr . $outBuff->value;
+            }
         } else {
             $success = self::FoundPNG($et, $tagTablePtr, $tag, $val, $compressed, $outBuff, 'Latin');
         }
@@ -426,6 +608,7 @@ final class PNG
         $outBuff = $dirInfo['OutBuff'] ?? null;
         $tagInfo = $dirInfo['TagInfo'];
         $tag = $tagInfo->TagID;
+        $del = $outBuff && (($et->DEL_GROUP['EXIF'] ?? null) or ($et->DEL_GROUP['IFD0'] ?? null));
         $type = null;
 
         if (preg_match('/^Exif\0\0/', $dirInfo['DataPt'])) {
@@ -437,6 +620,11 @@ final class PNG
         $dataPt = $dirInfo['DataPt'];
         if (preg_match('/^(\0|II|MM)/', $dataPt, $m)) {
             $type = $m[1];
+        } elseif ($del) {
+            $et->VPrint(0, "  Deleting invalid $tag chunk");
+            $outBuff->value = '';
+            ++$et->CHANGED;
+            return 1;
         } else {
             $et->Warn("Invalid $tag chunk");
             return 0;
@@ -446,9 +634,20 @@ final class PNG
             // go around again to uncompress the data
             $tagTablePtr = ExifTool::GetTagTable('Image::ExifTool::PNG::Main');
             return self::FoundPNG($et, $tagTablePtr, $tagInfo->TagID, $buf, 2, $outBuff);
+        } elseif (!$outBuff) {
+            return $et->ProcessTIFF($dirInfo);
+        // (zxIf was not adopted)
+        //} elsif ($del and ($et->Options('Compress') xor lc($tag) eq 'zxif')) {
+        } elseif ($del and strtolower($tag) === 'zxif') {
+            $et->VPrint(0, "  Deleting $tag chunk");
+            $outBuff->value = '';
+            ++$et->CHANGED;
+        } elseif ($et->EDIT_DIRS['IFD0'] ?? null) {
+            $outBuff->value = $et->WriteDirectory($dirInfo, $tagTablePtr,
+                                                  'Image\ExifTool\ExifTool::WriteTIFF');
+            self::DoneDir($et, 'IFD0', $outBuff, $tagInfo->NonStandard);
         }
-        // (writing not ported)
-        return $et->ProcessTIFF($dirInfo);
+        return 1;
     }
 
     //------------------------------------------------------------------------------
@@ -457,22 +656,33 @@ final class PNG
     // Returns: 1 on success, 0 if this wasn't a valid PNG image, or -1 on write error
     public static function ProcessPNG(ExifTool $et, array &$dirInfo)
     {
+        $outfile = $dirInfo['OutFile'] ?? null;
         $raf = $dirInfo['RAF'];
         $datChunk = '';
         $datCount = 0;
         $datBytes = 0;
         $fastScan = $et->Options('FastScan');
         $hash = $et->ImageDataHash;
-        $n = $sig = $hbuf = $dbuf = $cbuf = null;
+        $n = $sig = $err = $hbuf = $dbuf = $cbuf = null;
         $wasHdr = $wasEnd = $wasDat = $doTxt = $wasTrailer = null;
-        $outBuff = null;
+        $txtOffset = [];
 
         // check to be sure this is a valid PNG/MNG/JNG image
         if (!($raf->Read($sig, 8) == 8 and isset(Vars\PNG::$pngLookup[$sig]))) return 0;
 
-        // (writing not ported)
-        // disable buffering in FastScan mode
-        if ($fastScan) $raf->NoBuffer = true;
+        if ($outfile) {
+            $et->TextChunkType = null;
+            if (!ExifTool::Write($outfile, $sig)) $err = 1;
+            // can only add tags in Main and TextualData tables
+            $et->ADD_PNG = $et->GetNewTagInfoHash(
+                ExifTool::GetTagTable('Image::ExifTool::PNG::Main'),
+                ExifTool::GetTagTable('Image::ExifTool::PNG::TextualData'));
+            // initialize with same directories, with PNG tags taking priority
+            $et->InitWriteDirs(Vars\PNG::$pngMap, 'PNG');
+        } else {
+            // disable buffering in FastScan mode
+            if ($fastScan) $raf->NoBuffer = true;
+        }
         [$fileType, $hdrChunk, $endChunk] = Vars\PNG::$pngLookup[$sig];
         $et->SetFileType($fileType);    // set the FileType tag
         ExifTool::SetByteOrder('MM');   // PNG files are big-endian
@@ -485,9 +695,38 @@ final class PNG
         $validate = $et->Options('Validate');
         $out = $et->Options('TextOut');
 
+        // scan ahead to find offsets of all text chunks after IDAT
+        if ($outfile) {
+            while ($raf->Read($hbuf, 8) == 8) {
+                [$len, $chunk] = Perl::unpack('Na4', $hbuf);
+                if ($len > 0x7fffffff) break;
+                if ($wasDat) {
+                    if (!empty(Vars\PNG::$noLeapFrog[$chunk])) break;   // (don't move text across these chunks)
+                    if (!empty(Vars\PNG::$isTxtChunk[$chunk])) $txtOffset[] = $raf->Tell() - 8;
+                } elseif (!empty(Vars\PNG::$isDatChunk[$chunk])) {
+                    $wasDat = $chunk;
+                }
+                if (!$raf->Seek($len + 4, 1)) break;   // skip chunk data
+            }
+            if (!$raf->Seek(8, 0)) {
+                $et->Error('Error seeking in file');
+                return -1;
+            }
+            $wasDat = null;
+        }
+
         // process the PNG/MNG/JNG chunks
         Vars\PNG::$noCompressLib = null;
         for (;;) {
+            if ($doTxt) {
+                // read text chunks that were found after IDAT so we can write them before
+                if (!$raf->Seek(array_shift($txtOffset), 0)) {
+                    $et->Error('Seek error');
+                    break;
+                }
+                // (this is the IDAT offset if @txtOffset is now empty)
+                if (!$txtOffset) $doTxt = null;
+            }
             $n = $raf->Read($hbuf, 8);  // read chunk header
 
             if ($wasEnd) {
@@ -524,6 +763,12 @@ final class PNG
                     $et->Warn("$fileType image did not start with $hdrChunk");
                 }
             }
+            if ($outfile and (!empty(Vars\PNG::$isDatChunk[$chunk]) or $chunk === $endChunk) and $txtOffset) {
+                // continue processing here after we move the text chunks from after IDAT
+                $txtOffset[] = $raf->Tell() - 8;
+                $doTxt = 1;     // process text chunks now
+                continue;
+            }
             if (!empty(Vars\PNG::$isDatChunk[$chunk])) {
                 if ($fastScan and $fastScan >= 2) {
                     $et->VPrint(0, "End processing at $chunk chunk due to FastScan=$fastScan setting");
@@ -536,6 +781,21 @@ final class PNG
             } else {
                 $datChunk = '';
             }
+            if ($outfile) {
+                // add text chunks (including XMP) before any data chunk end chunk
+                if ($datChunk or $chunk === $endChunk) {
+                    // write iCCP chunk now if requested because AddChunks will try
+                    // to add it as a text profile chunk if this isn't successful
+                    // (ie. if Compress::Zlib wasn't available)
+                    self::Add_iCCP($et, $outfile);
+                    if (!self::AddChunks($et, $outfile)) $err = 1;          // add all text chunks
+                    if (!self::AddChunks($et, $outfile, 'IFD0')) $err = 1;  // and eXIf chunk
+                } elseif ($chunk === 'PLTE') {
+                    // iCCP chunk must come before PLTE (and IDAT, handled above)
+                    // (ignore errors -- will add later as text profile if this fails)
+                    self::Add_iCCP($et, $outfile);
+                }
+            }
             if ($chunk === $endChunk) {
                 // read CRC
                 if ($raf->Read($cbuf, 4) != 4) {
@@ -544,12 +804,40 @@ final class PNG
                 }
                 if ($verbose) fwrite($out, "$fileType $chunk (end of image)\n");
                 $wasEnd = 1;
+                if ($outfile) {
+                    // write the IEND/MEND chunk with CRC
+                    if (!ExifTool::Write($outfile, $hbuf, $cbuf)) $err = 1;
+                    if ($et->DEL_GROUP['Trailer'] ?? null) {
+                        if ($raf->Read($hbuf, 1)) {
+                            if ($verbose) fwrite($out, "  Deleting PNG trailer\n");
+                            ++$et->CHANGED;
+                        }
+                    } else {
+                        // copy over any existing trailer data
+                        $tot = 0;
+                        for (;;) {
+                            $n = $raf->Read($hbuf, 65536);
+                            if (!$n) break;
+                            $tot += $n;
+                            if (!ExifTool::Write($outfile, $hbuf)) $err = 1;
+                        }
+                        if ($tot and $verbose) fwrite($out, "  Copying PNG trailer ($tot bytes)\n");
+                    }
+                    break;
+                }
                 continue;
             }
             if ($datChunk) {
                 $chunkSizeLimit = 10000000;     // largest chunk to read into memory
+                if ($outfile) {
+                    // avoid loading very large data chunks into memory
+                    if ($len > $chunkSizeLimit) {
+                        if (!ExifTool::Write($outfile, $hbuf)) $err = 1;
+                        if (!ExifTool::CopyBlock($raf, $outfile, $len + 4)) $et->Error("Error copying $datChunk");
+                        continue;
+                    }
                 // skip over data chunks if possible/necessary
-                if (!$validate or $len > $chunkSizeLimit) {
+                } elseif (!$validate or $len > $chunkSizeLimit) {
                     if ($hash) {
                         $et->ImageDataHash($raf, $len);
                         if ($raf->Read($cbuf, 4) != 4) {
@@ -565,7 +853,14 @@ final class PNG
                     continue;
                 }
             } elseif ($wasDat and !empty(Vars\PNG::$isTxtChunk[$chunk])) {
-                $msg = 'may be ignored by some readers';
+                $msg = null;
+                if (!$outfile) {
+                    $msg = 'may be ignored by some readers';
+                } elseif ($doTxt !== null) {    // $doTxt == 0 if we crossed a noLeapFrog chunk
+                    $msg = "can't be moved";    // (but could be deleted then added back again)
+                } else {
+                    $msg = 'fixed';
+                }
                 $et->Warn("Text/EXIF chunk(s) found after {$et->FileType} $wasDat ($msg)", 1);
             }
             // read chunk data and CRC
@@ -574,15 +869,28 @@ final class PNG
                 break;
             }
             if ($hash and $datChunk) hash_update($hash, $dbuf);     // add to hash if necessary
-            if ($verbose or $validate) {
+            if ($verbose or $validate or ($outfile and !$fastScan)) {
                 // check CRC when in verbose mode (since we don't care about speed)
                 $crc = self::CalculateCRC($hbuf, null, 4);
                 $crc = self::CalculateCRC($dbuf, $crc);
                 if ($crc != Perl::unpack('N', $cbuf)[0]) {
                     $msg = "Bad CRC for $chunk chunk";
-                    $et->Warn($msg);
+                    $outfile ? $et->Error($msg, 1) : $et->Warn($msg);
                 }
-                if ($datChunk) continue;
+                if ($datChunk) {
+                    if ($outfile and !ExifTool::Write($outfile, $hbuf, $dbuf, $cbuf)) $err = 1;
+                    continue;
+                }
+                // just skip over any text chunk found after IDAT
+                if ($outfile and $wasDat) {
+                    if (!empty(Vars\PNG::$isTxtChunk[$chunk]) and $doTxt === null) {
+                        if ($et->FORCE_WRITE['PNG'] ?? null) ++$et->CHANGED;
+                        if ($verbose) fwrite($out, "  Deleting $chunk that was moved ($len bytes)\n");
+                        continue;
+                    }
+                    // done moving text if we hit one of these chunks
+                    if (!empty(Vars\PNG::$noLeapFrog[$chunk])) $doTxt = 0;
+                }
                 if ($verbose) {
                     fwrite($out, "$fileType $chunk ($len bytes):\n");
                     if ($verbose > 2) $et->VerboseDump($dbuf, Addr: $raf->Tell() - $len - 4);
@@ -591,25 +899,49 @@ final class PNG
             // translate case of chunk names that have changed since the first implementation
             if (!isset($tagTablePtr[$chunk]) and isset(Vars\PNG::$stdCase[strtolower($chunk)])) {
                 $stdChunk = Vars\PNG::$stdCase[strtolower($chunk)];
-                $et->Warn("$chunk chunk should be $stdChunk", 1);
+                if ($outfile and (($et->EDIT_DIRS['IFD0'] ?? null) or !preg_match('/^[ez]xif$/i', $stdChunk))) {
+                    $et->Warn("Changed $chunk chunk to $stdChunk", 1);
+                    ++$et->CHANGED;
+                } else {
+                    $et->Warn("$chunk chunk should be $stdChunk", 1);
+                }
                 $chunk = $stdChunk;
             }
             // only extract information from chunks in our tables
+            $outBuff = $outfile ? new ScalarRef(null) : null;   // (Perl: \$theBuff)
             if (isset($tagTablePtr[$chunk])) {
                 self::FoundPNG($et, $tagTablePtr, $chunk, $dbuf, null, $outBuff);
             } elseif ($mngTablePtr and isset($mngTablePtr[$chunk])) {
                 self::FoundPNG($et, $mngTablePtr, $chunk, $dbuf, null, $outBuff);
             }
+            if ($outfile) {
+                $theBuff = $outBuff->value;
+                if ($theBuff !== null) {
+                    if (!strlen($theBuff)) continue;    // empty if we deleted the information
+                    // change chunk type if necessary
+                    if ($et->TextChunkType) {
+                        $chunk = $et->TextChunkType;
+                        $et->TextChunkType = null;
+                    }
+                    $hbuf = pack('Na4', strlen($theBuff), $chunk);
+                    $dbuf = $theBuff;
+                    $crc = self::CalculateCRC($hbuf, null, 4);
+                    $crc = self::CalculateCRC($dbuf, $crc);
+                    $cbuf = pack('N', $crc);
+                }
+                if (!ExifTool::Write($outfile, $hbuf, $dbuf, $cbuf)) $err = 1;
+            }
         }
         $et->SET_GROUP1 = null;
         // read Samsung trailer if it exists
-        if ($wasTrailer and $raf->Seek(-8, 2) and
+        if ($wasTrailer and !$outfile and $raf->Seek(-8, 2) and
             $raf->Read($dbuf, 8) and preg_match('/\0\0(QDIOBS|SEFT)$/', $dbuf))    // (have only seen SEFT type)
         {
             ExifTool::RequireModule('Image::ExifTool::Samsung');
             $samsungInfo = ['DirName' => 'Samsung', 'RAF' => $raf];
             Samsung::ProcessSamsung($et, $samsungInfo);
         }
+        if ($outfile and ($err or !$wasEnd)) return -1;
         return 1;   // this was a valid PNG/MNG/JNG image
     }
 }
