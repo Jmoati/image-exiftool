@@ -152,11 +152,14 @@ final class Charset
             }
         } elseif ($type == 0x100) {
             // convert ASCII and UTF8 (treat ASCII as UTF8)
-            // (Perl's unpack('C0U*'): malformed sequences give a 0 and a warning)
-            $bad = false;
-            $uni = self::UnpackU($val, $bad);
+            // handle warnings from malformed UTF-8
+            // (Perl's unpack('C0U*') warns under -w, and the local $SIG{'__WARN__'} = \&SetWarning
+            // leaves the last warning in $evalWarning, where an enclosing eval site finds it)
+            ExifTool::$evalWarning = null;
+            $uni = self::UnpackU($val, warning: $warning);
+            if ($warning !== null) ExifTool::$evalWarning = $warning;
             // issue warning if we had errors
-            if ($bad and $et and !$et->WarnBadUTF8) {
+            if (ExifTool::$evalWarning and $et and !$et->WarnBadUTF8) {
                 $et->Warn('Malformed UTF-8 character(s)');
                 $et->WarnBadUTF8 = 1;
             }
@@ -413,13 +416,18 @@ final class Charset
     }
 
     /**
-     * Decode UTF-8 like Perl's unpack('C0U*'): a malformed sequence gives a 0 (and sets $bad).
+     * Decode UTF-8 like Perl's unpack('C0U*'): a malformed sequence gives a 0 (and sets $bad, and
+     * $warning to the last "Malformed UTF-8 character" warning that Perl gives under -w, without
+     * the " at FILE line N." suffix).
      *
      * @return list<int>
      */
-    public static function UnpackU(string $val, bool &$bad = false): array
+    public static function UnpackU(string $val, bool &$bad = false, ?string &$warning = null): array
     {
-        static $min = [2 => 0x80, 3 => 0x800, 4 => 0x10000, 5 => 0x200000, 6 => 0x4000000, 7 => 0x80000000];
+        static $min = [2 => 0x80, 3 => 0x800, 4 => 0x10000, 5 => 0x200000, 6 => 0x4000000, 7 => 0x80000000, 13 => 0x1000000000];
+        // (bytes as Perl shows them in its warnings)
+        $hex = static fn (string $bytes) => implode('', array_map(static fn ($c) => sprintf('\\x%02x', $c), unpack('C*', $bytes)));
+        $mal = 'Malformed UTF-8 character: ';
         $uni = [];
         $len = strlen($val);
         for ($i = 0; $i < $len; ) {
@@ -430,41 +438,63 @@ final class Charset
                 continue;
             }
             if ($ch < 0xc0) {           // unexpected continuation byte
-                $n = 1;
-            } elseif ($ch < 0xe0) {
-                $n = 2;
-            } elseif ($ch < 0xf0) {
-                $n = 3;
-            } elseif ($ch < 0xf8) {
-                $n = 4;
-            } elseif ($ch < 0xfc) {
-                $n = 5;
-            } elseif ($ch < 0xfe) {
-                $n = 6;
-            } else {
-                $n = $ch == 0xfe ? 7 : 13;
-            }
-            if ($n == 1) {
                 $uni[] = 0;
                 $bad = true;
+                $warning = $mal . $hex($val[$i]) . sprintf(' (unexpected continuation byte 0x%02x, with no preceding start byte) in unpack', $ch);
                 ++$i;
                 continue;
             }
+            $n = match (true) {
+                $ch < 0xe0 => 2, $ch < 0xf0 => 3, $ch < 0xf8 => 4, $ch < 0xfc => 5, $ch < 0xfe => 6, $ch == 0xfe => 7, default => 13,
+            };
             // count the continuation bytes which follow
             for ($j = 1; $j < $n and $i + $j < $len and (ord($val[$i + $j]) & 0xc0) == 0x80; ++$j);
-            if ($j < $n or $n > 7) {    // too short, or unexpected non-continuation byte
+            if ($j < $n) {    // too short, or unexpected non-continuation byte
                 $uni[] = 0;
                 $bad = true;
+                // (Perl warns for each problem: too short, non-continuation, then overlong start)
+                $avail = min($len - $i, $n);
+                $seq = $mal . $hex(substr($val, $i, $avail));
+                $start = substr($val, $i, $j);
+                $s1 = $j > 1 ? ord($start[1]) : 0x100;
+                if ($ch == 0xc0 or $ch == 0xc1 or ($ch == 0xe0 and $s1 < 0xa0) or ($ch == 0xf0 and $s1 < 0x90) or
+                    ($ch == 0xf8 and $s1 < 0x88) or ($ch == 0xfc and $s1 < 0x84) or ($ch == 0xfe and $s1 < 0x82) or
+                    str_starts_with($start, "\xff\x80\x80\x80\x80\x80\x80"))
+                {
+                    $warning = "$seq (any UTF-8 sequence that starts with \"" . $hex($start) .
+                        '" is overlong which can and should be represented with a different, shorter sequence) in unpack';
+                } elseif ($i + $j < $len) {
+                    $warning = sprintf('%s (unexpected non-continuation byte 0x%02x, %s after start byte 0x%02x; need %d bytes, got %d) in unpack',
+                        $seq, ord($val[$i + $j]), $j == 1 ? 'immediately' : "$j bytes", $ch, $n, $j);
+                } else {
+                    $warning = "$seq (too short; $avail byte" . ($avail == 1 ? '' : 's') . " available, need $n) in unpack";
+                }
                 $i += $j;
                 continue;
             }
-            $cp = $n == 7 ? 0 : $ch & (0x7f >> $n);
-            for ($j = 1; $j < $n; ++$j) {
+            if ($n == 13) {
+                // (13-byte sequence: 72 bits, of which Perl allows 63)
+                if ((ord($val[$i + 1]) & 0x3f) or (ord($val[$i + 2]) & 0x38)) {
+                    $uni[] = 0;
+                    $bad = true;
+                    $warning = $mal . $hex(substr($val, $i, $n)) . ' (overflows) in unpack';
+                    $i += $n;
+                    continue;
+                }
+                $cp = 0;
+                $j = 2;
+            } else {
+                $cp = $n == 7 ? 0 : $ch & (0x7f >> $n);
+                $j = 1;
+            }
+            for (; $j < $n; ++$j) {
                 $cp = ($cp << 6) | (ord($val[$i + $j]) & 0x3f);
             }
             if ($cp < $min[$n]) {       // overlong
-                $cp = 0;
                 $bad = true;
+                $warning = $mal . $hex(substr($val, $i, $n)) . ' (overlong; instead use ' . $hex(self::PackU([$cp])) .
+                    ' to represent ' . ($cp > 0x10ffff ? '0x' : 'U+') . sprintf($cp < 256 ? '%02X' : '%04X', $cp) . ') in unpack';
+                $cp = 0;
             }
             $uni[] = $cp;
             $i += $n;
@@ -490,9 +520,13 @@ final class Charset
             } elseif ($ch < 0x4000000) {
                 $out .= chr(0xf8 | ($ch >> 24)) . chr(0x80 | (($ch >> 18) & 0x3f)) . chr(0x80 | (($ch >> 12) & 0x3f)) .
                         chr(0x80 | (($ch >> 6) & 0x3f)) . chr(0x80 | ($ch & 0x3f));
-            } else {
+            } elseif ($ch < 0x80000000) {
                 $out .= chr(0xfc | (($ch >> 30) & 0x01)) . chr(0x80 | (($ch >> 24) & 0x3f)) . chr(0x80 | (($ch >> 18) & 0x3f)) .
                         chr(0x80 | (($ch >> 12) & 0x3f)) . chr(0x80 | (($ch >> 6) & 0x3f)) . chr(0x80 | ($ch & 0x3f));
+            } else {
+                // (Perl's extended UTF-8: 0xfe and 6 continuation bytes for 36 bits)
+                $out .= "\xfe";
+                for ($sh = 30; $sh >= 0; $sh -= 6) $out .= chr(0x80 | (($ch >> $sh) & 0x3f));
             }
         }
         return $out;
