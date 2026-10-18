@@ -630,6 +630,8 @@ class ExifTool
         foreach (Vars\ExifTool::$availableOptions as $opt) {
             $this->OPTIONS[$opt[0]] = $opt[1];
         }
+        // (the default TextOut, \*STDOUT, isn't in the generated list)
+        $this->OPTIONS['TextOut'] = defined('STDOUT') ? STDOUT : fopen('php://stdout', 'w');
 
         // keep necessary member variables in sync with options
         $this->CUR_LANG = null;

@@ -23,7 +23,12 @@
  *
  * The API runners (Runner() below and its Perl twin tools/write-parity.pl) understand the
  * exiftool arguments -TAG[+-^]=[VALUE], -o FILE, -m, -n, -v[NUM], -api OPT[=VAL] and
- * -overwrite_original, and set the new values like the exiftool script does.
+ * -overwrite_original, and set the new values like the exiftool script does. They also take
+ * -_memin, -_memout, -_handle and -_raf, to pass the files to WriteInfo as data in memory, as a
+ * file handle or as a RandomAccess object (API-only cases, skipped with --cli). A case with a
+ * null source creates its output from scratch.
+ * Each case prints "ok" (identical), "MSG" (same files, but the output of the runners differs:
+ * results of SetNewValue/WriteInfo, warnings, errors) or "DIFF" (the files differ).
  * Exit status: 0 when every case gives the same result.
  */
 
@@ -71,8 +76,35 @@ $cases = [
     ['Writer.jpg', ['-Comment=in place']],
     ['Writer.jpg', ['-Comment=new name', '-FileName=other.jpg']],
     ['Writer.jpg', ['-Comment=x', '-FileModifyDate=2002:03:04 05:06:07', '-o', 'out.jpg']],
+    // JPEG: segments written by the ported writers (JFIF: WriteBinaryData, Adobe: block)
+    ['Canon.jpg', ['-JFIF:XResolution=300', '-o', 'out.jpg']],
+    ['Pentax.jpg', ['-JFIF:YResolution=123', '-o', 'out.jpg']],
+    ['Pentax.jpg', ['-JFIF:all=', '-JFIF:XResolution=72', '-o', 'out.jpg']],
+    ['Canon.jpg', ['-Adobe=', '-o', 'out.jpg']],
+    // JPEG: nothing changed (WriteInfo returns 2)
+    ['Writer.jpg', ['-Comment=', '-o', 'out.jpg']],
+    ['Canon.jpg', ['-XMP:all=', '-o', 'out.jpg']],
+    // verbose output
+    ['Canon.jpg', ['-v3', '-Comment=verbose', '-o', 'out.jpg']],
+    ['Nikon.jpg', ['-v2', '-all=', '-o', 'out.jpg']],
+    ['Writer.jpg', ['-v2', '-FileName=renamed.jpg', '-Comment=x']],
+    ['Pentax.jpg', ['-v2', '-JFIF:XResolution=96', '-o', 'out.jpg']],
+    // EXV and EXIF files
+    [null, ['-Comment=new EXV', '-o', 'out.exv']],
+    // files in memory, file handles, RandomAccess (API only)
+    ['Canon.jpg', ['-_memin', '-_memout', '-Comment=in memory', '-o', 'out.jpg']],
+    ['Canon.jpg', ['-_memin', '-Comment=memory in place']],
+    ['Canon.jpg', ['-_memout', '-Comment=memory out', '-o', 'out.jpg']],
+    ['Writer.jpg', ['-_handle', '-Comment=handle in place']],
+    ['Canon.jpg', ['-_handle', '-Comment=']],
+    ['Canon.jpg', ['-_raf', '-Comment=from RAF', '-o', 'out.jpg']],
+    ['Canon.jpg', ['-_raf', '-Comment=RAF in place']],
     // errors
     ['Writer.jpg', ['-Comment=x', '-o', 'Writer.jpg']],
+    ['Writer.jpg', ['-Comment=x', '-o', 'nodir/out.jpg']],
+    ['BMP.bmp', ['-Comment=x', '-o', 'out.bmp']],
+    [null, ['-Comment=x', '-o', 'out.jpg']],
+    [null, ['-Comment=x', '-o', 'out.xyz']],
     ['Unknown.jpg', ['-Comment=x', '-o', 'out.jpg']],
     ['Writer.jpg', ['-Comment=x', '-o', 'out.tif']],
     ['PNG.png', ['-Comment=x', '-o', 'out.png']],
@@ -95,10 +127,14 @@ if (isset($opt['cli'])) {
     ];
 }
 
-$total = $same = 0;
+$total = $same = $msgOnly = 0;
 foreach ($cases as $i => [$src, $args]) {
-    $name = $src.' '.implode(' ', $args);
+    $name = ($src ?? '(none)').' '.implode(' ', $args);
     if (isset($opt['case']) && !str_contains($name, $opt['case'])) {
+        continue;
+    }
+    if (isset($opt['cli']) && preg_grep('/^-_/', $args)) {
+        echo "skip $name (API only)\n";
         continue;
     }
     ++$total;
@@ -107,18 +143,24 @@ foreach ($cases as $i => [$src, $args]) {
     foreach ($tools as $tool => $cmd) {
         $dir = "$caseDir/$tool";
         EmptyDir($dir);
-        $file = basename($src);
-        copy("$etDir/t/images/$src", "$dir/$file");
-        chmod("$dir/$file", 0644);
-        touch("$dir/$file", 1_000_000_000);   // (fixed time: FileModifyDate shifts)
-        [$status, $out] = Run([...$cmd, ...$args, $file], $dir, 'perl' === $tool ? $perlEnv : []);
+        $file = [];
+        if (null !== $src) {
+            $file = [basename($src)];
+            copy("$etDir/t/images/$src", "$dir/$file[0]");
+            chmod("$dir/$file[0]", 0644);
+            touch("$dir/$file[0]", 1_000_000_000);  // (fixed time: FileModifyDate shifts)
+        }
+        [$status, $out] = Run([...$cmd, ...$args, ...$file], $dir, 'perl' === $tool ? $perlEnv : []);
         $results[$tool] = ['status' => $status, 'out' => $out, 'files' => ListFiles($dir)];
     }
-    $diffs = Compare($results, "$caseDir/perl", "$caseDir/php", $args, $etDir, $perlEnv);
-    if ($diffs) {
-        echo "DIFF $name\n";
-        foreach ($diffs as $d) {
+    [$msgDiffs, $fileDiffs] = Compare($results, "$caseDir/perl", "$caseDir/php", $args, $etDir, $perlEnv);
+    if ($msgDiffs || $fileDiffs) {
+        echo $fileDiffs ? 'DIFF' : 'MSG ', " $name\n";
+        foreach ([...$msgDiffs, ...$fileDiffs] as $d) {
             echo "     $d\n";
+        }
+        if (!$fileDiffs) {
+            ++$msgOnly;
         }
     } else {
         ++$same;
@@ -133,28 +175,32 @@ foreach ($cases as $i => [$src, $args]) {
         }
     }
 }
-echo "$same/$total cases identical\n";
+echo "$same/$total cases identical, $msgOnly with the same files but different messages (MSG), ",
+    $total - $same - $msgOnly, " with different files (DIFF)\n";
 exit($same === $total ? 0 : 1);
 
 //------------------------------------------------------------------------------
 
-/** the differences between the results of the two tools (empty when identical) */
+/**
+ * The differences between the results of the two tools: [differences of their output (results
+ * of the calls, warnings, errors), differences of the files they wrote], empty when identical
+ */
 function Compare(array $results, string $perlDir, string $phpDir, array $args, string $etDir, array $perlEnv): array
 {
-    $diffs = [];
+    $msgs = $diffs = [];
     [$perl, $php] = [$results['perl'], $results['php']];
     if ($perl['out'] !== $php['out']) {
         $a = explode("\n", rtrim($perl['out']));
         $b = explode("\n", rtrim($php['out']));
         foreach (array_diff($a, $b) as $line) {
-            $diffs[] = "perl: $line";
+            $msgs[] = "perl: $line";
         }
         foreach (array_diff($b, $a) as $line) {
-            $diffs[] = "php:  $line";
+            $msgs[] = "php:  $line";
         }
     }
     if ($perl['status'] !== $php['status']) {
-        $diffs[] = "exit status: perl {$perl['status']}, php {$php['status']}";
+        $msgs[] = "exit status: perl {$perl['status']}, php {$php['status']}";
     }
     $names = array_unique([...array_keys($perl['files']), ...array_keys($php['files'])]);
     sort($names);
@@ -196,7 +242,7 @@ function Compare(array $results, string $perlDir, string $phpDir, array $args, s
         }
     }
 
-    return $diffs;
+    return [$msgs, $diffs];
 }
 
 /** run a command in a directory: [exit status, stdout + stderr] */
@@ -262,7 +308,7 @@ function Runner(array $argv): int
 {
     $et = new Image\ExifTool\ExifTool();
     $outfile = null;
-    $files = $newValues = [];
+    $files = $newValues = $api = [];
     while ($argv) {
         $arg = array_shift($argv);
         if ('-o' === $arg) {
@@ -278,6 +324,8 @@ function Runner(array $argv): int
             $et->Options($parts[0], $parts[1] ?? 1);
         } elseif ('-overwrite_original' === $arg) {
             // (the API never keeps a backup)
+        } elseif (preg_match('/^-_(memin|memout|handle|raf)$/', $arg, $m)) {
+            $api[$m[1]] = 1;    // (not exiftool options: how the files are passed to WriteInfo)
         } elseif (preg_match('/^-(.*=.*)$/s', $arg, $m)) {
             $newValues[] = $m[1];
         } else {
@@ -312,8 +360,29 @@ function Runner(array $argv): int
         [$rtn, $wrn] = $et->SetNewValueList($tag, $newVal, ...$opts) + [0, null];
         echo "SetNewValue $tag: $rtn", ($wrn ? " ($wrn)" : ''), "\n";
     }
-    $rtn = $et->WriteInfo($files[0] ?? null, $outfile);
+    // pass the files as the API options ask
+    [$src, $dst, $fh] = [$files[0] ?? null, $outfile, null];
+    if (isset($api['memin']) || isset($api['raf'])) {
+        $src = new Image\ExifTool\ScalarRef(file_get_contents($src));
+        if (isset($api['raf'])) {
+            $src = new Image\ExifTool\File\RandomAccess($src->value);
+        }
+    } elseif (isset($api['handle'])) {
+        $src = $fh = fopen($src, 'r+b');
+    }
+    if (isset($api['memout'])) {
+        $dst = new Image\ExifTool\ScalarRef(null);
+    }
+    $rtn = $et->WriteInfo($src, $dst);
     echo "WriteInfo: $rtn\n";
+    if (isset($api['memout']) && null !== $dst->value && null !== $outfile) {
+        file_put_contents($outfile, $dst->value);
+    } elseif (isset($api['memin']) && null === $outfile) {
+        file_put_contents($files[0], $src->value);
+    }
+    if ($fh) {
+        fclose($fh);
+    }
     $info = $et->GetInfo('Warning', 'Error');
     $keys = array_map('strval', array_keys($info));
     sort($keys, SORT_STRING);
