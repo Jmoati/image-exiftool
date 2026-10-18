@@ -516,6 +516,17 @@ $cases = [
     ["$inputs/prop.heic", ['-all=', '-o', 'out.heic']],
     ["$inputs/thumbprop.heic", ['-QuickTime:Rotation=Rotate 180', '-Mirroring=Horizontal', '-o', 'out.heic']],
     ["$inputs/thumbprop.heic", ["-ICC_Profile<=$inputs/big.icc", '-o', 'out.heic']],
+    ["$inputs/iloc1.heic", ['-EXIF:Artist=x', '-XMP:Title=y', '-o', 'out.heic']],
+    ["$inputs/iloc2.heic", ['-EXIF:Artist=x', '-XMP:Title=y', '-o', 'out.heic']],
+    ["$inputs/iloc8.heic", ['-EXIF:Artist=x', '-XMP:Title=y', '-o', 'out.heic']],
+    ["$inputs/nobase.heic", ['-EXIF:Artist=x', '-XMP:Title=y', '-o', 'out.heic']],
+    ["$inputs/ilocbase.heic", ['-EXIF:Artist=x', '-XMP:Title=y', '-o', 'out.heic']],
+    ["$inputs/iinf0.heic", ['-EXIF:Artist=x', '-XMP:Title=y', '-o', 'out.heic']],
+    ["$inputs/iref1.heic", ['-EXIF:Artist=x', '-XMP:Title=y', '-o', 'out.heic']],
+    ["$inputs/noiref.heic", ['-EXIF:Artist=x', '-XMP:Title=y', '-o', 'out.heic']],
+    ["$inputs/nopitm.heic", ['-EXIF:Artist=x', '-XMP:Title=y', '-o', 'out.heic']],
+    ["$inputs/nopitm.heic", ['-XMP:Title=only xmp', '-o', 'out.heic']],
+    ["$inputs/iloc1.heic", ['-api', 'Compress', '-XMP:Title=deflated', '-o', 'out.heic']],
     ["$inputs/deflate.heic", ['-api', 'Compress', '-XMP:Title=still compressed', '-o', 'out.heic']],
     ["$inputs/deflate.heic", ['-XMP:Title=no Compress option', '-o', 'out.heic']],
     ["$inputs/deflate.heic", ['-api', 'Compress=0', '-XMP:Title=uncompress?', '-o', 'out.heic']],
@@ -862,6 +873,46 @@ function QuickTimeInputs(string $etDir, string $inputs): void
             $file = substr_replace($file, pack('N', unpack('N', $file, $p)[1] + $diff), $p, 4);
         }
         file_put_contents("$inputs/$out", $file);
+    }
+    // QuickTime.heic rebuilt with other versions of the iloc (and its field sizes), iinf and
+    // iref boxes, or without the pitm or iref box
+    $heic = static function (array $o) use ($h): string {
+        $o += ['iloc' => 0, 'sizes' => [4, 4, 4, 0], 'iinf' => 2, 'iref' => 0, 'pitm' => true];
+        [$os, $ls, $bs, $is] = $o['sizes'];
+        $int = static fn ($v, $n) => match ($n) { 0 => '', 2 => pack('n', $v), 4 => pack('N', $v), 8 => pack('J', $v) };
+        $box = static fn ($tag, $data) => pack('N', 8 + strlen($data)).$tag.$data;
+        $iinf = $box('iinf', pack('N', $o['iinf'] << 24).$int(2, $o['iinf'] ? 4 : 2).substr($h, 155, 62));
+        $iref = '';
+        if (null !== $o['iref']) {
+            $id = $o['iref'] ? 4 : 2;
+            $iref = $box('iref', pack('N', $o['iref'] << 24).$box('thmb', $int(20003, $id).pack('n', 1).$int(20002, $id)));
+        }
+        $build = static function (array $dataPos) use ($o, $os, $ls, $bs, $is, $int, $box, $iinf, $iref, $h): string {
+            $v = $o['iloc'];
+            $iloc = pack('N', $v << 24).pack('n', ($os << 12) | ($ls << 8) | ($bs << 4) | ($v ? $is : 0)).$int(2, $v < 2 ? 2 : 4);
+            foreach ([20002, 20003] as $i => $id) {
+                [$base, $off] = !$bs ? [0, $dataPos[$i]] : ($os ? [$dataPos[$i] - 2, 2] : [$dataPos[$i], 0]);
+                $iloc .= $int($id, $v < 2 ? 2 : 4).($v ? pack('n', 0) : '').pack('n', 0).$int($base, $bs).pack('n', 1).
+                    ($v ? $int(0, $is) : '').$int($off, $os).$int(18, $ls);
+            }
+            return pack('N', 0).substr($h, 40, 33).($o['pitm'] ? substr($h, 73, 14) : '').$box('iloc', $iloc).$iinf.$iref.substr($h, 243, 328);
+        };
+        $meta = $build([0, 0]);
+        $pos = 28 + 8 + strlen($meta) + 8;
+        return substr($h, 0, 28).$box('meta', $build([$pos, $pos + 26])).substr($h, 571);
+    };
+    foreach ([
+        'iloc1.heic' => ['iloc' => 1, 'sizes' => [4, 4, 4, 4]],
+        'iloc2.heic' => ['iloc' => 2, 'sizes' => [4, 4, 0, 0]],
+        'iloc8.heic' => ['sizes' => [8, 8, 8, 0]],
+        'nobase.heic' => ['sizes' => [4, 4, 0, 0]],
+        'ilocbase.heic' => ['sizes' => [0, 4, 4, 0]],
+        'iinf0.heic' => ['iinf' => 0],
+        'iref1.heic' => ['iref' => 1],
+        'noiref.heic' => ['iref' => null],
+        'nopitm.heic' => ['pitm' => false],
+    ] as $out => $o) {
+        file_put_contents("$inputs/$out", $heic($o));
     }
 }
 
