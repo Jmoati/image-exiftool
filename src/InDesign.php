@@ -9,8 +9,8 @@
 //
 // References:   1) http://www.adobe.com/devnet/xmp/pdfs/XMPSpecificationPart3.pdf
 //
-// PHP port of Image::ExifTool::InDesign 1.09 (reading only: the $outfile branches are
-// not ported). File lexicals (%indMap and the GUID's) are generated into tables/vars/InDesign.php.
+// PHP port of Image::ExifTool::InDesign 1.09. File lexicals (%indMap and the GUID's) are
+// generated into tables/vars/InDesign.php.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;
@@ -26,7 +26,8 @@ final class InDesign
     public static function ProcessIND(ExifTool $et, array &$dirInfo)
     {
         $raf = $dirInfo['RAF'];
-        $hdr = $buff = $buf2 = $err = null;
+        $outfile = $dirInfo['OutFile'] ?? null;
+        $hdr = $buff = $buf2 = $err = $writeLen = $foundXMP = null;
         $masterPageGUID = Vars\InDesign::$masterPageGUID;
 
         // validate the InDesign file
@@ -79,7 +80,21 @@ final class InDesign
                 $et->Warn('Processing large file (LargeFileSupport is 2)');
             }
         }
-        if (!$raf->Seek($pos, 0)) {
+        if ($outfile) {
+            // make XMP the preferred group for writing
+            $et->InitWriteDirs(Vars\InDesign::$indMap, 'XMP');
+
+            if (!ExifTool::Write($outfile, $buff, $buf2)) {
+                $err = 1;
+                goto DONE;
+            }
+            $result = ExifTool::CopyBlock($raf, $outfile, $pos - 8192);
+            if (!$result) {
+                $err = $result !== null ? 'Error reading InDesign database' : 1;
+                goto DONE;
+            }
+            $writeLen = 0;
+        } elseif (!$raf->Seek($pos, 0)) {
             $err = 'Seek error';
             goto DONE;
         }
@@ -100,7 +115,12 @@ final class InDesign
                     break;
                 }
                 $non = 'Non-null padding at end of file';
-                $et->Warn($non, 1);
+                if (!$outfile) {
+                    $et->Warn($non, 1);
+                } elseif (!$et->Error($non, 1)) {
+                    if (!ExifTool::Write($outfile, $hdr)) $err = 1;
+                    $writeLen += strlen($hdr);
+                }
                 break;
             }
             $len = ExifTool::Get32u($hdr, 24);
@@ -122,12 +142,18 @@ final class InDesign
                 if (preg_match('/^(....)<\?xpacket begin=([\'"])\xef\xbb\xbf\2 id=([\'"])W5M0MpCehiHzreSzNTczkc9d\3/s', $buff, $m)) {
                     $lenWord = $m[1];   // save length word for writing later
                     $len -= 4;          // get length of XMP only
+                    $foundXMP = 1;
                     // I have a sample where the XMP is 107 MB, and ActivePerl may run into
                     // memory troubles (with its apparent 1 GB limit) if the XMP is larger
                     // than about 400 MB, so guard against this
                     if ($len > 300 * 1024 * 1024) {
                         $msg = Perl::sprintf('Insanely large XMP (%.0f MiB)', $len / (1024 * 1024));
-                        if ($et->Options('IgnoreMinorErrors')) {
+                        if ($outfile) {
+                            if ($et->Error($msg, 2)) {
+                                $err = 1;
+                                break;
+                            }
+                        } elseif ($et->Options('IgnoreMinorErrors')) {
                             $et->Warn($msg);
                         } else {
                             $et->Warn("$msg. Ignored.", 1);
@@ -155,7 +181,30 @@ final class InDesign
                         }
                     }
                     $tagTablePtr = ExifTool::GetTagTable('Image::ExifTool::XMP::Main');
-                    $et->ProcessDirectory($xmpInfo, $tagTablePtr);
+                    if ($outfile) {
+                        if ($err) break;
+                        // make sure that XMP is writable
+                        $classID = ExifTool::Get32u($hdr, 20);
+                        if (!($classID & 0x40000000)) {
+                            $err = 'XMP stream is not writable';
+                            break;
+                        }
+                        $xmp = $et->WriteDirectory($xmpInfo, $tagTablePtr);
+                        if ($xmp and strlen($xmp)) {
+                            // write new xmp with leading length word
+                            $buff = Perl::pack($streamInt32u, strlen($xmp)) . $xmp;
+                            // update header with new length and invalid checksum
+                            ExifTool::Set32u(strlen($buff), $hdr, 24);
+                            ExifTool::Set32u(0xffffffff, $hdr, 28);
+                        } else {
+                            $et->CHANGED = 0;   // didn't change anything
+                            if ($xmp !== null) $et->Warn("Can't delete XMP as a block from InDesign file");
+                            // put length word back at start of stream
+                            $buff = $lenWord . $buff;
+                        }
+                    } else {
+                        $et->ProcessDirectory($xmpInfo, $tagTablePtr);
+                    }
                     $len = 0;   // we got the full stream (nothing left to read)
                 } else {
                     $len -= 56; // we got 56 bytes of the stream
@@ -163,7 +212,19 @@ final class InDesign
             } else {
                 $buff = '';     // must reset this for writing later
             }
-            if ($len) {
+            if ($outfile) {
+                // write object header and data
+                if (!ExifTool::Write($outfile, $hdr, $buff)) {
+                    $err = 1;
+                    break;
+                }
+                $result = ExifTool::CopyBlock($raf, $outfile, $len);
+                if (!$result) {
+                    $err = $result !== null ? 'Truncated stream data' : 1;
+                    break;
+                }
+                $writeLen += 32 + strlen($buff) + $len;
+            } elseif ($len) {
                 // skip over remaining stream data
                 if (!$raf->Seek($len, 1)) {
                     $err = 'Seek error';
@@ -178,13 +239,40 @@ final class InDesign
                 $err = 'Invalid object trailer';
                 break;
             }
+            if ($outfile) {
+                // make sure object UID and ClassID are the same in the trailer
+                if (substr($hdr, 16, 8) !== substr($buff, 16, 8)) {
+                    $err = 'Non-matching object trailer';
+                    break;
+                }
+                // write object trailer
+                if (!ExifTool::Write($outfile, Vars\InDesign::$objectTrailerGUID, substr($hdr, 16))) {
+                    $err = 1;
+                    break;
+                }
+                $writeLen += 32;
+            }
+        }
+        if ($outfile) {
+            // write null padding if necessary
+            // (InDesign files must be an even number of 4096-byte blocks)
+            $part = $writeLen % 4096;
+            if ($part) {
+                if (!ExifTool::Write($outfile, str_repeat("\0", 4096 - $part))) $err = 1;
+            }
         }
 DONE:
         if (!$err) {
+            if ($outfile and !$foundXMP) $et->Warn('No XMP stream to edit');
             return 1;       // success!
-        } else {
+        } elseif (!$outfile) {
             // issue warning on read error
             if (Perl::str($err) !== '1') $et->Warn($err);
+        } elseif (Perl::str($err) !== '1') {
+            // set error and return success code
+            $et->Error($err);
+        } else {
+            return -1;      // write error
         }
         return 1;
     }
