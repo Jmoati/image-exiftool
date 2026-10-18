@@ -488,6 +488,17 @@ $cases = [
     ['QuickTime.mov', ['-AudioKeys:Balance=v Balance', '-AudioKeys:Bass=v Bass', '-AudioKeys:AudioGain=v AudioGain', '-AudioKeys:PitchShift=v PitchShift', '-AudioKeys:Treble=v Treble', '-o', 'out.mov']],
     ['QuickTime.mov', ['-AudioKeys:Mute#=1', '-o', 'out.mov']],
     ['QuickTime.mov', ['-VideoKeys:FocalLengthIn35mmFormat=v FocalLengthIn35mmFormat', '-VideoKeys:FrameReadoutTime=10', '-VideoKeys:CameraIdentifier=v CameraIdentifier', '-VideoKeys:LensModel=v LensModel', '-VideoKeys:CaptureMode=v CaptureMode', '-o', 'out.mov']],
+    // QuickTime: verbose output, files in memory and file handles, in-place edits
+    ['QuickTime.mov', ['-v2', '-all=', '-Artist=me', '-o', 'out.mov']],
+    ['QuickTime.mov', ['-v3', '-Rotation=90', '-XMP:Title=v3', '-o', 'out.mov']],
+    ['QuickTime.m4a', ['-v2', '-ItemList:all=', '-o', 'out.m4a']],
+    ['QuickTime.heic', ['-v2', '-EXIF:Artist=v2', '-XMP:Title=v2', '-o', 'out.heic']],
+    ['CanonRaw.cr3', ['-v2', '-XMP:all=', '-o', 'out.cr3']],
+    ['QuickTime.mov', ['-_memin', '-_memout', '-Artist=in memory', '-o', 'out.mov']],
+    ['QuickTime.m4a', ['-_handle', '-Title=handle in place']],
+    ['QuickTime.heic', ['-_raf', '-XMP:Title=from RAF', '-o', 'out.heic']],
+    ['QuickTime.heic', ['-EXIF:Artist=in place']],
+    ['CanonRaw.cr3', ['-Artist=in place']],
     // QuickTime: HEIC with EXIF and XMP items (written by Perl), plain and deflated
     ["$inputs/meta.heic", ['-XMP:Title=a longer title than before', '-o', 'out.heic']],
     ["$inputs/meta.heic", ['-EXIF:Artist=changed', '-EXIF:Copyright=new', '-o', 'out.heic']],
