@@ -206,3 +206,11 @@ with `#` right after the header are comments. Write the namespace-relative names
 `tools/parity.php` runs Perl ExifTool and the PHP port on the same files (`~/exiftool/t/images/*`
 by default) with `-j -a -u -G1` (and `-n`) and reports, per file, missing / extra / different tags.
 A module is done when its files match. Never "fix" a difference by special-casing the parity tool.
+
+Known difference, kept on purpose: where Perl iterates a hash (`keys %h`) and the result depends
+on the order, the port uses insertion order. The only visible case is `RestoreStruct` with
+`-struct`: when an XMP structure that isn't a list gets several items (the points of a track in
+`Geotag.gpx`, `Geotag.kml`, `Geotag.xml`), the item processed first goes into the structure and
+the others give "Error 3 placing ... in structure or list". Perl's choice changes from one run to
+the next (hash randomization), the port always keeps the first item of the file. The parity tool
+fixes Perl's hash seed, so these 3 files differ with `-struct`.

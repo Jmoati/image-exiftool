@@ -166,6 +166,9 @@ trait XMPStruct
     {
         $structs = $var = $listKeys = $siList = [];
         $listValue = [];    // (PHP: tag key => id of the structure stored as its value)
+        // (Perl iterates in hash order, which changes from one run to the next; the port uses
+        // the order the tags were found, so the first of several items placed in the same
+        // non-list structure always wins: see PORTING.md, "Known difference")
         foreach (array_keys($et->TAG_INFO) as $key) {
             $structProps = $et->TAG_EXTRA[$key]['Struct'] ?? null;
             if (!$structProps) continue;

@@ -22,7 +22,10 @@
  * Ignored: FileAccessDate (reading the file changes it), ExifToolVersion when it differs.
  * Perl runs with a fixed hash seed (PERL_HASH_SEED=0, PERL_PERTURB_KEYS=0): with -struct, some
  * XMP structures (Geotag.gpx/.kml/.xml, XISF.xisf...) are built in hash order, which otherwise
- * changes from one Perl run to the next.
+ * changes from one Perl run to the next. The PHP port builds them in file order (see
+ * RestoreStruct), so with -struct Geotag.gpx, Geotag.kml and Geotag.xml are expected to differ:
+ * one of their repeated items (the points of a track) goes into the structure, and Perl picks
+ * an arbitrary one.
  * Exit status: 0 when every tag of every file matches.
  */
 
