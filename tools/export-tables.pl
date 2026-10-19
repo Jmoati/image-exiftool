@@ -513,8 +513,8 @@ sub TagInfo
         } elsif ($k eq 'Format' and defined $v and not ref $v and $v =~ /^(.*)\[(0x[0-9a-f]+)\]$/i) {
             # hex count: Perl evals it, but PHP numeric strings don't accept hex
             $php = PhpString("$1\[" . hex($2) . "]");
-        } elsif ($k eq 'IsOffset' and defined $v and not ref $v and not IsNumber($v)) {
-            $php = Code('IsOffset', $v, $loc);
+        } elsif ($k =~ /^(IsOffset|WrongBase)$/ and defined $v and not ref $v and not IsNumber($v)) {
+            $php = Code($k, $v, $loc);
         } elsif ($k eq 'Format' and defined $v and not ref $v and $v =~ /^(.*)\[(.*)\]$/ and not IsNumber($2)) {
             push @items, "'FormatCount' => " . Code('FormatCount', $2, $loc);
             $php = PhpString($v);

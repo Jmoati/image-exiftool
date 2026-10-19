@@ -1714,3 +1714,8 @@ static function ($val, $self) {
     }
     return $val;
 }
+
+==== 84b425eff9 WrongBase
+static function (ExifTool $self) {
+    return preg_match('/^DiMAGE A200/', Perl::str($self->Model)) ? $self->MRW_WrongBase : null;
+}

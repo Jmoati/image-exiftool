@@ -511,6 +511,9 @@ $f_3682401741 = static function (ExifTool $self) {
 $f_af3d76cb29 = static function (ExifTool $self, $valPt, $format, $count) {
     return $self->DIR_NAME === 'IFD0' && preg_match('/^(MRW|NRW)$/', Perl::str($self->TIFF_TYPE));
 };
+$f_84b425eff9 = static function (ExifTool $self) {
+    return preg_match('/^DiMAGE A200/', Perl::str($self->Model)) ? $self->MRW_WrongBase : null;
+};
 $f_1d699cbe1d = static function (ExifTool $self, $valPt, $format, $count) {
     return $self->TIFF_TYPE === 'SRW' && $self->DIR_NAME === 'SubIFD' &&
         ($self->PATH[count($self->PATH) - 2] ?? null) === 'IFD1';
@@ -2623,7 +2626,7 @@ return [
                     'Protected' => 2,
                     'Writable' => 'int32u',
                     'WriteGroup' => 'IFD0',
-                    'WrongBase' => '$$self{Model} =~ /^DiMAGE A200/ ? $$self{MRW_WrongBase} : undef',
+                    'WrongBase' => $f_84b425eff9,
                 ],
                 [
                     'Condition' => $f_1d699cbe1d,
