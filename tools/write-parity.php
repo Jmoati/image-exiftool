@@ -13,6 +13,8 @@
  *   --sweep=ARGS    instead of the cases below, apply these exiftool arguments (separated by
  *                   spaces, quotes allowed) to every file of t/images with an extension of --ext,
  *                   writing out.<ext> (eg. --sweep='-Comment=x' --ext=jpg)
+ *   --corpus=DIR    with --sweep (which may be repeated), use the files of DIR (recursively) instead
+ *                   of those of t/images; "@" in the arguments is replaced by the file name
  *   --cli           run the real command-line tools (perl exiftool / php bin/exiftool) instead
  *                   of the API runners, and adds the command-line cases (options of the
  *                   exiftool script that the runners don't parse: -tagsFromFile, -csv=, -w...)
@@ -43,11 +45,12 @@ $root = dirname(__DIR__);
 
 // PHP runner, run in the work directory: php tools/write-parity.php --run ARGS... FILE
 if (($argv[1] ?? null) === '--run') {
+    ini_set('memory_limit', '-1');   // (no limit in Perl either)
     require $root.'/vendor/autoload.php';
     exit(Runner(array_slice($argv, 2)));
 }
 
-$opt = getopt('v', ['case:', 'cli', 'keep', 'exiftool:', 'sweep:', 'ext:'], $rest);
+$opt = getopt('v', ['case:', 'cli', 'keep', 'exiftool:', 'sweep:', 'ext:', 'corpus:'], $rest);
 $etDir = rtrim($opt['exiftool'] ?? getenv('HOME').'/exiftool', '/');
 $images = "$etDir/t/images";
 // large data written as a block (more than one JPEG segment)
@@ -1377,10 +1380,17 @@ if (isset($opt['cli'])) {
 if (isset($opt['sweep'])) {
     $exts = array_map('strtolower', explode(',', $opt['ext'] ?? 'jpg'));
     $cases = [];
-    foreach (glob("$images/*") as $file) {
+    $found = isset($opt['corpus'])
+        ? array_map(fn ($f) => (string) $f, iterator_to_array(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($opt['corpus'], FilesystemIterator::SKIP_DOTS)), false))
+        : glob("$images/*");
+    sort($found);
+    foreach ($found as $file) {
         $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-        if (in_array($ext, $exts, true)) {
-            $cases[] = [basename($file), [...str_getcsv($opt['sweep'], ' ', '"', ''), '-o', "out.$ext"]];
+        if (isset($opt['corpus']) ? !isset($opt['ext']) || in_array($ext, $exts, true) : in_array($ext, $exts, true)) {
+            foreach ((array) $opt['sweep'] as $sweep) {
+                $a = array_map(fn ($x) => str_replace('@', basename($file), $x), str_getcsv($sweep, ' ', '"', ''));
+                $cases[] = [isset($opt['corpus']) ? $file : basename($file), [...$a, '-o', "out.$ext"]];
+            }
         }
     }
 }
