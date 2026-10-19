@@ -1664,19 +1664,12 @@ final class Geotag
                     // also set GPSHPositioningError if specified
                     $hposErr = $et->OPTIONS['GeoHPosErr'] ?? null;
                     if (self::T($hposErr)) {
-                        $hposErr = preg_replace('/gpsdop/i', 'GPSDOP', $hposErr);
-                        $GPSDOP = Perl::num($dop);
-                        // ponytail: only arithmetic expressions in $GPSDOP are evaluated (Perl evals any code)
-                        $expr = str_replace('$GPSDOP', (string) $GPSDOP, $hposErr);
-                        if (preg_match('/^[\d\s.+\-*\/()eE]+$/', $expr)) {
-                            try {
-                                $hposErr = eval("return $expr;");
-                                $et->SetNewValue('GPSHPositioningError', self::S($hposErr), ...$opts);
-                            } catch (\Throwable $e) {
-                                $et->Warn('Error calculating GPSHPositioningError: '.ExifTool::CleanWarning($e->getMessage()), 1);
-                            }
-                        } else {
-                            $et->Warn('Error calculating GPSHPositioningError: unsupported expression', 1);
+                        $hposErr = preg_replace('/gpsdop/i', 'GPSDOP', $hposErr, 1);
+                        try {
+                            $hposErr = self::EvalGPSDOP($hposErr, $dop);
+                            $et->SetNewValue('GPSHPositioningError', $hposErr === null ? null : self::S($hposErr), ...$opts);
+                        } catch (\Throwable $e) {
+                            $et->Warn('Error calculating GPSHPositioningError: '.ExifTool::CleanWarning($e->getMessage()), 1);
                         }
                     }
                 }
@@ -1951,5 +1944,48 @@ final class Geotag
                 self::$userTag[strtolower($m[2])] = "_{$m[1]}";    // (leading underline prevents conflicts)
             }
         }
+    }
+
+    // (PHP) eval a GeoHPosErr Perl expression: translated token by token to PHP (no Perl interpreter
+    // exists).  Supported: $GPSDOP, numbers, quoted strings, arithmetic, ?: , && || ! // , eq ne lt gt le ge,
+    // . concatenation, undef and the numeric/string builtins listed below.  Anything else throws.
+    // ponytail: no regexes, lists, statements or other variables; extend the token map if needed
+    private static function EvalGPSDOP(string $code, $dop)
+    {
+        $fn = ['sprintf' => 'sprintf', 'int' => 'intval', 'abs' => 'abs', 'sqrt' => 'sqrt', 'log' => 'log', 'exp' => 'exp', 'sin' => 'sin',
+            'cos' => 'cos', 'atan2' => 'atan2', 'hex' => 'hexdec', 'oct' => 'octdec', 'length' => 'strlen', 'uc' => 'strtoupper', 'lc' => 'strtolower'];
+        $word = ['eq' => '==', 'ne' => '!=', 'lt' => '<', 'gt' => '>', 'le' => '<=', 'ge' => '>=', 'and' => '&&', 'or' => '||', 'not' => '!'];
+        $php = '';
+        for ($p = 0, $n = strlen($code); $p < $n;) {
+            if (preg_match('/\G\s+/', $code, $m, 0, $p)) {
+                $php .= ' ';
+            } elseif (preg_match('/\G(?:\d+\.?\d*(?:[eE][-+]?\d+)?|\.\d+(?:[eE][-+]?\d+)?|0[xX][\da-fA-F]+)(?![\w.])/', $code, $m, 0, $p)) {
+                $php .= $m[0];
+            } elseif (preg_match('/\G\$GPSDOP\b/', $code, $m, 0, $p)) {
+                $php .= '$GPSDOP';
+            } elseif (preg_match('/\G\'([^\'\\\\]*)\'/', $code, $m, 0, $p)) {
+                $php .= var_export($m[1], true);
+            } elseif (preg_match('/\G"([^"\\\\$@]*)"/', $code, $m, 0, $p)) {
+                $php .= var_export($m[1], true);
+            } elseif (preg_match('/\G(undef|[a-z]\w*)\b/', $code, $m, 0, $p)) {
+                $w = $m[1];
+                if ($w === 'undef') {
+                    $php .= 'null';
+                } elseif (isset($word[$w])) {
+                    $php .= $word[$w];
+                } elseif (isset($fn[$w])) {
+                    $php .= $fn[$w];
+                } else {
+                    throw new \RuntimeException("Unsupported Perl code '$w'");
+                }
+            } elseif (preg_match('/\G(?:\*\*|\/\/|&&|\|\||==|!=|<=|>=|[-+*\/%.?:!<>(),])/', $code, $m, 0, $p)) {
+                $php .= $m[0] === '//' ? '??' : ($m[0] === '.' ? ' . ' : $m[0]);
+            } else {
+                throw new \RuntimeException("syntax error near '".substr($code, $p, 10)."'");
+            }
+            $p += strlen($m[0]);
+        }
+        $GPSDOP = Perl::num($dop);
+        return eval("return ($php);");
     }
 }
