@@ -14,7 +14,7 @@
 //               This library is free software; you can redistribute it and/or
 //               modify it under the same terms as Perl itself.
 //
-// PHP port of Image::ExifTool 13.59 (reading only). See PORTING.md.
+// PHP port of Image::ExifTool 13.59. See PORTING.md.
 //------------------------------------------------------------------------------
 
 namespace Image\ExifTool;

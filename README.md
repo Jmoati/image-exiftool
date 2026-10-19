@@ -1,15 +1,18 @@
 # image-exiftool
 
 Pure PHP port of Phil Harvey's [ExifTool](https://exiftool.org/) (Perl `Image::ExifTool` 13.59):
-read metadata from images, raw files, videos, audio and documents without Perl.
+read and write metadata in images, raw files, videos, audio and documents without Perl.
 
-Reading only. On the 194 test files of the ExifTool distribution the port produces the same output
+On the 194 test files of the ExifTool distribution the port produces the same output
 as the Perl tool for every tag (`exiftool -j -a -u -G1`, with and without `-n`), and with the options
-used by `jmoati/exiftool` (`-charset UTF-8 -filesize# -all -c %+.6f -q -j -g -fast`).
+used by `jmoati/exiftool` (`-charset UTF-8 -filesize# -all -c %+.6f -q -j -g -fast`). Writing
+(`tools/write-parity.php`) gives byte-identical files on ~1000 write cases, and the command line
+(`-X`, `-h`, `-htmlDump`, `-diff`, `-plot`, `-geotag`...) matches on ~1160 more. Config files
+(`-config`) are PHP files instead of Perl; `-use` of Perl modules is not supported.
 
 ## Usage
 
-Command line (a subset of the Perl `exiftool` options, same output):
+Command line (the Perl `exiftool` options, same output):
 
 ```bash
 bin/exiftool -j -g photo.heic
