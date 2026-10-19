@@ -2405,7 +2405,7 @@ return [
                 'Name' => 'Version2',
             ],
             64 => [
-                'Format' => 'undef[0x600]',
+                'Format' => 'undef[1536]',
                 'Hidden' => 1,
                 'Name' => 'ThumbnailTest',
                 'RawConv' => $f_51b080083d,

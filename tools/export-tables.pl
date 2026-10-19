@@ -510,6 +510,9 @@ sub TagInfo
                 CodeRef($$v{$_}, 'code', "$loc WriteAlso") : Code('WriteAlso', $$v{$_}, $loc)) } SortKeys($v)) . ']';
         } elsif ($exprKey{$k} and defined $v and not ref $v) {
             $php = Code($k, $v, $loc);
+        } elsif ($k eq 'Format' and defined $v and not ref $v and $v =~ /^(.*)\[(0x[0-9a-f]+)\]$/i) {
+            # hex count: Perl evals it, but PHP numeric strings don't accept hex
+            $php = PhpString("$1\[" . hex($2) . "]");
         } elsif ($k eq 'IsOffset' and defined $v and not ref $v and not IsNumber($v)) {
             $php = Code('IsOffset', $v, $loc);
         } elsif ($k eq 'Format' and defined $v and not ref $v and $v =~ /^(.*)\[(.*)\]$/ and not IsNumber($2)) {

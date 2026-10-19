@@ -2712,7 +2712,7 @@ return [
         ],
         'Image::ExifTool::Canon::CameraInfo1DX' => [
             0 => [
-                'Format' => 'undef[0x28b]',
+                'Format' => 'undef[651]',
                 'Hidden' => 1,
                 'Name' => 'FirmwareVersionLookAhead',
                 'RawConv' => $f_bfd26895d0,
@@ -3203,7 +3203,7 @@ return [
         ],
         'Image::ExifTool::Canon::CameraInfo1DmkIV' => [
             0 => [
-                'Format' => 'undef[0x1fd]',
+                'Format' => 'undef[509]',
                 'Hidden' => 1,
                 'Name' => 'FirmwareVersionLookAhead',
                 'RawConv' => $f_df523514f7,
@@ -3788,7 +3788,7 @@ return [
         ],
         'Image::ExifTool::Canon::CameraInfo50D' => [
             0 => [
-                'Format' => 'undef[0x164]',
+                'Format' => 'undef[356]',
                 'Hidden' => 1,
                 'Name' => 'FirmwareVersionLookAhead',
                 'RawConv' => $f_e7a11f8c56,
@@ -4310,7 +4310,7 @@ return [
         ],
         'Image::ExifTool::Canon::CameraInfo5DmkII' => [
             0 => [
-                'Format' => 'undef[0x184]',
+                'Format' => 'undef[388]',
                 'Hidden' => 1,
                 'Name' => 'FirmwareVersionLookAhead',
                 'RawConv' => $f_6a1213b3b8,
@@ -4487,7 +4487,7 @@ return [
         ],
         'Image::ExifTool::Canon::CameraInfo5DmkIII' => [
             0 => [
-                'Format' => 'undef[0x24d]',
+                'Format' => 'undef[589]',
                 'Hidden' => 1,
                 'Name' => 'FirmwareVersionLookAhead',
                 'RawConv' => $f_711ced49d8,
@@ -5476,7 +5476,7 @@ return [
         ],
         'Image::ExifTool::Canon::CameraInfo7D' => [
             0 => [
-                'Format' => 'undef[0x1b2]',
+                'Format' => 'undef[434]',
                 'Hidden' => 1,
                 'Name' => 'FirmwareVersionLookAhead',
                 'RawConv' => $f_23e32941df,
