@@ -5,6 +5,7 @@ namespace Image\ExifTool\App;
 use Image\ExifTool\ExifTool;
 use Image\ExifTool\File\RandomAccess;
 use Image\ExifTool\Geolocation;
+use Image\ExifTool\HTML;
 use Image\ExifTool\Import;
 use Image\ExifTool\MWG;
 use Image\ExifTool\Perl;
@@ -16,7 +17,7 @@ use Image\ExifTool\XMP;
  * Port of the `exiftool` command-line script (exiftool 13.59), reading and writing.
  *
  * File-scope variables of the script are properties, its subs are methods with the same names,
- * and the main script is run(). Not ported (the command stops with an error): -X, -h, -htmlDump,
+ * and the main script is run(). Not ported (the command stops with an error): -htmlDump,
  * -diff, -plot, -fileNUM, -use of modules other than those of ExifTool, and
  * -config files. -if and -p evaluate Perl code: -if supports a subset of Perl expressions (see
  * CompileCondition()), and advanced formatting expressions (${TAG;EXPR}) are not supported in
@@ -179,6 +180,8 @@ final class Application
     private $isBinary;                  // true if value is a SCALAR ref
     private $isWriting = 0;             // flag set if we are writing tags
     private $joinLists;                 // flag set to join list values into a single string
+    private $html = 0;                 // flag for html-formatted output (2=html dump)
+    private $xml = 0;                  // flag for XML-formatted output
     private $json = 0;                  // flag for JSON/PHP output format (1=JSON, 2=PHP)
     private $langOpt;                   // language option
     private $listDir;                   // treat a directory as a regular file
@@ -432,7 +435,7 @@ final class Application
             $this->fileTrailer = '';
             $this->filterFlag = 0;
             $this->isWriting = 0;
-            $this->json = 0;
+            $this->json = $this->html = $this->xml = 0;
             $this->listSep = ', ';
             $this->outFormat = 0;
             $this->overwriteOrig = 0;
@@ -889,6 +892,7 @@ final class Application
                                 $this->csv = $dbType;
                             } else {
                                 $this->json = 1;
+                                $this->html = $this->xml = 0;
                                 $mt->Options('Duplicates', 1);
                             }
                             continue;
@@ -1148,15 +1152,20 @@ final class Application
                         // (fall through!)
                     }
                     if ('h' === $arg || 'htmlformat' === $a) {
-                        $badCmd = $this->NotPorted($arg);
+                        $this->html = $this->escapeHTML = 1;
+                        $this->json = $this->xml = 0;
                         continue;
                     }
                     if ('H' === $arg || 'hex' === $a) {
                         $this->showTagID = 'H';
                         continue;
                     }
-                    if (preg_match('/^htmldump([-+]?\d+)?$/i', $arg)) {
-                        $badCmd = $this->NotPorted($arg);
+                    if (preg_match('/^htmldump([-+]?\d+)?$/i', $arg, $m)) {
+                        $this->verbose = ($this->verbose ?: 0) + 1;
+                        $this->html = 2;
+                        if (isset($m[1]) && '' !== $m[1]) {
+                            $mt->Options('HtmlDumpBase', $m[1]);
+                        }
                         continue;
                     }
                     if (preg_match('/^i(gnore)?$/i', $arg)) {
@@ -1580,11 +1589,14 @@ final class Application
                         continue;
                     }
                     if ('X' === $arg || 'xmlformat' === $a) {
-                        $badCmd = $this->NotPorted($arg);
+                        $this->xml = 1;
+                        $this->html = $this->json = 0;
+                        $mt->Options('Duplicates', 1);
                         continue;
                     }
                     if ('php' === $a) {
                         $this->json = 2;
+                        $this->html = $this->xml = 0;
                         $mt->Options('Duplicates', 1);
                         continue;
                     }
@@ -1763,7 +1775,7 @@ final class Application
             }
 
             // (-diff, -htmlDump, -X and -plot are not ported)
-            if ($this->tagOut && ($this->csv || $this->json || $this->printFmt || $this->tabFormat)) {
+            if ($this->tagOut && ($this->csv || $this->json || $this->printFmt || $this->tabFormat || $this->xml || ($this->verbose && $this->html))) {
                 $this->Error("Sorry, -W may not be combined with -csv, -htmlDump, -j, -p, -t or -X\n");
                 continue;
             }
@@ -1809,23 +1821,23 @@ final class Application
                 }
             }
 
-            if ($this->escapeHTML || $this->json) {
+            if (($this->escapeHTML && !$this->xml) || $this->json) {
                 // must be UTF8 for HTML conversion and JSON output
                 if ($this->json) {
                     $mt->Options('Charset', 'UTF8');
                 }
                 // use Escape option to do our HTML escaping
-                if ($this->escapeHTML) {
+                if ($this->escapeHTML && !$this->xml) {
                     $mt->Options('Escape', 'HTML');
                 }
-            } elseif ($escapeXML) {
+            } elseif ($escapeXML && !$this->xml) {
                 $mt->Options('Escape', 'XML');
             }
 
             // set sort option
             if ($sortOpt) {
                 // (note that -csv sorts alphabetically by default anyway if more than 1 file)
-                $sort = ($this->outFormat > 0 || $this->json || $this->csv) ? 'Tag' : 'Descr';
+                $sort = ($this->outFormat > 0 || $this->xml || $this->json || $this->csv) ? 'Tag' : 'Descr';
                 $mt->Options('Sort', $sort);
                 $mt->Options('Sort2', $sort);
             }
@@ -1835,8 +1847,40 @@ final class Application
                 $this->structOpt = $mt->Options('Struct');
             }
 
-            // set up for JSON and PHP output formats
-            if ($this->json) {
+            // set up for XML output
+            if ($this->xml) {
+                $charset = $mt->Options('Charset');
+                // standard XML encoding names for supported Charset settings
+                $encoding = [
+                    'UTF8' => 'UTF-8', 'Latin' => 'windows-1252', 'Latin2' => 'windows-1250',
+                    'Cyrillic' => 'windows-1251', 'Greek' => 'windows-1253', 'Turkish' => 'windows-1254',
+                    'Hebrew' => 'windows-1255', 'Arabic' => 'windows-1256', 'Baltic' => 'windows-1257',
+                    'Vietnam' => 'windows-1258', 'MacRoman' => 'macintosh',
+                ];
+                // switch to UTF-8 if we don't have a standard encoding name
+                if (!isset($encoding[$charset])) {
+                    $charset = 'UTF8';
+                    $mt->Options('Charset', $charset);
+                }
+                $this->fileHeader = "<?xml version='1.0' encoding='{$encoding[$charset]}'?>\n"
+                    ."<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>\n";
+                $this->fileTrailer = "</rdf:RDF>\n";
+                // extract as a list unless short output format
+                if ($this->outFormat > 0) {
+                    $this->joinLists = 1;
+                }
+                if (!$this->joinLists) {
+                    $mt->Options('List', 1);
+                }
+                $this->showGroup = $this->allGroup = 1;   // always show group 1
+                // set binaryOutput flag to 0 or undef (0 = output encoded binary in XML)
+                if ($this->binaryOutput) {
+                    $this->binaryOutput = $this->outFormat > 0 ? null : 0;
+                }
+                if ($this->tabFormat && !$this->showTagID) {
+                    $this->showTagID = 'D';
+                }
+            } elseif ($this->json) {
                 if (1 == $this->json) { // JSON
                     $this->fileHeader = '[';
                     $this->fileTrailer = "]\n";
@@ -1888,6 +1932,11 @@ final class Application
                 }
                 if (!$this->tagOut) {
                     $this->binaryOutput = null;    // disable conflicting option
+                }
+                if ($this->html) {
+                    $this->html = 2;    // flag for html dump
+                    $mt->Options('HtmlDump', $this->verbose);
+                } elseif (!$this->tagOut) {
                     $mt->Options('Verbose', $this->verbose);
                 }
             } elseif (null !== $this->verbose) {
@@ -2052,6 +2101,10 @@ final class Application
             }
             if ($this->exclude) {
                 $mt->Options('Exclude', $this->exclude);
+            }
+
+            if ($this->html) {
+                $this->binaryOutput = null;
             }
 
             if ($this->binaryOutput) {
@@ -2319,7 +2372,7 @@ final class Application
                 // print summary
                 $tot = $this->count + $this->countBad;
                 if ($this->countDir || $totWr || $this->countFailed || $tot > 1 || $this->textOut || $this->countLink) {
-                    $o = (($this->json || $this->printFmt || $this->csv) && !$this->textOut) ? $this->stderr : $this->vout;
+                    $o = (($this->html || $this->json || $this->xml || $this->printFmt || $this->csv) && !$this->textOut) ? $this->stderr : $this->vout;
                     if ($this->countDir) {
                         fwrite($o, Perl::sprintf("%5d directories scanned\n", $this->countDir));
                     }
@@ -2662,8 +2715,10 @@ final class Application
         }
         // print file/progress message
         $o = null;
-        if (!($this->binaryOutput || $this->textOut || $this->printFmt || $this->csv)) {
-            if (!$this->json) {
+        if (!($this->binaryOutput || $this->textOut || $this->printFmt || $this->html > 1 || $this->csv)) {
+            if ($this->html) {
+                fwrite($this->stdout, '<!-- '.HTML::EscapeHTML($file)." -->\n");
+            } elseif (!($this->json || $this->xml)) {
                 if (($this->multiFile && !$this->quiet) || $this->progress) {
                     $o = $this->stdout;
                 }
@@ -2868,7 +2923,46 @@ final class Application
                         $this->fileHeader = null;
                     }
                 }
-                if ($this->json) {
+                if ($this->html) {
+                    fwrite($fp, "<table>\n");
+                } elseif ($this->xml) {
+                    $f = $file;
+                    $this->CleanXML($f);
+                    fwrite($fp, "\n<rdf:Description rdf:about='{$f}'");
+                    fwrite($fp, "\n  xmlns:et='http://ns.exiftool.org/1.0/'");
+                    fwrite($fp, " et:toolkit='Image::ExifTool ".ExifTool::$VERSION."'");
+                    // define namespaces for all tag groups
+                    $groups = $groupList = [];
+                    foreach ($foundTags as $tag) {
+                        [$grp0, $grp1] = $et->GetGroup($tag) + [null, null];
+                        if (!$grp1) {
+                            if (null === $this->forcePrint) {
+                                continue;
+                            }
+                            $grp0 = $grp1 = 'Unknown';
+                        }
+                        // add groups from structure fields
+                        if (\is_array($info[$tag] ?? null)) {
+                            $this->AddGroups($info[$tag], $grp0, $groups, $groupList);
+                        }
+                        if (!empty($groups[$grp1])) {
+                            continue;
+                        }
+                        $groups[$grp1] = $grp0;
+                        $groupList[] = $grp1;
+                    }
+                    foreach ($groupList as $grp1) {
+                        $grp = $groups[$grp1];
+                        if (!($grp === $grp1 && preg_match('/^(ExifTool|File|Composite|Unknown)$/', $grp))) {
+                            $grp .= "/$grp1";
+                        }
+                        fwrite($fp, "\n  xmlns:$grp1='http://ns.exiftool.org/$grp/1.0/'");
+                    }
+                    if ($this->outFormat < 1) {
+                        fwrite($fp, '>');
+                    }
+                    $ind = $this->outFormat >= 0 ? ' ' : '   ';
+                } elseif ($this->json) {
                     // set delimiters for JSON or PHP output
                     [$bra, $ket, $sep] = 1 == $this->json ? ['{', '}', ':'] : ['Array(', ')', ' =>'];
                     if ('JSONQ' === ($et->OPTIONS['StructFormat'] ?? null)) {
@@ -2886,7 +2980,7 @@ final class Application
                 }
             }
             // suppress duplicates manually in JSON output
-            $noDupsFlag = $this->json;
+            $noDupsFlag = $this->json || ($this->xml && $this->outFormat > 0);
             $printConv = $et->Options('PrintConv');
             $lastGroup = '';
             $i = -1;
@@ -2913,7 +3007,7 @@ final class Application
                     }
                     if ($this->structOpt && \is_array($val)) {
                         // serialize structure if necessary
-                        if (!$this->json) {
+                        if (!($this->xml || $this->json)) {
                             $val = XMP::SerializeStruct($et, $val);
                         }
                     } elseif (\is_array($val) && array_is_list($val)) {
@@ -2954,7 +3048,7 @@ final class Application
                         && (string) $group === (string) $et->GetGroup($m[1], $this->showGroup)) {
                         continue;
                     }
-                    if (!$group && ($this->json || $this->csv)) {
+                    if (!$group && ($this->xml || $this->json || $this->csv)) {
                         if (!preg_match('/\b4\b/', (string) $this->showGroup)) {
                             $group = 'Unknown';
                         } elseif ($this->json && !$this->allGroup) {
@@ -2963,7 +3057,16 @@ final class Application
                     }
                     if ($fp && !($this->allGroup || $this->csv)) {
                         if ($lastGroup !== (string) $group) {
-                            if ($this->json) {
+                            if ($this->html) {
+                                $cols = 1;
+                                if (0 == $this->outFormat || 1 == $this->outFormat) {
+                                    ++$cols;
+                                }
+                                if ($this->showTagID) {
+                                    ++$cols;
+                                }
+                                fwrite($fp, "<tr><td colspan=$cols bgcolor='#dddddd'>$group</td></tr>\n");
+                            } elseif ($this->json) {
                                 if ($lastGroup) {
                                     fwrite($fp, "\n  $ket");
                                 }
@@ -3094,7 +3197,92 @@ final class Application
                 // get description if we need it (use tag name if $outFormat > 0)
                 $desc = $this->outFormat > 0 ? $tagName : $et->GetDescription($tag);
 
-                if ($this->json) {
+                if ($this->xml) {
+                    // RDF/XML output format
+                    $tok = "$group:$tagName";
+                    if ($this->outFormat > 0) {
+                        if ($this->structOpt && (\is_array($val) || \is_object($val))) {
+                            $val = XMP::SerializeStruct($et, $val);
+                        }
+                        $val = Perl::str($val);
+                        if ($this->escapeHTML) {
+                            $val = strtr($val, array_fill_keys(array_map('chr', array_merge(range(0, 8), [11, 12], range(14, 31))), '.'));
+                            if (!$this->altEnc) {
+                                XMP::FixUTF8($val);
+                            }
+                            $val = HTML::EscapeHTML($val, $this->altEnc);
+                        } else {
+                            $this->CleanXML($val);
+                        }
+                        if (!isset($noDups[$tok])) {
+                            fwrite($fp, "\n $tok='{$val}'");
+                            // XML does not allow duplicate attributes
+                            $noDups[$tok] = 1;
+                        }
+                        continue;
+                    }
+                    $xtra = '';
+                    if ($this->showTagID) {
+                        [$id, $lang] = self::GetTagIDList($et, $tag);
+                        if (preg_match('/^\d+$/', (string) $id)) {
+                            if ('H' === $this->showTagID) {
+                                $id = Perl::sprintf('0x%.4x', $id);
+                            }
+                        } else {
+                            $id = XMP::FullEscapeXML($id);
+                        }
+                        $xtra = " et:id='{$id}'";
+                        if ($lang) {
+                            $xtra .= " xml:lang='{$lang}'";
+                        }
+                    }
+                    if ($this->tabFormat) {
+                        $table = $et->GetTableName($tag);
+                        $index = $et->GetTagIndex($tag);
+                        $xtra .= " et:table='{$table}'";
+                        if (null !== $index) {
+                            $xtra .= " et:index='{$index}'";
+                        }
+                    }
+                    $lastVal = $val;
+                    for ($valNum = 0; $valNum < 2; ++$valNum) {
+                        $val = $this->FormatXML($val, $ind, $group);
+                        if ($this->outFormat >= 0) {
+                            // normal output format
+                            fwrite($fp, "\n <$tok$xtra$val</$tok>");
+                            break;
+                        } elseif (0 == $valNum) {
+                            $this->CleanXML($desc);
+                            if ($xtra) {
+                                fwrite($fp, "\n <$tok>");
+                                fwrite($fp, "\n  <rdf:Description$xtra>");
+                                $descClose = "\n  </rdf:Description>";
+                            } else {
+                                fwrite($fp, "\n <$tok rdf:parseType='Resource'>");
+                                $descClose = '';
+                            }
+                            // print tag Description
+                            fwrite($fp, "\n   <et:desc>$desc</et:desc>");
+                            if ($printConv) {
+                                // print PrintConv value
+                                fwrite($fp, "\n   <et:prt$val</et:prt>");
+                                $val = $et->GetValue($tag, 'ValueConv');
+                                $val ??= '';
+                                // go back to print ValueConv value only if different
+                                if (!$this->IsEqual($val, $lastVal, 1)) {
+                                    continue;
+                                }
+                                fwrite($fp, "$descClose\n </$tok>");
+                                break;
+                            }
+                        }
+                        // print ValueConv value
+                        fwrite($fp, "\n   <et:val$val</et:val>");
+                        fwrite($fp, "$descClose\n </$tok>");
+                        break;
+                    }
+                    continue;
+                } elseif ($this->json) {
                     // JSON or PHP output format
                     $tok = $this->allGroup ? "$group:$tagName" : $tagName;
                     if (isset($noDups[$tok])) {
@@ -3177,7 +3365,20 @@ final class Application
                 }
 
                 $buff = '';
-                if ($this->tabFormat) {
+                if ($this->html) {
+                    fwrite($fp, '<tr>');
+                    if (null !== $group) {
+                        fwrite($fp, "<td>$group</td>");
+                    }
+                    if ($this->showTagID) {
+                        fwrite($fp, "<td>$id</td>");
+                    }
+                    if ($this->outFormat <= 1) {
+                        fwrite($fp, "<td>$desc</td>");
+                    }
+                    fwrite($fp, "<td>$val</td></tr>\n");
+                    $buff = null;
+                } elseif ($this->tabFormat) {
                     if (null !== $group) {
                         $buff = "$group\t";
                     }
@@ -3248,7 +3449,9 @@ final class Application
                     }
                     $buff .= "$val\n";
                 }
-                fwrite($fp, $buff);
+                if (null !== $buff) {
+                    fwrite($fp, $buff);
+                }
                 if ($this->tagOut) {
                     if ($append) {
                         if (empty($this->created[$outfile])) {
@@ -3269,7 +3472,12 @@ final class Application
                 $this->database[$csvFile] = $csvInfo;
             }
             if ($fp) {
-                if ($this->json) {
+                if ($this->html) {
+                    fwrite($fp, "</table>\n");
+                } elseif ($this->xml) {
+                    // close rdf:Description element
+                    fwrite($fp, $this->outFormat < 1 ? "\n</rdf:Description>\n" : "/>\n");
+                } elseif ($this->json) {
                     if ($lastGroup) {
                         fwrite($fp, "\n  $ket");
                     }
@@ -4069,6 +4277,108 @@ final class Application
     }
 
     //------------------------------------------------------------------------------
+    // Clean string for XML
+    private function CleanXML(&$str): void
+    {
+        // translate control characters that are invalid in XML
+        $str = preg_replace('/[\0-\x08\x0b\x0c\x0e-\x1f]/', '.', Perl::str($str));
+        // fix malformed UTF-8 characters
+        if (!$this->altEnc) {
+            XMP::FixUTF8($str);
+        }
+        // escape necessary characters for XML
+        $str = XMP::EscapeXML($str);
+    }
+
+    //------------------------------------------------------------------------------
+    // Encode string for XML
+    // Returns: encoding used (and input string is translated)
+    private function EncodeXML(&$str): string
+    {
+        $str = Perl::str($str);
+        if (preg_match('/[\0-\x08\x0b\x0c\x0e-\x1f]/', $str) || (!$this->altEnc && ExifTool::IsUTF8($str) < 0)) {
+            // encode binary data and non-UTF8 with special characters as base64
+            $str = chunk_split(base64_encode($str), 60, "\n");
+            return 'http://www.w3.org/2001/XMLSchema#base64Binary';
+        } elseif ($this->escapeHTML) {
+            $str = HTML::EscapeHTML($str, $this->altEnc);
+        } else {
+            $str = XMP::EscapeXML($str);
+        }
+        return '';
+    }
+
+    //------------------------------------------------------------------------------
+    // Format value for XML output
+    private function FormatXML($val, $ind, $grp): string
+    {
+        $gt = '>';
+        if (\is_array($val) && array_is_list($val)) {
+            // convert ARRAY into an rdf:Bag
+            $val2 = "\n$ind <rdf:Bag>";
+            foreach ($val as $v) {
+                $val2 .= "\n$ind  <rdf:li".$this->FormatXML($v, "$ind  ", $grp).'</rdf:li>';
+            }
+            $val = "$val2\n$ind </rdf:Bag>\n$ind";
+        } elseif (\is_array($val)) {
+            $gt = " rdf:parseType='Resource'>";
+            $val2 = '';
+            foreach (ExifTool::OrderedKeys($val) as $k) {
+                $k = (string) $k;
+                [$ns, $tg] = [$grp, $k];
+                if (preg_match('/^(.*?):(.*)/s', $k, $m)) {
+                    if ('JSON' === $grp) {
+                        $tg = strtr($tg, ':', '_');
+                    } else {
+                        [$ns, $tg] = [$m[1], $m[2]];
+                    }
+                }
+                // validate XML attribute name
+                foreach ([&$ns, &$tg] as &$name) {
+                    $name = preg_replace('/[^-_A-Za-z0-9.]/', '', (string) $name);
+                    if (!preg_match('/^[_A-Za-z]/', $name)) {
+                        $name = '_'.$name;
+                    }
+                }
+                unset($name);
+                $tok = $ns.':'.$tg;
+                $val2 .= "\n$ind <$tok".$this->FormatXML($val[$k], "$ind ", $grp)."</$tok>";
+            }
+            $val = "$val2\n$ind";
+        } else {
+            $enc = $this->EncodeXML($val);
+            if ($enc) {
+                $gt = " rdf:datatype='{$enc}'>\n";
+            }
+        }
+        return $gt.$val;
+    }
+
+    //------------------------------------------------------------------------------
+    // Add tag groups from structure fields to a list for xmlns
+    private function AddGroups($val, $grp, array &$groupHash, array &$groupList): void
+    {
+        if (!\is_array($val)) {
+            return;
+        }
+        if (array_is_list($val)) {
+            foreach ($val as $v) {
+                $this->AddGroups($v, $grp, $groupHash, $groupList);
+            }
+            return;
+        }
+        $keys = ExifTool::OrderedKeys($val);
+        sort($keys, SORT_STRING);
+        foreach ($keys as $key) {
+            if (preg_match('/^(.*?):/s', (string) $key, $m) && empty($groupHash[$m[1]]) && 'JSON' !== $grp) {
+                $groupHash[$m[1]] = $grp;
+                $groupList[] = $m[1];
+            }
+            $this->AddGroups($val[$key], $grp, $groupHash, $groupList);
+        }
+    }
+
+    //------------------------------------------------------------------------------
     // Print JSON or PHP value
     // Inputs: 0) file reference, 1) value, 2) indentation, 3) true to quote numbers
     private function FormatJSON($fp, $val, $ind, $quote = null): void
@@ -4205,7 +4515,7 @@ final class Application
                     $obj = 'base64:' . base64_encode($obj);
                 }
             } else {
-                $bOpt = ', use -b option to extract';
+                $bOpt = $this->html ? '' : ', use -b option to extract';
                 $data = Perl::str($obj->value);
                 if (preg_match('/^Binary data \d+ bytes$/', $data)) {
                     $obj = "($data$bOpt)";

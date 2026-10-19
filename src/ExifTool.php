@@ -597,7 +597,7 @@ class ExifTool
                         self::RequireModule('Image::ExifTool::XMP');
                         $this->ESCAPE_PROC = 'Image\ExifTool\XMP::EscapeXML';
                     } elseif ($newVal !== null and $newVal === 'HTML') {
-                        self::RequireModule('Image::ExifTool::HTML');
+                        self::RequireModule('Image::ExifTool::HTML'); self::RequireModule('Image::ExifTool::PostScript');   // (HTML.pm uses PostScript.pm: its Composite tags)
                         $this->ESCAPE_PROC = 'Image\ExifTool\HTML::EscapeHTML';
                     } else {
                         $this->ESCAPE_PROC = null;
@@ -1175,7 +1175,20 @@ class ExifTool
                 if (!$reEntry) {
                     $this->PATH = [];   // reset PATH
                     $this->DoneExtract();
-                    // (HTML dump not ported)
+                    // do our HTML dump if requested
+                    if ($this->HTML_DUMP) {
+                        $raf->Seek(0, 2);   // seek to end of file
+                        $this->HTML_DUMP->FinishTiffDump($this, $raf->Tell());
+                        $pos = $this->OPTIONS['HtmlDumpBase'];
+                        if ($pos === null) $pos = $this->FIRST_EXIF_POS ?: 0;
+                        $dataPt = $this->EXIF_DATA;
+                        if ($this->EXIF_POS !== null and $pos != $this->EXIF_POS) $dataPt = null;
+                        if ($this->ExtendedEXIF) $dataPt = null;    // can't use EXIF block if not contiguous
+                        $success = $this->HTML_DUMP->Print($raf, $dataPt, $pos,
+                            $this->OPTIONS['TextOut'], $this->OPTIONS['HtmlDump'],
+                            $this->FILENAME ? "HTML Dump ($this->FILENAME)" : 'HTML Dump');
+                        if ($success < 0) $this->Warn("Error reading {$this->HTML_DUMP->ERROR}");
+                    }
                 }
                 if ($filename) {
                     $raf->Close();  // close the file if we opened it
@@ -2487,7 +2500,9 @@ COMPOSITE_TAG:
         $this->Model      = '';         // camera model
         $this->CameraType = '';         // Olympus camera type
         $this->FileType   = '';         // identified file type
-        // (HtmlDump not ported: HTML_DUMP stays undefined)
+        if ($this->Options('HtmlDump')) {
+            $this->HTML_DUMP = new HtmlDump();
+        }
         // make sure our TextOut is a file reference
         if (!is_resource($this->OPTIONS['TextOut'] ?? null)) {
             $this->OPTIONS['TextOut'] = defined('STDOUT') ? STDOUT : fopen('php://stdout', 'w');
@@ -4879,9 +4894,29 @@ GR_TAG:     foreach ($rtnTags as $tag) {
     // Save information for HTML dump
     // Inputs: 0) ExifTool hash ref, 1) start offset, 2) data size
     //         3) comment string, 4) tool tip (or SAME), 5) flags, 6) IFD name
-    // (ponytail: HtmlDump not ported, HTML_DUMP is never set)
     public function HDump($pos, $len, $com, $tip = null, $flg = null, $ifd = null): void
     {
+        if (!$this->HTML_DUMP) return;
+        if ($this->BASE) $pos += $this->BASE;
+        // skip structural data blocks which have been removed from the middle of this dump
+        // (SkipData list contains ordered [start,end+1] offsets to skip)
+        if ($this->SkipData) {
+            $end = $pos + $len;
+            foreach ($this->SkipData as $skip) {
+                if ($end <= $skip[0]) break;
+                if ($pos >= $skip[1]) {
+                    $pos += $skip[1] - $skip[0];
+                    continue;
+                }
+                if ($pos != $skip[0]) {
+                    $this->HTML_DUMP->Add($pos, $skip[0] - $pos, $com, $tip, $flg, $ifd);
+                    $len -= $skip[0] - $pos;
+                    $tip = 'SAME';
+                }
+                $pos = $skip[1];
+            }
+        }
+        $this->HTML_DUMP->Add($pos, $len, $com, $tip, $flg, $ifd);
     }
 
     // (IdentifyTrailer, ProcessTrailers, JpegMarkerName, DirStart, ProcessJPEG, ProcessEXV,
