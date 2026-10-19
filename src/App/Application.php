@@ -18,7 +18,7 @@ use Image\ExifTool\XMP;
  *
  * File-scope variables of the script are properties, its subs are methods with the same names,
  * and the main script is run(). Not ported (the command stops with an error):
- * -diff, -plot, -fileNUM, -use of modules other than those of ExifTool, and
+ * -plot, -use of modules other than those of ExifTool, and
  * -config files. -if and -p evaluate Perl code: -if supports a subset of Perl expressions (see
  * CompileCondition()), and advanced formatting expressions (${TAG;EXPR}) are not supported in
  * -p or in tag copies (-TAG<STR). The writers not ported yet (MIE, PNG...) give an error for
@@ -162,6 +162,7 @@ final class Application
     private $deleteOrig;                // 0=restore original files, 1=delete originals, 2=delete w/o asking
     private $disableOutput;             // flag to disable normal output
     private $doSetFileName;             // flag set if FileName may be written
+    private $diff;                     // file name for comparing differences
     private $escapeC;                   // C-style escape
     private $escapeHTML;                // flag to escape printed values for html
     private $executeID;                 // -execute ID number
@@ -436,6 +437,7 @@ final class Application
             $this->filterFlag = 0;
             $this->isWriting = 0;
             $this->json = $this->html = $this->xml = 0;
+            $this->diff = null;
             $this->listSep = ', ';
             $this->outFormat = 0;
             $this->overwriteOrig = 0;
@@ -970,7 +972,13 @@ final class Application
                         continue;
                     }
                     if (preg_match('/^diff$/i', $arg)) {
-                        $badCmd = $this->NotPorted($arg);
+                        $this->diff = array_shift($this->ARGV);
+                        if (null === $this->diff) {
+                            $this->Error("Expecting file name for -$arg option\n");
+                            $badCmd = 1;
+                        } else {
+                            self::CleanFilename($this->diff);   // change to forward slashes if necessary
+                        }
                         continue;
                     }
                     if (preg_match('/^delete_original(!?)$/i', $arg, $m)) {
@@ -1774,9 +1782,10 @@ final class Application
                 continue;
             }
 
-            // (-diff, -htmlDump, -X and -plot are not ported)
-            if ($this->tagOut && ($this->csv || $this->json || $this->printFmt || $this->tabFormat || $this->xml || ($this->verbose && $this->html))) {
-                $this->Error("Sorry, -W may not be combined with -csv, -htmlDump, -j, -p, -t or -X\n");
+            // (-plot is not ported)
+            if (($this->tagOut || null !== $this->diff) && ($this->csv || $this->json || $this->printFmt || $this->tabFormat || $this->xml || ($this->verbose && $this->html))) {
+                $opt = $this->tagOut ? '-W' : '-diff';
+                $this->Error("Sorry, $opt may not be combined with -csv, -htmlDump, -j, -p, -t or -X\n");
                 continue;
             }
 
@@ -2084,7 +2093,11 @@ final class Application
                 continue;
             }
             if ($this->isWriting) {
-                // (-diff and -plot are not ported)
+                if (null !== $this->diff) {
+                    $this->Error("Can't use -diff option when writing tags\n");
+                    continue;
+                }
+                // (-plot is not ported)
                 if ($this->tags && !$this->outOpt && !$this->csv) {
                     [$tg, $s] = \count($this->tags) > 1 ? ["{$this->tags[0]} ...", 's'] : [$this->tags[0], ''];
                     $this->Warn("Ignored superfluous tag name$s or invalid option$s: -$tg\n");
@@ -2604,7 +2617,7 @@ final class Application
             // can't make use of $info if verbose because we must reprocess
             // the file anyway to generate the verbose output
             // (also if writing just to avoid double-incrementing FileSequence)
-            if ($this->isWriting || $this->verbose || null !== $this->fastCondition) {
+            if ($this->isWriting || $this->verbose || null !== $this->fastCondition || null !== $this->diff) {
                 $info = null;
                 --$et->FILE_SEQUENCE;
             }
@@ -2656,8 +2669,8 @@ final class Application
 
         $lineCount = 0;
         $fp = $outfile = $append = null;
-        // (-diff and -plot are not ported)
-        if ($this->textOut && ($this->verbose || $et->Options('PrintCSV')) && !$this->tagOut) {
+        // (-plot is not ported)
+        if ($this->textOut && ($this->verbose || $et->Options('PrintCSV')) && !$this->tagOut && null === $this->diff) {
             [$fp, $outfile, $append] = $this->OpenOutputFile($orig) + [null, null, null];
             if (!$fp) {
                 $this->EFile($file);
@@ -2718,7 +2731,7 @@ final class Application
         if (!($this->binaryOutput || $this->textOut || $this->printFmt || $this->html > 1 || $this->csv)) {
             if ($this->html) {
                 fwrite($this->stdout, '<!-- '.HTML::EscapeHTML($file)." -->\n");
-            } elseif (!($this->json || $this->xml)) {
+            } elseif (!($this->json || $this->xml || null !== $this->diff)) {
                 if (($this->multiFile && !$this->quiet) || $this->progress) {
                     $o = $this->stdout;
                 }
@@ -2746,6 +2759,44 @@ final class Application
                 // (SetTags is only available from advanced formatting expressions: not supported)
             } else {
                 $foundTags = $this->tags;
+            }
+            $et2 = $found2 = $file2 = null;
+            if (null !== $this->diff) {
+                $file2 = $this->FilenameSPrintf($this->diff, $orig);
+                if ($file === $file2) {
+                    $this->Warn("Error: Diffing file with itself - $file2\n");
+                    $this->EFile($file);
+                    ++$this->countBad;
+
+                    return;
+                }
+                if ($et->Exists($file2)) {
+                    $this->showGroup ??= 1;
+                    $this->allGroup ??= 1;
+                    $et->Options('Duplicates', 1);
+                    $et->Options('Sort', "Group{$this->showGroup}");
+                    $et->Options('Verbose', 0);
+                    $et2 = new ExifTool();
+                    foreach ($et->OPTIONS as $k => $v) {
+                        $et2->Options($k, $v);
+                    }
+                    // must set list options specifically because they may have been
+                    // set incorrectly from deprecated List settings
+                    $et2->Options('ListSep', $et->OPTIONS['ListSep']);
+                    $et2->Options('ListSplit', $et->OPTIONS['ListSplit']);
+                    $found2 = $foundTags;
+                    $info2 = $et2->ImageInfo($file2, $found2);
+                    $found2 = $et2->IO_TAG_LIST;
+                } else {
+                    $info2 = ['Error' => 'Diff file not found'];
+                }
+                if (!empty($info2['Error'])) {
+                    $this->Warn("Error: {$info2['Error']} - $file2\n");
+                    $this->EFile($file);
+                    ++$this->countBad;
+
+                    return;
+                }
             }
             // extract the information
             $info = $et->ImageInfo($this->Infile($pipe), $foundTags);
@@ -2801,7 +2852,12 @@ final class Application
             }
         }
 
-        // (-diff is not ported)
+        // print differences if requested
+        if (null !== $this->diff) {
+            $this->PrintDiff($fp, $et, $et2, $file, $file2, $foundTags, $found2 ?? [], $outfile);
+
+            return;
+        }
         // restore state of comma flag for this file if appending
         if ($append && ($this->textOverwrite & 0x02)) {
             $this->comma = $this->outComma[$outfile] ?? null;
@@ -4274,6 +4330,211 @@ final class Application
         }
 
         return '"' . $str . '"';    // return the quoted string
+    }
+
+    //------------------------------------------------------------------------------
+    // Convert a value to a printable string (for -diff)
+    private function Printable($val): string
+    {
+        if (($val instanceof ScalarRef || \is_array($val)) && $this->structOpt) {
+            $val = XMP::SerializeStruct($this->mt, $val);
+        } elseif ($val instanceof ScalarRef) {
+            $val = '(Binary data '.\strlen(Perl::str($val->value)).' bytes)';
+        } elseif (\is_array($val) && array_is_list($val)) {
+            $val = self::join($this->listSep, $val);
+        }
+        $val = Perl::str($val);
+        if ($this->escapeC) {
+            return preg_replace_callback('/[\0-\x1f\\\\\x7f]/', static fn ($m) => self::ESC_C[$m[0]] ?? Perl::sprintf('\x%.2x', \ord($m[0])), $val);
+        }
+        // translate unprintable chars in value and remove trailing spaces
+        $val = strtr($val, "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x7f", str_repeat('.', 32));
+        $val = str_replace("\0", '', $val);
+
+        return preg_replace('/\s+$/', '', $val);
+    }
+
+    //------------------------------------------------------------------------------
+    // Print differences between two files (-diff)
+    private function PrintDiff($fp, ExifTool $et, ExifTool $et2, $file, $file2, array $foundTags, array $found2, $outfile): void
+    {
+        $done = $done2 = $diffs = $groupTags2 = [];
+        $wasDiff = null;
+        $v = $this->verbose ?: 0;
+        fwrite($fp, "======== diff < $file > $file2\n");
+        [$g2, $same] = [0, 0]; // start with $g2 false, but not equal to '' to avoid infinite loop
+        for (;;) {
+            $dupl = $used = [];
+            $tag2 = $val2 = $equal = null;
+            $g = null;
+            $tag = array_shift($foundTags);
+            if (null !== $tag) {
+                $done[$tag] = 1;
+                $g = $et->GetGroup($tag, $this->showGroup);
+            }
+            if (!$g) { // ($g could be '' if requesting non-existent tag, and this will sort last)
+                for (;;) {
+                    $tag2 = array_shift($found2);
+                    if (null === $tag2) {
+                        $g = '';
+                        break;
+                    }
+                    if (empty($done2[$tag2])) {
+                        $g = $et2->GetGroup($tag2, $this->showGroup);
+                        break;
+                    }
+                }
+            }
+            if ((string) $g !== (string) $g2) {
+                // add any outstanding tags from diff file not yet handled in previous group ($g2)
+                foreach ($groupTags2 as $t2) {
+                    if (!empty($done2[$t2])) {
+                        continue;
+                    }
+                    $v2 = $et2->GetValue($t2);
+                    if (null === $v2) {
+                        continue;
+                    }
+                    $name = $this->outFormat < 1 ? $et2->GetDescription($t2) : ExifTool::GetTagName($t2);
+                    $len = $this->LengthUTF8($name);
+                    $pad = $this->outFormat < 2 ? str_repeat(' ', $len < 32 ? 32 - $len : 0) : '';
+                    if ($this->allGroup) {
+                        $grp = "[$g2]";
+                        if (\strlen($grp) < 15 && $this->outFormat < 2) {
+                            $grp .= str_repeat(' ', 15 - \strlen($grp));
+                        }
+                        $diffs[] = "> $grp $name$pad: ".$this->Printable($v2)."\n";
+                    } else {
+                        $diffs[] = "> $name$pad: ".$this->Printable($v2)."\n";
+                    }
+                    $done2[$t2] = 1;
+                }
+                $str = '';
+                if ($v && ($same || $v > 1)) {
+                    $str = "  ($same same tag".(1 == $same ? '' : 's').')';
+                }
+                if (!$this->allGroup) {
+                    if ($g2 && ($str || $diffs)) {
+                        fwrite($fp, "---- $g2 ----$str\n");
+                    }
+                } elseif ($str && $g2) {
+                    fwrite($fp, Perl::sprintf("   %-13s%s\n", $g2, $str));
+                }
+                // print all differences for this group
+                if ($diffs) {
+                    fwrite($fp, implode('', $diffs));
+                    $wasDiff = 1;
+                    $diffs = [];
+                }
+                if (!$g) {
+                    break;
+                }
+                [$g2, $same] = [$g, 0];
+                // build list of all tags in the new group of the diff file
+                $groupTags2 = [];
+                if (null !== $tag2) {
+                    $groupTags2[] = $tag2;
+                }
+                foreach ($found2 as $t2) {
+                    if (empty($done2[$t2]) && (string) $g === (string) $et2->GetGroup($t2, $this->showGroup)) {
+                        $groupTags2[] = $t2;
+                    }
+                }
+            }
+            if (null === $tag) {
+                continue;
+            }
+            $val = $et->GetValue($tag);
+            if (null === $val) {
+                continue;  // (just in case)
+            }
+            $name = ExifTool::GetTagName($tag);
+            $desc = $this->outFormat < 1 ? $et->GetDescription($tag) : $name;
+            // get matching tag key(s) from diff file
+            $tags2 = array_filter($groupTags2, static fn ($t) => 1 === preg_match('/^'.preg_quote($name, '/').'( |$)/', $t));
+            foreach ($tags2 as $t2) { // T2:
+                if (!empty($done2[$t2])) {
+                    continue;
+                }
+                $tag2 = $t2;
+                $val2 = $et2->GetValue($t2);
+                if (null === $val2) {
+                    continue;
+                }
+                if ($this->IsEqual($val, $val2)) {
+                    $equal = 1;
+                    break;
+                }
+                // look ahead for upcoming duplicate tags in this group to see
+                // if any would later match this value (and skip those for now)
+                if (!empty($et->DUPL_TAG[$name]) && !$dupl) {
+                    $key = $name;
+                    for ($i = 0; $i <= $et->DUPL_TAG[$name]; ++$i, $key = "$name $i") {
+                        // (Perl: "$name ($i)")
+                        $key = 0 == $i ? $name : "$name ($i)";
+                        if (empty($done[$key]) && (string) $g === (string) $et->GetGroup($key, $this->showGroup)) {
+                            $dupl[] = $key;
+                        }
+                    }
+                    if (\count($dupl) > 1) {
+                        usort($dupl, static fn ($a, $b) => ($et->FILE_ORDER[$a] ?? 0) <=> ($et->FILE_ORDER[$b] ?? 0));
+                    }
+                }
+                foreach ($dupl as $d) {
+                    if (!empty($used[$d])) {
+                        continue;
+                    }
+                    $vv = $et->GetValue($d);
+                    if (null === $vv || !$this->IsEqual($vv, $val2)) {
+                        continue;
+                    }
+                    $used[$d] = 1;  // would match this upcoming tag
+                    $tag2 = $val2 = null;
+                    continue 2;
+                }
+                break;
+            }
+            if ($equal) {
+                ++$same;
+            } else {
+                $len = $this->LengthUTF8($desc);
+                $pad = $this->outFormat < 2 ? str_repeat(' ', $len < 32 ? 32 - $len : 0) : '';
+                if ($this->allGroup) {
+                    $grp = "[$g]";
+                    if (\strlen($grp) < 15 && $this->outFormat < 2) {
+                        $grp .= str_repeat(' ', 15 - \strlen($grp));
+                    }
+                    $diffs[] = "< $grp $desc$pad: ".$this->Printable($val)."\n";
+                    if (null !== $val2) {
+                        if ($v < 3) {
+                            $grp = str_repeat(' ', \strlen($grp));
+                            $desc = str_repeat(' ', $len);
+                        }
+                        $diffs[] = "> $grp $desc$pad: ".$this->Printable($val2)."\n";
+                    }
+                } else {
+                    $diffs[] = "< $desc$pad: ".$this->Printable($val)."\n";
+                    if ($v < 3) {
+                        $desc = str_repeat(' ', $len);
+                    }
+                    if (null !== $val2) {
+                        $diffs[] = "> $desc$pad: ".$this->Printable($val2)."\n";
+                    }
+                }
+            }
+            if (null !== $tag2) {
+                $done2[$tag2] = 1;
+            }
+        }
+        if (!$wasDiff) {
+            fwrite($fp, "(no metadata differences)\n");
+        }
+        if (null !== $outfile) {
+            $this->created[$outfile] = 1;
+            fclose($fp);
+            $this->tmpText = null;
+        }
+        ++$this->count;
     }
 
     //------------------------------------------------------------------------------
