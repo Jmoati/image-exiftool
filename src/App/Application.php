@@ -9,6 +9,7 @@ use Image\ExifTool\HTML;
 use Image\ExifTool\Import;
 use Image\ExifTool\MWG;
 use Image\ExifTool\Perl;
+use Image\ExifTool\Plot;
 use Image\ExifTool\ScalarRef;
 use Image\ExifTool\Vars\ExifTool as ExifToolVars;
 use Image\ExifTool\XMP;
@@ -18,8 +19,7 @@ use Image\ExifTool\XMP;
  *
  * File-scope variables of the script are properties, its subs are methods with the same names,
  * and the main script is run(). Not ported (the command stops with an error):
- * -plot, -use of modules other than those of ExifTool, and
- * -config files. -if and -p evaluate Perl code: -if supports a subset of Perl expressions (see
+ * -use of modules other than those of ExifTool (-config takes PHP files). -if and -p evaluate Perl code: -if supports a subset of Perl expressions (see
  * CompileCondition()), and advanced formatting expressions (${TAG;EXPR}) are not supported in
  * -p or in tag copies (-TAG<STR). The writers not ported yet (MIE, PNG...) give an error for
  * the file.
@@ -162,6 +162,7 @@ final class Application
     private $deleteOrig;                // 0=restore original files, 1=delete originals, 2=delete w/o asking
     private $disableOutput;             // flag to disable normal output
     private $doSetFileName;             // flag set if FileName may be written
+    private ?Plot $plot = null;         // plot object (-plot)
     private $diff;                     // file name for comparing differences
     private $escapeC;                   // C-style escape
     private $escapeHTML;                // flag to escape printed values for html
@@ -438,6 +439,7 @@ final class Application
             $this->isWriting = 0;
             $this->json = $this->html = $this->xml = 0;
             $this->diff = null;
+            $this->plot = null;
             $this->listSep = ', ';
             $this->outFormat = 0;
             $this->overwriteOrig = 0;
@@ -1311,7 +1313,7 @@ final class Application
                         continue;
                     }
                     if ('plot' === $a) {
-                        $badCmd = $this->NotPorted($arg);
+                        $this->plot = new Plot();
                         continue;
                     }
                     if (preg_match('/^p(-?)$/', $arg, $m) || preg_match('/^printformat(-?)$/i', $arg, $m)) {
@@ -1782,11 +1784,15 @@ final class Application
                 continue;
             }
 
-            // (-plot is not ported)
-            if (($this->tagOut || null !== $this->diff) && ($this->csv || $this->json || $this->printFmt || $this->tabFormat || $this->xml || ($this->verbose && $this->html))) {
+            if (($this->tagOut || null !== $this->diff) && ($this->csv || $this->json || $this->printFmt || $this->tabFormat || $this->xml || $this->plot || ($this->verbose && $this->html))) {
                 $opt = $this->tagOut ? '-W' : '-diff';
                 $this->Error("Sorry, $opt may not be combined with -csv, -htmlDump, -j, -p, -t or -X\n");
                 continue;
+            }
+
+            if ($this->plot && $this->textOut) {
+                $this->textOut2 = $this->textOut;
+                $this->textOut = null;
             }
 
             if ($this->csv && 'CSV' === $this->csv && !$this->isWriting) {
@@ -1846,7 +1852,7 @@ final class Application
             // set sort option
             if ($sortOpt) {
                 // (note that -csv sorts alphabetically by default anyway if more than 1 file)
-                $sort = ($this->outFormat > 0 || $this->xml || $this->json || $this->csv) ? 'Tag' : 'Descr';
+                $sort = ($this->outFormat > 0 || $this->xml || $this->json || $this->csv || $this->plot) ? 'Tag' : 'Descr';
                 $mt->Options('Sort', $sort);
                 $mt->Options('Sort2', $sort);
             }
@@ -1856,8 +1862,12 @@ final class Application
                 $this->structOpt = $mt->Options('Struct');
             }
 
-            // set up for XML output
-            if ($this->xml) {
+            // set up for plot, XML output
+            if ($this->plot) {
+                $this->joinLists = null;
+                $mt->Options('List', 1);
+                $this->plot->Settings($mt->Options('Plot'));
+            } elseif ($this->xml) {
                 $charset = $mt->Options('Charset');
                 // standard XML encoding names for supported Charset settings
                 $encoding = [
@@ -2097,7 +2107,10 @@ final class Application
                     $this->Error("Can't use -diff option when writing tags\n");
                     continue;
                 }
-                // (-plot is not ported)
+                if ($this->plot) {
+                    $this->Error("Can't use -plot option when writing tags\n");
+                    continue;
+                }
                 if ($this->tags && !$this->outOpt && !$this->csv) {
                     [$tg, $s] = \count($this->tags) > 1 ? ["{$this->tags[0]} ...", 's'] : [$this->tags[0], ''];
                     $this->Warn("Ignored superfluous tag name$s or invalid option$s: -$tg\n");
@@ -2306,7 +2319,7 @@ final class Application
                 if ($this->fileTrailer && !$this->fileHeader) {
                     fwrite($this->stdout, $this->fileTrailer);
                 }
-                // print CSV output file if necessary (-plot is not ported)
+                // print CSV output file if necessary
                 $fp = $err = null;
                 if ($this->textOut2) {
                     if (!$mt->Open($fp, $this->textOut2, '>')) {
@@ -2314,8 +2327,20 @@ final class Application
                         $err = 1;
                     }
                 }
-                if (!$err && $this->csv && !$this->isWriting) {
-                    $this->PrintCSV($fp);
+                if (!$err) {
+                    if ($this->csv && !$this->isWriting) {
+                        $this->PrintCSV($fp);
+                    }
+                    // print SVG plot
+                    if ($this->plot) {
+                        $this->plot->Draw($fp ?: $this->stdout);
+                        if (!empty($this->plot->s['Error'])) {
+                            $this->Error("Error: {$this->plot->s['Error']}\n");
+                            $err = 1;
+                        } elseif (!empty($this->plot->s['Warn'])) {
+                            $this->Warn("Warning: {$this->plot->s['Warn']}\n");
+                        }
+                    }
                 }
                 if ($fp) {
                     if (!fclose($fp)) {
@@ -2385,7 +2410,7 @@ final class Application
                 // print summary
                 $tot = $this->count + $this->countBad;
                 if ($this->countDir || $totWr || $this->countFailed || $tot > 1 || $this->textOut || $this->countLink) {
-                    $o = (($this->html || $this->json || $this->xml || $this->printFmt || $this->csv) && !$this->textOut) ? $this->stderr : $this->vout;
+                    $o = (($this->html || $this->json || $this->xml || $this->printFmt || $this->csv || $this->plot) && !$this->textOut) ? $this->stderr : $this->vout;
                     if ($this->countDir) {
                         fwrite($o, Perl::sprintf("%5d directories scanned\n", $this->countDir));
                     }
@@ -2669,8 +2694,7 @@ final class Application
 
         $lineCount = 0;
         $fp = $outfile = $append = null;
-        // (-plot is not ported)
-        if ($this->textOut && ($this->verbose || $et->Options('PrintCSV')) && !$this->tagOut && null === $this->diff) {
+        if ($this->textOut && ($this->verbose || $et->Options('PrintCSV')) && !$this->tagOut && null === $this->diff && !$this->plot) {
             [$fp, $outfile, $append] = $this->OpenOutputFile($orig) + [null, null, null];
             if (!$fp) {
                 $this->EFile($file);
@@ -2728,7 +2752,7 @@ final class Application
         }
         // print file/progress message
         $o = null;
-        if (!($this->binaryOutput || $this->textOut || $this->printFmt || $this->html > 1 || $this->csv)) {
+        if (!($this->binaryOutput || $this->textOut || $this->printFmt || $this->html > 1 || $this->csv || $this->plot)) {
             if ($this->html) {
                 fwrite($this->stdout, '<!-- '.HTML::EscapeHTML($file)." -->\n");
             } elseif (!($this->json || $this->xml || null !== $this->diff)) {
@@ -2963,6 +2987,20 @@ final class Application
             if ($this->PrintErrors($et, $errs, $file)) {
                 $this->EFile($file);
             }
+        } elseif ($this->plot) {
+            // add points from this file to the plot
+            $tagExtra = $et->TAG_EXTRA;
+            $docNum = [];
+            foreach (array_keys($info) as $tag) {
+                if (!empty($tagExtra[$tag]['G3']) && preg_match('/(\d+)/', $tagExtra[$tag]['G3'], $m)) {
+                    $docNum[$tag] = $m[1];
+                }
+            }
+            $this->plot->s['DocNum'] = $docNum;
+            if ($et->Options('ExtractEmbedded')) {
+                $this->plot->s['EE'] = 1;
+            }
+            $this->plot->AddPoints($info, $foundTags);
         } elseif (!$this->disableOutput) {
             $line = null;
             $noDups = [];

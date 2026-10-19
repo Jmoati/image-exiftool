@@ -36,6 +36,7 @@ $cases = [
     ['-h', 'Canon.jpg', 'Nikon.jpg'], ['-h', '-a', '-G', '-H', 'XMP.jpg'], ['-h', '-s', 'Canon.jpg'],
     ['-htmlDump', 'Canon.jpg'], ['-htmlDump0', 'Nikon.jpg'], ['-h', '-v', 'PhaseOne.iiq'], ['-htmlDump', 'PhaseOne.iiq'],
     ['-diff', 'Nikon.jpg', 'Canon.jpg'], ['-diff', 'Nikon.jpg', '-struct', '-a', 'Canon.jpg'], ['-diff', 'Nikon.jpg', '-G1', '-s', '-v', 'Canon.jpg'], ['-diff', 'Canon.jpg', 'Canon.jpg'], ['-diff', '%f.xmp', 'XMP.jpg'],
+    ['-plot', '-iso', '-exposuretime', '-fnumber', 'Canon.jpg', 'Nikon.jpg'], ['-plot', '-api', 'Plot=type=scatter,style=line+marker', '-n', '-iso', '-fnumber', 'Canon.jpg', 'Nikon.jpg'], ['-plot', '-api', 'Plot=type=h,nbins=10,multi=1,cols=red', '-n', '-fnumber', '-iso', 'Canon.jpg', 'Nikon.jpg'], ['-plot', '-api', 'Plot=size=0x5', 'Canon.jpg'],
     ['-listx', '-lang', 'fr', '-f', '-s'],
     ['-lang', 'ru', '-t', '-flash', '-exposureprogram', 'Canon.jpg'],
 ];
