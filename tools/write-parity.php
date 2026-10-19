@@ -53,6 +53,7 @@ $images = "$etDir/t/images";
 // large data written as a block (more than one JPEG segment)
 $inputs = "$root/var/write-parity-inputs";
 @mkdir($inputs, 0777, true);
+file_put_contents("$inputs/GeotagDop.gpx", str_replace("</time></trkpt>", "</time><hdop>2.5</hdop></trkpt>", file_get_contents("$images/Geotag.gpx")));
 file_put_contents("$inputs/big.exif", file_get_contents("$images/ExifTool.tif").str_repeat("\0MM\0\x2a", 30000));
 file_put_contents("$inputs/big.icc", file_get_contents("$images/ICC_Profile.icc").str_repeat("\0", 150000));
 file_put_contents("$inputs/big.xmp", str_replace('</x:xmpmeta>', str_repeat(' ', 70000).'</x:xmpmeta>',
