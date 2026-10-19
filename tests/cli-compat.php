@@ -34,6 +34,7 @@ $cases = [
     ['-file1', 'NoSuch.jpg', '-p', '$model $file1:model', 'Canon.jpg'], ['-file1'],
     ['-X', 'Canon.jpg', 'XMP.jpg'], ['-X', '-l', '-struct', '-G', 'XMP.jpg'], ['-X', '-s', '-H', '-t', 'Nikon.jpg'],
     ['-h', 'Canon.jpg', 'Nikon.jpg'], ['-h', '-a', '-G', '-H', 'XMP.jpg'], ['-h', '-s', 'Canon.jpg'],
+    ['-htmlDump', 'Canon.jpg'], ['-htmlDump0', 'Nikon.jpg'], ['-h', '-v', 'PhaseOne.iiq'], ['-htmlDump', 'PhaseOne.iiq'],
     ['-listx', '-lang', 'fr', '-f', '-s'],
     ['-lang', 'ru', '-t', '-flash', '-exposureprogram', 'Canon.jpg'],
 ];

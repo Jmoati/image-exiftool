@@ -162,6 +162,54 @@ final class PhaseOne
     }
 
     //------------------------------------------------------------------------------
+    // Do HTML dump of an IFD entry
+    // Inputs: 0) ExifTool ref, 1) tag table ref, 3) tag ID, 4) tag value,
+    //         5) IFD entry offset, 6) IFD entry size, 7) parameter hash
+    private static function HtmlDump(ExifTool $et, TagTable $tagTablePtr, $tagID, $value, $entry, $entryLen, array $parms): void
+    {
+        [$dirName, $index, $formatStr, $dataPos, $base, $size, $valuePtr] =
+            [$parms['DirName'], $parms['Index'], $parms['Format'], $parms['DataPos'], $parms['Base'] ?? null, $parms['Size'], $parms['Start']];
+        $tagInfo = $et->GetTagInfo($tagTablePtr, $tagID);
+        $subdir = null;
+        $count = ($parms['Count'] ?? null) ?: $size;
+        $base ??= 0;
+        if ($tagInfo) {
+            $tagName = $tagInfo->Name;
+            $subdir = $tagInfo->SubDirectory;
+            if ($tagInfo->Format) {
+                $formatStr = $tagInfo->Format;
+                $count = $size / ExifTool::FormatSize($formatStr);
+            }
+        } else {
+            $tagName = Perl::sprintf('Tag 0x%.4x', $tagID);
+        }
+        $dname = Perl::sprintf("{$dirName}-%.2d", $index);
+        // build our tool tip
+        $fstr = "{$formatStr}[$count]";
+        $tip = Perl::sprintf("Tag ID: 0x%.4x\n", $tagID)."Format: $fstr\nSize: $size bytes\n";
+        if ($size > 4) {
+            $tip .= Perl::sprintf("Value offset: 0x%.4x\n", $valuePtr - $base);
+            $tip .= Perl::sprintf("Actual offset: 0x%.4x\n", $valuePtr + $dataPos);
+            $tip .= Perl::sprintf("Offset base: 0x%.4x\n", $dataPos + $base);
+            $colName = "<span class=F>$tagName</span>";
+        } else {
+            $colName = $tagName;
+        }
+        if (!\is_array($value) && !\is_object($value)) {
+            $value = Perl::str($value);
+            $tval = \strlen($value) > 32 ? substr($value, 0, 28).'[...]' : $value;
+            $tval = preg_replace('/[\x00-\x1f\x7f-\xff]/', '.', $tval);
+            $tip .= "Value: $tval";
+        }
+        $et->HDump($entry + $dataPos, $entryLen, "$dname $colName", $tip, 1);
+        if ($size > 4) {
+            $dumpPos = $valuePtr + $dataPos;
+            // add value data block
+            $et->HDump($dumpPos, $size, "$tagName value", 'SAME', $subdir ? 0x04 : 0);
+        }
+    }
+
+    //------------------------------------------------------------------------------
     // Read Phase One maker notes
     // Inputs: 0) ExifTool object ref, 1) dirInfo ref, 2) tag table ref
     // Returns: 1 on success
@@ -288,8 +336,9 @@ final class PhaseOne
                 'Format'  => $formatStr,
                 'Count'   => $count,
             ];
-            // (HtmlDump($et, $tagTablePtr, $tagID, $value, $entry, $entrySize, %parms, Base => $dirStart)
-            //  is not ported: HTML_DUMP is never set)
+            if ($htmlDump) {
+                self::HtmlDump($et, $tagTablePtr, $tagID, $value, $entry, $entrySize, $parms + ['Base' => $dirStart]);
+            }
             $et->HandleTag($tagTablePtr, $tagID, $value, ...$parms);
         }
         return 1;

@@ -17,7 +17,7 @@ use Image\ExifTool\XMP;
  * Port of the `exiftool` command-line script (exiftool 13.59), reading and writing.
  *
  * File-scope variables of the script are properties, its subs are methods with the same names,
- * and the main script is run(). Not ported (the command stops with an error): -htmlDump,
+ * and the main script is run(). Not ported (the command stops with an error):
  * -diff, -plot, -fileNUM, -use of modules other than those of ExifTool, and
  * -config files. -if and -p evaluate Perl code: -if supports a subset of Perl expressions (see
  * CompileCondition()), and advanced formatting expressions (${TAG;EXPR}) are not supported in

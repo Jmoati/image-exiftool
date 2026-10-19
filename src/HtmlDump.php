@@ -658,7 +658,7 @@ _END_PART_3_;
             $cols = $pos & 0x0f;
             $c[1] .= ($cols == 8) ? '  ' : ' ';
         } else {
-            $addr = $pos < 0 ? sprintf('-%04x', -$pos) : sprintf('%5x', $pos);
+            $addr = $pos < 0 ? sprintf('-%04x', -$pos) : Perl::sprintf('%5.4x', $pos);
             $this->Open('fgd', $f0, 0);
             $this->Open('fgd', '', 3);
             $c[0] .= $addr;
@@ -753,7 +753,7 @@ _END_PART_3_;
                     }
                 }
             }
-            $c[0] .= ($p < 0 ? sprintf('-%04x', -$p) : sprintf('%5x', $p));
+            $c[0] .= ($p < 0 ? sprintf('-%04x', -$p) : Perl::sprintf('%5.4x', $p));
             $cols = 0;
         }
         if ($msg) {
@@ -770,9 +770,10 @@ _END_PART_3_;
             $this->Cont = 0;
         }
         // add temporary column data to our real columns
+        $cc = $c;   // (copy: $c is bound by reference to TmpCols)
         $this->TmpCols = null;
         for ($i = 0; $i < 4; ++$i) {
-            $this->Cols[$i] .= $c[$i];
+            $this->Cols[$i] .= $cc[$i];
         }
     }
 
