@@ -284,7 +284,7 @@ $f_898d8f40b2 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     if (($vals[2] ?? null) && ($vals[3] ?? null)) {
         $i = 1;
         for (;;) {
-            $self->FoundTag($tagInfo, [0 => $val[2], 1 => $val[3]]);
+            $self->FoundTag($tagInfo, new \ArrayObject([0 => $val[2], 1 => $val[3]]));
             ++$i;
             $val[2] = Perl::str($val[0]) . " ($i)";
             if (!isset($self->VALUE[$val[2]])) {
@@ -301,11 +301,11 @@ $f_898d8f40b2 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
 };
 $f_f2d8f3d284 = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, &$priority, array &$grps, array $vals) {
     if (($vals[3] ?? null) && ($vals[4] ?? null) && Perl::str($vals[0] ?? null) !== Perl::str($vals[3])) {
-        $self->FoundTag($tagInfo, [
+        $self->FoundTag($tagInfo, new \ArrayObject([
             0 => 'PreviewImageStart (1)',
             1 => 'PreviewImageLength (1)',
             2 => 'PreviewImageValid',
-        ]);
+        ]));
     }
     if (isset($vals[2]) && !$vals[2]) {
         return null;
@@ -323,7 +323,7 @@ $f_a70093b25a = static function ($val, ExifTool $self, $tag, ?TagInfo $tagInfo, 
     if (($vals[2] ?? null) && ($vals[3] ?? null)) {
         $i = 1;
         for (;;) {
-            $self->FoundTag($tagInfo, [0 => $val[2], 1 => $val[3]]);
+            $self->FoundTag($tagInfo, new \ArrayObject([0 => $val[2], 1 => $val[3]]));
             ++$i;
             $val[2] = Perl::str($val[0]) . " ($i)";
             if (!isset($self->VALUE[$val[2]])) {
